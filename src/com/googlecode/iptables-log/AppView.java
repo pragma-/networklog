@@ -23,10 +23,11 @@ import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
 
-public class AppView extends Activity
+public class AppView extends Activity implements IptablesLogListener
 {
   private ArrayList<ListItem> listData;
   private CustomAdapter adapter;
+  private int sortBy = 0;
 
   private class ListItem {
     protected Drawable mIcon;
@@ -43,6 +44,12 @@ public class AppView extends Activity
     }
   }
 
+  protected class SortAppsByPackets implements Comparator<ListItem> {
+    public int compare(ListItem o1, ListItem o2) {
+      return o1.totalPackets > o2.totalPackets ? -1 : (o1.totalPackets == o2.totalPackets) ? 0 : 1;
+    }
+  }
+
   protected class SortAppsByName implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
       return o1.mName.compareToIgnoreCase(o2.mName);
@@ -51,7 +58,7 @@ public class AppView extends Activity
 
   protected class SortAppsByUid implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
-      return o1.mUid < o2.mUid ? -1 : 1;
+      return o1.mUid < o2.mUid ? -1 : (o1.mUid == o2.mUid) ? 0 : 1;
     }
   }
 
@@ -79,11 +86,18 @@ public class AppView extends Activity
     public boolean onOptionsItemSelected(MenuItem item) {
       switch(item.getItemId()) {
         case R.id.sort_by_uid:
+          sortBy = 0;
           Collections.sort(listData, new SortAppsByUid());
           adapter.notifyDataSetChanged();
           return true;
         case R.id.sort_by_name:
+          sortBy = 1;
           Collections.sort(listData, new SortAppsByName());
+          adapter.notifyDataSetChanged();
+          return true;
+        case R.id.sort_by_packets:
+          sortBy = 2;
+          Collections.sort(listData, new SortAppsByPackets());
           adapter.notifyDataSetChanged();
           return true;
         default:
@@ -118,7 +132,27 @@ public class AppView extends Activity
 
       getInstalledApps();
       adapter.notifyDataSetChanged();
+
+      IptablesLogTracker.addListener(this);
     }
+
+  public void onNewLogEntry(IptablesLogTracker.LogEntry entry) {
+    Log.d("[IptablesLog]", "new entry");
+    for(ListItem item : listData) {
+      if(item.mUid == new Integer(entry.uid).intValue()) {
+        item.totalPackets = entry.packets;
+      }
+    }
+
+    runOnUiThread(new Runnable() {
+      public void run() {
+        if(sortBy == 2) {
+          Collections.sort(listData, new SortAppsByPackets());
+        }
+        adapter.notifyDataSetChanged();
+      }
+    });
+  }
 
   private class CustomAdapter extends ArrayAdapter<ListItem> {
     LayoutInflater mInflater = (LayoutInflater) getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
@@ -133,6 +167,7 @@ public class AppView extends Activity
 
         ImageView icon;
         TextView name;
+        TextView packets;
 
         ListItem item = getItem(position);
 
@@ -149,6 +184,9 @@ public class AppView extends Activity
         name = holder.getName();
         name.setText("(" + item.mUid + ")" + " " + item.mName);
 
+        packets = holder.getPackets();
+        packets.setText("Packets: " + item.totalPackets);
+
         return convertView;
       }
   }
@@ -157,6 +195,7 @@ public class AppView extends Activity
     private View mView;
     private ImageView mIcon = null;
     private TextView mName= null;
+    private TextView mPackets= null;
 
     public ViewHolder(View view) {
       mView = view;
@@ -174,6 +213,13 @@ public class AppView extends Activity
         mName = (TextView) mView.findViewById(R.id.appName);
       }
       return mName;
+    }
+
+    public TextView getPackets() {
+      if(mPackets == null) {
+        mPackets = (TextView) mView.findViewById(R.id.appPackets);
+      }
+      return mPackets;
     }
   }
 }

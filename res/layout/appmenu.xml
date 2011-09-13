@@ -4,10 +4,12 @@
     android:title="Sort">
     <menu>
       <group android:checkableBehavior="single">
-        <item android:id="@+id/sort_by_name"
-          android:title="By Name" />
         <item android:id="@+id/sort_by_uid"
           android:title="By AppID" />
+        <item android:id="@+id/sort_by_name"
+          android:title="By Name" />
+        <item android:id="@+id/sort_by_packets"
+          android:title="By Packets" />
       </group>
     </menu>
   </item>

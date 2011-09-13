@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class IptablesLogTracker {
   static Hashtable<String, LogEntry> logEntriesHash = new Hashtable<String, LogEntry>();
   static ArrayList<LogEntry> logEntriesList = new ArrayList<LogEntry>();
+  static ArrayList<IptablesLogListener> listenerList = new ArrayList<IptablesLogListener>();
 
   public static class LogEntry {
     String uid;
@@ -31,46 +32,40 @@ public class IptablesLogTracker {
       Log.d("[Iptables Log]", "got [DROIDWALL] at " + pos);
 
       pos = result.indexOf("SRC=", pos);
-      if(pos == -1) continue;
+      if(pos == -1) break;
       int space = result.indexOf(" ", pos);
-      if(space == -1) continue;
+      if(space == -1) break;
       src = result.substring(pos + 4, space);
-      Log.d("[Iptables Log]", "SRC is " + src);
 
       pos = result.indexOf("DST=", pos);
-      if(pos == -1) continue;
+      if(pos == -1) break;
       space = result.indexOf(" ", pos);
-      if(space == -1) continue;
+      if(space == -1) break;
       dst = result.substring(pos + 4, space);
-      Log.d("[Iptables Log]", "DST is " + dst);
       
       pos = result.indexOf("LEN=", pos);
-      if(pos == -1) continue;
+      if(pos == -1) break;
       space = result.indexOf(" ", pos);
-      if(space == -1) continue;
+      if(space == -1) break;
       len = result.substring(pos + 4, space);
-      Log.d("[Iptables Log]", "LEN is " + len);
      
       pos = result.indexOf("SPT=", pos);
-      if(pos == -1) continue;
+      if(pos == -1) break;
       space = result.indexOf(" ", pos);
-      if(space == -1) continue;
+      if(space == -1) break;
       spt = result.substring(pos + 4, space);
-      Log.d("[Iptables Log]", "SPT is " + spt);
     
       pos = result.indexOf("DPT=", pos);
-      if(pos == -1) continue;
+      if(pos == -1) break;
       space = result.indexOf(" ", pos);
-      if(space == -1) continue;
+      if(space == -1) break;
       dpt = result.substring(pos + 4, space);
-      Log.d("[Iptables Log]", "DPT is " + dpt);
 
       pos = result.indexOf("UID=", pos);
-      if(pos == -1) continue;
+      if(pos == -1) break;
       space = result.indexOf(" ", pos);
-      if(space == -1) continue;
+      if(space == -1) break;
       uid = result.substring(pos + 4, space);
-      Log.d("[Iptables Log]", "UID is " + uid);
 
       LogEntry entry = logEntriesHash.get(uid);
 
@@ -88,7 +83,21 @@ public class IptablesLogTracker {
 
       logEntriesHash.put(uid, entry);
       logEntriesList.add(entry);
+
+      Log.d("[Iptables Log]", "uid: " + uid);
+
+      notifyNewEntry(entry);
     }
+  }
+
+  public static void notifyNewEntry(LogEntry entry) {
+    for(IptablesLogListener listener : listenerList) {
+      listener.onNewLogEntry(entry);
+    }
+  }
+
+  public static void addListener(IptablesLogListener listener) {
+    listenerList.add(listener);
   }
 
   public static void start() {

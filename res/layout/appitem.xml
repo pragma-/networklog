@@ -10,8 +10,17 @@
     android:scaleType="centerInside"
     android:adjustViewBounds="true"
     />
-  <TextView
+  <LinearLayout
+    android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:id="@+id/appName" />
+    android:layout_height="fill_parent">
+    <TextView
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:id="@+id/appName" />
+    <TextView
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:id="@+id/appPackets" />
+  </LinearLayout>
 </LinearLayout>
