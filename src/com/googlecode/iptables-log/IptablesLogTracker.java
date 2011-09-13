@@ -84,7 +84,7 @@ public class IptablesLogTracker {
       logEntriesHash.put(uid, entry);
       logEntriesList.add(entry);
 
-      Log.d("[Iptables Log]", "uid: " + uid);
+      Log.d("[Iptables Log]", "entry uid: " + entry.uid + " " + entry.src + " " + entry.spt + " " + entry.dst + " " + entry.dpt + " " + entry.len);
 
       notifyNewEntry(entry);
     }
