@@ -26,6 +26,7 @@ import java.util.Comparator;
 public class LogView extends Activity implements IptablesLogListener
 {
   private ArrayList<ListItem> listData;
+  private ListView listView;
   private CustomAdapter adapter;
   private int sortBy = 0;
 
@@ -104,11 +105,11 @@ public class LogView extends Activity implements IptablesLogListener
       listData = new ArrayList<ListItem>();
       adapter = new CustomAdapter(this, R.layout.logitem, listData);
 
-      ListView lv = new ListView(this);
-      lv.setTextFilterEnabled(true);
-      lv.setAdapter(adapter);
+      listView = new ListView(this);
+      listView.setTextFilterEnabled(true);
+      listView.setAdapter(adapter);
 
-      layout.addView(lv);
+      layout.addView(listView);
 
       setContentView(layout);
 
@@ -137,8 +138,10 @@ public class LogView extends Activity implements IptablesLogListener
     runOnUiThread(new Runnable() {
       public void run() {
         Log.d("[Iptables Log]", "LogView: Add item: " + item.srcAddr + " " + item.srcPort + " " + item.dstAddr + " " + item.dstPort + " " + item.len);
+
         listData.add(item);
         adapter.notifyDataSetChanged();
+        listView.smoothScrollToPosition(adapter.getCount());
       }
     });
   }
