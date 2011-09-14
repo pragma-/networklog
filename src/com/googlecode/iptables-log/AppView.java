@@ -35,7 +35,7 @@ public class AppView extends Activity implements IptablesLogListener
     protected String mName;
     protected int totalPackets;
     protected int totalLen;
-    protected int lastTimestamp;
+    protected String lastTimestamp;
 
     ListItem(Drawable icon, int uid, String name) {
       mIcon = icon;
@@ -141,6 +141,8 @@ public class AppView extends Activity implements IptablesLogListener
     for(ListItem item : listData) {
       if(item.mUid == new Integer(entry.uid).intValue()) {
         item.totalPackets = entry.packets;
+        item.totalLen = entry.bytes;
+        item.lastTimestamp = entry.timestamp;
       }
     }
 
@@ -168,6 +170,8 @@ public class AppView extends Activity implements IptablesLogListener
         ImageView icon;
         TextView name;
         TextView packets;
+        TextView bytes;
+        TextView timestamp;
 
         ListItem item = getItem(position);
 
@@ -187,6 +191,12 @@ public class AppView extends Activity implements IptablesLogListener
         packets = holder.getPackets();
         packets.setText("Packets: " + item.totalPackets);
 
+        bytes = holder.getBytes();
+        bytes.setText("Bytes: " + item.totalLen);
+
+        timestamp = holder.getTimestamp();
+        timestamp.setText("Timestamp: " + item.lastTimestamp);
+
         return convertView;
       }
   }
@@ -194,8 +204,10 @@ public class AppView extends Activity implements IptablesLogListener
   private class ViewHolder {
     private View mView;
     private ImageView mIcon = null;
-    private TextView mName= null;
-    private TextView mPackets= null;
+    private TextView mName = null;
+    private TextView mPackets = null;
+    private TextView mBytes = null;
+    private TextView mTimestamp = null;
 
     public ViewHolder(View view) {
       mView = view;
@@ -220,6 +232,20 @@ public class AppView extends Activity implements IptablesLogListener
         mPackets = (TextView) mView.findViewById(R.id.appPackets);
       }
       return mPackets;
+    }
+
+    public TextView getBytes() {
+      if(mBytes == null) {
+        mBytes = (TextView) mView.findViewById(R.id.appBytes);
+      }
+      return mBytes;
+    }
+
+    public TextView getTimestamp() {
+      if(mTimestamp == null) {
+        mTimestamp = (TextView) mView.findViewById(R.id.appLastTimestamp);
+      }
+      return mTimestamp;
     }
   }
 }

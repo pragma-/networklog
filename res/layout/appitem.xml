@@ -22,5 +22,13 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
       android:id="@+id/appPackets" />
+    <TextView
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:id="@+id/appBytes" />
+    <TextView
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:id="@+id/appLastTimestamp" />
   </LinearLayout>
 </LinearLayout>

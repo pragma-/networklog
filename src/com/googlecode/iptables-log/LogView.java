@@ -38,7 +38,7 @@ public class LogView extends Activity implements IptablesLogListener
     protected String dstAddr;
     protected int dstPort;
     protected int len;
-    protected int timestamp;
+    protected String timestamp;
 
     ListItem(Drawable icon, int uid, String name) {
       mIcon = icon;
@@ -132,7 +132,7 @@ public class LogView extends Activity implements IptablesLogListener
     item.dstAddr = entry.dst;
     item.dstPort = entry.dpt;
     item.len = entry.len;
-    item.timestamp = 0;
+    item.timestamp = entry.timestamp;
 
     runOnUiThread(new Runnable() {
       public void run() {
@@ -194,7 +194,7 @@ public class LogView extends Activity implements IptablesLogListener
         len.setText("LEN: " + item.len);
 
         timestamp = holder.getTimestamp();
-        timestamp.setText(Integer.toString(item.timestamp));
+        timestamp.setText(item.timestamp);
 
         return convertView;
       }

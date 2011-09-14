@@ -4,10 +4,15 @@ import android.util.Log;
 import java.util.Hashtable;
 import java.util.ArrayList;
 
+import java.util.Calendar;
+import java.text.SimpleDateFormat;
+
 public class IptablesLogTracker {
   static Hashtable<String, LogEntry> logEntriesHash = new Hashtable<String, LogEntry>();
   static ArrayList<LogEntry> logEntriesList = new ArrayList<LogEntry>();
   static ArrayList<IptablesLogListener> listenerList = new ArrayList<IptablesLogListener>();
+
+  static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 
   public static class LogEntry {
     String uid;
@@ -18,6 +23,13 @@ public class IptablesLogTracker {
     int dpt;
     int packets;
     int bytes;
+    String timestamp;
+  }
+
+  public static String getTimestamp() {
+    Calendar cal = Calendar.getInstance();
+    SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
+    return format.format(cal.getTime());
   }
 
   // FIXME: Needs buffering of incomplete logs
@@ -79,12 +91,13 @@ public class IptablesLogTracker {
       entry.dpt = new Integer(dpt).intValue();
       entry.len = new Integer(len).intValue();
       entry.packets++;
-      entry.bytes += entry.len * 8;
+      entry.bytes += entry.len;
+      entry.timestamp = new String(getTimestamp());
 
       logEntriesHash.put(uid, entry);
       logEntriesList.add(entry);
 
-      Log.d("[Iptables Log]", "entry uid: " + entry.uid + " " + entry.src + " " + entry.spt + " " + entry.dst + " " + entry.dpt + " " + entry.len);
+      Log.d("[Iptables Log]", "entry uid: " + entry.uid + " " + entry.src + " " + entry.spt + " " + entry.dst + " " + entry.dpt + " " + entry.len + " " + entry.bytes + " " + entry.timestamp);
 
       notifyNewEntry(entry);
     }
