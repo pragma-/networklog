@@ -20,14 +20,13 @@ public class ShellCommand {
 
   public void start() {
     try {
-      Log.d("[Iptables Log]", "exec");
       process = rt.exec(command);
       stdout = process.getInputStream();
 
       Thread onShutdown = new Thread() {
         public void run() {
-          Log.d("[Iptables Log]", "destroy on shutdown");
-          process.destroy();
+          Log.d("IptablesLog", "finish on shutdown");
+          finish();
         }
       };
       rt.addShutdownHook(onShutdown);
@@ -36,23 +35,21 @@ public class ShellCommand {
     }
   }
 
-  public void stop() {
-    Log.d("[Iptables Log]", "stop");
+  public void finish() {
+    Log.d("IptablesLog", "ShellCommand: finishing " + command.toString());
     process.destroy();
   }
 
   public boolean checkForExit() {
     try {
-      Log.d("[Iptables Log]", "check exit");
       int exit = process.exitValue();
-      Log.d("[Iptables Log]", "exit " + exit);
+      Log.d("IptablesLog", "exit " + exit);
     } catch(Exception IllegalThreadStateException) {
-      Log.d("[Iptables Log]", "still alive");
       return false;
     }
 
-    Log.d("[Iptables Log]", "exited");
-    process.destroy();
+    Log.d("IptablesLog", "exited");
+    finish();
     return true;
   }
 
@@ -60,20 +57,20 @@ public class ShellCommand {
     byte[] buf = new byte[8192];
     int read;
 
-    Log.d("[Iptables Log]", "readStdout");
+    Log.d("IptablesLog", "readStdout");
     
     try {
       read = stdout.read(buf);
       if(read < 0) {
-        Log.d("[Iptables Log]", "readStdout return null");
+        Log.d("IptablesLog", "readStdout return null");
         return null;
       }
 
       String result = new String(buf, 0, read);
-      Log.d("[Iptables Log]", "readStdout return [" + result + "]");
+      Log.d("IptablesLog", "readStdout return [" + result + "]");
       return result;
     } catch(Exception e) {
-      Log.d("[Iptables Log]", "error readStdout");
+      Log.d("IptablesLog", "error readStdout");
       e.printStackTrace();
       return "ERROR\n";
     }

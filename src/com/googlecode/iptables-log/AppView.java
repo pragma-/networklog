@@ -137,7 +137,6 @@ public class AppView extends Activity implements IptablesLogListener
     }
 
   public void onNewLogEntry(IptablesLogTracker.LogEntry entry) {
-    Log.d("[IptablesLog]", "new entry");
     for(ListItem item : listData) {
       if(item.mUid == new Integer(entry.uid).intValue()) {
         item.totalPackets = entry.packets;

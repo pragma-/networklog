@@ -34,14 +34,14 @@ public class IptablesLogTracker {
 
   // FIXME: Needs buffering of incomplete logs
   public static void parseResult(String result) {
-    Log.d("[Iptables Log]", "parsing result");
+    Log.d("IptablesLog", "parsing result");
     int pos = 0;
     String src, dst, len, spt, dpt, uid;
 
-    while((pos = result.indexOf("[DROIDWALL]", pos)) > -1) {
+    while((pos = result.indexOf("[IptablesLogEntry]", pos)) > -1) {
       int newline = result.indexOf("\n", pos);
 
-      Log.d("[Iptables Log]", "got [DROIDWALL] at " + pos);
+      Log.d("IptablesLog", "got [IptablesLogEntry] at " + pos);
 
       pos = result.indexOf("SRC=", pos);
       if(pos == -1) break;
@@ -97,7 +97,7 @@ public class IptablesLogTracker {
       logEntriesHash.put(uid, entry);
       logEntriesList.add(entry);
 
-      Log.d("[Iptables Log]", "entry uid: " + entry.uid + " " + entry.src + " " + entry.spt + " " + entry.dst + " " + entry.dpt + " " + entry.len + " " + entry.bytes + " " + entry.timestamp);
+      Log.d("IptablesLog", "entry uid: " + entry.uid + " " + entry.src + " " + entry.spt + " " + entry.dst + " " + entry.dpt + " " + entry.len + " " + entry.bytes + " " + entry.timestamp);
 
       notifyNewEntry(entry);
     }
@@ -116,24 +116,28 @@ public class IptablesLogTracker {
   public static void start() {
     Thread mainLoop = new Thread() {
       public void run() {
-        Log.d("[Iptables Log]", "starting cat /proc/kmsg");
+        Log.d("IptablesLog", "adding logging rules");
+        Iptables.startLog();
+
+        Log.d("IptablesLog", "starting cat /proc/kmsg");
         ShellCommand command = new ShellCommand(new String[] { "su", "-c", "cat /proc/kmsg" });
         command.start();
 
         String result;
         while(command.checkForExit() == false) {
-          Log.d("[Iptables Log]", "reading stdout");
+          Log.d("IptablesLog", "reading stdout");
           result = command.readStdout();
           if(result == null) {
-            Log.d("[Iptables Log]", "result == null");
+            Log.d("IptablesLog", "result == null");
             return;
           }
 
-          Log.d("[Iptables Log]", "result == [" + result + "]");
+          Log.d("IptablesLog", "result == [" + result + "]");
           parseResult(result);
         }
       }
     };
+
     mainLoop.start();
   }
 }
