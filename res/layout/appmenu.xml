@@ -10,6 +10,10 @@
           android:title="By Name" />
         <item android:id="@+id/sort_by_packets"
           android:title="By Packets" />
+        <item android:id="@+id/sort_by_bytes"
+          android:title="By Bytes" />
+        <item android:id="@+id/sort_by_timestamp"
+          android:title="By Timestamp" />
       </group>
     </menu>
   </item>

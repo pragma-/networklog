@@ -48,18 +48,6 @@ public class LogView extends Activity implements IptablesLogListener
     }
   }
 
-  protected class SortAppsByName implements Comparator<ListItem> {
-    public int compare(ListItem o1, ListItem o2) {
-      return o1.mName.compareToIgnoreCase(o2.mName);
-    }
-  }
-
-  protected class SortAppsByUid implements Comparator<ListItem> {
-    public int compare(ListItem o1, ListItem o2) {
-      return o1.mUid < o2.mUid ? -1 : (o1.mUid == o2.mUid) ? 0 : 1;
-    }
-  }
-
   @Override
     public boolean onCreateOptionsMenu(Menu menu) {
       MenuInflater inflater = getMenuInflater();
@@ -70,19 +58,6 @@ public class LogView extends Activity implements IptablesLogListener
   @Override
     public boolean onOptionsItemSelected(MenuItem item) {
       switch(item.getItemId()) {
-        case R.id.sort_by_uid:
-          sortBy = 0;
-          Collections.sort(listData, new SortAppsByUid());
-          adapter.notifyDataSetChanged();
-          return true;
-        case R.id.sort_by_name:
-          sortBy = 1;
-          Collections.sort(listData, new SortAppsByName());
-          adapter.notifyDataSetChanged();
-          return true;
-        case R.id.sort_by_timestamp:
-          sortBy = 2;
-          return true;
         default:
           return super.onOptionsItemSelected(item);
       }

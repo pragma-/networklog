@@ -27,14 +27,15 @@ public class AppView extends Activity implements IptablesLogListener
 {
   private ArrayList<ListItem> listData;
   private CustomAdapter adapter;
-  private int sortBy = 0;
+  private enum Sort { UID, NAME, PACKETS, BYTES, TIMESTAMP }; 
+  private Sort sortBy = Sort.UID;
 
   private class ListItem {
     protected Drawable mIcon;
     protected int mUid;
     protected String mName;
     protected int totalPackets;
-    protected int totalLen;
+    protected int totalBytes;
     protected String lastTimestamp;
 
     ListItem(Drawable icon, int uid, String name) {
@@ -44,9 +45,21 @@ public class AppView extends Activity implements IptablesLogListener
     }
   }
 
+  protected class SortAppsByBytes implements Comparator<ListItem> {
+    public int compare(ListItem o1, ListItem o2) {
+      return o1.totalBytes > o2.totalBytes ? -1 : (o1.totalBytes == o2.totalBytes) ? 0 : 1;
+    }
+  }
+
   protected class SortAppsByPackets implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
       return o1.totalPackets > o2.totalPackets ? -1 : (o1.totalPackets == o2.totalPackets) ? 0 : 1;
+    }
+  }
+
+  protected class SortAppsByTimestamp implements Comparator<ListItem> {
+    public int compare(ListItem o1, ListItem o2) {
+      return o1.lastTimestamp.compareToIgnoreCase(o2.lastTimestamp);
     }
   }
 
@@ -69,10 +82,12 @@ public class AppView extends Activity implements IptablesLogListener
       int uid = app.uid;
 
       ListItem item = new ListItem(icon, uid, name);
+      item.lastTimestamp = "N/A";
       listData.add(item);
     }
 
     Collections.sort(listData, new SortAppsByUid());
+    sortBy = Sort.UID;
   }
 
   @Override
@@ -86,18 +101,28 @@ public class AppView extends Activity implements IptablesLogListener
     public boolean onOptionsItemSelected(MenuItem item) {
       switch(item.getItemId()) {
         case R.id.sort_by_uid:
-          sortBy = 0;
+          sortBy = Sort.UID;
           Collections.sort(listData, new SortAppsByUid());
           adapter.notifyDataSetChanged();
           return true;
         case R.id.sort_by_name:
-          sortBy = 1;
+          sortBy = Sort.NAME;
           Collections.sort(listData, new SortAppsByName());
           adapter.notifyDataSetChanged();
           return true;
         case R.id.sort_by_packets:
-          sortBy = 2;
+          sortBy = Sort.PACKETS;
           Collections.sort(listData, new SortAppsByPackets());
+          adapter.notifyDataSetChanged();
+          return true;
+         case R.id.sort_by_bytes:
+          sortBy = Sort.BYTES;
+          Collections.sort(listData, new SortAppsByBytes());
+          adapter.notifyDataSetChanged();
+          return true;
+         case R.id.sort_by_timestamp:
+          sortBy = Sort.TIMESTAMP;
+          Collections.sort(listData, new SortAppsByTimestamp());
           adapter.notifyDataSetChanged();
           return true;
         default:
@@ -140,15 +165,19 @@ public class AppView extends Activity implements IptablesLogListener
     for(ListItem item : listData) {
       if(item.mUid == new Integer(entry.uid).intValue()) {
         item.totalPackets = entry.packets;
-        item.totalLen = entry.bytes;
+        item.totalBytes = entry.bytes;
         item.lastTimestamp = entry.timestamp;
       }
     }
 
     runOnUiThread(new Runnable() {
       public void run() {
-        if(sortBy == 2) {
+        if(sortBy == Sort.PACKETS) {
           Collections.sort(listData, new SortAppsByPackets());
+        } else if(sortBy == Sort.BYTES) {
+          Collections.sort(listData, new SortAppsByBytes());
+        } else if(sortBy == Sort.TIMESTAMP) {
+          Collections.sort(listData, new SortAppsByTimestamp());
         }
         adapter.notifyDataSetChanged();
       }
@@ -191,7 +220,7 @@ public class AppView extends Activity implements IptablesLogListener
         packets.setText("Packets: " + item.totalPackets);
 
         bytes = holder.getBytes();
-        bytes.setText("Bytes: " + item.totalLen);
+        bytes.setText("Bytes: " + item.totalBytes);
 
         timestamp = holder.getTimestamp();
         timestamp.setText("Timestamp: " + item.lastTimestamp);
