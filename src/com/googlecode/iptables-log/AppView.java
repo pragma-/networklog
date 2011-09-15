@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 
 public class AppView extends Activity implements IptablesLogListener
 {
@@ -37,6 +38,7 @@ public class AppView extends Activity implements IptablesLogListener
     protected int totalPackets;
     protected int totalBytes;
     protected String lastTimestamp;
+    protected ArrayList<String> uniqueHosts;
 
     ListItem(Drawable icon, int uid, String name) {
       mIcon = icon;
@@ -83,6 +85,8 @@ public class AppView extends Activity implements IptablesLogListener
 
       ListItem item = new ListItem(icon, uid, name);
       item.lastTimestamp = "N/A";
+      item.uniqueHosts = new ArrayList<String>();
+      item.uniqueHosts.add(0, "N/A");
       listData.add(item);
     }
 
@@ -167,6 +171,21 @@ public class AppView extends Activity implements IptablesLogListener
         item.totalPackets = entry.packets;
         item.totalBytes = entry.bytes;
         item.lastTimestamp = entry.timestamp;
+
+        String src = entry.src + ":" + entry.spt;
+        String dst = entry.dst + ":" + entry.dpt;
+
+        if(item.uniqueHosts.get(0).equals("N/A")) {
+          item.uniqueHosts.remove(0);
+        }
+
+        if(!item.uniqueHosts.contains(src))
+          item.uniqueHosts.add(src);
+
+        if(!item.uniqueHosts.contains(dst))
+          item.uniqueHosts.add(dst);
+
+        Collections.sort(item.uniqueHosts);
       }
     }
 
@@ -200,6 +219,7 @@ public class AppView extends Activity implements IptablesLogListener
         TextView packets;
         TextView bytes;
         TextView timestamp;
+        TextView hosts;
 
         ListItem item = getItem(position);
 
@@ -225,6 +245,18 @@ public class AppView extends Activity implements IptablesLogListener
         timestamp = holder.getTimestamp();
         timestamp.setText("Timestamp: " + item.lastTimestamp);
 
+        hosts = holder.getUniqueHosts();
+        String s = new String();
+        if(item.uniqueHosts.get(0).equals("N/A")) {
+          s = "N/A";
+        } else {
+          Iterator<String> itr = item.uniqueHosts.iterator();
+          while(itr.hasNext()) {
+            s += "\n  " + itr.next();
+          }
+        }
+        hosts.setText("Addrs: " + s);
+
         return convertView;
       }
   }
@@ -236,6 +268,7 @@ public class AppView extends Activity implements IptablesLogListener
     private TextView mPackets = null;
     private TextView mBytes = null;
     private TextView mTimestamp = null;
+    private TextView mUniqueHosts = null;
 
     public ViewHolder(View view) {
       mView = view;
@@ -274,6 +307,13 @@ public class AppView extends Activity implements IptablesLogListener
         mTimestamp = (TextView) mView.findViewById(R.id.appLastTimestamp);
       }
       return mTimestamp;
+    }
+
+    public TextView getUniqueHosts() {
+      if(mUniqueHosts == null) {
+        mUniqueHosts = (TextView) mView.findViewById(R.id.appUniqueHosts);
+      }
+      return mUniqueHosts;
     }
   }
 }
