@@ -3,7 +3,10 @@ package com.googlecode.iptableslog;
 import android.util.Log;
 import java.util.Hashtable;
 import java.util.ArrayList;
-
+import java.util.Enumeration;
+import java.net.NetworkInterface;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.Calendar;
 import java.text.SimpleDateFormat;
 
@@ -11,6 +14,7 @@ public class IptablesLogTracker {
   static Hashtable<String, LogEntry> logEntriesHash = new Hashtable<String, LogEntry>();
   static ArrayList<LogEntry> logEntriesList = new ArrayList<LogEntry>();
   static ArrayList<IptablesLogListener> listenerList = new ArrayList<IptablesLogListener>();
+  static String localIpAddr;
 
   static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 
@@ -30,6 +34,27 @@ public class IptablesLogTracker {
     Calendar cal = Calendar.getInstance();
     SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
     return format.format(cal.getTime());
+  }
+
+  public static String getLocalIpAddress() {
+    Log.d("IptablesLog", "getLocalIpAddress");
+    try {
+      for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+        NetworkInterface intf = en.nextElement();
+        Log.d("IptablesLog", intf.toString());
+        for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+          InetAddress inetAddress = enumIpAddr.nextElement();
+          Log.d("IptablesLog", inetAddress.toString());
+          if (!inetAddress.isLoopbackAddress()) {
+            Log.d("IptablesLog", inetAddress.getHostAddress().toString());
+            return inetAddress.getHostAddress().toString();
+          }
+        }
+      }
+    } catch (SocketException ex) {
+      Log.e("IptablesLog", ex.toString());
+    }
+    return "none";
   }
 
   // FIXME: Needs buffering of incomplete logs
@@ -118,6 +143,8 @@ public class IptablesLogTracker {
       public void run() {
         Log.d("IptablesLog", "adding logging rules");
         Iptables.startLog();
+
+        localIpAddr = getLocalIpAddress();
 
         Log.d("IptablesLog", "starting cat /proc/kmsg");
         ShellCommand command = new ShellCommand(new String[] { "su", "-c", "cat /proc/kmsg" });

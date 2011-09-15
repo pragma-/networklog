@@ -179,10 +179,10 @@ public class AppView extends Activity implements IptablesLogListener
           item.uniqueHosts.remove(0);
         }
 
-        if(!item.uniqueHosts.contains(src))
+        if(!entry.src.equals(IptablesLogTracker.localIpAddr) && !item.uniqueHosts.contains(src))
           item.uniqueHosts.add(src);
 
-        if(!item.uniqueHosts.contains(dst))
+        if(!entry.dst.equals(IptablesLogTracker.localIpAddr) && !item.uniqueHosts.contains(dst))
           item.uniqueHosts.add(dst);
 
         Collections.sort(item.uniqueHosts);
