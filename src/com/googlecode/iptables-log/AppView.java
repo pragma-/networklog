@@ -163,7 +163,7 @@ public class AppView extends Activity implements IptablesLogListener
 
   public void onNewLogEntry(IptablesLogTracker.LogEntry entry) {
     for(ListItem item : listData) {
-      if(item.mUid == new Integer(entry.uid).intValue()) {
+      if(item.mUid == Integer.parseInt(entry.uid)) {
         item.totalPackets = entry.packets;
         item.totalBytes = entry.bytes;
         item.lastTimestamp = entry.timestamp;

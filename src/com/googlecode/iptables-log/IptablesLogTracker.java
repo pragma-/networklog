@@ -87,9 +87,9 @@ public class IptablesLogTracker {
       entry.uid = uid;
       entry.src = src;
       entry.dst = dst;
-      entry.spt = new Integer(spt).intValue();
-      entry.dpt = new Integer(dpt).intValue();
-      entry.len = new Integer(len).intValue();
+      entry.spt = Integer.parseInt(spt);
+      entry.dpt = Integer.parseInt(dpt);
+      entry.len = Integer.parseInt(len);
       entry.packets++;
       entry.bytes += entry.len;
       entry.timestamp = new String(getTimestamp());
