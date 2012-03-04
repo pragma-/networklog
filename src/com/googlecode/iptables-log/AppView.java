@@ -61,7 +61,7 @@ public class AppView extends Activity implements IptablesLogListener
 
   protected class SortAppsByTimestamp implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
-      return o1.lastTimestamp.compareToIgnoreCase(o2.lastTimestamp);
+      return o2.lastTimestamp.compareToIgnoreCase(o1.lastTimestamp.equals("N/A") ? "" : o1.lastTimestamp);
     }
   }
 

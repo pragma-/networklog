@@ -113,6 +113,11 @@ public class LogView extends Activity implements IptablesLogListener
         Log.d("IptablesLog", "LogView: Add item: " + item.srcAddr + " " + item.srcPort + " " + item.dstAddr + " " + item.dstPort + " " + item.len);
 
         listData.add(item);
+
+        while(listData.size() >= 100) {
+          listData.remove(0);
+        }
+
         adapter.notifyDataSetChanged();
         listView.smoothScrollToPosition(adapter.getCount());
       }
