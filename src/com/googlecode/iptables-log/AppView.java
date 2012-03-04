@@ -101,33 +101,39 @@ public class AppView extends Activity implements IptablesLogListener
       return true;
     }
 
+  public void updateAdapter() {
+    listData.add(0, null);
+    listData.remove(0);
+    adapter.notifyDataSetChanged();
+  }
+
   @Override
     public boolean onOptionsItemSelected(MenuItem item) {
       switch(item.getItemId()) {
         case R.id.sort_by_uid:
           sortBy = Sort.UID;
           Collections.sort(listData, new SortAppsByUid());
-          adapter.notifyDataSetChanged();
+          updateAdapter();
           return true;
         case R.id.sort_by_name:
           sortBy = Sort.NAME;
           Collections.sort(listData, new SortAppsByName());
-          adapter.notifyDataSetChanged();
+          updateAdapter();
           return true;
         case R.id.sort_by_packets:
           sortBy = Sort.PACKETS;
           Collections.sort(listData, new SortAppsByPackets());
-          adapter.notifyDataSetChanged();
+          updateAdapter();
           return true;
         case R.id.sort_by_bytes:
           sortBy = Sort.BYTES;
           Collections.sort(listData, new SortAppsByBytes());
-          adapter.notifyDataSetChanged();
+          updateAdapter();
           return true;
         case R.id.sort_by_timestamp:
           sortBy = Sort.TIMESTAMP;
           Collections.sort(listData, new SortAppsByTimestamp());
-          adapter.notifyDataSetChanged();
+          updateAdapter();
           return true;
         default:
           return super.onOptionsItemSelected(item);
