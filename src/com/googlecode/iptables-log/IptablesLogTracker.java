@@ -9,6 +9,9 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.Calendar;
 import java.text.SimpleDateFormat;
+import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
 
 public class IptablesLogTracker {
   static Hashtable<String, LogEntry> logEntriesHash = new Hashtable<String, LogEntry>();
@@ -146,9 +149,15 @@ public class IptablesLogTracker {
 
         localIpAddr = getLocalIpAddress();
 
+        try {
+          PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
+          script.println("cat /proc/kmsg");
+          script.close();
+        } catch (java.io.IOException e) { e.printStackTrace(); }
+
         Log.d("IptablesLog", "starting cat /proc/kmsg");
-        ShellCommand command = new ShellCommand(new String[] { "su", "-c", "cat /proc/kmsg" });
-        command.start();
+        ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT });
+        command.start(false);
 
         String result;
         while(command.checkForExit() == false) {

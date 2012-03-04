@@ -119,12 +119,12 @@ public class AppView extends Activity implements IptablesLogListener
           Collections.sort(listData, new SortAppsByPackets());
           adapter.notifyDataSetChanged();
           return true;
-         case R.id.sort_by_bytes:
+        case R.id.sort_by_bytes:
           sortBy = Sort.BYTES;
           Collections.sort(listData, new SortAppsByBytes());
           adapter.notifyDataSetChanged();
           return true;
-         case R.id.sort_by_timestamp:
+        case R.id.sort_by_timestamp:
           sortBy = Sort.TIMESTAMP;
           Collections.sort(listData, new SortAppsByTimestamp());
           adapter.notifyDataSetChanged();

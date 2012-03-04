@@ -18,7 +18,7 @@ public class ShellCommand {
     rt = Runtime.getRuntime();
   }
 
-  public void start() {
+  public void start(boolean waitForExit) {
     try {
       process = rt.exec(command);
       stdout = process.getInputStream();
@@ -32,6 +32,17 @@ public class ShellCommand {
       rt.addShutdownHook(onShutdown);
     } catch(Exception e) {
       e.printStackTrace();
+      return;
+    }
+
+    if(waitForExit) {
+      waitForExit();
+    }
+  }
+
+  public void waitForExit() {
+    while(checkForExit() == false) {
+      try { Thread.sleep(100); } catch (Exception e) { e.printStackTrace(); }
     }
   }
 
