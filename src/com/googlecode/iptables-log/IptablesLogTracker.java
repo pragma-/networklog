@@ -12,12 +12,14 @@ import java.text.SimpleDateFormat;
 import java.io.PrintWriter;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
+import java.lang.Thread;
 
 public class IptablesLogTracker {
   static Hashtable<String, LogEntry> logEntriesHash = new Hashtable<String, LogEntry>();
   static ArrayList<LogEntry> logEntriesList = new ArrayList<LogEntry>();
   static ArrayList<IptablesLogListener> listenerList = new ArrayList<IptablesLogListener>();
   static String localIpAddr;
+  static ShellCommand command;
 
   static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 
@@ -141,39 +143,66 @@ public class IptablesLogTracker {
     listenerList.add(listener);
   }
 
-  public static void start() {
+  public static void restoreData(IptablesLogData data) {
+    command = data.iptablesLogTrackerCommand;
+  }
+
+  public static void start(final boolean resumed) {
     Thread mainLoop = new Thread() {
       public void run() {
-        Log.d("IptablesLog", "adding logging rules");
-        Iptables.startLog();
+        if(!resumed) {
+          Log.d("IptablesLog", "adding logging rules");
+          Iptables.addRules();
+        }
 
         localIpAddr = getLocalIpAddress();
 
         try {
           PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
-          script.println("cat /proc/kmsg");
+          script.println("grep IptablesLogEntry /proc/kmsg");
           script.close();
         } catch (java.io.IOException e) { e.printStackTrace(); }
 
-        Log.d("IptablesLog", "starting cat /proc/kmsg");
-        ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT });
-        command.start(false);
+        Log.d("IptablesLog", "Starting iptables log tracker");
+
+        if(!resumed) {
+          command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "IptablesLogTracker");
+          command.start(false);
+        }
 
         String result;
         while(command.checkForExit() == false) {
-          Log.d("IptablesLog", "reading stdout");
-          result = command.readStdout();
+          Log.d("IptablesLog", "checking stdout");
+          /*
+          if(command.stdoutAvailable()) {
+            result = command.readStdout();
+            if(result == null) {
+              Log.d("IptablesLog", "result == null");
+              return;
+            }
+
+            Log.d("IptablesLog", "result == [" + result + "]");
+            parseResult(result);
+          } else {
+            try { Thread.sleep(150); } catch (Exception e) { e.printStackTrace(); }
+          }
+          */
+          result = command.readStdoutBlocking();
           if(result == null) {
             Log.d("IptablesLog", "result == null");
-            return;
+            Iptables.removeRules();
+            System.exit(0);
           }
 
           Log.d("IptablesLog", "result == [" + result + "]");
           parseResult(result);
         }
+        Iptables.removeRules();
+        System.exit(0);
       }
     };
 
     mainLoop.start();
+    Log.d("IptablesLog", "lol");
   }
 }

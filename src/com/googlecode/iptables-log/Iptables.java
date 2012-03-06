@@ -17,9 +17,9 @@ public class Iptables {
     "eth+", "wlan+", "tiwlan+", "athwlan+"
   };
 
-  public static boolean startLog() {
-    if(checkLog() == true)
-      stopLog();
+  public static boolean addRules() {
+    if(checkRules() == true)
+      removeRules();
 
     try {
       PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(SCRIPT)));
@@ -36,54 +36,73 @@ public class Iptables {
         script.println("iptables -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
       }
 
+      script.flush();
       script.close();
-    } catch (java.io.IOException e) { e.printStackTrace(); }
+    } catch (java.io.IOException e) { Log.d("IptablesLog", e.toString(), e); }
 
-    new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }).start(true);
+    new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }, "addRules").start(true);
     return true;
   }
 
-  public static boolean stopLog() {
-    if(checkLog() == false)
-      return false;
+  public static boolean removeRules() {
+    int tries = 0;
 
-    try {
-      PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(SCRIPT)));
+    while(checkRules() == true) {
+      try {
+        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(SCRIPT)));
 
-      for(String iface : CELL_INTERFACES) {
-        script.println("iptables -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
+        for(String iface : CELL_INTERFACES) {
+          script.println("iptables -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
 
-        script.println("iptables -D INPUT -i " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
+          script.println("iptables -D INPUT -i " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
+        }
+
+        for(String iface : WIFI_INTERFACES) {
+          script.println("iptables -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
+
+          script.println("iptables -D INPUT -i " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
+        }
+
+        script.flush();
+        script.close();
+      } catch (java.io.IOException e) { Log.d("IptablesLog", e.toString(), e); } 
+
+      new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }, "removeRules").start(true);
+
+      tries++;
+      if(tries > 3) {
+        Log.d("IptablesLog", "Too many attempts to remove rules, moving along...");
+        return false;
       }
-
-      for(String iface : WIFI_INTERFACES) {
-        script.println("iptables -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
-
-        script.println("iptables -D INPUT -i " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
-      }
-
-      script.close();
-    } catch (java.io.IOException e) { e.printStackTrace(); } 
-
-    new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }).start(true);
+    }
     return true;
   }
 
-  public static boolean checkLog() {
+  public static boolean checkRules() {
     try {
       PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(SCRIPT)));
       script.println("iptables -L");
+      script.flush();
       script.close();
-    } catch (java.io.IOException e) { e.printStackTrace(); } 
+    } catch (java.io.IOException e) { Log.d("IptablesLog", e.toString(), e); } 
 
-    ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT });
+    ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }, "checkRules");
     command.start(false);
-    Log.d("IptablesLog", "checklog");
-    String result = command.readStdout();
-    command.finish();
+    String result = "";
+    while(!command.checkForExit()) {
+      /*
+      if(command.stdoutAvailable())
+        result += command.readStdout();
+      else
+        try { Thread.sleep(100); } catch (Exception e) { Log.d("IptablesLog", e.toString(), e); }
+        */
+      result += command.readStdoutBlocking();
+    }
 
     if(result == null)
       return true;
+
+    Log.d("IptablesLog", "checkRules result: [" + result + "]");
 
     return result.indexOf("[IptablesLogEntry]", 0) == -1 ? false : true;
   }

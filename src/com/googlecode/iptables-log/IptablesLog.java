@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.widget.TabWidget;
 import android.widget.TabHost;
 import android.content.res.Resources;
+import android.util.Log;
 
 public class IptablesLog extends TabActivity
 {
@@ -15,6 +16,18 @@ public class IptablesLog extends TabActivity
     {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.main);
+
+      final IptablesLogData data = (IptablesLogData) getLastNonConfigurationInstance(); 
+      if (data == null) {
+        Log.d("IptablesLog", "Fresh run");
+        ApplicationsTracker.getInstalledApps(this);
+      } else {
+        Log.d("IptablesLog", "Restored run");
+        ApplicationsTracker.restoreData(data);
+        LogView.restoreData(data);
+        AppView.restoreData(data);
+        IptablesLogTracker.restoreData(data);
+      }
 
       Resources res = getResources();
       TabHost tabHost = getTabHost();
@@ -32,15 +45,25 @@ public class IptablesLog extends TabActivity
       tabHost.addTab(spec);
 
       tabHost.setCurrentTab(0);
+      tabHost.setCurrentTab(1);
+      tabHost.setCurrentTab(0);
 
-      IptablesLogTracker.start();
-      ApplicationsTracker.getInstalledApps(this);
+      IptablesLogTracker.start(data != null);
+      Log.d("IptablesLog", "hi thar");
     }
 
   @Override
     public void onDestroy()
     {
       super.onDestroy();
-      Iptables.stopLog();
+      Log.d("IptablesLog", "onDestroy called");
+      Iptables.removeRules();
+    }
+
+  @Override
+    public Object onRetainNonConfigurationInstance() {
+      Log.d("IptablesLog", "Saving run");
+      final IptablesLogData data = new IptablesLogData();
+      return data;
     }
 }

@@ -25,12 +25,12 @@ import java.util.Comparator;
 
 public class LogView extends Activity implements IptablesLogListener
 {
-  private ArrayList<ListItem> listData;
+  protected static ArrayList<ListItem> listData;
   private ListView listView;
   private CustomAdapter adapter;
   private int sortBy = 0;
 
-  private class ListItem {
+  protected class ListItem {
     protected Drawable mIcon;
     protected int mUid;
     protected String mName;
@@ -69,6 +69,8 @@ public class LogView extends Activity implements IptablesLogListener
     {
       super.onCreate(savedInstanceState);
 
+      Log.d("IptablesLog", "LogView created");
+
       LinearLayout layout = new LinearLayout(this);
       layout.setOrientation(LinearLayout.VERTICAL);
 
@@ -90,6 +92,10 @@ public class LogView extends Activity implements IptablesLogListener
 
       IptablesLogTracker.addListener(this);
     }
+
+  public static void restoreData(IptablesLogData data) {
+    listData = data.logViewListData;
+  }
 
   public void onNewLogEntry(IptablesLogTracker.LogEntry entry) {
     ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.installedAppsHash.get(entry.uid);

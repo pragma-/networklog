@@ -26,12 +26,13 @@ import java.util.Iterator;
 
 public class AppView extends Activity implements IptablesLogListener
 {
-  private ArrayList<ListItem> listData;
+  public static ArrayList<ListItem> listData;
   private CustomAdapter adapter;
-  private enum Sort { UID, NAME, PACKETS, BYTES, TIMESTAMP }; 
-  private Sort sortBy = Sort.UID;
+  public enum Sort { UID, NAME, PACKETS, BYTES, TIMESTAMP }; 
+  //public static Sort sortBy = Sort.UID;
+  public static Sort sortBy = Sort.BYTES;
 
-  private class ListItem {
+  public class ListItem {
     protected Drawable mIcon;
     protected int mUid;
     protected String mName;
@@ -47,31 +48,31 @@ public class AppView extends Activity implements IptablesLogListener
     }
   }
 
-  protected class SortAppsByBytes implements Comparator<ListItem> {
+  protected static class SortAppsByBytes implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
       return o1.totalBytes > o2.totalBytes ? -1 : (o1.totalBytes == o2.totalBytes) ? 0 : 1;
     }
   }
 
-  protected class SortAppsByPackets implements Comparator<ListItem> {
+  protected static class SortAppsByPackets implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
       return o1.totalPackets > o2.totalPackets ? -1 : (o1.totalPackets == o2.totalPackets) ? 0 : 1;
     }
   }
 
-  protected class SortAppsByTimestamp implements Comparator<ListItem> {
+  protected static class SortAppsByTimestamp implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
       return o2.lastTimestamp.compareToIgnoreCase(o1.lastTimestamp.equals("N/A") ? "" : o1.lastTimestamp);
     }
   }
 
-  protected class SortAppsByName implements Comparator<ListItem> {
+  protected static class SortAppsByName implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
       return o1.mName.compareToIgnoreCase(o2.mName);
     }
   }
 
-  protected class SortAppsByUid implements Comparator<ListItem> {
+  protected static class SortAppsByUid implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
       return o1.mUid < o2.mUid ? -1 : (o1.mUid == o2.mUid) ? 0 : 1;
     }
@@ -91,7 +92,7 @@ public class AppView extends Activity implements IptablesLogListener
     }
 
     Collections.sort(listData, new SortAppsByUid());
-    sortBy = Sort.UID;
+    sortBy = Sort.BYTES;
   }
 
   @Override
@@ -109,6 +110,9 @@ public class AppView extends Activity implements IptablesLogListener
 
   @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+      /* todo can we remove this hack? */
+      listData.add(0, null);
+      listData.remove(0);
       switch(item.getItemId()) {
         case R.id.sort_by_uid:
           sortBy = Sort.UID;
@@ -146,6 +150,8 @@ public class AppView extends Activity implements IptablesLogListener
     {
       super.onCreate(savedInstanceState);
 
+      Log.d("IptablesLog", "AppView created");
+
       LinearLayout layout = new LinearLayout(this);
       layout.setOrientation(LinearLayout.VERTICAL);
 
@@ -171,7 +177,14 @@ public class AppView extends Activity implements IptablesLogListener
       IptablesLogTracker.addListener(this);
     }
 
+  public static void restoreData(IptablesLogData data) {
+    listData = data.appViewListData;
+    sortBy = data.appViewSortBy;
+  }
+
   public void onNewLogEntry(IptablesLogTracker.LogEntry entry) {
+    Log.d("IptablesLog", "AppView: NewLogEntry: " + entry.uid + " " + entry.src + " " + entry.len);
+
     for(ListItem item : listData) {
       if(item.mUid == Integer.parseInt(entry.uid)) {
         item.totalPackets = entry.packets;
@@ -185,13 +198,21 @@ public class AppView extends Activity implements IptablesLogListener
           item.uniqueHosts.remove(0);
         }
 
-        if(!entry.src.equals(IptablesLogTracker.localIpAddr) && !item.uniqueHosts.contains(src))
+        boolean needs_sort = false;
+
+        if(!entry.src.equals(IptablesLogTracker.localIpAddr) && !item.uniqueHosts.contains(src)) {
           item.uniqueHosts.add(src);
+          needs_sort = true;
+        }
 
-        if(!entry.dst.equals(IptablesLogTracker.localIpAddr) && !item.uniqueHosts.contains(dst))
+        if(!entry.dst.equals(IptablesLogTracker.localIpAddr) && !item.uniqueHosts.contains(dst)) {
           item.uniqueHosts.add(dst);
+          needs_sort = true;
+        }
 
-        Collections.sort(item.uniqueHosts);
+        if(needs_sort) {
+          Collections.sort(item.uniqueHosts);
+        }
       }
     }
 

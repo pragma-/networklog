@@ -19,6 +19,11 @@ public class ApplicationsTracker {
     int uid;
   }
 
+  public static void restoreData(IptablesLogData data) {
+    installedApps = data.applicationsTrackerInstalledApps;
+    installedAppsHash = data.applicationsTrackerInstalledAppsHash;
+  }
+
   public static void getInstalledApps(Context context) {
     installedApps.clear();
 
@@ -47,6 +52,25 @@ public class ApplicationsTracker {
       } else {
         installedAppsHash.put(sUid, entry);
       } 
+    }
+
+    AppEntry entry = new AppEntry();
+    entry.name = "Unspecified";
+    entry.icon = null;
+    entry.uid = -1;
+
+    installedApps.add(entry);
+    installedAppsHash.put("-1", entry);
+
+    AppEntry entryHash = installedAppsHash.get("0");
+    if(entryHash == null) {
+      entry = new AppEntry();
+      entry.name = "Root";
+      entry.icon = null;
+      entry.uid = 0;
+
+      installedApps.add(entry);
+      installedAppsHash.put("0", entry);
     }
   }
 }
