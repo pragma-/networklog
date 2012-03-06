@@ -38,7 +38,7 @@ public class Iptables {
 
       script.flush();
       script.close();
-    } catch (java.io.IOException e) { Log.d("IptablesLog", e.toString(), e); }
+    } catch (java.io.IOException e) { Log.d("IptablesLog", "addRules error", e); }
 
     new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }, "addRules").start(true);
     return true;
@@ -65,13 +65,13 @@ public class Iptables {
 
         script.flush();
         script.close();
-      } catch (java.io.IOException e) { Log.d("IptablesLog", e.toString(), e); } 
+      } catch (java.io.IOException e) { Log.d("IptablesLog", "removeRules error", e); } 
 
       new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }, "removeRules").start(true);
 
       tries++;
       if(tries > 3) {
-        Log.d("IptablesLog", "Too many attempts to remove rules, moving along...");
+        MyLog.d("IptablesLog", "Too many attempts to remove rules, moving along...");
         return false;
       }
     }
@@ -84,25 +84,19 @@ public class Iptables {
       script.println("iptables -L");
       script.flush();
       script.close();
-    } catch (java.io.IOException e) { Log.d("IptablesLog", e.toString(), e); } 
+    } catch (java.io.IOException e) { Log.d("IptablesLog", "checkRules error", e); } 
 
     ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }, "checkRules");
     command.start(false);
     String result = "";
     while(!command.checkForExit()) {
-      /*
-      if(command.stdoutAvailable())
-        result += command.readStdout();
-      else
-        try { Thread.sleep(100); } catch (Exception e) { Log.d("IptablesLog", e.toString(), e); }
-        */
       result += command.readStdoutBlocking();
     }
 
     if(result == null)
       return true;
 
-    Log.d("IptablesLog", "checkRules result: [" + result + "]");
+    MyLog.d("IptablesLog", "checkRules result: [" + result + "]");
 
     return result.indexOf("[IptablesLogEntry]", 0) == -1 ? false : true;
   }

@@ -19,14 +19,11 @@ public class IptablesLog extends TabActivity
 
       final IptablesLogData data = (IptablesLogData) getLastNonConfigurationInstance(); 
       if (data == null) {
-        Log.d("IptablesLog", "Fresh run");
+        MyLog.d("IptablesLog", "Fresh run");
         ApplicationsTracker.getInstalledApps(this);
       } else {
-        Log.d("IptablesLog", "Restored run");
+        MyLog.d("IptablesLog", "Restored run");
         ApplicationsTracker.restoreData(data);
-        LogView.restoreData(data);
-        AppView.restoreData(data);
-        IptablesLogTracker.restoreData(data);
       }
 
       Resources res = getResources();
@@ -48,21 +45,32 @@ public class IptablesLog extends TabActivity
       tabHost.setCurrentTab(1);
       tabHost.setCurrentTab(0);
 
+      if(data != null) {
+        MyLog.d("IptablesLog", "Restoring data");
+        MyLog.d("IptablesLog", "apptracker data: " + data.applicationsTrackerInstalledApps.size());
+        MyLog.d("IptablesLog", "appview data: " + data.appViewListData.size());
+        LogView.restoreData(data);
+        AppView.restoreData(data);
+        IptablesLogTracker.restoreData(data);
+
+        AppView.updateAdapter();
+      }
+
       IptablesLogTracker.start(data != null);
-      Log.d("IptablesLog", "hi thar");
     }
 
   @Override
     public void onDestroy()
     {
       super.onDestroy();
-      Log.d("IptablesLog", "onDestroy called");
+      MyLog.d("IptablesLog", "onDestroy called");
       Iptables.removeRules();
+      IptablesLogTracker.stop();
     }
 
   @Override
     public Object onRetainNonConfigurationInstance() {
-      Log.d("IptablesLog", "Saving run");
+      MyLog.d("IptablesLog", "Saving run");
       final IptablesLogData data = new IptablesLogData();
       return data;
     }

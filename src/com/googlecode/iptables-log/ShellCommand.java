@@ -26,7 +26,7 @@ public class ShellCommand {
   }
 
   public void start(boolean waitForExit) {
-    Log.d("IptablesLog", "ShellCommand: starting [" + tag + "] " + Arrays.toString(command));
+    MyLog.d("IptablesLog", "ShellCommand: starting [" + tag + "] " + Arrays.toString(command));
     try {
       process = new ProcessBuilder()
         .command(command)
@@ -34,20 +34,8 @@ public class ShellCommand {
         .start();
 
       stdout = process.getInputStream();
-      /*
-      process = rt.exec(command);
-      stdout = process.getInputStream();
-
-      Thread onShutdown = new  Thread() {
-        public void run() {
-          Log.d("IptablesLog", "shutdown hook finishing [" + tag + "]");
-          finish();
-        }
-      };
-      rt.addShutdownHook(onShutdown);
-    */
     } catch(Exception e) {
-      Log.d("IptablesLog", e.toString(), e);
+      Log.d("IptablesLog", "Failure starting shell command [" + tag + "]", e);
       return;
     }
 
@@ -61,12 +49,12 @@ public class ShellCommand {
       if(stdoutAvailable())
         readStdout();
       else 
-        try { Thread.sleep(100); } catch (Exception e) { Log.d("IptablesLog", e.toString(), e); }
+        try { Thread.sleep(100); } catch (Exception e) { Log.d("IptablesLog", "waitForExit error", e); }
     }
   }
 
   public void finish() {
-    Log.d("IptablesLog", "ShellCommand: finishing [" + tag + "] " + Arrays.toString(command));
+    MyLog.d("IptablesLog", "ShellCommand: finishing [" + tag + "] " + Arrays.toString(command));
     process.destroy();
     process = null;
   }
@@ -74,7 +62,7 @@ public class ShellCommand {
   public boolean checkForExit() {
     try {
       int exit = process.exitValue();
-      Log.d("IptablesLog", "ShellCommand exited: [" + tag + "] exit " + exit);
+      MyLog.d("IptablesLog", "ShellCommand exited: [" + tag + "] exit " + exit);
     } catch(Exception IllegalThreadStateException) {
       return false;
     }
@@ -85,63 +73,71 @@ public class ShellCommand {
 
   public boolean stdoutAvailable() {
     try {
-      Log.d("IptablesLog", "stdoutAvailable [" + tag + "]: " + stdout.available());
+      MyLog.d("IptablesLog", "stdoutAvailable [" + tag + "]: " + stdout.available());
       return stdout.available() > 0;
-    } catch (java.io.IOException e) { Log.d("IptablesLog", e.toString(), e); return false; }
+    } catch (java.io.IOException e) { Log.d("IptablesLog", "stdoutAvailable error", e); return false; }
   }
 
   public String readStdoutBlocking() {
     byte[] buf = new byte[8192];
     int read;
 
-    Log.d("IptablesLog", "readStdoutBlocking [" + tag + "]");
+    String result = "";
 
-    try {
-      read = stdout.read(buf);
+    MyLog.d("IptablesLog", "readStdoutBlocking [" + tag + "]");
 
-      if(read < 0) {
-        Log.d("IptablesLog", "readStdoutBlocking [" + tag + "] return null");
-        return null;
+    while(true) {
+      try {
+        read = stdout.read(buf);
+
+        if(read < 0) {
+          MyLog.d("IptablesLog", "readStdoutBlocking [" + tag + "] return null");
+          return null;
+        }
+
+        MyLog.d("IptablesLog", "read returned " + read);
+
+        result += new String(buf, 0, read);
+        if(!stdoutAvailable())
+          break;
+      } catch (Exception e) {
+        Log.d("IptablesLog", "readStdoutBlocking error", e);
+        return "ERROR\n";
       }
-
-      String result = new String(buf, 0, read);
-      Log.d("IptablesLog", "readStdoutBlocking [" + tag + "] return [" + result + "]");
-      return result;
-    } catch (Exception e) {
-      Log.d("IptablesLog", e.toString(), e);
-      return "ERROR\n";
     }
+
+    MyLog.d("IptablesLog", "readStdoutBlocking [" + tag + "] return [" + result + "]");
+    return result;
   }
 
   public String readStdout() {
     byte[] buf = new byte[8192];
     int read;
 
-    Log.d("IptablesLog", "readStdout [" + tag + "]");
+    MyLog.d("IptablesLog", "readStdout [" + tag + "]");
 
     try {
       int available;
       String result = new String();
 
       while((available = stdout.available()) > 0) {
-        Log.d("IptablesLog", "stdout available: " + available);
+        MyLog.d("IptablesLog", "stdout available: " + available);
 
         read = stdout.read(buf);
 
-        Log.d("IptablesLog", "read returned " + read);
+        MyLog.d("IptablesLog", "read returned " + read);
 
         if(read < 0) {
-          Log.d("IptablesLog", "readStdout return null");
+          MyLog.d("IptablesLog", "readStdout return null");
           return null;
         }
 
         result += new String(buf, 0, read);
       }
-      Log.d("IptablesLog", "readStdout return [" + result + "]");
+      MyLog.d("IptablesLog", "readStdout return [" + result + "]");
       return result;
     } catch(Exception e) {
-      Log.d("IptablesLog", "error readStdout");
-      Log.d("IptablesLog", e.toString(), e);
+      Log.d("IptablesLog", "readStdout error", e);
       return "ERROR\n";
     }
   }

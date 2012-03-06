@@ -27,9 +27,8 @@ import java.util.Iterator;
 public class AppView extends Activity implements IptablesLogListener
 {
   public static ArrayList<ListItem> listData;
-  private CustomAdapter adapter;
+  private static CustomAdapter adapter;
   public enum Sort { UID, NAME, PACKETS, BYTES, TIMESTAMP }; 
-  //public static Sort sortBy = Sort.UID;
   public static Sort sortBy = Sort.BYTES;
 
   public class ListItem {
@@ -102,7 +101,8 @@ public class AppView extends Activity implements IptablesLogListener
       return true;
     }
 
-  public void updateAdapter() {
+  public static void updateAdapter() {
+    /* todo can we remove this hack? */
     listData.add(0, null);
     listData.remove(0);
     adapter.notifyDataSetChanged();
@@ -150,7 +150,7 @@ public class AppView extends Activity implements IptablesLogListener
     {
       super.onCreate(savedInstanceState);
 
-      Log.d("IptablesLog", "AppView created");
+      MyLog.d("IptablesLog", "AppView created");
 
       LinearLayout layout = new LinearLayout(this);
       layout.setOrientation(LinearLayout.VERTICAL);
@@ -183,7 +183,7 @@ public class AppView extends Activity implements IptablesLogListener
   }
 
   public void onNewLogEntry(IptablesLogTracker.LogEntry entry) {
-    Log.d("IptablesLog", "AppView: NewLogEntry: " + entry.uid + " " + entry.src + " " + entry.len);
+    MyLog.d("IptablesLog", "AppView: NewLogEntry: " + entry.uid + " " + entry.src + " " + entry.len);
 
     for(ListItem item : listData) {
       if(item.mUid == Integer.parseInt(entry.uid)) {
