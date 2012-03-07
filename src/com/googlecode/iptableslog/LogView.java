@@ -79,7 +79,12 @@ public class LogView extends Activity implements IptablesLogListener
 
       layout.addView(tv);
 
-      listData = new ArrayList<ListItem>();
+      if(IptablesLog.data == null) {
+        listData = new ArrayList<ListItem>();
+      } else {
+        restoreData(IptablesLog.data);
+      }
+
       adapter = new CustomAdapter(this, R.layout.logitem, listData);
 
       listView = new ListView(this);
@@ -93,7 +98,7 @@ public class LogView extends Activity implements IptablesLogListener
       IptablesLogTracker.addListener(this);
     }
 
-  public static void restoreData(IptablesLogData data) {
+  public void restoreData(IptablesLogData data) {
     listData = data.logViewListData;
   }
 

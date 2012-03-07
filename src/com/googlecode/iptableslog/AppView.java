@@ -32,19 +32,11 @@ public class AppView extends Activity implements IptablesLogListener
   public static Sort sortBy = Sort.BYTES;
 
   public class ListItem {
-    protected Drawable mIcon;
-    protected int mUid;
-    protected String mName;
+    protected ApplicationsTracker.AppEntry app;
     protected int totalPackets;
     protected int totalBytes;
     protected String lastTimestamp;
     protected ArrayList<String> uniqueHosts;
-
-    ListItem(Drawable icon, int uid, String name) {
-      mIcon = icon;
-      mUid = uid;
-      mName = name;
-    }
   }
 
   protected static class SortAppsByBytes implements Comparator<ListItem> {
@@ -67,13 +59,13 @@ public class AppView extends Activity implements IptablesLogListener
 
   protected static class SortAppsByName implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
-      return o1.mName.compareToIgnoreCase(o2.mName);
+      return o1.app.name.compareToIgnoreCase(o2.app.name);
     }
   }
 
   protected static class SortAppsByUid implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
-      return o1.mUid < o2.mUid ? -1 : (o1.mUid == o2.mUid) ? 0 : 1;
+      return o1.app.uid < o2.app.uid ? -1 : (o1.app.uid == o2.app.uid) ? 0 : 1;
     }
   }
 
@@ -105,27 +97,17 @@ public class AppView extends Activity implements IptablesLogListener
   }
 
   protected void getInstalledApps() {
-    if(IptablesLog.data == null) {
-      for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps) {
-        String name = app.name;
-        Drawable icon = app.icon;
-        int uid = app.uid;
-
-        ListItem item = new ListItem(icon, uid, name);
-        item.lastTimestamp = "N/A";
-        item.uniqueHosts = new ArrayList<String>();
-        item.uniqueHosts.add(0, "N/A");
-        listData.add(item);
-      }
-
-      Collections.sort(listData, new SortAppsByUid());
-      sortBy = Sort.BYTES;
-    } else {
-      listData = IptablesLog.data.appViewListData;
-      sortBy = IptablesLog.data.appViewSortBy;
-      Collections.sort(listData, new SortAppsByUid());
-      sortData();
+    for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps) {
+      ListItem item = new ListItem();
+      item.app = app;
+      item.lastTimestamp = "N/A";
+      item.uniqueHosts = new ArrayList<String>();
+      item.uniqueHosts.add(0, "N/A");
+      listData.add(item);
     }
+
+    Collections.sort(listData, new SortAppsByUid());
+    sortBy = Sort.BYTES;
   }
 
   @Override
@@ -188,24 +170,44 @@ public class AppView extends Activity implements IptablesLogListener
 
       layout.addView(tv);
 
-      listData = new ArrayList<ListItem>();
+      if(IptablesLog.data == null) {
+        listData = new ArrayList<ListItem>();
+        getInstalledApps();
+      } else {
+        restoreData(IptablesLog.data);
+      }
+
       adapter = new CustomAdapter(this, R.layout.appitem, listData);
 
       ListView lv = new ListView(this);
       lv.setTextFilterEnabled(true);
       lv.setAdapter(adapter);
-
       layout.addView(lv);
-
       setContentView(layout);
 
-      getInstalledApps();
-      adapter.notifyDataSetChanged();
+      if(IptablesLog.data == null) {
+        new Thread() {
+          public void run() {
+            int count = adapter.getCount();
+            for(int i = 0; i < count; i++) {
+              ListItem item = adapter.getItem(i);
+              try {
+                Drawable icon = getPackageManager().getApplicationIcon(item.app.packageName);
+                item.app.icon = icon;
+                View view = adapter.getView(i, null, null);
+                ((ImageView) view.findViewById(R.id.appIcon)).setImageDrawable(icon);
+              } catch (Exception e) {
+                Log.d("IptablesLog", "Failure to load icon for " + item.app.packageName + " (" + item.app.name + ", " + item.app.uid + ")", e);
+              }
+            }
+          }
+        }.start();
+      }
 
       IptablesLogTracker.addListener(this);
     }
 
-  public static void restoreData(IptablesLogData data) {
+  public void restoreData(IptablesLogData data) {
     listData = data.appViewListData;
     sortBy = data.appViewSortBy;
   }
@@ -214,7 +216,7 @@ public class AppView extends Activity implements IptablesLogListener
     MyLog.d("AppView: NewLogEntry: " + entry.uid + " " + entry.src + " " + entry.len);
 
     for(ListItem item : listData) {
-      if(item.mUid == Integer.parseInt(entry.uid)) {
+      if(item.app.uid == Integer.parseInt(entry.uid)) {
         item.totalPackets = entry.packets;
         item.totalBytes = entry.bytes;
         item.lastTimestamp = entry.timestamp;
@@ -286,10 +288,10 @@ public class AppView extends Activity implements IptablesLogListener
 
         holder = (ViewHolder) convertView.getTag();
         icon = holder.getIcon();
-        icon.setImageDrawable(item.mIcon);
+        icon.setImageDrawable(item.app.icon);
 
         name = holder.getName();
-        name.setText("(" + item.mUid + ")" + " " + item.mName);
+        name.setText("(" + item.app.uid + ")" + " " + item.app.name);
 
         packets = holder.getPackets();
         packets.setText("Packets: " + item.totalPackets);

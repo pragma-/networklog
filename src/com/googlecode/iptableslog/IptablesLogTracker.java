@@ -209,27 +209,29 @@ public class IptablesLogTracker {
   }
 
   public static void start(final boolean resumed) {
+    localIpAddr = getLocalIpAddress();
+
+    if(!resumed) {
+      MyLog.d("adding logging rules");
+      Iptables.addRules();
+
+      try {
+        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
+        script.println("grep IptablesLogEntry /proc/kmsg");
+        script.close();
+      } catch (java.io.IOException e) { e.printStackTrace(); }
+
+      MyLog.d("Starting iptables log tracker");
+
+      command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "IptablesLogTracker");
+      command.start(false);
+    } else {
+      MyLog.d("Resuming iptables log tracker");
+      command = IptablesLog.data.iptablesLogTrackerCommand;
+    }
+
     Thread mainLoop = new Thread() {
       public void run() {
-        if(!resumed) {
-          MyLog.d("adding logging rules");
-          Iptables.addRules();
-        }
-
-        localIpAddr = getLocalIpAddress();
-
-        try {
-          PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
-          script.println("grep IptablesLogEntry /proc/kmsg");
-          script.close();
-        } catch (java.io.IOException e) { e.printStackTrace(); }
-
-        MyLog.d("Starting iptables log tracker");
-
-        if(!resumed) {
-          command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "IptablesLogTracker");
-          command.start(false);
-        }
 
         String result;
         while(command.checkForExit() == false) {
@@ -238,7 +240,6 @@ public class IptablesLogTracker {
           if(result == null) {
             MyLog.d("result == null");
             Iptables.removeRules();
-            stop();
             System.exit(0);
           }
 
@@ -246,7 +247,6 @@ public class IptablesLogTracker {
           parseResult(result);
         }
         Iptables.removeRules();
-        stop();
         System.exit(0);
       }
     };

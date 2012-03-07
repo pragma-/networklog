@@ -55,17 +55,6 @@ public class IptablesLog extends TabActivity
       // display LogView tab by default
       tabHost.setCurrentTab(0);
 
-      if(data != null) {
-        MyLog.d("Restoring data");
-        MyLog.d("apptracker data: " + data.applicationsTrackerInstalledApps.size());
-        MyLog.d("appview data: " + data.appViewListData.size());
-        LogView.restoreData(data);
-        AppView.restoreData(data);
-        IptablesLogTracker.restoreData(data);
-
-        AppView.updateAdapter();
-      }
-      
       IptablesLogTracker.start(data != null);
 
       // all data should be restored at this point, release the object
