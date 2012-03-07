@@ -77,21 +77,55 @@ public class AppView extends Activity implements IptablesLogListener
     }
   }
 
-  protected void getInstalledApps() {
-    for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps) {
-      String name = app.name;
-      Drawable icon = app.icon;
-      int uid = app.uid;
+  protected void sortData() {
+    Comparator<ListItem> sortMethod;
 
-      ListItem item = new ListItem(icon, uid, name);
-      item.lastTimestamp = "N/A";
-      item.uniqueHosts = new ArrayList<String>();
-      item.uniqueHosts.add(0, "N/A");
-      listData.add(item);
+    switch(sortBy) {
+      case UID:
+        sortMethod = new SortAppsByUid();
+        break;
+      case NAME:
+        sortMethod = new SortAppsByName();
+        break;
+      case PACKETS:
+        sortMethod = new SortAppsByPackets();
+        break;
+      case BYTES:
+        sortMethod = new SortAppsByBytes();
+        break;
+      case TIMESTAMP:
+        sortMethod = new SortAppsByTimestamp();
+        break;
+      default:
+        return;
     }
 
-    Collections.sort(listData, new SortAppsByUid());
-    sortBy = Sort.BYTES;
+    Collections.sort(listData, sortMethod);
+    updateAdapter();
+  }
+
+  protected void getInstalledApps() {
+    if(IptablesLog.data == null) {
+      for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps) {
+        String name = app.name;
+        Drawable icon = app.icon;
+        int uid = app.uid;
+
+        ListItem item = new ListItem(icon, uid, name);
+        item.lastTimestamp = "N/A";
+        item.uniqueHosts = new ArrayList<String>();
+        item.uniqueHosts.add(0, "N/A");
+        listData.add(item);
+      }
+
+      Collections.sort(listData, new SortAppsByUid());
+      sortBy = Sort.BYTES;
+    } else {
+      listData = IptablesLog.data.appViewListData;
+      sortBy = IptablesLog.data.appViewSortBy;
+      Collections.sort(listData, new SortAppsByUid());
+      sortData();
+    }
   }
 
   @Override
@@ -113,35 +147,29 @@ public class AppView extends Activity implements IptablesLogListener
       /* todo can we remove this hack? */
       listData.add(0, null);
       listData.remove(0);
+
       switch(item.getItemId()) {
         case R.id.sort_by_uid:
           sortBy = Sort.UID;
-          Collections.sort(listData, new SortAppsByUid());
-          updateAdapter();
-          return true;
+          break;
         case R.id.sort_by_name:
           sortBy = Sort.NAME;
-          Collections.sort(listData, new SortAppsByName());
-          updateAdapter();
-          return true;
+          break;
         case R.id.sort_by_packets:
           sortBy = Sort.PACKETS;
-          Collections.sort(listData, new SortAppsByPackets());
-          updateAdapter();
-          return true;
+          break;
         case R.id.sort_by_bytes:
           sortBy = Sort.BYTES;
-          Collections.sort(listData, new SortAppsByBytes());
-          updateAdapter();
-          return true;
+          break;
         case R.id.sort_by_timestamp:
           sortBy = Sort.TIMESTAMP;
-          Collections.sort(listData, new SortAppsByTimestamp());
-          updateAdapter();
-          return true;
+          break;
         default:
           return super.onOptionsItemSelected(item);
       }
+
+      sortData();
+      return true;
     }
 
   /** Called when the activity is first created. */
@@ -150,7 +178,7 @@ public class AppView extends Activity implements IptablesLogListener
     {
       super.onCreate(savedInstanceState);
 
-      MyLog.d("IptablesLog", "AppView created");
+      MyLog.d("AppView created");
 
       LinearLayout layout = new LinearLayout(this);
       layout.setOrientation(LinearLayout.VERTICAL);
@@ -183,7 +211,7 @@ public class AppView extends Activity implements IptablesLogListener
   }
 
   public void onNewLogEntry(IptablesLogTracker.LogEntry entry) {
-    MyLog.d("IptablesLog", "AppView: NewLogEntry: " + entry.uid + " " + entry.src + " " + entry.len);
+    MyLog.d("AppView: NewLogEntry: " + entry.uid + " " + entry.src + " " + entry.len);
 
     for(ListItem item : listData) {
       if(item.mUid == Integer.parseInt(entry.uid)) {

@@ -10,6 +10,8 @@ import android.util.Log;
 
 public class IptablesLog extends TabActivity
 {
+  public static IptablesLogData data = null;
+
   /** Called when the activity is first created. */
   @Override
     public void onCreate(Bundle savedInstanceState)
@@ -17,12 +19,13 @@ public class IptablesLog extends TabActivity
       super.onCreate(savedInstanceState);
       setContentView(R.layout.main);
 
-      final IptablesLogData data = (IptablesLogData) getLastNonConfigurationInstance(); 
+      data = (IptablesLogData) getLastNonConfigurationInstance(); 
+      
       if (data == null) {
-        MyLog.d("IptablesLog", "Fresh run");
+        MyLog.d("Fresh run");
         ApplicationsTracker.getInstalledApps(this);
       } else {
-        MyLog.d("IptablesLog", "Restored run");
+        MyLog.d("Restored run");
         ApplicationsTracker.restoreData(data);
       }
 
@@ -46,9 +49,9 @@ public class IptablesLog extends TabActivity
       tabHost.setCurrentTab(0);
 
       if(data != null) {
-        MyLog.d("IptablesLog", "Restoring data");
-        MyLog.d("IptablesLog", "apptracker data: " + data.applicationsTrackerInstalledApps.size());
-        MyLog.d("IptablesLog", "appview data: " + data.appViewListData.size());
+        MyLog.d("Restoring data");
+        MyLog.d("apptracker data: " + data.applicationsTrackerInstalledApps.size());
+        MyLog.d("appview data: " + data.appViewListData.size());
         LogView.restoreData(data);
         AppView.restoreData(data);
         IptablesLogTracker.restoreData(data);
@@ -56,22 +59,32 @@ public class IptablesLog extends TabActivity
         AppView.updateAdapter();
       }
 
+      
       IptablesLogTracker.start(data != null);
+
+      // all data should be restored at this point, release the object
+      data = null;
+      MyLog.d("data object released");
     }
 
   @Override
     public void onDestroy()
     {
       super.onDestroy();
-      MyLog.d("IptablesLog", "onDestroy called");
-      Iptables.removeRules();
-      IptablesLogTracker.stop();
+      MyLog.d("onDestroy called");
+      if(data == null) {
+        MyLog.d("Shutting down rules and logger");
+        Iptables.removeRules();
+        IptablesLogTracker.stop();
+      } else {
+        MyLog.d("Found data, not shutting down rules and logger");
+      }
     }
 
   @Override
     public Object onRetainNonConfigurationInstance() {
-      MyLog.d("IptablesLog", "Saving run");
-      final IptablesLogData data = new IptablesLogData();
+      MyLog.d("Saving run");
+      data = new IptablesLogData();
       return data;
     }
 }

@@ -71,7 +71,7 @@ public class Iptables {
 
       tries++;
       if(tries > 3) {
-        MyLog.d("IptablesLog", "Too many attempts to remove rules, moving along...");
+        MyLog.d("Too many attempts to remove rules, moving along...");
         return false;
       }
     }
@@ -96,7 +96,7 @@ public class Iptables {
     if(result == null)
       return true;
 
-    MyLog.d("IptablesLog", "checkRules result: [" + result + "]");
+    MyLog.d("checkRules result: [" + result + "]");
 
     return result.indexOf("[IptablesLogEntry]", 0) == -1 ? false : true;
   }

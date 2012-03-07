@@ -42,16 +42,16 @@ public class IptablesLogTracker {
   }
 
   public static String getLocalIpAddress() {
-    MyLog.d("IptablesLog", "getLocalIpAddress");
+    MyLog.d("getLocalIpAddress");
     try {
       for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
         NetworkInterface intf = en.nextElement();
-        MyLog.d("IptablesLog", intf.toString());
+        MyLog.d(intf.toString());
         for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
           InetAddress inetAddress = enumIpAddr.nextElement();
-          MyLog.d("IptablesLog", inetAddress.toString());
+          MyLog.d(inetAddress.toString());
           if (!inetAddress.isLoopbackAddress()) {
-            MyLog.d("IptablesLog", inetAddress.getHostAddress().toString());
+            MyLog.d(inetAddress.getHostAddress().toString());
             return inetAddress.getHostAddress().toString();
           }
         }
@@ -64,14 +64,14 @@ public class IptablesLogTracker {
 
   // FIXME: Needs buffering of incomplete logs
   public static void parseResult(String result) {
-    MyLog.d("IptablesLog", "parsing result");
+    MyLog.d("parsing result");
     int pos = 0; 
     String src, dst, len, spt, dpt, uid;
 
     while((pos = result.indexOf("[IptablesLogEntry]", pos)) > -1) {
       int newline = result.indexOf("\n", pos);
 
-      MyLog.d("IptablesLog", "got [IptablesLogEntry] at " + pos);
+      MyLog.d("got [IptablesLogEntry] at " + pos);
 
       pos = result.indexOf("SRC=", pos);
       if(pos == -1) break;
@@ -127,7 +127,7 @@ public class IptablesLogTracker {
       logEntriesHash.put(uid, entry);
       logEntriesList.add(entry);
 
-      MyLog.d("IptablesLog", "entry uid: " + entry.uid + " " + entry.src + " " + entry.spt + " " + entry.dst + " " + entry.dpt + " " + entry.len + " " + entry.bytes + " " + entry.timestamp);
+      MyLog.d("entry uid: " + entry.uid + " " + entry.src + " " + entry.spt + " " + entry.dst + " " + entry.dpt + " " + entry.len + " " + entry.bytes + " " + entry.timestamp);
 
       notifyNewEntry(entry);
     }
@@ -167,7 +167,7 @@ public class IptablesLogTracker {
     int iptableslog_pid = -1;
 
     for(String line : result.split("\n")) {
-      MyLog.d("IptablesLog", "ps - parsing line [" + line + "]");
+      MyLog.d("ps - parsing line [" + line + "]");
       String tokens[] = line.split("\\s+");
       String cmd = tokens[tokens.length - 1];
       int pid, ppid;
@@ -180,20 +180,20 @@ public class IptablesLogTracker {
         continue;
       }
 
-      MyLog.d("IptablesLog", "cmd: " + cmd + "; pid: " + pid + "; ppid: " + ppid);
+      MyLog.d("cmd: " + cmd + "; pid: " + pid + "; ppid: " + ppid);
 
       if(cmd.equals("com.googlecode.iptableslog")) {
         iptableslog_pid = pid;
-        MyLog.d("IptablesLog", "IptablesLog pid: " + iptableslog_pid);
+        MyLog.d("IptablesLog pid: " + iptableslog_pid);
         continue;
       }
 
       if(ppid == iptableslog_pid) {
-        MyLog.d("IptablesLog", cmd + " is our child");
+        MyLog.d(cmd + " is our child");
         iptableslog_pid = pid;
 
         if(cmd.equals("grep")) {
-          MyLog.d("IptablesLog", "Killing tracker " + pid);
+          MyLog.d("Killing tracker " + pid);
 
           try {
             PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
@@ -212,7 +212,7 @@ public class IptablesLogTracker {
     Thread mainLoop = new Thread() {
       public void run() {
         if(!resumed) {
-          MyLog.d("IptablesLog", "adding logging rules");
+          MyLog.d("adding logging rules");
           Iptables.addRules();
         }
 
@@ -224,7 +224,7 @@ public class IptablesLogTracker {
           script.close();
         } catch (java.io.IOException e) { e.printStackTrace(); }
 
-        MyLog.d("IptablesLog", "Starting iptables log tracker");
+        MyLog.d("Starting iptables log tracker");
 
         if(!resumed) {
           command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "IptablesLogTracker");
@@ -233,16 +233,16 @@ public class IptablesLogTracker {
 
         String result;
         while(command.checkForExit() == false) {
-          MyLog.d("IptablesLog", "checking stdout");
+          MyLog.d("checking stdout");
           result = command.readStdoutBlocking();
           if(result == null) {
-            MyLog.d("IptablesLog", "result == null");
+            MyLog.d("result == null");
             Iptables.removeRules();
             stop();
             System.exit(0);
           }
 
-          MyLog.d("IptablesLog", "result == [" + result + "]");
+          MyLog.d("result == [" + result + "]");
           parseResult(result);
         }
         Iptables.removeRules();

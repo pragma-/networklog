@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 public class ApplicationsTracker {
-  public static ArrayList<AppEntry> installedApps = new ArrayList<AppEntry>();
-  public static Hashtable<String, AppEntry> installedAppsHash = new Hashtable<String, AppEntry>();
+  public static ArrayList<AppEntry> installedApps;
+  public static Hashtable<String, AppEntry> installedAppsHash;
 
   public static class AppEntry {
     String name;
@@ -25,7 +25,8 @@ public class ApplicationsTracker {
   }
 
   public static void getInstalledApps(Context context) {
-    installedApps.clear();
+    installedApps = new ArrayList<AppEntry>();
+    installedAppsHash = new Hashtable<String, AppEntry>();
 
     List<ApplicationInfo> apps = new ArrayList<ApplicationInfo>();
     PackageManager pm = context.getPackageManager();

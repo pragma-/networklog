@@ -69,7 +69,7 @@ public class LogView extends Activity implements IptablesLogListener
     {
       super.onCreate(savedInstanceState);
 
-      MyLog.d("IptablesLog", "LogView created");
+      MyLog.d("LogView created");
 
       LinearLayout layout = new LinearLayout(this);
       layout.setOrientation(LinearLayout.VERTICAL);
@@ -101,7 +101,7 @@ public class LogView extends Activity implements IptablesLogListener
     ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.installedAppsHash.get(entry.uid);
 
     if(appEntry == null) {
-      MyLog.d("IptablesLog", "LogView: No appEntry for uid " + entry.uid);
+      MyLog.d("LogView: No appEntry for uid " + entry.uid);
       return;
     }
 
@@ -116,7 +116,7 @@ public class LogView extends Activity implements IptablesLogListener
 
     runOnUiThread(new Runnable() {
       public void run() {
-        MyLog.d("IptablesLog", "LogView: Add item: " + item.srcAddr + " " + item.srcPort + " " + item.dstAddr + " " + item.dstPort + " " + item.len);
+        MyLog.d("LogView: Add item: " + item.srcAddr + " " + item.srcPort + " " + item.dstAddr + " " + item.dstPort + " " + item.len);
 
         listData.add(item);
 
