@@ -31,7 +31,7 @@ public class ApplicationsTracker {
     installedAppsHash = new Hashtable<String, AppEntry>();
 
     List<ApplicationInfo> apps = new ArrayList<ApplicationInfo>();
-    final PackageManager pm = context.getPackageManager();
+    PackageManager pm = context.getPackageManager();
 
     apps = pm.getInstalledApplications(0);
 
