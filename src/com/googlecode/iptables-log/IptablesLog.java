@@ -44,8 +44,15 @@ public class IptablesLog extends TabActivity
           res.getDrawable(R.drawable.tab_appview)).setContent(intent);
       tabHost.addTab(spec);
 
+      // todo: redesign tabs to be views instead of activities
+      //       as this should be less complex and save resources
+
+      // force loading of LogView activity
       tabHost.setCurrentTab(0);
+      // force loading of AppView activity
       tabHost.setCurrentTab(1);
+
+      // display LogView tab by default
       tabHost.setCurrentTab(0);
 
       if(data != null) {
@@ -58,7 +65,6 @@ public class IptablesLog extends TabActivity
 
         AppView.updateAdapter();
       }
-
       
       IptablesLogTracker.start(data != null);
 

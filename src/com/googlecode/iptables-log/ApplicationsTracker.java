@@ -35,7 +35,9 @@ public class ApplicationsTracker {
 
     for(ApplicationInfo app : apps) {
       String name = app.loadLabel(pm).toString();
-      Drawable icon = app.loadIcon(pm);
+      // todo: load icons on background thread
+      // todo: load icons as copies to not leak context
+      Drawable icon = app.loadIcon(pm); // fixme: leaking context
       int uid = app.uid;
       String sUid = Integer.toString(uid);
 
