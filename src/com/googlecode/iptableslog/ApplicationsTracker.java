@@ -58,8 +58,8 @@ public class ApplicationsTracker {
     }
 
     AppEntry entry = new AppEntry();
-    entry.name = "Unspecified";
-    entry.icon = null;
+    entry.name = "Kernel";
+    entry.icon = context.getResources().getDrawable(R.drawable.linux_icon);
     entry.packageName = null;
     entry.uid = -1;
 
@@ -70,7 +70,7 @@ public class ApplicationsTracker {
     if(entryHash == null) {
       entry = new AppEntry();
       entry.name = "Root";
-      entry.icon = null;
+      entry.icon = context.getResources().getDrawable(R.drawable.root_icon);
       entry.packageName = null;
       entry.uid = 0;
 

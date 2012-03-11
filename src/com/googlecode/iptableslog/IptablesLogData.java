@@ -17,18 +17,26 @@ public class IptablesLogData {
 
   /* LogView */
   ArrayList<LogView.ListItem> logViewListData;
+  ArrayList<LogView.ListItem> logViewListDataBuffer;
 
   public void gatherLogViewData() {
     logViewListData = LogView.listData;
+    logViewListDataBuffer = LogView.listDataBuffer;
   }
 
   /* AppView */
   ArrayList<AppView.ListItem> appViewListData;
+  ArrayList<AppView.ListItem> appViewListDataBuffer;
+  boolean appViewListDataBufferIsDirty;
   AppView.Sort appViewSortBy;
+  AppView.ListItem appViewCachedSearchItem;
 
   public void gatherAppViewData() {
     appViewListData = AppView.listData;
+    appViewListDataBuffer = AppView.listDataBuffer;
+    appViewListDataBufferIsDirty = AppView.listDataBufferIsDirty;
     appViewSortBy = AppView.sortBy;
+    appViewCachedSearchItem = AppView.cachedSearchItem;
   }
 
   /* Iptables */

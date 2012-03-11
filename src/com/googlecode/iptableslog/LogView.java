@@ -7,8 +7,11 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Filterable;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
@@ -26,9 +29,10 @@ import java.util.Comparator;
 public class LogView extends Activity implements IptablesLogListener
 {
   protected static ArrayList<ListItem> listData;
+  protected static ArrayList<ListItem> listDataBuffer;
   private ListView listView;
   private CustomAdapter adapter;
-  private int sortBy = 0;
+  private ListViewUpdater updater;
 
   protected class ListItem {
     protected Drawable mIcon;
@@ -46,6 +50,11 @@ public class LogView extends Activity implements IptablesLogListener
       mUid = uid;
       mName = name;
     }
+
+    @Override
+      public String toString() {
+        return mName;
+      }
   }
 
   @Override
@@ -81,6 +90,7 @@ public class LogView extends Activity implements IptablesLogListener
 
       if(IptablesLog.data == null) {
         listData = new ArrayList<ListItem>();
+        listDataBuffer = new ArrayList<ListItem>();
       } else {
         restoreData(IptablesLog.data);
       }
@@ -88,22 +98,29 @@ public class LogView extends Activity implements IptablesLogListener
       adapter = new CustomAdapter(this, R.layout.logitem, listData);
 
       listView = new ListView(this);
-      listView.setTextFilterEnabled(true);
       listView.setAdapter(adapter);
+      listView.setTextFilterEnabled(true);
+      listView.setFastScrollEnabled(true);
+      listView.setSmoothScrollbarEnabled(false);
+      listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
+      listView.setStackFromBottom(true);
 
       layout.addView(listView);
 
       setContentView(layout);
 
+      updater = new ListViewUpdater();
+      new Thread(updater, "LogViewUpdater").start();
       IptablesLogTracker.addListener(this);
     }
 
   public void restoreData(IptablesLogData data) {
     listData = data.logViewListData;
+    listDataBuffer = data.logViewListDataBuffer;
   }
 
-  public void onNewLogEntry(IptablesLogTracker.LogEntry entry) {
-    ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.installedAppsHash.get(entry.uid);
+  public void onNewLogEntry(final IptablesLogTracker.LogEntry entry) {
+    ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.installedAppsHash.get(String.valueOf(entry.uid));
 
     if(appEntry == null) {
       MyLog.d("LogView: No appEntry for uid " + entry.uid);
@@ -119,20 +136,52 @@ public class LogView extends Activity implements IptablesLogListener
     item.len = entry.len;
     item.timestamp = entry.timestamp;
 
-    runOnUiThread(new Runnable() {
+    MyLog.d("LogView: Add item: " + item.srcAddr + " " + item.srcPort + " " + item.dstAddr + " " + item.dstPort + " " + item.len);
+
+    synchronized(listDataBuffer) {
+      listDataBuffer.add(item);
+    }
+  }
+
+  public void stopUpdater() {
+    updater.stop();
+  }
+
+  // todo: this is largely duplicated in AppView -- move to its own file
+  private class ListViewUpdater implements Runnable {
+    boolean running = false;
+    Runnable runner = new Runnable() {
       public void run() {
-        MyLog.d("LogView: Add item: " + item.srcAddr + " " + item.srcPort + " " + item.dstAddr + " " + item.dstPort + " " + item.len);
-
-        listData.add(item);
-
-        while(listData.size() >= 100) {
-          listData.remove(0);
+        MyLog.d("LogViewUpdater enter");
+        int i = 0;
+        synchronized(listDataBuffer) {
+          for(ListItem item : listDataBuffer) {
+            listData.add(item);
+            i++;
+          }
+          listDataBuffer.clear();
         }
-
         adapter.notifyDataSetChanged();
-        listView.smoothScrollToPosition(adapter.getCount());
+        MyLog.d("LogViewUpdater exit: added " + i + " items");
       }
-    });
+    };
+
+    public void stop() {
+      running = false;
+    }
+
+    public void run() {
+      running = true;
+      MyLog.d("Starting LogView updater " + this);
+      while(running) {
+        if(listDataBuffer.size() > 0) {
+          runOnUiThread(runner);
+        }
+        
+        try { Thread.sleep(2500); } catch (Exception e) { Log.d("IptablesLog", "LogViewListUpdater", e); }
+      }
+      MyLog.d("Stopped LogView updater " + this);
+    }
   }
 
   private class CustomAdapter extends ArrayAdapter<ListItem> {

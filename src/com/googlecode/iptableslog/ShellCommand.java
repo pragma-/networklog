@@ -14,6 +14,9 @@ public class ShellCommand {
   String tag = "";
   Process process;
   InputStream stdout;
+  byte[] buf = new byte[8192 * 2];
+  char[] charbuf = new char[8192 * 2];
+  StringBuilder result = new StringBuilder(8192 * 2);
 
   public ShellCommand(String[] command, String tag) {
     this(command);
@@ -79,13 +82,11 @@ public class ShellCommand {
   }
 
   public String readStdoutBlocking() {
-    byte[] buf = new byte[8192];
     int read;
-
-    String result = "";
 
     MyLog.d("readStdoutBlocking [" + tag + "]");
 
+    result.setLength(0);
     while(true) {
       try {
         read = stdout.read(buf);
@@ -97,7 +98,11 @@ public class ShellCommand {
 
         MyLog.d("read returned " + read);
 
-        result += new String(buf, 0, read);
+        for(int i = 0; i < read; i++) {
+          charbuf[i] = (char) buf[i];
+        }
+
+        result.append(charbuf, 0, read);
         if(!stdoutAvailable())
           break;
       } catch (Exception e) {
@@ -106,20 +111,19 @@ public class ShellCommand {
       }
     }
 
-    MyLog.d("readStdoutBlocking [" + tag + "] return [" + result + "]");
-    return result;
+    //MyLog.d("readStdoutBlocking [" + tag + "] return [" + result + "]");
+    return result.toString();
   }
 
   public String readStdout() {
-    byte[] buf = new byte[8192];
     int read;
 
     MyLog.d("readStdout [" + tag + "]");
 
     try {
       int available;
-      String result = new String();
 
+      result.setLength(0);
       while((available = stdout.available()) > 0) {
         MyLog.d("stdout available: " + available);
 
@@ -132,10 +136,14 @@ public class ShellCommand {
           return null;
         }
 
-        result += new String(buf, 0, read);
+        for(int i = 0; i < read; i++) {
+          charbuf[i] = (char) buf[i];
+        }
+        
+        result.append(charbuf, 0, read);
       }
-      MyLog.d("readStdout return [" + result + "]");
-      return result;
+      //MyLog.d("readStdout return [" + result + "]");
+      return result.toString();
     } catch(Exception e) {
       Log.d("IptablesLog", "readStdout error", e);
       return "ERROR\n";

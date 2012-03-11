@@ -11,6 +11,8 @@ import android.util.Log;
 public class IptablesLog extends TabActivity
 {
   public static IptablesLogData data = null;
+  public static LogView logView;
+  public static AppView appView;
 
   /** Called when the activity is first created. */
   @Override
@@ -49,8 +51,10 @@ public class IptablesLog extends TabActivity
 
       // force loading of LogView activity
       tabHost.setCurrentTab(0);
+      logView = (LogView) getLocalActivityManager().getCurrentActivity();
       // force loading of AppView activity
       tabHost.setCurrentTab(1);
+      appView = (AppView) getLocalActivityManager().getCurrentActivity();
 
       // display LogView tab by default
       tabHost.setCurrentTab(0);
@@ -60,6 +64,13 @@ public class IptablesLog extends TabActivity
       // all data should be restored at this point, release the object
       data = null;
       MyLog.d("data object released");
+
+      Runtime.getRuntime().addShutdownHook(new Thread() {
+        public void run() {
+          MyLog.d("Calling shutdown hook");
+          onDestroy();
+        }
+      });
     }
 
   @Override
@@ -67,6 +78,10 @@ public class IptablesLog extends TabActivity
     {
       super.onDestroy();
       MyLog.d("onDestroy called");
+      
+      logView.stopUpdater();
+      appView.stopUpdater();
+
       if(data == null) {
         MyLog.d("Shutting down rules and logger");
         Iptables.removeRules();

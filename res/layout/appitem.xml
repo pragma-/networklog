@@ -1,38 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  android:orientation="horizontal"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="fill_parent"
-  android:layout_height="fill_parent">
+  android:layout_height="fill_parent"
+  android:padding="5dp">
   <ImageView 
     android:layout_width="72dp"
     android:layout_height="72dp"
     android:id="@+id/appIcon" 
     android:scaleType="centerInside"
-    android:adjustViewBounds="true"
-    />
-  <LinearLayout
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
+    android:adjustViewBounds="false" />
     <TextView
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
-      android:id="@+id/appName" />
+      android:id="@+id/appName" 
+      android:layout_toRightOf="@id/appIcon" />
     <TextView
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
-      android:id="@+id/appPackets" />
+      android:id="@+id/appPackets"
+      android:layout_below="@id/appName"
+      android:layout_alignLeft="@id/appName" />
     <TextView
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
-      android:id="@+id/appBytes" />
+      android:id="@+id/appBytes" 
+      android:layout_below="@id/appPackets"
+      android:layout_alignLeft="@id/appName" />
     <TextView
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
-      android:id="@+id/appUniqueHosts" />
+      android:id="@+id/appUniqueHosts" 
+      android:layout_below="@id/appIcon" />
     <TextView
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
-      android:id="@+id/appLastTimestamp" />
-  </LinearLayout>
-</LinearLayout>
+      android:id="@+id/appLastTimestamp" 
+      android:layout_below="@id/appUniqueHosts" />
+</RelativeLayout>
