@@ -178,7 +178,7 @@ public class LogView extends Activity implements IptablesLogListener
           runOnUiThread(runner);
         }
         
-        try { Thread.sleep(2500); } catch (Exception e) { Log.d("IptablesLog", "LogViewListUpdater", e); }
+        try { Thread.sleep(750); } catch (Exception e) { Log.d("IptablesLog", "LogViewListUpdater", e); }
       }
       MyLog.d("Stopped LogView updater " + this);
     }

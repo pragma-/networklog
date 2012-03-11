@@ -389,7 +389,7 @@ public class AppView extends Activity implements IptablesLogListener
           listDataBufferIsDirty = false;
         }
 
-        try { Thread.sleep(2500); } catch (Exception e) { Log.d("IptablesLog", "AppViewListUpdater", e); }
+        try { Thread.sleep(1000); } catch (Exception e) { Log.d("IptablesLog", "AppViewListUpdater", e); }
       }
       MyLog.d("Stopped AppView updater " + this);
     }
