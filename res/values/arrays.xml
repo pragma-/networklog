@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string-array name="sort_method">
+    <item>By AppID</item>
+    <item>By Name</item>
+    <item>By Packets</item>
+    <item>By Bytes</item>
+    <item>By Timestamp</item>
+  </string-array>
+
+  <string-array name="sort_method_values">
+    <item>UID</item>
+    <item>NAME</item>
+    <item>PACKETS</item>
+    <item>BYTES</item>
+    <item>TIMESTAMP</item>
+  </string-array>
+</resources>

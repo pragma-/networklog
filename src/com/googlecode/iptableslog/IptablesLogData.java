@@ -9,10 +9,12 @@ public class IptablesLogData {
   /* ApplicationsTracker */
   ArrayList<ApplicationsTracker.AppEntry> applicationsTrackerInstalledApps;
   Hashtable<String, ApplicationsTracker.AppEntry> applicationsTrackerInstalledAppsHash;
+  int applicationsTrackerAppCount;
 
   public void gatherApplicationsTrackerData() {
     applicationsTrackerInstalledApps = ApplicationsTracker.installedApps;
     applicationsTrackerInstalledAppsHash = ApplicationsTracker.installedAppsHash;
+    applicationsTrackerAppCount = ApplicationsTracker.appCount;
   }
 
   /* LogView */
@@ -20,30 +22,47 @@ public class IptablesLogData {
   ArrayList<LogView.ListItem> logViewListDataBuffer;
 
   public void gatherLogViewData() {
-    logViewListData = LogView.listData;
-    logViewListDataBuffer = LogView.listDataBuffer;
+    if(IptablesLog.logView != null) {
+      logViewListData = IptablesLog.logView.listData;
+      logViewListDataBuffer = IptablesLog.logView.listDataBuffer;
+    }
   }
 
   /* AppView */
   ArrayList<AppView.ListItem> appViewListData;
   ArrayList<AppView.ListItem> appViewListDataBuffer;
   boolean appViewListDataBufferIsDirty;
-  AppView.Sort appViewSortBy;
+  Sort appViewSortBy;
   AppView.ListItem appViewCachedSearchItem;
 
   public void gatherAppViewData() {
-    appViewListData = AppView.listData;
-    appViewListDataBuffer = AppView.listDataBuffer;
-    appViewListDataBufferIsDirty = AppView.listDataBufferIsDirty;
-    appViewSortBy = AppView.sortBy;
-    appViewCachedSearchItem = AppView.cachedSearchItem;
+    if(IptablesLog.appView != null) {
+      appViewListData = IptablesLog.appView.listData;
+      appViewListDataBuffer = IptablesLog.appView.listDataBuffer;
+      appViewListDataBufferIsDirty = IptablesLog.appView.listDataBufferIsDirty;
+      appViewSortBy = IptablesLog.appView.sortBy;
+      appViewCachedSearchItem = IptablesLog.appView.cachedSearchItem;
+    }
   }
 
-  /* Iptables */
+  /* IptablesLogTracker */
+  Hashtable<String, IptablesLogTracker.LogEntry> iptablesLogTrackerLogEntriesHash;
+  StringBuilder iptablesLogTrackerBuffer;
   ShellCommand iptablesLogTrackerCommand;
 
   public void gatherIptablesLogTrackerData() {
-    iptablesLogTrackerCommand = IptablesLogTracker.command;
+    if(IptablesLog.logTracker != null) {
+      iptablesLogTrackerLogEntriesHash = IptablesLog.logTracker.logEntriesHash;
+      iptablesLogTrackerBuffer = IptablesLog.logTracker.buffer;
+      iptablesLogTrackerCommand = IptablesLog.logTracker.command;
+    }
+  }
+
+  /* IptablesLog */
+  IptablesLog.State iptablesLogState;
+
+  public void gatherIptablesLogData() {
+    iptablesLogState = IptablesLog.state;
   }
 
   public IptablesLogData() {
@@ -51,5 +70,6 @@ public class IptablesLogData {
     gatherLogViewData();
     gatherAppViewData();
     gatherIptablesLogTrackerData();
+    gatherIptablesLogData();
   }
 }

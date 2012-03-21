@@ -7,14 +7,9 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.AbsListView;
-import android.widget.AbsListView.OnScrollListener;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Filterable;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.content.Context;
@@ -28,8 +23,8 @@ import java.util.Comparator;
 
 public class LogView extends Activity implements IptablesLogListener
 {
-  protected static ArrayList<ListItem> listData;
-  protected static ArrayList<ListItem> listDataBuffer;
+  protected ArrayList<ListItem> listData;
+  protected ArrayList<ListItem> listDataBuffer;
   private ListView listView;
   private CustomAdapter adapter;
   private ListViewUpdater updater;
@@ -56,21 +51,6 @@ public class LogView extends Activity implements IptablesLogListener
         return mName;
       }
   }
-
-  @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-      MenuInflater inflater = getMenuInflater();
-      inflater.inflate(R.layout.logmenu, menu);
-      return true;
-    }
-
-  @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-      switch(item.getItemId()) {
-        default:
-          return super.onOptionsItemSelected(item);
-      }
-    }
 
   /** Called when the activity is first created. */
   @Override
@@ -108,16 +88,28 @@ public class LogView extends Activity implements IptablesLogListener
       layout.addView(listView);
 
       setContentView(layout);
-
-      updater = new ListViewUpdater();
-      new Thread(updater, "LogViewUpdater").start();
-      IptablesLogTracker.addListener(this);
     }
+
+  public void startUpdater() {
+    updater = new ListViewUpdater();
+    new Thread(updater, "LogViewUpdater").start();
+  }
+
+  public void attachListener() {
+    MyLog.d("Adding LogView listener " + this);
+    IptablesLog.logTracker.addListener(this);
+  }
 
   public void restoreData(IptablesLogData data) {
     listData = data.logViewListData;
     listDataBuffer = data.logViewListDataBuffer;
   }
+
+  @Override
+    public void onBackPressed() {
+      IptablesLog parent = (IptablesLog) getParent();
+      parent.confirmExit(this);
+    }
 
   public void onNewLogEntry(final IptablesLogTracker.LogEntry entry) {
     ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.installedAppsHash.get(String.valueOf(entry.uid));
@@ -144,7 +136,8 @@ public class LogView extends Activity implements IptablesLogListener
   }
 
   public void stopUpdater() {
-    updater.stop();
+    if(updater != null)
+      updater.stop();
   }
 
   // todo: this is largely duplicated in AppView -- move to its own file

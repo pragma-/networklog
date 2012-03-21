@@ -50,7 +50,7 @@ public class ShellCommand {
   public void waitForExit() {
     while(checkForExit() == false) {
       if(stdoutAvailable())
-        readStdout();
+        MyLog.d("ShellCommand waitForExit [" + tag + "] discarding read: " + readStdout());
       else 
         try { Thread.sleep(100); } catch (Exception e) { Log.d("IptablesLog", "waitForExit error", e); }
     }
@@ -58,6 +58,10 @@ public class ShellCommand {
 
   public void finish() {
     MyLog.d("ShellCommand: finishing [" + tag + "] " + Arrays.toString(command));
+    try {
+      stdout.close();
+    } catch (Exception e) { Log.d("IptablesLog", "Exception finishing [" + tag + "]", e); }
+
     process.destroy();
     process = null;
   }
@@ -107,7 +111,7 @@ public class ShellCommand {
           break;
       } catch (Exception e) {
         Log.d("IptablesLog", "readStdoutBlocking error", e);
-        return "ERROR\n";
+        return null;
       }
     }
 
@@ -146,7 +150,7 @@ public class ShellCommand {
       return result.toString();
     } catch(Exception e) {
       Log.d("IptablesLog", "readStdout error", e);
-      return "ERROR\n";
+      return null;
     }
   }
 }

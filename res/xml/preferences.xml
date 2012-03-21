@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+  <PreferenceCategory
+    android:title="General">
+    <CheckBoxPreference
+      android:defaultValue="false"
+      android:key="resolve_hosts"
+      android:title="Resolve hosts"
+      android:summary="Resolve IP addresses to DNS hostnames" />
+    <CheckBoxPreference
+      android:defaultValue="true"
+      android:key="resolve_ports"
+      android:title="Resolve ports"
+      android:summary="Resolve known port numbers to service names" />
+    <EditTextPreference
+      android:defaultValue=""
+      android:key="filter_text"
+      android:title="Filter"
+      android:summary="Configure advanced filtering options" />
+    <CheckBoxPreference
+      android:defaultValue="false"
+      android:key="ignorelist"
+      android:title="Ignore list"
+      android:summary="Choose which apps to hide" />
+    <CheckBoxPreference
+      android:defaultValue="false"
+      android:key="logcat_debug"
+      android:title="Logcat debug output"
+      android:summary="Print verbose debugging output to logcat" />
+  </PreferenceCategory>
+
+  <PreferenceCategory
+    android:title="Log tab">
+    <EditTextPreference
+      android:defaultValue="15000"
+      android:key="max_log_entries"
+      android:title="Max log entries"
+      android:summary="Limit number of entries to conserve memory" />
+  </PreferenceCategory>
+
+  <PreferenceCategory
+    android:title="Apps tab">
+    <ListPreference
+      android:defaultValue="BYTES"
+      android:key="sort_by"
+      android:title="Sort method"
+      android:summary="Select how to sort the list of apps" 
+      android:entries="@array/sort_method"
+      android:entryValues="@array/sort_method_values"
+      android:dialogTitle="Sort" />
+  </PreferenceCategory>
+
+  <PreferenceCategory
+    android:title="Notifications">
+    <CheckBoxPreference
+      android:defaultValue="true"
+      android:key="notifications_statusbar"
+      android:title="Status bar"
+      android:summary="Display status bar notification when an app makes a network transmission" />
+    <CheckBoxPreference
+      android:defaultValue="false"
+      android:key="notifications_statusbar_apps"
+      android:title="Choose apps"
+      android:summary="Select which apps should have status bar notifications"
+      android:dependency="notifications_statusbar"
+      android:layout="?android:attr/preferenceLayoutChild" />
+     <CheckBoxPreference
+       android:defaultValue="false"
+       android:key="notifications_toast"
+       android:title="Toast pop-up"
+       android:summary="Display toast pop-up notification when an app makes a network transmission" />
+     <CheckBoxPreference
+       android:defaultValue="false"
+      android:key="notifications_toast_apps"
+      android:title="Choose apps"
+      android:summary="Select which apps should have toast notifications"
+      android:dependency="notifications_toast"
+      android:layout="?android:attr/preferenceLayoutChild" />
+  </PreferenceCategory>
+</PreferenceScreen>

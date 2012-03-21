@@ -13,18 +13,20 @@ import java.io.PrintWriter;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.lang.Thread;
+import java.lang.Runnable;
 
 public class IptablesLogTracker {
-  static Hashtable<String, LogEntry> logEntriesHash = new Hashtable<String, LogEntry>();
-  static ArrayList<IptablesLogListener> listenerList = new ArrayList<IptablesLogListener>();
+  Hashtable<String, LogEntry> logEntriesHash;
+  ArrayList<IptablesLogListener> listenerList;
   static String localIpAddr;
-  static ShellCommand command;
-  static StringBuilder buffer = new StringBuilder(8192 * 2);
+  ShellCommand command;
+  StringBuilder buffer;
+  LogTracker logTrackerRunner;
 
-  static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+  final static String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
   static SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
 
-  public static class LogEntry {
+  public class LogEntry {
     int uid;
     String src;
     String dst;
@@ -35,6 +37,19 @@ public class IptablesLogTracker {
     int bytes;
     String timestamp;
     boolean dirty;
+  }
+
+  public IptablesLogTracker() {
+    listenerList = new ArrayList<IptablesLogListener>();
+
+    if(IptablesLog.data == null) {
+      logEntriesHash = new Hashtable<String, LogEntry>();
+      StringBuilder buffer = new StringBuilder(8192 * 2);
+    } else {
+      logEntriesHash = IptablesLog.data.iptablesLogTrackerLogEntriesHash;
+      buffer = IptablesLog.data.iptablesLogTrackerBuffer;
+      command = IptablesLog.data.iptablesLogTrackerCommand;
+    }
   }
 
   public static String getTimestamp() {
@@ -62,7 +77,7 @@ public class IptablesLogTracker {
     return "none";
   }
 
-  public static void parseResult(String result) {
+  public void parseResult(String result) {
     MyLog.d("--------------- parsing result --------------");
     int pos = 0, buffer_pos = 0; 
     String src, dst, len, spt, dpt, uid;
@@ -203,7 +218,7 @@ public class IptablesLogTracker {
     */
   }
 
-  public static void notifyNewEntry(LogEntry entry) {
+  public void notifyNewEntry(LogEntry entry) {
     synchronized(listenerList) {
       int i = 0;
       for(IptablesLogListener listener : listenerList) {
@@ -214,126 +229,147 @@ public class IptablesLogTracker {
     }
   }
 
-  public static void addListener(IptablesLogListener listener) {
+  public void addListener(IptablesLogListener listener) {
     synchronized(listenerList) {
       MyLog.d("Adding listener");
       listenerList.add(listener);
     }
   }
 
-  public static void restoreData(IptablesLogData data) {
-    command = data.iptablesLogTrackerCommand;
-  }
-
-  public static void stop() {
-    try {
-      PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
-      script.println("ps");
-      script.close();
-    } catch (java.io.IOException e) { e.printStackTrace(); }
-
-    ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "FindLogTracker");
-    command.start(false);
-    String result = "";
-    while(!command.checkForExit()) {
-      result += command.readStdoutBlocking();
-    }
-
-    if(result == null)
-      return;
-
-    int iptableslog_pid = -1;
-
-    for(String line : result.split("\n")) {
-      // MyLog.d("ps - parsing line [" + line + "]");
-      String tokens[] = line.split("\\s+");
-      String cmd = tokens[tokens.length - 1];
-      int pid, ppid;
-
-      try {
-        pid = Integer.parseInt(tokens[1]);
-        ppid = Integer.parseInt(tokens[2]);
-      } catch (NumberFormatException e) {
-        // ignored
-        continue;
-      } catch (ArrayIndexOutOfBoundsException e) {
-        // ignored
-        continue;
-      } catch (Exception e) {
-        Log.d("IptablesLog", "Unexpected exception", e);
-        continue;
-      }
-
-      // MyLog.d("cmd: " + cmd + "; pid: " + pid + "; ppid: " + ppid);
-
-      if(cmd.equals("com.googlecode.iptableslog")) {
-        iptableslog_pid = pid;
-        MyLog.d("IptablesLog pid: " + iptableslog_pid);
-        continue;
-      }
-
-      if(ppid == iptableslog_pid) {
-        MyLog.d(cmd + " is our child");
-        iptableslog_pid = pid;
-
-        if(cmd.equals("grep")) {
-          MyLog.d("Killing tracker " + pid);
-
-          try {
-            PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
-            script.println("kill " + pid);
-            script.close();
-          } catch (java.io.IOException e) { e.printStackTrace(); }
-
-          new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "KillLogTracker").start(true);
-          break;
-        }
-      }
+  public void stop() {
+    if(logTrackerRunner != null) {
+      logTrackerRunner.stop();
     }
   }
 
-  public static void start(final boolean resumed) {
-    localIpAddr = getLocalIpAddress();
-
-    if(!resumed) {
-      MyLog.d("adding logging rules");
-      Iptables.addRules();
-
+  public void kill() {
+    synchronized(IptablesLog.scriptLock) {
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
-        script.println("grep IptablesLogEntry /proc/kmsg");
+        script.println("ps");
         script.close();
       } catch (java.io.IOException e) { e.printStackTrace(); }
 
-      MyLog.d("Starting iptables log tracker");
-
-      command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "IptablesLogTracker");
+      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "FindLogTracker");
       command.start(false);
-    } else {
-      MyLog.d("Resuming iptables log tracker");
-      command = IptablesLog.data.iptablesLogTrackerCommand;
+      String result = "";
+      while(!command.checkForExit()) {
+        result += command.readStdoutBlocking();
+      }
+
+      if(result == null)
+        return;
+
+      int iptableslog_pid = -1;
+
+      for(String line : result.split("\n")) {
+        // MyLog.d("ps - parsing line [" + line + "]");
+        String tokens[] = line.split("\\s+");
+        String cmd = tokens[tokens.length - 1];
+        int pid, ppid;
+
+        try {
+          pid = Integer.parseInt(tokens[1]);
+          ppid = Integer.parseInt(tokens[2]);
+        } catch (NumberFormatException e) {
+          // ignored
+          continue;
+        } catch (ArrayIndexOutOfBoundsException e) {
+          // ignored
+          continue;
+        } catch (Exception e) {
+          Log.d("IptablesLog", "Unexpected exception", e);
+          continue;
+        }
+
+        // MyLog.d("cmd: " + cmd + "; pid: " + pid + "; ppid: " + ppid);
+
+        if(cmd.equals("com.googlecode.iptableslog")) {
+          iptableslog_pid = pid;
+          MyLog.d("IptablesLog pid: " + iptableslog_pid);
+          continue;
+        }
+
+        if(ppid == iptableslog_pid) {
+          MyLog.d(cmd + " is our child");
+          iptableslog_pid = pid;
+
+          if(cmd.equals("grep")) {
+            MyLog.d("Killing tracker " + pid);
+
+            try {
+              PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
+              script.println("kill " + pid);
+              script.close();
+            } catch (java.io.IOException e) { e.printStackTrace(); }
+
+            new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "KillLogTracker").start(true);
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  public void start(final boolean resumed) {
+    localIpAddr = getLocalIpAddress();
+
+    if(resumed == false) {
+      MyLog.d("adding logging rules");
+      Iptables.addRules();
+
+      synchronized(IptablesLog.scriptLock) {
+        try {
+          PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
+          script.println("grep IptablesLogEntry /proc/kmsg");
+          script.close();
+        } catch (java.io.IOException e) { e.printStackTrace(); }
+
+        MyLog.d("Starting iptables log tracker");
+
+        command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "IptablesLogTracker");
+        command.start(false);
+      }
+    }
+    logTrackerRunner = new LogTracker();
+    new Thread(logTrackerRunner, "LogTracker").start();
+  }
+
+  public class LogTracker implements Runnable {
+    boolean running = false;
+
+    public void stop() {
+      running = false;
     }
 
-    Thread mainLoop = new Thread("IptablesLogTracker") {
-      public void run() {
-        String result;
-        while(command.checkForExit() == false) {
-          MyLog.d("checking stdout");
-          result = command.readStdoutBlocking();
-          if(result == null) {
-            MyLog.d("result == null");
-            Iptables.removeRules();
-            System.exit(0);
-          }
+    public void run() {
+      MyLog.d("LogTracker " + this + " starting");
+      String result;
+      running = true;
+      while(running && command.checkForExit() == false) {
+        MyLog.d("LogTracker " + this + " checking stdout");
 
-          MyLog.d("result == [" + result + "]");
-          parseResult(result);
+        if(command.stdoutAvailable()) {
+          result = command.readStdout();
+        } else {
+          try { Thread.sleep(750); } catch (Exception e) { Log.d("IptablesLog", "LogTracker exception while sleeping", e); }
+          continue;
         }
-        Iptables.removeRules();
-        System.exit(0);
-      }
-    };
 
-    mainLoop.start();
+        if(running == false)
+          break;
+
+        if(result == null) {
+          MyLog.d("result == null");
+          MyLog.d("LogTracker " + this + " exiting [returned null]");
+          return;
+        }
+
+        MyLog.d("result == [" + result + "]");
+        parseResult(result);
+      }
+
+      MyLog.d("LogTracker " + this + " exiting [end of loop]");
+    }
   }
 }

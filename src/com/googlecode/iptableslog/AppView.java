@@ -10,14 +10,12 @@ import android.widget.ListView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Filterable;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.graphics.drawable.Drawable;
+import android.os.SystemClock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,13 +25,12 @@ import java.util.Iterator;
 
 public class AppView extends Activity implements IptablesLogListener
 {
-  public static ArrayList<ListItem> listData;
-  public static ArrayList<ListItem> listDataBuffer;
-  public static boolean listDataBufferIsDirty = false;
-  private static CustomAdapter adapter;
-  public enum Sort { UID, NAME, PACKETS, BYTES, TIMESTAMP }; 
-  public static Sort sortBy = Sort.BYTES;
-  public static ListItem cachedSearchItem;
+  public ArrayList<ListItem> listData;
+  public ArrayList<ListItem> listDataBuffer;
+  public boolean listDataBufferIsDirty = false;
+  private CustomAdapter adapter;
+  public Sort sortBy = Sort.BYTES;
+  public ListItem cachedSearchItem;
   private ListViewUpdater updater;
 
   public class ListItem {
@@ -65,7 +62,7 @@ public class AppView extends Activity implements IptablesLogListener
 
   protected static class SortAppsByTimestamp implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
-      return o2.lastTimestamp.compareToIgnoreCase(o1.lastTimestamp.equals("N/A") ? "" : o1.lastTimestamp);
+      return o2.lastTimestamp.compareTo(o1.lastTimestamp.equals("N/A") ? "0" : o1.lastTimestamp);
     }
   }
 
@@ -110,7 +107,15 @@ public class AppView extends Activity implements IptablesLogListener
 
   protected void getInstalledApps() {
     synchronized(listDataBuffer) {
+      listData.clear();
+      listDataBuffer.clear();
+
       for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps) {
+        if(IptablesLog.initRunner.running == false) {
+          MyLog.d("[AppView] Initialization aborted");
+          return;
+        }
+
         ListItem item = new ListItem();
         item.app = app;
         item.lastTimestamp = "N/A";
@@ -121,74 +126,76 @@ public class AppView extends Activity implements IptablesLogListener
         listDataBuffer.add(item);
       }
 
-      Collections.sort(listData, new SortAppsByUid());
+      runOnUiThread(new Runnable() {
+        public void run() {
+          // sort by UID to put list in some kind of order
+          // (perhaps by name instead? or another user-preference?)
+          Collections.sort(listData, new SortAppsByUid());
+          // sort by user preference
+          sortData();
+        }
+      });
+
+      // listDataBuffer must always be sorted by UID for binary search
       Collections.sort(listDataBuffer, new SortAppsByUid());
     }
-    sortBy = Sort.BYTES;
+
+    sortBy = IptablesLog.settings.getSortBy();
+    MyLog.d("Sortby after from settings: " + sortBy);
   }
 
-  @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-      MenuInflater inflater = getMenuInflater();
-      inflater.inflate(R.layout.appmenu, menu);
-      return true; 
+  protected void loadIcons() {
+    if(IptablesLog.data == null) {
+      new Thread("IconLoader") {
+        public void run() {
+          long nextUpdateTime = 0;
+
+          int size;
+          synchronized(listDataBuffer) {
+            size = listDataBuffer.size();
+          }
+          for(int i = 0; i < size; i++) {
+            ListItem item;
+            synchronized(listDataBuffer) {
+              item = listDataBuffer.get(i);
+            }
+            if(item.app.packageName == null)
+              continue;
+
+            try {
+              MyLog.d("Loading icon for " + item.app.packageName + " (" + item.app.name + ", " + item.app.uid + ")");
+              Drawable icon = getPackageManager().getApplicationIcon(item.app.packageName);
+              item.app.icon = icon;
+
+              // refresh adapter to display icons once every second while still loading icons
+              // (once every second instead of immediately after each icon prevents UI lag)
+              // (UI still may lag on lower end devices as loading icons is expensive)
+              long currentTime = SystemClock.elapsedRealtime();
+              if(currentTime >= nextUpdateTime) {
+                nextUpdateTime = currentTime + 2000;
+                runOnUiThread(new Runnable() {
+                  public void run() {
+                    MyLog.d("Updating adapter for icons");
+                    // refresh adapter to display icon 
+                    adapter.notifyDataSetChanged();
+                  }
+                });
+              }
+            } catch (Exception e) {
+              Log.d("IptablesLog", "Failure to load icon for " + item.app.packageName + " (" + item.app.name + ", " + item.app.uid + ")", e);
+            }
+          }
+
+          // refresh adapter to display icons
+          runOnUiThread(new Runnable() {
+            public void run() {
+              adapter.notifyDataSetChanged();
+            }
+          });
+        }
+      }.start();
     }
-
-  @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-      MenuItem item;
-
-      switch(sortBy) {
-        case UID:
-          item = menu.findItem(R.id.sort_by_uid);
-          break;
-        case NAME:
-          item = menu.findItem(R.id.sort_by_name);
-          break;
-        case PACKETS:
-          item = menu.findItem(R.id.sort_by_packets);
-          break;
-        case BYTES:
-          item = menu.findItem(R.id.sort_by_bytes);
-          break;
-        case TIMESTAMP:
-          item = menu.findItem(R.id.sort_by_timestamp);
-          break;
-        default:
-          sortBy = Sort.BYTES;
-          item = menu.findItem(R.id.sort_by_bytes);
-      }
-
-      item.setChecked(true);
-
-      return true;
-    }
-
-  @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-      switch(item.getItemId()) {
-        case R.id.sort_by_uid:
-          sortBy = Sort.UID;
-          break;
-        case R.id.sort_by_name:
-          sortBy = Sort.NAME;
-          break;
-        case R.id.sort_by_packets:
-          sortBy = Sort.PACKETS;
-          break;
-        case R.id.sort_by_bytes:
-          sortBy = Sort.BYTES;
-          break;
-        case R.id.sort_by_timestamp:
-          sortBy = Sort.TIMESTAMP;
-          break;
-        default:
-          return super.onOptionsItemSelected(item);
-      }
-
-      sortData();
-      return true;
-    }
+  }
 
   /** Called when the activity is first created. */
   @Override
@@ -210,7 +217,6 @@ public class AppView extends Activity implements IptablesLogListener
         listData = new ArrayList<ListItem>();
         listDataBuffer = new ArrayList<ListItem>();
         cachedSearchItem = new ListItem();
-        getInstalledApps();
       } else {
         restoreData(IptablesLog.data);
       }
@@ -225,43 +231,13 @@ public class AppView extends Activity implements IptablesLogListener
       layout.addView(lv);
       setContentView(layout);
 
-      if(IptablesLog.data == null) {
-        new Thread("IconLoader") {
-          public void run() {
-            synchronized(listDataBuffer) {
-              for(ListItem item : listDataBuffer) {
-                if(item.app.packageName == null)
-                  continue;
-
-                try {
-                  MyLog.d("Loading icon for " + item.app.packageName + " (" + item.app.name + ", " + item.app.uid + ")");
-                  Drawable icon = getPackageManager().getApplicationIcon(item.app.packageName);
-                  item.app.icon = icon;
-                  /*
-                     final View view = adapter.getView(i, null, null);
-                     ((ImageView) view.findViewById(R.id.appIcon)).setImageDrawable(icon);
-                     runOnUiThread(new Runnable() {
-                     public void run() {
-                  // refresh adapter to display icon 
-                  adapter.notifyDataSetChanged();
-                     }
-                     });
-                     */
-                } catch (Exception e) {
-                  Log.d("IptablesLog", "Failure to load icon for " + item.app.packageName + " (" + item.app.name + ", " + item.app.uid + ")", e);
-                }
-              }
-            }
-          }
-        }.start();
-      }
-
       cachedSearchItem.app = new ApplicationsTracker.AppEntry();
+    }
 
-      updater = new ListViewUpdater();
-      new Thread(updater, "AppViewUpdater").start();
-
-      IptablesLogTracker.addListener(this);
+  @Override
+    public void onBackPressed() {
+      IptablesLog parent = (IptablesLog) getParent();
+      parent.confirmExit(this);
     }
 
   public void restoreData(IptablesLogData data) {
@@ -270,6 +246,15 @@ public class AppView extends Activity implements IptablesLogListener
     listDataBufferIsDirty = data.appViewListDataBufferIsDirty;
     sortBy = data.appViewSortBy;
     cachedSearchItem = data.appViewCachedSearchItem;
+
+    if(listData == null)
+      listData = new ArrayList<ListItem>();
+
+    if(listDataBuffer == null)
+      listDataBuffer = new ArrayList<ListItem>();
+
+    if(cachedSearchItem == null)
+      cachedSearchItem = new ListItem();
   }
 
   public void onNewLogEntry(final IptablesLogTracker.LogEntry entry) {
@@ -300,7 +285,6 @@ public class AppView extends Activity implements IptablesLogListener
         else break;
       }
 
-      MyLog.d("1");
       // generally this will iterate once, but some apps may be grouped under the same uid
       while(true) {
         MyLog.d("while: index = " + index);
@@ -335,8 +319,19 @@ public class AppView extends Activity implements IptablesLogListener
     }
   }
 
+  public void startUpdater() {
+    updater = new ListViewUpdater();
+    new Thread(updater, "AppViewUpdater").start();
+  }
+
   public void stopUpdater() {
-    updater.stop();
+    if(updater != null)
+      updater.stop();
+  }
+
+  public void attachListener() {
+    MyLog.d("Adding AppView listener " + this);
+    IptablesLog.logTracker.addListener(this);
   }
 
   // todo: this is largely duplicated in LogView -- move to its own file

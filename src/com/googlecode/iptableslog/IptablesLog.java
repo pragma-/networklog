@@ -6,30 +6,99 @@ import android.content.Intent;
 import android.widget.TabWidget;
 import android.widget.TabHost;
 import android.content.res.Resources;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MenuInflater;
+import android.os.Handler;
+import android.os.Looper;
+import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 
 public class IptablesLog extends TabActivity
 {
   public static IptablesLogData data = null;
   public static LogView logView;
   public static AppView appView;
+  public static IptablesLogTracker logTracker;
+  public static Settings settings;
+  public static Handler handler;
+  public static Object scriptLock = new Object();
+
+  public enum State { LOAD_APPS, LOAD_LIST, LOAD_ICONS, RUNNING  };
+  public static State state;
+  public static InitRunner initRunner;
+
+  public class InitRunner implements Runnable
+  {
+    private Context context;
+    public boolean running = false;
+
+    public InitRunner(Context context) {
+      this.context = context;
+    }
+
+    public void stop() {
+      running = false;
+    }
+
+    public void run() {
+      MyLog.d("Init begin");
+      running = true;
+
+      Looper.myLooper().prepare();
+
+      state = IptablesLog.State.LOAD_APPS;
+      ApplicationsTracker.getInstalledApps(context, handler);
+
+      if(running == false)
+        return;
+
+      state = IptablesLog.State.LOAD_LIST;
+      appView.getInstalledApps();
+
+      if(running == false)
+        return;
+
+      state = IptablesLog.State.LOAD_ICONS;
+      appView.loadIcons();
+
+      logTracker = new IptablesLogTracker();
+
+      appView.attachListener();
+      appView.startUpdater();
+
+      logView.attachListener();
+      logView.startUpdater();
+
+      logTracker.start(data != null);
+
+      state = IptablesLog.State.RUNNING;
+      MyLog.d("Init done");
+    }
+  }
 
   /** Called when the activity is first created. */
   @Override
     public void onCreate(Bundle savedInstanceState)
     {
       super.onCreate(savedInstanceState);
-      setContentView(R.layout.main);
+      MyLog.d("IptablesLog onCreate");
 
       data = (IptablesLogData) getLastNonConfigurationInstance(); 
-      
-      if (data == null) {
-        MyLog.d("Fresh run");
-        ApplicationsTracker.getInstalledApps(this);
-      } else {
+
+      setContentView(R.layout.main);
+      handler = new Handler(Looper.getMainLooper());
+
+      if (data != null) {
         MyLog.d("Restored run");
         ApplicationsTracker.restoreData(data);
+      } else {
+        MyLog.d("Fresh run");
       }
+
+      settings = new Settings(this);
+      settings.prefs.registerOnSharedPreferenceChangeListener(settings);
 
       Resources res = getResources();
       TabHost tabHost = getTabHost();
@@ -59,18 +128,48 @@ public class IptablesLog extends TabActivity
       // display LogView tab by default
       tabHost.setCurrentTab(0);
 
-      IptablesLogTracker.start(data != null);
+      if (data == null) {
+        initRunner = new InitRunner(this);
+        new Thread(initRunner, "Initialization " + initRunner).start();
+      } else {
+        state = data.iptablesLogState;
 
-      // all data should be restored at this point, release the object
-      data = null;
-      MyLog.d("data object released");
+        if(state != IptablesLog.State.RUNNING) {
+          initRunner = new InitRunner(this);
+          new Thread(initRunner, "Initialization " + initRunner).start();
+        } else {
+          logTracker = new IptablesLogTracker();
 
-      Runtime.getRuntime().addShutdownHook(new Thread() {
-        public void run() {
-          MyLog.d("Calling shutdown hook");
-          onDestroy();
+          appView.attachListener();
+          appView.startUpdater();
+
+          logView.attachListener();
+          logView.startUpdater();
+
+          logTracker.start(true);
         }
-      });
+        // all data should be restored at this point, release the object
+        data = null;
+        MyLog.d("data object released");
+
+        state = IptablesLog.State.RUNNING;
+      }
+    }
+
+  @Override
+    public void onResume()
+    {
+      super.onResume();
+
+      MyLog.d("onResume()");
+    }
+
+  @Override
+    public void onPause()
+    {
+      super.onPause();
+
+      MyLog.d("onPause()");
     }
 
   @Override
@@ -78,16 +177,32 @@ public class IptablesLog extends TabActivity
     {
       super.onDestroy();
       MyLog.d("onDestroy called");
+
+      if(initRunner != null)
+        initRunner.stop();
       
-      logView.stopUpdater();
-      appView.stopUpdater();
+      if(logView != null)
+        logView.stopUpdater();
+
+      if(appView != null)
+        appView.stopUpdater();
+
+      if(logTracker != null)
+        logTracker.stop();
+
+      synchronized(ApplicationsTracker.dialogLock) {
+        if(ApplicationsTracker.dialog != null) {
+          ApplicationsTracker.dialog.dismiss();
+          ApplicationsTracker.dialog = null;
+        }
+      }
 
       if(data == null) {
-        MyLog.d("Shutting down rules and logger");
+        MyLog.d("Shutting down rules");
         Iptables.removeRules();
-        IptablesLogTracker.stop();
+        IptablesLog.logTracker.kill();
       } else {
-        MyLog.d("Found data, not shutting down rules and logger");
+        MyLog.d("Not shutting down rules");
       }
     }
 
@@ -97,4 +212,115 @@ public class IptablesLog extends TabActivity
       data = new IptablesLogData();
       return data;
     }
+
+
+  @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+      MenuInflater inflater = getMenuInflater();
+      inflater.inflate(R.layout.menu, menu);
+      return true; 
+    }
+
+  @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+      MenuItem item;
+
+      item = menu.findItem(R.id.sort);
+
+      if(getLocalActivityManager().getCurrentActivity() instanceof AppView) {
+        item.setVisible(true);
+
+        switch(appView.sortBy) {
+          case UID:
+            item = menu.findItem(R.id.sort_by_uid);
+            break;
+          case NAME:
+            item = menu.findItem(R.id.sort_by_name);
+            break;
+          case PACKETS:
+            item = menu.findItem(R.id.sort_by_packets);
+            break;
+          case BYTES:
+            item = menu.findItem(R.id.sort_by_bytes);
+            break;
+          case TIMESTAMP:
+            item = menu.findItem(R.id.sort_by_timestamp);
+            break;
+          default:
+            IptablesLog.settings.setSortBy(Sort.BYTES);
+            appView.sortBy = Sort.BYTES;
+            item = menu.findItem(R.id.sort_by_bytes);
+        }
+
+        item.setChecked(true);
+      } else {
+        item.setVisible(false);
+      }
+
+      return true;
+    }
+
+  @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+      switch(item.getItemId()) {
+        case R.id.exit:
+          confirmExit(this);
+          break;
+        case R.id.settings:
+          startActivity(new Intent(this, Preferences.class));
+          break;
+        case R.id.sort_by_uid:
+          appView.sortBy = Sort.UID;
+          appView.sortData();
+          IptablesLog.settings.setSortBy(appView.sortBy);
+          break;
+        case R.id.sort_by_name:
+          appView.sortBy = Sort.NAME;
+          appView.sortData();
+          IptablesLog.settings.setSortBy(appView.sortBy);
+          break;
+        case R.id.sort_by_packets:
+          appView.sortBy = Sort.PACKETS;
+          appView.sortData();
+          IptablesLog.settings.setSortBy(appView.sortBy);
+          break;
+        case R.id.sort_by_bytes:
+          appView.sortBy = Sort.BYTES;
+          appView.sortData();
+          IptablesLog.settings.setSortBy(appView.sortBy);
+          break;
+        case R.id.sort_by_timestamp:
+          appView.sortBy = Sort.TIMESTAMP;
+          appView.sortData();
+          IptablesLog.settings.setSortBy(appView.sortBy);
+          break;
+        default:
+          return super.onOptionsItemSelected(item);
+      }
+
+      return true;
+    }
+
+  @Override
+    public void onBackPressed() {
+      confirmExit(this);
+    }
+
+  public void confirmExit(Context context) {
+    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+    builder.setMessage("Are you sure you want to exit?")
+      .setCancelable(false)
+      .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int id) {
+          IptablesLog.this.finish();
+        }
+      })
+    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+      public void onClick(DialogInterface dialog, int id) {
+        dialog.cancel();
+      }
+    });
+    AlertDialog alert = builder.create();
+    alert.show();
+  }
 }
