@@ -85,6 +85,10 @@ public class IptablesLog extends TabActivity
       super.onCreate(savedInstanceState);
       MyLog.d("IptablesLog onCreate");
 
+      settings = new Settings(this);
+
+      MyLog.enabled = settings.getLogcatDebug();
+
       data = (IptablesLogData) getLastNonConfigurationInstance(); 
 
       setContentView(R.layout.main);
@@ -96,9 +100,6 @@ public class IptablesLog extends TabActivity
       } else {
         MyLog.d("Fresh run");
       }
-
-      settings = new Settings(this);
-      settings.prefs.registerOnSharedPreferenceChangeListener(settings);
 
       Resources res = getResources();
       TabHost tabHost = getTabHost();
@@ -263,6 +264,9 @@ public class IptablesLog extends TabActivity
   @Override
     public boolean onOptionsItemSelected(MenuItem item) {
       switch(item.getItemId()) {
+        case R.id.reset:
+          confirmReset(this);
+          break;
         case R.id.exit:
           confirmExit(this);
           break;
@@ -313,6 +317,25 @@ public class IptablesLog extends TabActivity
       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
           IptablesLog.this.finish();
+        }
+      })
+    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+      public void onClick(DialogInterface dialog, int id) {
+        dialog.cancel();
+      }
+    });
+    AlertDialog alert = builder.create();
+    alert.show();
+  }
+
+  public void confirmReset(Context context) {
+    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+    builder.setMessage("Are you sure you want to reset data?")
+      .setCancelable(false)
+      .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int id) {
+          appView.resetData();
+          logView.resetData();
         }
       })
     .setNegativeButton("No", new DialogInterface.OnClickListener() {

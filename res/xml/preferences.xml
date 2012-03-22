@@ -33,6 +33,7 @@
     android:title="Log tab">
     <EditTextPreference
       android:defaultValue="15000"
+      android:numeric="integer"
       android:key="max_log_entries"
       android:title="Max log entries"
       android:summary="Limit number of entries to conserve memory" />
@@ -41,10 +42,18 @@
   <PreferenceCategory
     android:title="Apps tab">
     <ListPreference
+      android:defaultValue="NAME"
+      android:key="presort_by"
+      android:title="Initial sort method"
+      android:summary="Select how to initially sort the list of apps before any data is available (default: By name)"
+      android:entries="@array/presort_method"
+      android:entryValues="@array/presort_method_values"
+      android:dialogTitle="Initial Sort" />
+    <ListPreference
       android:defaultValue="BYTES"
       android:key="sort_by"
       android:title="Sort method"
-      android:summary="Select how to sort the list of apps" 
+      android:summary="Select how to sort the list of apps when data is available (default: By bytes)" 
       android:entries="@array/sort_method"
       android:entryValues="@array/sort_method_values"
       android:dialogTitle="Sort" />

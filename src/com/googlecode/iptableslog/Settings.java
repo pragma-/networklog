@@ -6,11 +6,14 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.Context;
 
 public class Settings implements OnSharedPreferenceChangeListener {
-  SharedPreferences prefs;
+  private SharedPreferences prefs;
+
+  private Settings() {}
 
   public Settings(Context context) {
-    prefs = PreferenceManager.getDefaultSharedPreferences(context);
     PreferenceManager.setDefaultValues(context, R.xml.preferences, false);
+    prefs = PreferenceManager.getDefaultSharedPreferences(context);
+    prefs.registerOnSharedPreferenceChangeListener(this);
   }
 
   public boolean getResolveAddresses() {
@@ -30,11 +33,19 @@ public class Settings implements OnSharedPreferenceChangeListener {
   }
 
   public long getMaxLogEntries() {
-    return prefs.getLong("max_log_entries", 15000);
+    return Long.parseLong(prefs.getString("max_log_entries", "15000"));
+  }
+
+  public Sort getPreSortBy() {
+    return Sort.forValue(prefs.getString("presort_by", "BYTES"));
   }
 
   public Sort getSortBy() {
     return Sort.forValue(prefs.getString("sort_by", "BYTES"));
+  }
+
+  public boolean getLogcatDebug() {
+    return prefs.getBoolean("logcat_debug", false);
   }
 
   public boolean getStatusbarNotifications() {
@@ -65,19 +76,31 @@ public class Settings implements OnSharedPreferenceChangeListener {
 
   public void setFilterOptions(int value) {
     SharedPreferences.Editor editor = prefs.edit();
-    editor.putInt("filterOptions", value);
+    editor.putInt("filter_options", value);
     editor.commit();
   }
 
   public void setMaxLogEntries(long value) {
     SharedPreferences.Editor editor = prefs.edit();
-    editor.putLong("max_log_entries", value);
+    editor.putString("max_log_entries", String.valueOf(value));
+    editor.commit();
+  }
+
+  public void setPreSortBy(Sort value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putString("presort_by", value.toString());
     editor.commit();
   }
 
   public void setSortBy(Sort value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putString("sort_by", value.toString());
+    editor.commit();
+  }
+
+  public void setLogcatDebug(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("logcat_debug", value);
     editor.commit();
   }
 
@@ -97,10 +120,35 @@ public class Settings implements OnSharedPreferenceChangeListener {
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
       MyLog.d("Prefs changed: [" + key + "]");
 
+      if(key.equals("max_log_entries")) {
+        String value = prefs.getString(key, "15000");
+        MyLog.d("New " + key + " value [" + value + "]");
+        IptablesLog.logView.maxLogEntries = Long.parseLong(value);
+        IptablesLog.logView.pruneLogEntries();
+        return;
+      }
+
+      if(key.equals("logcat_debug")) {
+        boolean value = prefs.getBoolean(key, false);
+        MyLog.d("New " + key + " value [" + value + "]");
+        MyLog.enabled = value;
+        return;
+      }
+
+      if(key.equals("presort_by")) {
+        String value = prefs.getString(key, "BYTES");
+        MyLog.d("New " + key + " value [" + value + "]");
+        IptablesLog.appView.preSortBy = Sort.forValue(value);
+        IptablesLog.appView.preSortData();
+        IptablesLog.appView.sortData();
+        return;
+      }
+
       if(key.equals("sort_by")) {
         String value = prefs.getString(key, "BYTES");
-        MyLog.d("New sortBy value [" + value + "]");
+        MyLog.d("New " + key + " value [" + value + "]");
         IptablesLog.appView.sortBy = Sort.forValue(value);
+        IptablesLog.appView.preSortData();
         IptablesLog.appView.sortData();
         return;
       }

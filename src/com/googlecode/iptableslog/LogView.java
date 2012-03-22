@@ -25,6 +25,7 @@ public class LogView extends Activity implements IptablesLogListener
 {
   protected ArrayList<ListItem> listData;
   protected ArrayList<ListItem> listDataBuffer;
+  protected long maxLogEntries;
   private ListView listView;
   private CustomAdapter adapter;
   private ListViewUpdater updater;
@@ -88,6 +89,8 @@ public class LogView extends Activity implements IptablesLogListener
       layout.addView(listView);
 
       setContentView(layout);
+
+      maxLogEntries = IptablesLog.settings.getMaxLogEntries();
     }
 
   public void startUpdater() {
@@ -132,7 +135,36 @@ public class LogView extends Activity implements IptablesLogListener
 
     synchronized(listDataBuffer) {
       listDataBuffer.add(item);
+
+      while(listDataBuffer.size() > maxLogEntries)
+        listDataBuffer.remove(0);
     }
+  }
+
+  public void resetData() {
+    synchronized(listDataBuffer) {
+      listDataBuffer.clear();
+    }
+
+    synchronized(listData) {
+      listData.clear();
+    }
+
+    adapter.notifyDataSetChanged();
+  }
+
+  public void pruneLogEntries() {
+    synchronized(listDataBuffer) {
+      while(listDataBuffer.size() > maxLogEntries)
+        listDataBuffer.remove(0);
+    }
+
+    synchronized(listData) {
+      while(listData.size() > maxLogEntries)
+        listData.remove(0);
+    }
+
+    adapter.notifyDataSetChanged();
   }
 
   public void stopUpdater() {
@@ -148,12 +180,20 @@ public class LogView extends Activity implements IptablesLogListener
         MyLog.d("LogViewUpdater enter");
         int i = 0;
         synchronized(listDataBuffer) {
-          for(ListItem item : listDataBuffer) {
-            listData.add(item);
-            i++;
+          synchronized(listData) {
+            for(ListItem item : listDataBuffer) {
+              listData.add(item);
+              i++;
+            }
+            listDataBuffer.clear();
           }
-          listDataBuffer.clear();
         }
+        
+        synchronized(listData) {
+          while(listData.size() > maxLogEntries)
+            listData.remove(0);
+        }
+
         adapter.notifyDataSetChanged();
         MyLog.d("LogViewUpdater exit: added " + i + " items");
       }

@@ -4,11 +4,7 @@ import java.util.HashMap;
 
 public enum Sort 
 { 
-  UID, 
-    NAME, 
-    PACKETS, 
-    BYTES, 
-    TIMESTAMP; 
+  UID, NAME, PACKETS, BYTES, TIMESTAMP; 
 
   static final HashMap<String, Sort> sortMap = new HashMap<String, Sort>();
 

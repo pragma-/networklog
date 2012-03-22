@@ -29,7 +29,8 @@ public class AppView extends Activity implements IptablesLogListener
   public ArrayList<ListItem> listDataBuffer;
   public boolean listDataBufferIsDirty = false;
   private CustomAdapter adapter;
-  public Sort sortBy = Sort.BYTES;
+  public Sort preSortBy;
+  public Sort sortBy;
   public ListItem cachedSearchItem;
   private ListViewUpdater updater;
 
@@ -78,6 +79,33 @@ public class AppView extends Activity implements IptablesLogListener
     }
   }
 
+  protected void preSortData() {
+    Comparator<ListItem> sortMethod;
+
+    switch(preSortBy) {
+      case UID:
+        sortMethod = new SortAppsByUid();
+        break;
+      case NAME:
+        sortMethod = new SortAppsByName();
+        break;
+      case PACKETS:
+        sortMethod = new SortAppsByPackets();
+        break;
+      case BYTES:
+        sortMethod = new SortAppsByBytes();
+        break;
+      case TIMESTAMP:
+        sortMethod = new SortAppsByTimestamp();
+        break;
+      default:
+        return;
+    }
+
+    Collections.sort(listData, sortMethod);
+    adapter.notifyDataSetChanged();
+  }
+
   protected void sortData() {
     Comparator<ListItem> sortMethod;
 
@@ -105,6 +133,10 @@ public class AppView extends Activity implements IptablesLogListener
     adapter.notifyDataSetChanged();
   }
 
+  public void resetData() {
+    getInstalledApps();
+  }
+
   protected void getInstalledApps() {
     synchronized(listDataBuffer) {
       listData.clear();
@@ -126,13 +158,15 @@ public class AppView extends Activity implements IptablesLogListener
         listDataBuffer.add(item);
       }
 
+      sortBy = IptablesLog.settings.getSortBy();
+      MyLog.d("Sort-by loaded from settings: " + sortBy);
+
+      preSortBy = IptablesLog.settings.getPreSortBy();
+      MyLog.d("Pre-sort-by loaded from settings: " + preSortBy);
+
       runOnUiThread(new Runnable() {
         public void run() {
-          // sort by UID to put list in some kind of order
-          // (perhaps by name instead? or another user-preference?)
-          Collections.sort(listData, new SortAppsByUid());
-          // sort by user preference
-          sortData();
+          preSortData();
         }
       });
 
@@ -140,8 +174,6 @@ public class AppView extends Activity implements IptablesLogListener
       Collections.sort(listDataBuffer, new SortAppsByUid());
     }
 
-    sortBy = IptablesLog.settings.getSortBy();
-    MyLog.d("Sortby after from settings: " + sortBy);
   }
 
   protected void loadIcons() {
@@ -217,6 +249,7 @@ public class AppView extends Activity implements IptablesLogListener
         listData = new ArrayList<ListItem>();
         listDataBuffer = new ArrayList<ListItem>();
         cachedSearchItem = new ListItem();
+        cachedSearchItem.app = new ApplicationsTracker.AppEntry();
       } else {
         restoreData(IptablesLog.data);
       }
@@ -230,8 +263,6 @@ public class AppView extends Activity implements IptablesLogListener
       lv.setSmoothScrollbarEnabled(false);
       layout.addView(lv);
       setContentView(layout);
-
-      cachedSearchItem.app = new ApplicationsTracker.AppEntry();
     }
 
   @Override
@@ -255,6 +286,9 @@ public class AppView extends Activity implements IptablesLogListener
 
     if(cachedSearchItem == null)
       cachedSearchItem = new ListItem();
+
+    if(cachedSearchItem.app == null)
+      cachedSearchItem.app = new ApplicationsTracker.AppEntry();
   }
 
   public void onNewLogEntry(final IptablesLogTracker.LogEntry entry) {
@@ -366,6 +400,7 @@ public class AppView extends Activity implements IptablesLogListener
           }
         }
 
+        preSortData();
         sortData();
         MyLog.d("AppViewListUpdater exit");
       }

@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string-array name="presort_method">
+    <item>By AppID</item>
+    <item>By Name</item>
+  </string-array>
+
+  <string-array name="presort_method_values">
+    <item>UID</item>
+    <item>NAME</item>
+  </string-array>
+
   <string-array name="sort_method">
     <item>By AppID</item>
     <item>By Name</item>
