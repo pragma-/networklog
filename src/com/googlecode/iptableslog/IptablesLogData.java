@@ -33,6 +33,7 @@ public class IptablesLogData {
   ArrayList<AppView.ListItem> appViewListDataBuffer;
   boolean appViewListDataBufferIsDirty;
   Sort appViewSortBy;
+  Sort appViewPreSortBy;
   AppView.ListItem appViewCachedSearchItem;
 
   public void gatherAppViewData() {
@@ -41,6 +42,7 @@ public class IptablesLogData {
       appViewListDataBuffer = IptablesLog.appView.listDataBuffer;
       appViewListDataBufferIsDirty = IptablesLog.appView.listDataBufferIsDirty;
       appViewSortBy = IptablesLog.appView.sortBy;
+      appViewPreSortBy = IptablesLog.appView.preSortBy;
       appViewCachedSearchItem = IptablesLog.appView.cachedSearchItem;
     }
   }

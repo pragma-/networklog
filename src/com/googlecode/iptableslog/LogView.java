@@ -150,6 +150,7 @@ public class LogView extends Activity implements IptablesLogListener
       listData.clear();
     }
 
+    adapter.clear();
     adapter.notifyDataSetChanged();
   }
 
@@ -215,6 +216,10 @@ public class LogView extends Activity implements IptablesLogListener
       }
       MyLog.d("Stopped LogView updater " + this);
     }
+  }
+
+  public void setFilter(CharSequence s) {
+
   }
 
   private class CustomAdapter extends ArrayAdapter<ListItem> {

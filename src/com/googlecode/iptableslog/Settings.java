@@ -28,8 +28,20 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return prefs.getString("filter_text", "");
   }
 
-  public int getFilterOptions() {
-    return prefs.getInt("filter_options", 0);
+  public boolean getFilterUid() {
+    return prefs.getBoolean("filter_by_uid", true);
+  }
+
+  public boolean getFilterName() {
+    return prefs.getBoolean("filter_by_name", true);
+  }
+
+  public boolean getFilterAddress() {
+    return prefs.getBoolean("filter_by_address", true);
+  }
+
+  public boolean getFilterPort() {
+    return prefs.getBoolean("filter_by_port", true);
   }
 
   public long getMaxLogEntries() {
@@ -74,9 +86,27 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
-  public void setFilterOptions(int value) {
+  public void setFilterUid(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
-    editor.putInt("filter_options", value);
+    editor.putBoolean("filter_by_uid", value);
+    editor.commit();
+  }
+
+  public void setFilterName(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("filter_by_name", value);
+    editor.commit();
+  }
+
+  public void setFilterAddress(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("filter_by_address", value);
+    editor.commit();
+  }
+
+  public void setFilterPort(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("filter_by_port", value);
     editor.commit();
   }
 
@@ -118,7 +148,16 @@ public class Settings implements OnSharedPreferenceChangeListener {
 
   @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-      MyLog.d("Prefs changed: [" + key + "]");
+      MyLog.d("Shared prefs changed: [" + key + "]");
+
+      if(key.equals("filter_text")) {
+        String value = prefs.getString(key, "15000");
+        MyLog.d("New " + key + " value [" + value + "]");
+        IptablesLog.filterText = value;
+        IptablesLog.appView.setFilter(value);
+        IptablesLog.logView.setFilter(value);
+        return;
+      }
 
       if(key.equals("max_log_entries")) {
         String value = prefs.getString(key, "15000");

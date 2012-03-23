@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Filter;
 import android.widget.Filterable;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +27,9 @@ import java.util.Iterator;
 
 public class AppView extends Activity implements IptablesLogListener
 {
+  // listData bound to adapter
   public ArrayList<ListItem> listData;
+  // listDataBuffer used to buffer incoming log entries
   public ArrayList<ListItem> listDataBuffer;
   public boolean listDataBufferIsDirty = false;
   private CustomAdapter adapter;
@@ -102,8 +106,9 @@ public class AppView extends Activity implements IptablesLogListener
         return;
     }
 
-    Collections.sort(listData, sortMethod);
-    adapter.notifyDataSetChanged();
+    synchronized(listData) {
+      Collections.sort(listData, sortMethod);
+    }
   }
 
   protected void sortData() {
@@ -129,51 +134,61 @@ public class AppView extends Activity implements IptablesLogListener
         return;
     }
 
-    Collections.sort(listData, sortMethod);
-    adapter.notifyDataSetChanged();
+    synchronized(listData) {
+      Collections.sort(listData, sortMethod);
+    }
   }
 
   public void resetData() {
+    adapter.clear();
     getInstalledApps();
   }
 
   protected void getInstalledApps() {
     synchronized(listDataBuffer) {
-      listData.clear();
-      listDataBuffer.clear();
+      synchronized(listData) {
+        listData.clear();
+        listDataBuffer.clear();
 
-      for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps) {
-        if(IptablesLog.initRunner.running == false) {
-          MyLog.d("[AppView] Initialization aborted");
-          return;
+        for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps) {
+          if(IptablesLog.initRunner.running == false) {
+            MyLog.d("[AppView] Initialization aborted");
+            return;
+          }
+
+          ListItem item = new ListItem();
+          item.app = app;
+          item.lastTimestamp = "N/A";
+          item.uniqueHostsList = new ArrayList<String>();
+          item.uniqueHostsList.add(0, "N/A");
+          item.uniqueHosts = "N/A";
+          listData.add(item);
+          listDataBuffer.add(item);
         }
 
-        ListItem item = new ListItem();
-        item.app = app;
-        item.lastTimestamp = "N/A";
-        item.uniqueHostsList = new ArrayList<String>();
-        item.uniqueHostsList.add(0, "N/A");
-        item.uniqueHosts = "N/A";
-        listData.add(item);
-        listDataBuffer.add(item);
+        sortBy = IptablesLog.settings.getSortBy();
+        MyLog.d("Sort-by loaded from settings: " + sortBy);
+
+        preSortBy = IptablesLog.settings.getPreSortBy();
+        MyLog.d("Pre-sort-by loaded from settings: " + preSortBy);
+
+        runOnUiThread(new Runnable() {
+          public void run() {
+            preSortData();
+
+            // apply filter if there is one set
+            if(IptablesLog.filterText.length() > 0) {
+              setFilter(IptablesLog.filterText);
+            }
+
+            adapter.notifyDataSetChanged();
+          }
+        });
+
+        // listDataBuffer must always be sorted by UID for binary search
+        Collections.sort(listDataBuffer, new SortAppsByUid());
       }
-
-      sortBy = IptablesLog.settings.getSortBy();
-      MyLog.d("Sort-by loaded from settings: " + sortBy);
-
-      preSortBy = IptablesLog.settings.getPreSortBy();
-      MyLog.d("Pre-sort-by loaded from settings: " + preSortBy);
-
-      runOnUiThread(new Runnable() {
-        public void run() {
-          preSortData();
-        }
-      });
-
-      // listDataBuffer must always be sorted by UID for binary search
-      Collections.sort(listDataBuffer, new SortAppsByUid());
     }
-
   }
 
   protected void loadIcons() {
@@ -276,6 +291,7 @@ public class AppView extends Activity implements IptablesLogListener
     listDataBuffer = data.appViewListDataBuffer;
     listDataBufferIsDirty = data.appViewListDataBufferIsDirty;
     sortBy = data.appViewSortBy;
+    preSortBy = data.appViewPreSortBy;
     cachedSearchItem = data.appViewCachedSearchItem;
 
     if(listData == null)
@@ -289,6 +305,16 @@ public class AppView extends Activity implements IptablesLogListener
 
     if(cachedSearchItem.app == null)
       cachedSearchItem.app = new ApplicationsTracker.AppEntry();
+
+    if(sortBy == null) {
+      sortBy = IptablesLog.settings.getSortBy();
+      MyLog.d("[restoreData] Sort-by loaded from settings: " + sortBy);
+    }
+
+    if(preSortBy == null) {
+      preSortBy = IptablesLog.settings.getPreSortBy();
+      MyLog.d("[restoreData] Pre-sort-by loaded from settings: " + preSortBy);
+    }
   }
 
   public void onNewLogEntry(final IptablesLogTracker.LogEntry entry) {
@@ -373,35 +399,45 @@ public class AppView extends Activity implements IptablesLogListener
     boolean running = false;
     Runnable runner = new Runnable() {
       public void run() {
-        MyLog.d("AppViewListUpdater enter");
-        listData.clear();
-        synchronized(listDataBuffer) {
-          // todo: find a way so that we don't have to go through every entry
-          // in listDataBuffer here
-          for(ListItem item : listDataBuffer) {
-            if(item.uniqueHostsListNeedsSort) {
-              MyLog.d("Updating " + item);
-              item.uniqueHostsListNeedsSort = false;
+        synchronized(listData) {
+          MyLog.d("AppViewListUpdater enter");
+          listData.clear();
+          synchronized(listDataBuffer) {
+            // todo: find a way so that we don't have to go through every entry
+            // in listDataBuffer here
+            for(ListItem item : listDataBuffer) {
+              if(item.uniqueHostsListNeedsSort) {
+                MyLog.d("Updating " + item);
+                item.uniqueHostsListNeedsSort = false;
 
-              if(item.uniqueHostsList.get(0).equals("N/A")) {
-                item.uniqueHostsList.remove(0);
+                if(item.uniqueHostsList.get(0).equals("N/A")) {
+                  item.uniqueHostsList.remove(0);
+                }
+
+                Collections.sort(item.uniqueHostsList);
+
+                StringBuilder builder = new StringBuilder();
+                Iterator<String> itr = item.uniqueHostsList.iterator();
+                while(itr.hasNext()) {
+                  builder.append("\n  " + itr.next());
+                }
+                item.uniqueHosts = builder.toString();
               }
-
-              Collections.sort(item.uniqueHostsList);
-
-              StringBuilder builder = new StringBuilder();
-              Iterator<String> itr = item.uniqueHostsList.iterator();
-              while(itr.hasNext()) {
-                builder.append("\n  " + itr.next());
-              }
-              item.uniqueHosts = builder.toString();
+              listData.add(item);
             }
-            listData.add(item);
           }
         }
 
         preSortData();
         sortData();
+
+        // apply filter if there is one set
+        if(IptablesLog.filterText.length() != 0) {
+          setFilter(IptablesLog.filterText);
+        }
+
+        adapter.notifyDataSetChanged();
+
         MyLog.d("AppViewListUpdater exit");
       }
     };
@@ -425,12 +461,95 @@ public class AppView extends Activity implements IptablesLogListener
     }
   }
 
+  public void setFilter(CharSequence s) {
+    MyLog.d("[AppView] setFilter(" + s + ")");
+    adapter.getFilter().filter(s);
+  }
+
   private class CustomAdapter extends ArrayAdapter<ListItem> implements Filterable {
     LayoutInflater mInflater = (LayoutInflater) getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+    CustomFilter filter;
+    ArrayList<ListItem> originalItems = new ArrayList<ListItem>();
 
     public CustomAdapter(Context context, int resource, List<ListItem> objects) {
       super(context, resource, objects);
     }
+
+    private class CustomFilter extends Filter {
+      @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+          // store constraint for edittext/preferences 
+          IptablesLog.filterText = constraint;
+
+          constraint = constraint.toString().toLowerCase();
+
+          MyLog.d("[AppView] filter constraint: [" + constraint + "]");
+
+          FilterResults results = new FilterResults();
+
+          synchronized(listDataBuffer) {
+            originalItems.clear();
+            originalItems.addAll(listDataBuffer);
+          }
+
+          if(constraint == null || constraint.length() == 0) {
+            MyLog.d("[AppView] no constraint item count: " + originalItems.size());
+            results.values = originalItems;
+            results.count = originalItems.size();
+          } else {
+            synchronized(listData) {
+              ArrayList<ListItem> filteredItems = new ArrayList<ListItem>();
+              ArrayList<ListItem> localItems = new ArrayList<ListItem>();
+              localItems.addAll(originalItems);
+              int count = localItems.size();
+
+              MyLog.d("[AppView] item count: " + count);
+
+              for(int i = 0; i < count; i++) {
+                ListItem item = localItems.get(i);
+                MyLog.d("[AppView] testing filtered item " + item + "; constraint: [" + constraint + "]");
+
+                if((IptablesLog.filterName && item.app.nameLowerCase.contains(constraint))
+                    || (IptablesLog.filterUid && item.app.uidString.contains(constraint))
+                    || (IptablesLog.filterAddress && item.uniqueHosts.contains(constraint))
+                    || (IptablesLog.filterPort && item.uniqueHosts.contains(":" + constraint))) {
+                  MyLog.d("[AppView] adding filtered item " + item);
+                  filteredItems.add(item);
+                }
+              }
+
+              results.values = filteredItems;
+              results.count = filteredItems.size();
+            }
+          }
+
+          return results;
+        }
+
+      @SuppressWarnings("unchecked")
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+          final ArrayList<ListItem> localItems = (ArrayList<ListItem>) results.values;
+
+          clear();
+
+          int count = localItems.size();
+          for(int i = 0; i < count; i++)
+            add(localItems.get(i));
+
+          preSortData();
+          sortData();
+          notifyDataSetChanged();
+        }
+    }
+
+    @Override
+      public CustomFilter getFilter() {
+        if(filter == null) {
+          filter = new CustomFilter();
+        }
+        return filter;
+      }
 
     @Override
       public View getView(int position, View convertView, ViewGroup parent) {

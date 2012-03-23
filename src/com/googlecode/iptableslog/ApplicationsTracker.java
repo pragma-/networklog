@@ -20,9 +20,11 @@ public class ApplicationsTracker {
 
   public static class AppEntry {
     String name;
+    String nameLowerCase;
     String packageName;
     Drawable icon;
     int uid;
+    String uidString;
   }
 
   public static void restoreData(IptablesLogData data) {
@@ -95,8 +97,10 @@ public class ApplicationsTracker {
 
       AppEntry entry = new AppEntry();
       entry.name = name;
+      entry.nameLowerCase = name.toLowerCase();
       entry.icon = null;
       entry.uid = uid;
+      entry.uidString = String.valueOf(uid);
       entry.packageName = new String(app.packageName);
 
       installedApps.add(entry);
@@ -110,9 +114,11 @@ public class ApplicationsTracker {
 
     AppEntry entry = new AppEntry();
     entry.name = "Kernel";
+    entry.nameLowerCase = "kernel";
     entry.icon = context.getResources().getDrawable(R.drawable.linux_icon);
     entry.packageName = null;
     entry.uid = -1;
+    entry.uidString = "-1";
 
     installedApps.add(entry);
     installedAppsHash.put("-1", entry);
@@ -121,9 +127,11 @@ public class ApplicationsTracker {
     if(entryHash == null) {
       entry = new AppEntry();
       entry.name = "Root";
+      entry.nameLowerCase = "root";
       entry.icon = context.getResources().getDrawable(R.drawable.root_icon);
       entry.packageName = null;
       entry.uid = 0;
+      entry.uidString = "0";
 
       installedApps.add(entry);
       installedAppsHash.put("0", entry);

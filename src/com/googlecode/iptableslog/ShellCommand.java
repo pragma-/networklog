@@ -80,7 +80,7 @@ public class ShellCommand {
 
   public boolean stdoutAvailable() {
     try {
-      MyLog.d("stdoutAvailable [" + tag + "]: " + stdout.available());
+      //MyLog.d("stdoutAvailable [" + tag + "]: " + stdout.available());
       return stdout.available() > 0;
     } catch (java.io.IOException e) { Log.d("IptablesLog", "stdoutAvailable error", e); return false; }
   }

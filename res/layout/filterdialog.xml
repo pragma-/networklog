@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent">
+  <RelativeLayout
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingLeft="6dp"
+    android:paddingRight="6dp">
+    <EditText
+      android:id="@+id/filterText"
+      android:singleLine="true"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+
+    <TextView
+      android:id="@+id/label"
+      android:text="Applies to:"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" 
+      android:layout_below="@id/filterText" />
+
+    <CheckBox
+      android:id="@+id/filterUid" 
+      android:text="App IDs"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_below="@id/label" />
+
+    <CheckBox
+      android:id="@+id/filterAddress" 
+      android:text="Addresses"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_below="@id/filterUid" />
+
+    <CheckBox
+      android:id="@+id/filterPort" 
+      android:text="Ports"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignBaseline="@id/filterAddress"
+      android:layout_toRightOf="@id/filterAddress"
+      android:layout_alignBottom="@id/filterAddress" />
+
+    <CheckBox
+      android:id="@+id/filterName" 
+      android:text="App names"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignBaseline="@id/filterUid"
+      android:layout_toRightOf="@id/filterUid" 
+      android:layout_alignLeft="@id/filterPort"
+      android:layout_alignBottom="@id/filterUid" />
+  </RelativeLayout>
+</ScrollView>

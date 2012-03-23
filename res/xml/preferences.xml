@@ -12,9 +12,10 @@
       android:key="resolve_ports"
       android:title="Resolve ports"
       android:summary="Resolve known port numbers to service names" />
-    <EditTextPreference
+    <Preference
       android:defaultValue=""
-      android:key="filter_text"
+      android:persistent="false"
+      android:key="filter_dialog"
       android:title="Filter"
       android:summary="Configure advanced filtering options" />
     <CheckBoxPreference

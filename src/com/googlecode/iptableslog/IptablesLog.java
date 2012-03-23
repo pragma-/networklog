@@ -18,17 +18,28 @@ import android.content.DialogInterface;
 public class IptablesLog extends TabActivity
 {
   public static IptablesLogData data = null;
+
   public static LogView logView;
   public static AppView appView;
+  
   public static IptablesLogTracker logTracker;
+  
   public static Settings settings;
+  
   public static Handler handler;
+  
   public static Object scriptLock = new Object();
 
-  public enum State { LOAD_APPS, LOAD_LIST, LOAD_ICONS, RUNNING  };
+  public static CharSequence filterText;
+  public static boolean filterUid;
+  public static boolean filterName;
+  public static boolean filterAddress;
+  public static boolean filterPort;
+  
   public static State state;
-  public static InitRunner initRunner;
+  public enum State { LOAD_APPS, LOAD_LIST, LOAD_ICONS, RUNNING  };
 
+  public static InitRunner initRunner;
   public class InitRunner implements Runnable
   {
     private Context context;
@@ -88,6 +99,11 @@ public class IptablesLog extends TabActivity
       settings = new Settings(this);
 
       MyLog.enabled = settings.getLogcatDebug();
+      filterText = settings.getFilterText();
+      filterUid = settings.getFilterUid();
+      filterName = settings.getFilterName();
+      filterAddress = settings.getFilterAddress();
+      filterPort = settings.getFilterPort();
 
       data = (IptablesLogData) getLastNonConfigurationInstance(); 
 
@@ -264,6 +280,9 @@ public class IptablesLog extends TabActivity
   @Override
     public boolean onOptionsItemSelected(MenuItem item) {
       switch(item.getItemId()) {
+        case R.id.filter:
+          showFilterDialog();
+          break;
         case R.id.reset:
           confirmReset(this);
           break;
@@ -310,10 +329,16 @@ public class IptablesLog extends TabActivity
       confirmExit(this);
     }
 
+  public void showFilterDialog() {
+    Context context = getLocalActivityManager().getCurrentActivity();
+    new FilterDialog(context);
+  }
+
   public void confirmExit(Context context) {
     AlertDialog.Builder builder = new AlertDialog.Builder(context);
-    builder.setMessage("Are you sure you want to exit?")
-      .setCancelable(false)
+    builder.setTitle("Confirm exit")
+      .setMessage("Are you sure you want to exit?")
+      .setCancelable(true)
       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
           IptablesLog.this.finish();
@@ -330,8 +355,9 @@ public class IptablesLog extends TabActivity
 
   public void confirmReset(Context context) {
     AlertDialog.Builder builder = new AlertDialog.Builder(context);
-    builder.setMessage("Are you sure you want to reset data?")
-      .setCancelable(false)
+    builder.setTitle("Confirm data reset")
+      .setMessage("Are you sure you want to reset data?")
+      .setCancelable(true)
       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
           appView.resetData();

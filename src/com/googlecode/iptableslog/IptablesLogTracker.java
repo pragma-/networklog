@@ -347,7 +347,7 @@ public class IptablesLogTracker {
       String result;
       running = true;
       while(running && command.checkForExit() == false) {
-        MyLog.d("LogTracker " + this + " checking stdout");
+        // MyLog.d("LogTracker " + this + " checking stdout");
 
         if(command.stdoutAvailable()) {
           result = command.readStdout();
