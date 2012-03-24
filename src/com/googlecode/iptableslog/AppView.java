@@ -44,7 +44,9 @@ public class AppView extends Activity implements IptablesLogListener
     protected String lastTimestamp;
     protected ArrayList<String> uniqueHostsList;
     protected boolean uniqueHostsListNeedsSort = false;
+    protected boolean uniqueHostsIsFiltered = false;
     protected String uniqueHosts;
+    protected String uniqueHostsUnfiltered;
 
     @Override
       public String toString() {
@@ -161,6 +163,7 @@ public class AppView extends Activity implements IptablesLogListener
           item.uniqueHostsList = new ArrayList<String>();
           item.uniqueHostsList.add(0, "N/A");
           item.uniqueHosts = "N/A";
+          item.uniqueHostsUnfiltered = "N/A";
           listData.add(item);
           listDataBuffer.add(item);
         }
@@ -358,8 +361,8 @@ public class AppView extends Activity implements IptablesLogListener
         item.totalBytes = entry.bytes;
         item.lastTimestamp = entry.timestamp;
 
-        String src = entry.src + ":" + entry.spt;
-        String dst = entry.dst + ":" + entry.dpt;
+        String src = entry.src.toLowerCase() + ":" + entry.spt;
+        String dst = entry.dst.toLowerCase() + ":" + entry.dpt;
 
         if(!entry.src.equals(IptablesLogTracker.localIpAddr) && !item.uniqueHostsList.contains(src)) {
           item.uniqueHostsList.add(src);
@@ -421,6 +424,7 @@ public class AppView extends Activity implements IptablesLogListener
                   builder.append("\n  " + itr.next());
                 }
                 item.uniqueHosts = builder.toString();
+                item.uniqueHostsUnfiltered = new String(builder.toString());
               }
               listData.add(item);
             }
@@ -493,6 +497,20 @@ public class AppView extends Activity implements IptablesLogListener
 
           if(constraint == null || constraint.length() == 0) {
             MyLog.d("[AppView] no constraint item count: " + originalItems.size());
+
+            // undo uniqueHosts filtering
+            for(ListItem item : originalItems) {
+              if(item.uniqueHostsIsFiltered) {
+                item.uniqueHostsIsFiltered = false;
+                StringBuilder builder = new StringBuilder();
+                Iterator<String> itr = item.uniqueHostsList.iterator();
+                while(itr.hasNext()) {
+                  builder.append("\n  " + itr.next());
+                }
+                item.uniqueHosts = builder.toString();
+              }
+            }
+
             results.values = originalItems;
             results.count = originalItems.size();
           } else {
@@ -509,10 +527,32 @@ public class AppView extends Activity implements IptablesLogListener
 
               if((IptablesLog.filterName && item.app.nameLowerCase.contains(constraint))
                   || (IptablesLog.filterUid && item.app.uidString.contains(constraint))
-                  || (IptablesLog.filterAddress && item.uniqueHosts.contains(constraint))
-                  || (IptablesLog.filterPort && item.uniqueHosts.contains(":" + constraint))) 
+                  || (IptablesLog.filterAddress && item.uniqueHostsUnfiltered.contains(constraint))
+                  || (IptablesLog.filterPort && item.uniqueHostsUnfiltered.contains(":" + constraint))) 
               {
                 MyLog.d("[AppView] adding filtered item " + item);
+
+                // rebuild unique hosts list with filter applied if constraint matches address or port
+                if(((IptablesLog.filterAddress && item.uniqueHostsUnfiltered.contains(constraint))
+                    || (IptablesLog.filterPort && item.uniqueHostsUnfiltered.contains(":" + constraint)))
+                    && !item.uniqueHostsList.get(0).equals("N/A")) {
+                  // todo: sort by user preference from settings
+                  Collections.sort(item.uniqueHostsList);
+
+                  StringBuilder builder = new StringBuilder();
+                  Iterator<String> itr = item.uniqueHostsList.iterator();
+                  while(itr.hasNext()) {
+                    String host = itr.next();
+                    if((IptablesLog.filterAddress && host.contains(constraint))
+                        || (IptablesLog.filterPort && host.contains(":" + constraint)))
+                    {
+                      builder.append("\n  " + host);
+                    }
+                  }
+                  item.uniqueHosts = builder.toString();
+                  item.uniqueHostsIsFiltered = true;
+                }
+
                 filteredItems.add(item);
               }
             }

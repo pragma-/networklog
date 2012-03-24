@@ -303,7 +303,7 @@ public class LogView extends Activity implements IptablesLogListener
               if((IptablesLog.filterName && item.mNameLowerCase.contains(constraint))
                 || (IptablesLog.filterUid && item.mUidString.contains(constraint))
                 || (IptablesLog.filterAddress && (item.srcAddr.contains(constraint) || item.dstAddr.contains(constraint)))
-                || (IptablesLog.filterPort && (item.srcPortString.contains(constraint) || item.dstPortString.contains(constraint))))
+                || (IptablesLog.filterPort && (item.srcPortString.equals(constraint) || item.dstPortString.equals(constraint))))
               {
                 MyLog.d("[LogView] adding filtered item " + item);
                 filteredItems.add(item);
