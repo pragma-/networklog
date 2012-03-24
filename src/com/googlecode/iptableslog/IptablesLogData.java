@@ -20,11 +20,13 @@ public class IptablesLogData {
   /* LogView */
   ArrayList<LogView.ListItem> logViewListData;
   ArrayList<LogView.ListItem> logViewListDataBuffer;
+  ArrayList<LogView.ListItem> logViewListDataUnfiltered;
 
   public void gatherLogViewData() {
     if(IptablesLog.logView != null) {
       logViewListData = IptablesLog.logView.listData;
       logViewListDataBuffer = IptablesLog.logView.listDataBuffer;
+      logViewListDataUnfiltered = IptablesLog.logView.listDataUnfiltered;
     }
   }
 

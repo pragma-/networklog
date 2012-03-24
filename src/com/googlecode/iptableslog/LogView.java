@@ -103,6 +103,11 @@ public class LogView extends Activity implements IptablesLogListener
       setContentView(layout);
 
       maxLogEntries = IptablesLog.settings.getMaxLogEntries();
+
+      if(IptablesLog.filterText.length() > 0) {
+        setFilter(IptablesLog.filterText);
+        adapter.notifyDataSetChanged();
+      }
     }
 
   public void startUpdater() {
@@ -118,7 +123,7 @@ public class LogView extends Activity implements IptablesLogListener
   public void restoreData(IptablesLogData data) {
     listData = data.logViewListData;
     listDataBuffer = data.logViewListDataBuffer;
-    //listDataUnfiltered = data.logViewListDataUnfiltered;
+    listDataUnfiltered = data.logViewListDataUnfiltered;
   }
 
   @Override
@@ -221,6 +226,9 @@ public class LogView extends Activity implements IptablesLogListener
           while(listData.size() > maxLogEntries)
             listData.remove(0);
         }
+
+        if(IptablesLog.filterText.length() > 0)
+          setFilter(IptablesLog.filterText);
 
         adapter.notifyDataSetChanged();
         MyLog.d("LogViewUpdater exit: added " + i + " items");
