@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Filter;
 import android.widget.Filterable;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,8 +24,12 @@ import java.util.Comparator;
 
 public class LogView extends Activity implements IptablesLogListener
 {
+  // bound to adapter
   protected ArrayList<ListItem> listData;
+  // buffers incoming log entries
   protected ArrayList<ListItem> listDataBuffer;
+  // holds all entries, used for filtering
+  protected ArrayList<ListItem> listDataUnfiltered;
   protected long maxLogEntries;
   private ListView listView;
   private CustomAdapter adapter;
@@ -33,18 +38,24 @@ public class LogView extends Activity implements IptablesLogListener
   protected class ListItem {
     protected Drawable mIcon;
     protected int mUid;
+    protected String mUidString;
     protected String mName;
+    protected String mNameLowerCase;
     protected String srcAddr;
     protected int srcPort;
+    protected String srcPortString;
     protected String dstAddr;
     protected int dstPort;
+    protected String dstPortString;
     protected int len;
     protected String timestamp;
 
     ListItem(Drawable icon, int uid, String name) {
       mIcon = icon;
       mUid = uid;
+      mUidString = String.valueOf(uid);
       mName = name;
+      mNameLowerCase = name.toLowerCase();
     }
 
     @Override
@@ -72,6 +83,7 @@ public class LogView extends Activity implements IptablesLogListener
       if(IptablesLog.data == null) {
         listData = new ArrayList<ListItem>();
         listDataBuffer = new ArrayList<ListItem>();
+        listDataUnfiltered = new ArrayList<ListItem>();
       } else {
         restoreData(IptablesLog.data);
       }
@@ -106,6 +118,7 @@ public class LogView extends Activity implements IptablesLogListener
   public void restoreData(IptablesLogData data) {
     listData = data.logViewListData;
     listDataBuffer = data.logViewListDataBuffer;
+    //listDataUnfiltered = data.logViewListDataUnfiltered;
   }
 
   @Override
@@ -126,8 +139,10 @@ public class LogView extends Activity implements IptablesLogListener
 
     item.srcAddr = entry.src;
     item.srcPort = entry.spt;
+    item.srcPortString = String.valueOf(entry.spt);
     item.dstAddr = entry.dst;
     item.dstPort = entry.dpt;
+    item.dstPortString = String.valueOf(entry.dpt);
     item.len = entry.len;
     item.timestamp = entry.timestamp;
 
@@ -150,7 +165,6 @@ public class LogView extends Activity implements IptablesLogListener
       listData.clear();
     }
 
-    adapter.clear();
     adapter.notifyDataSetChanged();
   }
 
@@ -158,6 +172,11 @@ public class LogView extends Activity implements IptablesLogListener
     synchronized(listDataBuffer) {
       while(listDataBuffer.size() > maxLogEntries)
         listDataBuffer.remove(0);
+    }
+
+    synchronized(listDataUnfiltered) {
+      while(listDataUnfiltered.size() > maxLogEntries)
+        listDataUnfiltered.remove(0);
     }
 
     synchronized(listData) {
@@ -182,14 +201,22 @@ public class LogView extends Activity implements IptablesLogListener
         int i = 0;
         synchronized(listDataBuffer) {
           synchronized(listData) {
-            for(ListItem item : listDataBuffer) {
-              listData.add(item);
-              i++;
+            synchronized(listDataUnfiltered) {
+              for(ListItem item : listDataBuffer) {
+                listData.add(item);
+                listDataUnfiltered.add(item);
+                i++;
+              }
+              listDataBuffer.clear();
             }
-            listDataBuffer.clear();
           }
         }
         
+        synchronized(listDataUnfiltered) {
+          while(listDataUnfiltered.size() > maxLogEntries)
+            listDataUnfiltered.remove(0);
+        }
+
         synchronized(listData) {
           while(listData.size() > maxLogEntries)
             listData.remove(0);
@@ -219,15 +246,93 @@ public class LogView extends Activity implements IptablesLogListener
   }
 
   public void setFilter(CharSequence s) {
-
+    MyLog.d("[LogView] setFilter(" + s + ")");
+    adapter.getFilter().filter(s);
   }
 
   private class CustomAdapter extends ArrayAdapter<ListItem> {
     LayoutInflater mInflater = (LayoutInflater) getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+    CustomFilter filter;
+    ArrayList<ListItem> originalItems = new ArrayList<ListItem>();
 
     public CustomAdapter(Context context, int resource, List<ListItem> objects) {
       super(context, resource, objects);
     }
+
+    private class CustomFilter extends Filter {
+      @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+          // store constraint for filter dialog/preferences
+          IptablesLog.filterText = constraint;
+
+          constraint = constraint.toString().toLowerCase();
+
+          MyLog.d("[LogView] filter constraint: [" + constraint + "]");
+
+          FilterResults results = new FilterResults();
+
+          synchronized(listDataUnfiltered) {
+            originalItems.clear();
+            originalItems.addAll(listDataUnfiltered);
+          }
+
+          if(constraint == null || constraint.length() == 0) {
+            MyLog.d("[LogView] no constraint item count: " + originalItems.size());
+            results.values = originalItems;
+            results.count = originalItems.size();
+          } else {
+            ArrayList<ListItem> filteredItems = new ArrayList<ListItem>();
+            ArrayList<ListItem> localItems = new ArrayList<ListItem>();
+            localItems.addAll(originalItems);
+            int count = localItems.size();
+
+            MyLog.d("[LogView] item count: " + count);
+
+            for(int i = 0; i < count; i++) {
+              ListItem item = localItems.get(i);
+              MyLog.d("[LogView] testing filtered item " + item + "; constraint: [" + constraint + "]");
+
+              if((IptablesLog.filterName && item.mNameLowerCase.contains(constraint))
+                || (IptablesLog.filterUid && item.mUidString.contains(constraint))
+                || (IptablesLog.filterAddress && (item.srcAddr.contains(constraint) || item.dstAddr.contains(constraint)))
+                || (IptablesLog.filterPort && (item.srcPortString.contains(constraint) || item.dstPortString.contains(constraint))))
+              {
+                MyLog.d("[LogView] adding filtered item " + item);
+                filteredItems.add(item);
+              }
+            }
+
+            results.values = filteredItems;
+            results.count = filteredItems.size();
+          }
+
+          return results;
+        }
+
+      @SuppressWarnings("unchecked")
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+          final ArrayList<ListItem> localItems = (ArrayList<ListItem>) results.values;
+
+          synchronized(listData) {
+            clear();
+
+            int count = localItems.size();
+            for(int i = 0; i < count; i++)
+              add(localItems.get(i));
+
+            notifyDataSetChanged();
+          }
+        }
+    }
+
+    @Override
+      public CustomFilter getFilter() {
+        if(filter == null) {
+          filter = new CustomFilter();
+        }
+        return filter;
+      }
 
     @Override
       public View getView(int position, View convertView, ViewGroup parent) {

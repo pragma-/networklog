@@ -150,15 +150,6 @@ public class Settings implements OnSharedPreferenceChangeListener {
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
       MyLog.d("Shared prefs changed: [" + key + "]");
 
-      if(key.equals("filter_text")) {
-        String value = prefs.getString(key, "15000");
-        MyLog.d("New " + key + " value [" + value + "]");
-        IptablesLog.filterText = value;
-        IptablesLog.appView.setFilter(value);
-        IptablesLog.logView.setFilter(value);
-        return;
-      }
-
       if(key.equals("max_log_entries")) {
         String value = prefs.getString(key, "15000");
         MyLog.d("New " + key + " value [" + value + "]");

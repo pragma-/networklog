@@ -18,7 +18,6 @@ import android.view.LayoutInflater;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
@@ -29,7 +28,7 @@ public class AppView extends Activity implements IptablesLogListener
 {
   // listData bound to adapter
   public ArrayList<ListItem> listData;
-  // listDataBuffer used to buffer incoming log entries
+  // listDataBuffer used to buffer incoming log entries and to hold original list data for filtering
   public ArrayList<ListItem> listDataBuffer;
   public boolean listDataBufferIsDirty = false;
   private CustomAdapter adapter;
@@ -151,7 +150,7 @@ public class AppView extends Activity implements IptablesLogListener
         listDataBuffer.clear();
 
         for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps) {
-          if(IptablesLog.initRunner.running == false) {
+          if(IptablesLog.state != IptablesLog.State.RUNNING && IptablesLog.initRunner.running == false) {
             MyLog.d("[AppView] Initialization aborted");
             return;
           }
@@ -497,30 +496,29 @@ public class AppView extends Activity implements IptablesLogListener
             results.values = originalItems;
             results.count = originalItems.size();
           } else {
-            synchronized(listData) {
-              ArrayList<ListItem> filteredItems = new ArrayList<ListItem>();
-              ArrayList<ListItem> localItems = new ArrayList<ListItem>();
-              localItems.addAll(originalItems);
-              int count = localItems.size();
+            ArrayList<ListItem> filteredItems = new ArrayList<ListItem>();
+            ArrayList<ListItem> localItems = new ArrayList<ListItem>();
+            localItems.addAll(originalItems);
+            int count = localItems.size();
 
-              MyLog.d("[AppView] item count: " + count);
+            MyLog.d("[AppView] item count: " + count);
 
-              for(int i = 0; i < count; i++) {
-                ListItem item = localItems.get(i);
-                MyLog.d("[AppView] testing filtered item " + item + "; constraint: [" + constraint + "]");
+            for(int i = 0; i < count; i++) {
+              ListItem item = localItems.get(i);
+              MyLog.d("[AppView] testing filtered item " + item + "; constraint: [" + constraint + "]");
 
-                if((IptablesLog.filterName && item.app.nameLowerCase.contains(constraint))
-                    || (IptablesLog.filterUid && item.app.uidString.contains(constraint))
-                    || (IptablesLog.filterAddress && item.uniqueHosts.contains(constraint))
-                    || (IptablesLog.filterPort && item.uniqueHosts.contains(":" + constraint))) {
-                  MyLog.d("[AppView] adding filtered item " + item);
-                  filteredItems.add(item);
-                }
+              if((IptablesLog.filterName && item.app.nameLowerCase.contains(constraint))
+                  || (IptablesLog.filterUid && item.app.uidString.contains(constraint))
+                  || (IptablesLog.filterAddress && item.uniqueHosts.contains(constraint))
+                  || (IptablesLog.filterPort && item.uniqueHosts.contains(":" + constraint))) 
+              {
+                MyLog.d("[AppView] adding filtered item " + item);
+                filteredItems.add(item);
               }
-
-              results.values = filteredItems;
-              results.count = filteredItems.size();
             }
+
+            results.values = filteredItems;
+            results.count = filteredItems.size();
           }
 
           return results;
@@ -531,15 +529,17 @@ public class AppView extends Activity implements IptablesLogListener
         protected void publishResults(CharSequence constraint, FilterResults results) {
           final ArrayList<ListItem> localItems = (ArrayList<ListItem>) results.values;
 
-          clear();
+          synchronized(listData) {
+            clear();
 
-          int count = localItems.size();
-          for(int i = 0; i < count; i++)
-            add(localItems.get(i));
+            int count = localItems.size();
+            for(int i = 0; i < count; i++)
+              add(localItems.get(i));
 
-          preSortData();
-          sortData();
-          notifyDataSetChanged();
+            preSortData();
+            sortData();
+            notifyDataSetChanged();
+          }
         }
     }
 
