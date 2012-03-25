@@ -1,6 +1,7 @@
 package com.googlecode.iptableslog;
 
 import android.util.Log;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -17,6 +18,7 @@ import java.lang.Runnable;
 
 public class IptablesLogTracker {
   Hashtable<String, LogEntry> logEntriesHash;
+  HashMap<String, Integer> logEntriesMap;
   ArrayList<IptablesLogListener> listenerList;
   static String localIpAddr;
   ShellCommand command;
@@ -44,9 +46,13 @@ public class IptablesLogTracker {
 
     if(IptablesLog.data == null) {
       logEntriesHash = new Hashtable<String, LogEntry>();
+      logEntriesMap = new HashMap<String, Integer>();
       StringBuilder buffer = new StringBuilder(8192 * 2);
+
+      initEntriesMap();
     } else {
       logEntriesHash = IptablesLog.data.iptablesLogTrackerLogEntriesHash;
+      logEntriesMap = IptablesLog.data.iptablesLogTrackerLogEntriesMap;
       buffer = IptablesLog.data.iptablesLogTrackerBuffer;
       command = IptablesLog.data.iptablesLogTrackerCommand;
     }
@@ -54,6 +60,21 @@ public class IptablesLogTracker {
 
   public static String getTimestamp() {
     return format.format(new Date());
+  }
+
+  public void initEntriesMap() {
+    NetStat netstat = new NetStat();
+    ArrayList<NetStat.Connection> connections = netstat.getConnections();
+
+    for(NetStat.Connection connection : connections) {
+      String mapKey = connection.src + ":" + connection.spt + " -> " + connection.dst + ":" + connection.dpt;
+      MyLog.d("[netstat src-dst] New entry " + connection.uid + " for [" + mapKey + "]");
+      logEntriesMap.put(mapKey, Integer.valueOf(connection.uid));
+
+      mapKey = connection.dst + ":" + connection.dpt + " -> " + connection.src + ":" + connection.spt;
+      MyLog.d("[netstat dst-src] New entry " + connection.uid + " for [" + mapKey + "]");
+      logEntriesMap.put(mapKey, Integer.valueOf(connection.uid));
+    }
   }
 
   public static String getLocalIpAddress() {
@@ -80,7 +101,7 @@ public class IptablesLogTracker {
   public void parseResult(String result) {
     MyLog.d("--------------- parsing result --------------");
     int pos = 0, buffer_pos = 0; 
-    String src, dst, len, spt, dpt, uid;
+    String src, dst, lenString, sptString, dptString, uidString;
 
     /*
     MyLog.d("buffer length: " + buffer.length() + "; result length: " + result.length());
@@ -114,7 +135,6 @@ public class IptablesLogTracker {
       MyLog.d("parsing line [" + line + "]");
       */
 
-
       pos = result.indexOf("SRC=", pos);
       if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for SRC"); */ break; };
       int space = result.indexOf(" ", pos);
@@ -131,78 +151,137 @@ public class IptablesLogTracker {
       if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for LEN"); */ break; };
       space = result.indexOf(" ", pos);
       if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for LEN space"); */ break; };
-      len = result.substring(pos + 4, space);
+      lenString = result.substring(pos + 4, space);
      
       pos = result.indexOf("SPT=", pos);
       if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for SPT"); */ break; };
       space = result.indexOf(" ", pos);
       if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for SPT space"); */ break; };
-      spt = result.substring(pos + 4, space);
+      sptString = result.substring(pos + 4, space);
     
       pos = result.indexOf("DPT=", pos);
       if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for DPT"); */ break; };
       space = result.indexOf(" ", pos);
       if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for DPT space"); */ break; };
-      dpt = result.substring(pos + 4, space);
+      dptString = result.substring(pos + 4, space);
 
       int lastpos = pos;
       pos = result.indexOf("UID=", pos);
       // MyLog.d("newline pos: " + newline + "; UID pos: " + pos);
       if(pos == -1 || (pos > newline && newline != -1)) {
-        ///* MyLog.d("Setting UID unspecified");
-        uid = "-1";
+        uidString = "-1";
         pos = lastpos;
       } else {
         /* MyLog.d("Looking for UID newline"); */
         if(newline == -1) { /* MyLog.d("buffering [" + line + "] for UID newline"); */ break; };
-        uid = result.substring(pos + 4, newline);
+        uidString = result.substring(pos + 4, newline);
       }
 
-      LogEntry entry = logEntriesHash.get(uid);
+      int uid;
+      int spt;
+      int dpt;
+      int len;
+
+      try {
+        uid = Integer.parseInt(uidString.split("[^0-9-]+")[0]);
+      } catch (Exception e) {
+        Log.e("IptablesLog", "Bad data for uid: [" + uidString + "]", e);
+        uid = -13;
+      }
+
+      try {
+        spt = Integer.parseInt(sptString.split("[^0-9-]+")[0]);
+      } catch (Exception e) {
+        Log.e("IptablesLog", "Bad data for spt: [" + sptString + "]", e);
+        spt = -1;
+      }
+
+      try {
+        dpt = Integer.parseInt(dptString.split("[^0-9-]+")[0]);
+      } catch (Exception e) {
+        Log.e("IptablesLog", "Bad data for dpt: [" + dptString + "]", e);
+        dpt = -1;
+      }
+
+      try {
+        len = Integer.parseInt(lenString.split("[^0-9-]+")[0]);
+      } catch (Exception e) {
+        Log.e("IptablesLog", "Bad data for len: [" + lenString + "]", e);
+        len = -1;
+      }
+
+      String srcDstMapKey = src + ":" + spt + " -> " + dst + ":" + dpt; 
+      String dstSrcMapKey = dst + ":" + dpt + " -> " + src + ":" + spt; 
+
+      Integer srcDstMapUid = logEntriesMap.get(srcDstMapKey);
+      Integer dstSrcMapUid = logEntriesMap.get(dstSrcMapKey);
+
+      if(srcDstMapUid == null) {
+        MyLog.d("[src-dst] No entry uid for " + uid + " [" + srcDstMapKey + "]");
+        if(uid == -1) {
+          if(dstSrcMapUid != null) {
+            MyLog.d("[dst-src] Reassigning kernel packet -1 to " + dstSrcMapUid);
+            uid = dstSrcMapUid;
+          } else {
+            MyLog.d("[src-dst] New kernel entry -1 for [" + srcDstMapKey + "]");
+            srcDstMapUid = uid;
+            logEntriesMap.put(srcDstMapKey, srcDstMapUid);
+          }
+        } else {
+          MyLog.d("[src-dst] New entry " + uid + " for [" + srcDstMapKey + "]");
+          srcDstMapUid = uid;
+          logEntriesMap.put(srcDstMapKey, srcDstMapUid);
+        }
+      } else {
+        MyLog.d("[src-dst] Found entry uid " + srcDstMapUid + " for " + uid + " [" + srcDstMapKey + "]");
+        uid = srcDstMapUid;
+      }
+      
+      if(dstSrcMapUid == null) {
+        MyLog.d("[dst-src] No entry uid for " + uid + " [" + dstSrcMapKey + "]");
+        if(uid == -1) {
+          if(srcDstMapUid != null) {
+            MyLog.d("[src-dst] Reassigning kernel packet -1 to " + srcDstMapUid);
+            uid = srcDstMapUid;
+          } else {
+            MyLog.d("[dst-src] New kernel entry -1 for [" + dstSrcMapKey + "]");
+            dstSrcMapUid = uid;
+            logEntriesMap.put(dstSrcMapKey, dstSrcMapUid);
+          }
+        } else {
+          MyLog.d("[dst-src] New entry " + uid + " for [" + dstSrcMapKey + "]");
+          dstSrcMapUid = uid;
+          logEntriesMap.put(dstSrcMapKey, dstSrcMapUid);
+        }
+      } else {
+        MyLog.d("[dst-src] Found entry uid " + dstSrcMapUid + " for " + uid + " [" + dstSrcMapKey + "]");
+        uid = dstSrcMapUid;
+      }
+
+      // get packet and byte counters
+      LogEntry entry = logEntriesHash.get(String.valueOf(uid));
 
       if(entry == null)
         entry = new LogEntry();
 
-      try {
-        entry.uid = Integer.parseInt(uid.split("[^0-9-]+")[0]);
-      } catch (Exception e) {
-        Log.e("IptablesLog", "Bad data for uid: " + uid, e);
-        entry.uid = -13;
-      }
-
+      entry.uid = uid;
       entry.src = src;
+      entry.spt = spt;
       entry.dst = dst;
-
-      try {
-        entry.spt = Integer.parseInt(spt.split("[^0-9-]+")[0]);
-      } catch (Exception e) {
-        Log.e("IptablesLog", "Bad data for spt: " + spt, e);
-        entry.spt = -1;
-      }
-
-      try {
-        entry.dpt = Integer.parseInt(dpt.split("[^0-9-]+")[0]);
-      } catch (Exception e) {
-        Log.e("IptablesLog", "Bad data for dpt: " + dpt, e);
-        entry.dpt = -1;
-      }
-
-      try {
-        entry.len = Integer.parseInt(len.split("[^0-9-]+")[0]);
-      } catch (Exception e) {
-        Log.e("IptablesLog", "Bad data for len: " + len, e);
-        entry.len = -1;
-      }
-
+      entry.dpt = dpt;
+      entry.len = len;
       entry.packets++;
+
       if(entry.len > 0) {
         entry.bytes += entry.len;
       }
+
       entry.timestamp = getTimestamp();
 
-      logEntriesHash.put(uid, entry);
+      logEntriesHash.put(String.valueOf(uid), entry);
 
-      MyLog.d("+++ entry uid: " + entry.uid + " " + entry.src + " " + entry.spt + " " + entry.dst + " " + entry.dpt + " " + entry.len + " " + entry.bytes + " " + entry.timestamp);
+      if(MyLog.enabled)
+        MyLog.d("+++ entry: (" + entry.uid + ") " + entry.src + ":" + entry.spt + " -> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "] " + entry.bytes + " " + entry.timestamp);
 
       notifyNewEntry(entry);
 

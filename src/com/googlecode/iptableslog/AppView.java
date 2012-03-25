@@ -18,7 +18,9 @@ import android.view.LayoutInflater;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 
+import java.util.Set;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,12 +39,24 @@ public class AppView extends Activity implements IptablesLogListener
   public ListItem cachedSearchItem;
   private ListViewUpdater updater;
 
+  public class HostInfo {
+    protected int sentPackets;
+    protected int sentBytes;
+    protected String sentTimestamp;
+    protected int sentPort;
+    protected int receivedPackets;
+    protected int receivedBytes;
+    protected String receivedTimestamp;
+    protected int receivedPort;
+    protected String resolvedAddress;
+  }
+
   public class ListItem {
     protected ApplicationsTracker.AppEntry app;
     protected int totalPackets;
     protected int totalBytes;
     protected String lastTimestamp;
-    protected ArrayList<String> uniqueHostsList;
+    protected HashMap<String, HostInfo> uniqueHostsList;
     protected boolean uniqueHostsListNeedsSort = false;
     protected boolean uniqueHostsIsFiltered = false;
     protected String uniqueHosts;
@@ -160,19 +174,12 @@ public class AppView extends Activity implements IptablesLogListener
           ListItem item = new ListItem();
           item.app = app;
           item.lastTimestamp = "N/A";
-          item.uniqueHostsList = new ArrayList<String>();
-          item.uniqueHostsList.add(0, "N/A");
+          item.uniqueHostsList = new HashMap<String, HostInfo>();
           item.uniqueHosts = "N/A";
           item.uniqueHostsUnfiltered = "N/A";
           listData.add(item);
           listDataBuffer.add(item);
         }
-
-        sortBy = IptablesLog.settings.getSortBy();
-        MyLog.d("Sort-by loaded from settings: " + sortBy);
-
-        preSortBy = IptablesLog.settings.getPreSortBy();
-        MyLog.d("Pre-sort-by loaded from settings: " + preSortBy);
 
         runOnUiThread(new Runnable() {
           public void run() {
@@ -253,6 +260,12 @@ public class AppView extends Activity implements IptablesLogListener
       super.onCreate(savedInstanceState);
 
       MyLog.d("AppView created");
+
+      sortBy = IptablesLog.settings.getSortBy();
+      MyLog.d("Sort-by loaded from settings: " + sortBy);
+
+      preSortBy = IptablesLog.settings.getPreSortBy();
+      MyLog.d("Pre-sort-by loaded from settings: " + preSortBy);
 
       LinearLayout layout = new LinearLayout(this);
       layout.setOrientation(LinearLayout.VERTICAL);
@@ -364,13 +377,39 @@ public class AppView extends Activity implements IptablesLogListener
         String src = entry.src.toLowerCase() + ":" + entry.spt;
         String dst = entry.dst.toLowerCase() + ":" + entry.dpt;
 
-        if(!entry.src.equals(IptablesLogTracker.localIpAddr) && !item.uniqueHostsList.contains(src)) {
-          item.uniqueHostsList.add(src);
+        HostInfo info;
+
+        // todo: make filtering out local IP a user preference
+        if(!entry.src.equals(IptablesLogTracker.localIpAddr)) {
+          info = item.uniqueHostsList.get(src);
+
+          if(info == null) {
+            info = new HostInfo();
+          }
+
+          info.receivedPackets++;
+          info.receivedBytes += entry.len;
+          info.receivedTimestamp = entry.timestamp;
+          info.receivedPort = entry.spt;
+
+          item.uniqueHostsList.put(src, info);
           item.uniqueHostsListNeedsSort = true;
         }
 
-        if(!entry.dst.equals(IptablesLogTracker.localIpAddr) && !item.uniqueHostsList.contains(dst)) {
-          item.uniqueHostsList.add(dst);
+        // todo: make filtering out local IP a user preference
+        if(!entry.dst.equals(IptablesLogTracker.localIpAddr)) {
+          info = item.uniqueHostsList.get(dst);
+
+          if(info == null) {
+            info = new HostInfo();
+          }
+
+          info.sentPackets++;
+          info.sentBytes += entry.len;
+          info.sentTimestamp = entry.timestamp;
+          info.sentPort = entry.dpt;
+
+          item.uniqueHostsList.put(dst, info);
           item.uniqueHostsListNeedsSort = true;
         }
 
@@ -396,6 +435,38 @@ public class AppView extends Activity implements IptablesLogListener
     IptablesLog.logTracker.addListener(this);
   }
 
+  public static void buildUniqueHosts(ListItem item, boolean applyToUnfiltered) {
+    List<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
+
+    // todo: sort by user preference (bytes, timestamp, address, ports)
+    Collections.sort(list);
+
+    StringBuilder builder = new StringBuilder();
+    Iterator<String> itr = list.iterator();
+    while(itr.hasNext()) {
+      String host = itr.next();
+      HostInfo info = item.uniqueHostsList.get(host);
+      builder.append("\n  ");
+      builder.append(host);
+      if(info.sentPackets > 0) {
+        builder.append("\n    ");
+        builder.append("Sent: " + info.sentPackets + " packets, " + info.sentBytes + " bytes");
+        builder.append("\n    ");
+        builder.append("Timestamp: " + info.sentTimestamp);
+      }
+      if(info.receivedPackets > 0) {
+        builder.append("\n    ");
+        builder.append("Received: " + info.receivedPackets + " packets, " + info.receivedBytes + " bytes");
+        builder.append("\n    ");
+        builder.append("Timestamp: " + info.receivedTimestamp);
+      }
+    }
+    item.uniqueHosts = builder.toString();
+
+    if(applyToUnfiltered == true)
+      item.uniqueHostsUnfiltered = new String(builder.toString());
+  }
+
   // todo: this is largely duplicated in LogView -- move to its own file
   private class ListViewUpdater implements Runnable {
     boolean running = false;
@@ -412,21 +483,9 @@ public class AppView extends Activity implements IptablesLogListener
                 MyLog.d("Updating " + item);
                 item.uniqueHostsListNeedsSort = false;
 
-                if(item.uniqueHostsList.get(0).equals("N/A")) {
-                  item.uniqueHostsList.remove(0);
-                }
-
-                Collections.sort(item.uniqueHostsList);
-
-                StringBuilder builder = new StringBuilder();
-                Iterator<String> itr = item.uniqueHostsList.iterator();
-                while(itr.hasNext()) {
-                  builder.append("\n  " + itr.next());
-                }
-                item.uniqueHosts = builder.toString();
-                item.uniqueHostsUnfiltered = new String(builder.toString());
+                buildUniqueHosts(item, true);
+                listData.add(item);
               }
-              listData.add(item);
             }
           }
         }
@@ -502,12 +561,7 @@ public class AppView extends Activity implements IptablesLogListener
             for(ListItem item : originalItems) {
               if(item.uniqueHostsIsFiltered) {
                 item.uniqueHostsIsFiltered = false;
-                StringBuilder builder = new StringBuilder();
-                Iterator<String> itr = item.uniqueHostsList.iterator();
-                while(itr.hasNext()) {
-                  builder.append("\n  " + itr.next());
-                }
-                item.uniqueHosts = builder.toString();
+                buildUniqueHosts(item, false);
               }
             }
 
@@ -534,19 +588,35 @@ public class AppView extends Activity implements IptablesLogListener
 
                 // rebuild unique hosts list with filter applied if constraint matches address or port
                 if(((IptablesLog.filterAddress && item.uniqueHostsUnfiltered.contains(constraint))
-                    || (IptablesLog.filterPort && item.uniqueHostsUnfiltered.contains(":" + constraint)))
-                    && !item.uniqueHostsList.get(0).equals("N/A")) {
-                  // todo: sort by user preference from settings
-                  Collections.sort(item.uniqueHostsList);
+                    || (IptablesLog.filterPort && item.uniqueHostsUnfiltered.contains(":" + constraint)))) 
+                {
+                  List<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
+
+                  // todo: sort by user preference (bytes, timestamp, address, ports)
+                  Collections.sort(list);
 
                   StringBuilder builder = new StringBuilder();
-                  Iterator<String> itr = item.uniqueHostsList.iterator();
+                  Iterator<String> itr = list.iterator();
                   while(itr.hasNext()) {
                     String host = itr.next();
                     if((IptablesLog.filterAddress && host.contains(constraint))
                         || (IptablesLog.filterPort && host.contains(":" + constraint)))
                     {
-                      builder.append("\n  " + host);
+                      HostInfo info = item.uniqueHostsList.get(host);
+                      builder.append("\n  ");
+                      builder.append(host);
+                      if(info.sentPackets > 0) {
+                        builder.append("\n    ");
+                        builder.append("Sent: " + info.sentPackets + " packets, " + info.sentBytes + " bytes");
+                        builder.append("\n    ");
+                        builder.append("Timestamp: " + info.sentTimestamp);
+                      }
+                      if(info.receivedPackets > 0) {
+                        builder.append("\n    ");
+                        builder.append("Received: " + info.receivedPackets + " packets, " + info.receivedBytes + " bytes");
+                        builder.append("\n    ");
+                        builder.append("Timestamp: " + info.receivedTimestamp);
+                      }
                     }
                   }
                   item.uniqueHosts = builder.toString();
