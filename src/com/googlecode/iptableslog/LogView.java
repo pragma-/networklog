@@ -350,10 +350,11 @@ public class LogView extends Activity implements IptablesLogListener
               boolean matched = false;
 
               for(String c : constraints) {
+                c = c.trim();
                 if((IptablesLog.filterName && item.mNameLowerCase.contains(c))
                     || (IptablesLog.filterUid && item.mUidString.contains(c))
                     || (IptablesLog.filterAddress && (item.srcAddr.contains(c) || item.dstAddr.contains(c)))
-                    || (IptablesLog.filterPort && (item.srcPortString.equals(c) || item.dstPortString.equals(c))))
+                    || (IptablesLog.filterPort && (item.srcPortString.toLowerCase().equals(c) || item.dstPortString.toLowerCase().equals(c))))
                 {
                   matched = true;
                 }

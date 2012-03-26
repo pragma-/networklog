@@ -17,6 +17,8 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
+import android.text.Html;
+import android.widget.TextView.BufferType;
 
 import java.util.Set;
 import java.util.ArrayList;
@@ -82,7 +84,7 @@ public class AppView extends Activity implements IptablesLogListener
 
   protected static class SortAppsByTimestamp implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
-      return o2.lastTimestamp.compareTo(o1.lastTimestamp.equals("N/A") ? "0" : o1.lastTimestamp);
+      return o2.lastTimestamp.compareTo(o1.lastTimestamp.equals("") ? "0" : o1.lastTimestamp);
     }
   }
 
@@ -179,10 +181,10 @@ public class AppView extends Activity implements IptablesLogListener
 
             ListItem item = new ListItem();
             item.app = app;
-            item.lastTimestamp = "N/A";
+            item.lastTimestamp = "";
             item.uniqueHostsList = new HashMap<String, HostInfo>();
-            item.uniqueHosts = "N/A";
-            item.uniqueHostsUnfiltered = "N/A";
+            item.uniqueHosts = "";
+            item.uniqueHostsUnfiltered = "";
             listData.add(item);
             listDataBuffer.add(item);
           }
@@ -457,24 +459,20 @@ public class AppView extends Activity implements IptablesLogListener
     // todo: sort by user preference (bytes, timestamp, address, ports)
     Collections.sort(list);
 
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = new StringBuilder("Addrs:");
     Iterator<String> itr = list.iterator();
     while(itr.hasNext()) {
       String host = itr.next();
       HostInfo info = item.uniqueHostsList.get(host);
-      builder.append("\n  ");
-      builder.append(host);
+      builder.append("<br>&nbsp;&nbsp;");
+      builder.append("<u>" + host + "</u>");
       if(info.sentPackets > 0) {
-        builder.append("\n    ");
-        builder.append("Sent: " + info.sentPackets + " packets, " + info.sentBytes + " bytes");
-        builder.append("\n    ");
-        builder.append("Timestamp: " + info.sentTimestamp);
+        builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
+        builder.append("<small>Sent:</small> <b>" + info.sentPackets + "</b> <small>packets,</small> <b>" + info.sentBytes + "</b> <small>bytes</small> (" + info.sentTimestamp.substring(info.sentTimestamp.indexOf(' ') + 1, info.sentTimestamp.length()) + ")");
       }
       if(info.receivedPackets > 0) {
-        builder.append("\n    ");
-        builder.append("Received: " + info.receivedPackets + " packets, " + info.receivedBytes + " bytes");
-        builder.append("\n    ");
-        builder.append("Timestamp: " + info.receivedTimestamp);
+        builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
+        builder.append("<small>Recv:</small> <em>" + info.receivedPackets + "</em> <small>packets,</small> <em>" + info.receivedBytes + "</em> <small>bytes</small> (" + info.receivedTimestamp.substring(info.receivedTimestamp.indexOf(' ') + 1, info.receivedTimestamp.length()) + ")");
       }
     }
     item.uniqueHosts = builder.toString();
@@ -600,6 +598,7 @@ public class AppView extends Activity implements IptablesLogListener
               boolean matched = false;
 
               for(String c : constraints) {
+                c = c.trim();
                 if((IptablesLog.filterName && item.app.nameLowerCase.contains(c))
                     || (IptablesLog.filterUid && item.app.uidString.contains(c))
                     || (IptablesLog.filterAddress && item.uniqueHostsUnfiltered.contains(c))
@@ -616,7 +615,7 @@ public class AppView extends Activity implements IptablesLogListener
                 // rebuild unique hosts list with filter applied if constraint matches address or port
                 if(IptablesLog.filterAddress || IptablesLog.filterPort) 
                 {
-                  StringBuilder builder = new StringBuilder();
+                  StringBuilder builder = new StringBuilder("Addrs:");
 
                   List<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
                   // todo: sort by user preference (bytes, timestamp, address, ports)
@@ -626,6 +625,7 @@ public class AppView extends Activity implements IptablesLogListener
                     String host = itr.next();
                     matched = false;
                     for(String c : constraints) {
+                      c = c.trim();
                       if((IptablesLog.filterAddress && host.contains(c))
                           || (IptablesLog.filterPort && host.contains(":" + c)))
                       {
@@ -635,19 +635,15 @@ public class AppView extends Activity implements IptablesLogListener
 
                     if(matched) {
                       HostInfo info = item.uniqueHostsList.get(host);
-                      builder.append("\n  ");
-                      builder.append(host);
+                      builder.append("<br>&nbsp;&nbsp;");
+                      builder.append("<u>" + host + "</u>");
                       if(info.sentPackets > 0) {
-                        builder.append("\n    ");
-                        builder.append("Sent: " + info.sentPackets + " packets, " + info.sentBytes + " bytes");
-                        builder.append("\n    ");
-                        builder.append("Timestamp: " + info.sentTimestamp);
+                        builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
+                        builder.append("<small>Sent:</small> <b>" + info.sentPackets + "</b> <small>packets,</small> <b>" + info.sentBytes + "</b> <small>bytes</small> (" + info.sentTimestamp.substring(info.sentTimestamp.indexOf(' ') + 1, info.sentTimestamp.length()) + ")");
                       }
                       if(info.receivedPackets > 0) {
-                        builder.append("\n    ");
-                        builder.append("Received: " + info.receivedPackets + " packets, " + info.receivedBytes + " bytes");
-                        builder.append("\n    ");
-                        builder.append("Timestamp: " + info.receivedTimestamp);
+                        builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
+                        builder.append("<small>Recv:</small> <em>" + info.receivedPackets + "</em> <small>packets,</small> <em>" + info.receivedBytes + "</em> <small>bytes</small> (" + info.receivedTimestamp.substring(info.receivedTimestamp.indexOf(' ') + 1, info.receivedTimestamp.length()) + ")");
                       }
                     }
                   }
@@ -728,10 +724,13 @@ public class AppView extends Activity implements IptablesLogListener
         bytes.setText("Bytes: " + item.totalBytes);
 
         timestamp = holder.getTimestamp();
-        timestamp.setText("Timestamp: " + item.lastTimestamp);
+        if(item.lastTimestamp.length() > 0)
+          timestamp.setText("(" + item.lastTimestamp + ")");
+        else
+          timestamp.setText("");
 
         hosts = holder.getUniqueHosts();
-        hosts.setText("Addrs: " + item.uniqueHosts);
+        hosts.setText(Html.fromHtml(item.uniqueHosts), BufferType.SPANNABLE);
 
         return convertView;
       }

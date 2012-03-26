@@ -44,6 +44,7 @@ public class NetworkResolver {
     serviceMap.put("117","UUCP");
     serviceMap.put("118","SQL");
     serviceMap.put("119","NNTP");
+    serviceMap.put("123","NTP");
     serviceMap.put("135","DCE");
     serviceMap.put("135","RPCL");
     serviceMap.put("137","NETBIOSN");

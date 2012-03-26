@@ -30,10 +30,11 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
       android:id="@+id/appLastTimestamp" 
-      android:layout_below="@id/appIcon" />
+      android:layout_below="@id/appBytes"
+      android:layout_alignLeft="@id/appName" />
    <TextView
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
       android:id="@+id/appUniqueHosts" 
-      android:layout_below="@id/appLastTimestamp" />
+      android:layout_below="@id/appIcon" />
  </RelativeLayout>
