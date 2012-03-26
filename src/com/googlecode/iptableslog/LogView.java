@@ -64,6 +64,22 @@ public class LogView extends Activity implements IptablesLogListener
       }
   }
 
+  public void refreshIcons() {
+    synchronized(listData) {
+      for(ListItem item : listData) {
+        if(item.mIcon == null) {
+          MyLog.d("[LogView] refreshing icon for " + item);
+          ApplicationsTracker.AppEntry entry = ApplicationsTracker.installedAppsHash.get(String.valueOf(item.mUid));
+          if(entry == null) {
+            MyLog.d("[LogView] no app entry found, icon not refreshed");
+          } else {
+            item.mIcon = entry.icon;
+          }
+        }
+      }
+    }
+  }
+
   /** Called when the activity is first created. */
   @Override
     public void onCreate(Bundle savedInstanceState)
@@ -258,7 +274,7 @@ public class LogView extends Activity implements IptablesLogListener
     adapter.getFilter().filter(s);
   }
 
-  private class CustomAdapter extends ArrayAdapter<ListItem> {
+  private class CustomAdapter extends ArrayAdapter<ListItem> implements Filterable {
     LayoutInflater mInflater = (LayoutInflater) getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
     CustomFilter filter;
     ArrayList<ListItem> originalItems = new ArrayList<ListItem>();
@@ -296,15 +312,25 @@ public class LogView extends Activity implements IptablesLogListener
 
             MyLog.d("[LogView] item count: " + count);
 
+            String[] constraints = constraint.toString().split(",");
+
             for(int i = 0; i < count; i++) {
               ListItem item = localItems.get(i);
               MyLog.d("[LogView] testing filtered item " + item + "; constraint: [" + constraint + "]");
 
-              if((IptablesLog.filterName && item.mNameLowerCase.contains(constraint))
-                || (IptablesLog.filterUid && item.mUidString.contains(constraint))
-                || (IptablesLog.filterAddress && (item.srcAddr.contains(constraint) || item.dstAddr.contains(constraint)))
-                || (IptablesLog.filterPort && (item.srcPortString.equals(constraint) || item.dstPortString.equals(constraint))))
-              {
+              boolean matched = false;
+
+              for(String c : constraints) {
+                if((IptablesLog.filterName && item.mNameLowerCase.contains(c))
+                    || (IptablesLog.filterUid && item.mUidString.contains(c))
+                    || (IptablesLog.filterAddress && (item.srcAddr.contains(c) || item.dstAddr.contains(c)))
+                    || (IptablesLog.filterPort && (item.srcPortString.equals(c) || item.dstPortString.equals(c))))
+                {
+                  matched = true;
+                }
+              }
+
+              if(matched) {
                 MyLog.d("[LogView] adding filtered item " + item);
                 filteredItems.add(item);
               }

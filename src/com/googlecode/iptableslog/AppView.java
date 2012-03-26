@@ -165,20 +165,22 @@ public class AppView extends Activity implements IptablesLogListener
         listData.clear();
         listDataBuffer.clear();
 
-        for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps) {
-          if(IptablesLog.state != IptablesLog.State.RUNNING && IptablesLog.initRunner.running == false) {
-            MyLog.d("[AppView] Initialization aborted");
-            return;
-          }
+        synchronized(ApplicationsTracker.installedAppsLock) {
+          for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps) {
+            if(IptablesLog.state != IptablesLog.State.RUNNING && IptablesLog.initRunner.running == false) {
+              MyLog.d("[AppView] Initialization aborted");
+              return;
+            }
 
-          ListItem item = new ListItem();
-          item.app = app;
-          item.lastTimestamp = "N/A";
-          item.uniqueHostsList = new HashMap<String, HostInfo>();
-          item.uniqueHosts = "N/A";
-          item.uniqueHostsUnfiltered = "N/A";
-          listData.add(item);
-          listDataBuffer.add(item);
+            ListItem item = new ListItem();
+            item.app = app;
+            item.lastTimestamp = "N/A";
+            item.uniqueHostsList = new HashMap<String, HostInfo>();
+            item.uniqueHosts = "N/A";
+            item.uniqueHostsUnfiltered = "N/A";
+            listData.add(item);
+            listDataBuffer.add(item);
+          }
         }
 
         runOnUiThread(new Runnable() {
@@ -186,9 +188,9 @@ public class AppView extends Activity implements IptablesLogListener
             preSortData();
 
             // apply filter if there is one set
-            if(IptablesLog.filterText.length() > 0) {
+            //if(IptablesLog.filterText.length() > 0) {
               setFilter(IptablesLog.filterText);
-            }
+            //}
 
             adapter.notifyDataSetChanged();
           }
@@ -232,6 +234,11 @@ public class AppView extends Activity implements IptablesLogListener
                 runOnUiThread(new Runnable() {
                   public void run() {
                     MyLog.d("Updating adapter for icons");
+                    /*
+                    preSortData();
+                    sortData();
+                    setFilter(IptablesLog.filterText);
+                    */
                     // refresh adapter to display icon 
                     adapter.notifyDataSetChanged();
                   }
@@ -245,7 +252,11 @@ public class AppView extends Activity implements IptablesLogListener
           // refresh adapter to display icons
           runOnUiThread(new Runnable() {
             public void run() {
+              preSortData();
+              sortData();
+              setFilter(IptablesLog.filterText);
               adapter.notifyDataSetChanged();
+              IptablesLog.logView.refreshIcons();
             }
           });
         }
@@ -477,7 +488,7 @@ public class AppView extends Activity implements IptablesLogListener
           listData.clear();
           synchronized(listDataBuffer) {
             // todo: find a way so that we don't have to go through every entry
-            // in listDataBuffer here
+            // in listDataBuffer here (maybe use some sort of reference mapping)
             for(ListItem item : listDataBuffer) {
               if(item.uniqueHostsListNeedsSort) {
                 MyLog.d("Updating " + item);
@@ -488,17 +499,17 @@ public class AppView extends Activity implements IptablesLogListener
               }
             }
           }
+
+          preSortData();
+          sortData();
+
+          // apply filter if there is one set
+          //if(IptablesLog.filterText.length() > 0) {
+            setFilter(IptablesLog.filterText);
+          //}
+
+          adapter.notifyDataSetChanged();
         }
-
-        preSortData();
-        sortData();
-
-        // apply filter if there is one set
-        if(IptablesLog.filterText.length() != 0) {
-          setFilter(IptablesLog.filterText);
-        }
-
-        adapter.notifyDataSetChanged();
 
         MyLog.d("AppViewListUpdater exit");
       }
@@ -528,7 +539,7 @@ public class AppView extends Activity implements IptablesLogListener
     adapter.getFilter().filter(s);
   }
 
-  private class CustomAdapter extends ArrayAdapter<ListItem> implements Filterable {
+  private class CustomAdapter extends ArrayAdapter<ListItem> /* implements Filterable */ {
     LayoutInflater mInflater = (LayoutInflater) getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
     CustomFilter filter;
     ArrayList<ListItem> originalItems = new ArrayList<ListItem>();
@@ -575,33 +586,49 @@ public class AppView extends Activity implements IptablesLogListener
 
             MyLog.d("[AppView] item count: " + count);
 
+            String[] constraints = constraint.toString().split(",");
+
             for(int i = 0; i < count; i++) {
               ListItem item = localItems.get(i);
               MyLog.d("[AppView] testing filtered item " + item + "; constraint: [" + constraint + "]");
 
-              if((IptablesLog.filterName && item.app.nameLowerCase.contains(constraint))
-                  || (IptablesLog.filterUid && item.app.uidString.contains(constraint))
-                  || (IptablesLog.filterAddress && item.uniqueHostsUnfiltered.contains(constraint))
-                  || (IptablesLog.filterPort && item.uniqueHostsUnfiltered.contains(":" + constraint))) 
-              {
+              boolean matched = false;
+
+              for(String c : constraints) {
+                if((IptablesLog.filterName && item.app.nameLowerCase.contains(c))
+                    || (IptablesLog.filterUid && item.app.uidString.contains(c))
+                    || (IptablesLog.filterAddress && item.uniqueHostsUnfiltered.contains(c))
+                    || (IptablesLog.filterPort && item.uniqueHostsUnfiltered.contains(":" + c))) 
+                {
+                  matched = true;
+                }
+              }
+
+              if(matched) {
                 MyLog.d("[AppView] adding filtered item " + item);
+                filteredItems.add(item);
 
                 // rebuild unique hosts list with filter applied if constraint matches address or port
-                if(((IptablesLog.filterAddress && item.uniqueHostsUnfiltered.contains(constraint))
-                    || (IptablesLog.filterPort && item.uniqueHostsUnfiltered.contains(":" + constraint)))) 
+                if(IptablesLog.filterAddress || IptablesLog.filterPort) 
                 {
-                  List<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
-
-                  // todo: sort by user preference (bytes, timestamp, address, ports)
-                  Collections.sort(list);
-
                   StringBuilder builder = new StringBuilder();
+
+                  List<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
+                  // todo: sort by user preference (bytes, timestamp, address, ports)
                   Iterator<String> itr = list.iterator();
+
                   while(itr.hasNext()) {
                     String host = itr.next();
-                    if((IptablesLog.filterAddress && host.contains(constraint))
-                        || (IptablesLog.filterPort && host.contains(":" + constraint)))
-                    {
+                    matched = false;
+                    for(String c : constraints) {
+                      if((IptablesLog.filterAddress && host.contains(c))
+                          || (IptablesLog.filterPort && host.contains(":" + c)))
+                      {
+                        matched = true;
+                      }
+                    }
+
+                    if(matched) {
                       HostInfo info = item.uniqueHostsList.get(host);
                       builder.append("\n  ");
                       builder.append(host);
@@ -622,8 +649,6 @@ public class AppView extends Activity implements IptablesLogListener
                   item.uniqueHosts = builder.toString();
                   item.uniqueHostsIsFiltered = true;
                 }
-
-                filteredItems.add(item);
               }
             }
 
@@ -643,13 +668,14 @@ public class AppView extends Activity implements IptablesLogListener
             clear();
 
             int count = localItems.size();
-            for(int i = 0; i < count; i++)
+            for(int i = 0; i < count; i++) {
               add(localItems.get(i));
-
-            preSortData();
-            sortData();
-            notifyDataSetChanged();
+            }
           }
+
+          preSortData();
+          sortData();
+          notifyDataSetChanged();
         }
     }
 
@@ -672,7 +698,10 @@ public class AppView extends Activity implements IptablesLogListener
         TextView timestamp;
         TextView hosts;
 
-        ListItem item = getItem(position);
+        ListItem item;
+        synchronized(listData) {
+          item = listData.get(position);
+        }
 
         if(convertView == null) {
           convertView = mInflater.inflate(R.layout.appitem, null);

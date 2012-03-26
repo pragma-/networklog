@@ -6,28 +6,17 @@
       android:defaultValue="false"
       android:key="resolve_hosts"
       android:title="Resolve hosts"
-      android:summary="Resolve IP addresses to DNS hostnames" />
+      android:summary="Resolve IP addresses to DNS hostnames (Note: makes DNS network queries on port 53)" />
     <CheckBoxPreference
       android:defaultValue="true"
       android:key="resolve_ports"
       android:title="Resolve ports"
-      android:summary="Resolve known port numbers to service names" />
+      android:summary="Resolve known port numbers to service names (Note: Uses internal list; no network queries made)" />
     <Preference
-      android:defaultValue=""
       android:persistent="false"
       android:key="filter_dialog"
       android:title="Filter"
       android:summary="Configure advanced filtering options" />
-    <CheckBoxPreference
-      android:defaultValue="false"
-      android:key="ignorelist"
-      android:title="Ignore list"
-      android:summary="Choose which apps to hide" />
-    <CheckBoxPreference
-      android:defaultValue="false"
-      android:key="logcat_debug"
-      android:title="Logcat debug output"
-      android:summary="Print verbose debugging output to logcat" />
   </PreferenceCategory>
 
   <PreferenceCategory
@@ -45,8 +34,8 @@
     <ListPreference
       android:defaultValue="NAME"
       android:key="presort_by"
-      android:title="Initial sort method"
-      android:summary="Select how to initially sort the list of apps before any data is available (default: By name)"
+      android:title="Base sort method"
+      android:summary="Select how to sort the app entries that have no data yet (default: By name)"
       android:entries="@array/presort_method"
       android:entryValues="@array/presort_method_values"
       android:dialogTitle="Initial Sort" />
@@ -54,7 +43,7 @@
       android:defaultValue="BYTES"
       android:key="sort_by"
       android:title="Sort method"
-      android:summary="Select how to sort the list of apps when data is available (default: By bytes)" 
+      android:summary="Select how to sort the app entries that have data (default: By bytes)" 
       android:entries="@array/sort_method"
       android:entryValues="@array/sort_method_values"
       android:dialogTitle="Sort" />
@@ -63,13 +52,13 @@
   <PreferenceCategory
     android:title="Notifications">
     <CheckBoxPreference
-      android:defaultValue="true"
+      android:defaultValue="false"
       android:key="notifications_statusbar"
       android:title="Status bar"
       android:summary="Display status bar notification when an app makes a network transmission" />
-    <CheckBoxPreference
-      android:defaultValue="false"
-      android:key="notifications_statusbar_apps"
+    <Preference
+      android:persistent="false"
+      android:key="notifications_statusbar_apps_dialog"
       android:title="Choose apps"
       android:summary="Select which apps should have status bar notifications"
       android:dependency="notifications_statusbar"
@@ -79,12 +68,30 @@
        android:key="notifications_toast"
        android:title="Toast pop-up"
        android:summary="Display toast pop-up notification when an app makes a network transmission" />
-     <CheckBoxPreference
-       android:defaultValue="false"
-      android:key="notifications_toast_apps"
+     <Preference
+      android:persistent="false"
+      android:key="notifications_toast_apps_dialog"
       android:title="Choose apps"
       android:summary="Select which apps should have toast notifications"
       android:dependency="notifications_toast"
       android:layout="?android:attr/preferenceLayoutChild" />
+  </PreferenceCategory>
+
+  <PreferenceCategory
+    android:title="Graphs/Charts">
+    <Preference
+      android:persistent="false"
+      android:key="graphs_dialog"
+      android:title="Configure graphs/charts"
+      android:summary="Configure how graphs/charts are displayed" />
+  </PreferenceCategory>
+
+  <PreferenceCategory
+    android:title="Debugging">
+    <CheckBoxPreference
+      android:defaultValue="false"
+      android:key="logcat_debug"
+      android:title="Logcat debug output"
+      android:summary="Print verbose debugging output to logcat" />
   </PreferenceCategory>
 </PreferenceScreen>
