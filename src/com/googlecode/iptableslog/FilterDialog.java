@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.app.AlertDialog;
 import android.view.View;
 import android.view.LayoutInflater;
+import android.text.Html;
 
 public class FilterDialog implements DialogInterface.OnDismissListener {
   EditText editText;
@@ -19,7 +20,7 @@ public class FilterDialog implements DialogInterface.OnDismissListener {
   CheckBox checkboxAddress;
   CheckBox checkboxPort;
 
-  public FilterDialog(Context context) {
+  public FilterDialog(final Context context) {
     LayoutInflater inflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
     View view = inflater.inflate(R.layout.filterdialog, null);
 
@@ -74,9 +75,25 @@ public class FilterDialog implements DialogInterface.OnDismissListener {
     builder.setTitle("Filter")
       .setView(view)
       .setCancelable(true)
-      .setNeutralButton("Done", new DialogInterface.OnClickListener() {
+      .setPositiveButton("Reset", new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int id) {
+          IptablesLog.filterText = "";
+          IptablesLog.filterUid = true;
+          IptablesLog.filterName = true;
+          IptablesLog.filterAddress = true;
+          IptablesLog.filterPort = true;
+          IptablesLog.appView.setFilter("");
+          IptablesLog.logView.setFilter("");
+        }
+      })
+    .setNeutralButton("Done", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
           dialog.dismiss();
+        }
+      })
+    .setNegativeButton("Help", new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int id) {
+          new FilterHelpDialog(context);
         }
       });
     AlertDialog alert = builder.create();
@@ -92,4 +109,24 @@ public class FilterDialog implements DialogInterface.OnDismissListener {
       IptablesLog.settings.setFilterAddress(IptablesLog.filterAddress);
       IptablesLog.settings.setFilterPort(IptablesLog.filterPort);
     }
+
+  public class FilterHelpDialog {
+    public FilterHelpDialog(final Context context) {
+      AlertDialog.Builder builder = new AlertDialog.Builder(context);
+      builder.setTitle("Filter Help")
+        .setMessage(Html.fromHtml(context.getResources().getString(R.string.filterHelp)))
+        .setCancelable(true)
+        .setNeutralButton("OK", new DialogInterface.OnClickListener() {
+          public void onClick(DialogInterface dialog, int id) {
+            IptablesLog.handler.post(new Runnable() {
+              public void run() {
+                new FilterDialog(context);
+              }
+            });
+          }
+        });
+      AlertDialog alert = builder.create();
+      alert.show();
+    }
+  }
 }
