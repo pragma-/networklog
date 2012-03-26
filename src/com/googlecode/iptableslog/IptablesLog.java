@@ -14,6 +14,9 @@ import android.os.Looper;
 import android.content.Context;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.widget.TextView;
+import android.view.View;
+import android.view.LayoutInflater;
 
 public class IptablesLog extends TabActivity
 {
@@ -129,14 +132,18 @@ public class IptablesLog extends TabActivity
       TabHost.TabSpec spec;
       Intent intent;
 
+      tabHost.getTabWidget().setDividerDrawable(R.drawable.tab_divider);
+
+      View tab = LayoutInflater.from(this).inflate(R.layout.tabview, null);
+      ((TextView)tab.findViewById(R.id.tabtext)).setText("Log");
       intent = new Intent().setClass(this, LogView.class);
-      spec = tabHost.newTabSpec("log").setIndicator("Log", 
-          res.getDrawable(R.drawable.tab_logview)).setContent(intent);
+      spec = tabHost.newTabSpec("log").setIndicator(tab).setContent(intent);
       tabHost.addTab(spec);
 
+      tab = LayoutInflater.from(this).inflate(R.layout.tabview, null);
+      ((TextView)tab.findViewById(R.id.tabtext)).setText("Apps");
       intent = new Intent().setClass(this, AppView.class);
-      spec = tabHost.newTabSpec("apps").setIndicator("Apps", 
-          res.getDrawable(R.drawable.tab_appview)).setContent(intent);
+      spec = tabHost.newTabSpec("apps").setIndicator(tab).setContent(intent);
       tabHost.addTab(spec);
 
       // todo: redesign tabs to be views instead of activities
