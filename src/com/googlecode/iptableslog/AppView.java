@@ -154,8 +154,13 @@ public class AppView extends Activity implements IptablesLogListener
     }
   }
 
+  public void refreshHosts() {
+  }
+
+  public void refreshPorts() {
+  }
+
   public void resetData() {
-    adapter.clear();
     getInstalledApps();
   }
 

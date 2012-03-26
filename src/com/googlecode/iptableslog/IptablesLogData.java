@@ -67,9 +67,11 @@ public class IptablesLogData {
 
   /* IptablesLog */
   IptablesLog.State iptablesLogState;
+  NetworkResolver iptablesLogResolver;
 
   public void gatherIptablesLogData() {
     iptablesLogState = IptablesLog.state;
+    iptablesLogResolver = IptablesLog.resolver;
   }
 
   public IptablesLogData() {

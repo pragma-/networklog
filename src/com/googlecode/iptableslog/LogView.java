@@ -64,6 +64,24 @@ public class LogView extends Activity implements IptablesLogListener
       }
   }
 
+  public void refreshHosts() {
+  }
+
+  public void refreshPorts() {
+    synchronized(listData) {
+      for(ListItem item : listData) {
+        if(IptablesLog.resolvePorts) {
+          item.srcPortString = IptablesLog.resolver.resolveService(String.valueOf(item.srcPort));
+          item.dstPortString = IptablesLog.resolver.resolveService(String.valueOf(item.dstPort));
+        } else {
+          item.srcPortString = String.valueOf(item.srcPort);
+          item.dstPortString = String.valueOf(item.dstPort);
+        }
+      }
+      adapter.notifyDataSetChanged();
+    }  
+  }
+
   public void refreshIcons() {
     synchronized(listData) {
       for(ListItem item : listData) {
@@ -77,6 +95,7 @@ public class LogView extends Activity implements IptablesLogListener
           }
         }
       }
+      adapter.notifyDataSetChanged();
     }
   }
 
@@ -160,10 +179,20 @@ public class LogView extends Activity implements IptablesLogListener
 
     item.srcAddr = entry.src;
     item.srcPort = entry.spt;
-    item.srcPortString = String.valueOf(entry.spt);
+
+    if(IptablesLog.resolvePorts)
+      item.srcPortString = IptablesLog.resolver.resolveService(String.valueOf(entry.spt));
+    else
+      item.srcPortString = String.valueOf(entry.spt);
+
     item.dstAddr = entry.dst;
     item.dstPort = entry.dpt;
-    item.dstPortString = String.valueOf(entry.dpt);
+
+    if(IptablesLog.resolvePorts)
+      item.dstPortString = IptablesLog.resolver.resolveService(String.valueOf(entry.dpt));
+    else
+      item.dstPortString = String.valueOf(entry.dpt);
+
     item.len = entry.len;
     item.timestamp = entry.timestamp;
 
@@ -400,13 +429,13 @@ public class LogView extends Activity implements IptablesLogListener
         srcAddr.setText("SRC: " + item.srcAddr);
 
         srcPort = holder.getSrcPort();
-        srcPort.setText(Integer.toString(item.srcPort));
+        srcPort.setText(item.srcPortString);
 
         dstAddr = holder.getDstAddr();
         dstAddr.setText("DST: " + item.dstAddr);
 
         dstPort = holder.getDstPort();
-        dstPort.setText(Integer.toString(item.dstPort));
+        dstPort.setText(item.dstPortString);
 
         len = holder.getLen();
         len.setText("LEN: " + item.len);

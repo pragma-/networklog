@@ -23,9 +23,8 @@ public class IptablesLog extends TabActivity
   public static AppView appView;
   
   public static IptablesLogTracker logTracker;
-  
   public static Settings settings;
-  
+
   public static Handler handler;
   
   public static Object scriptLock = new Object();
@@ -35,6 +34,10 @@ public class IptablesLog extends TabActivity
   public static boolean filterName;
   public static boolean filterAddress;
   public static boolean filterPort;
+
+  public static NetworkResolver resolver;
+  public static boolean resolveHosts;
+  public static boolean resolvePorts;
   
   public static State state;
   public enum State { LOAD_APPS, LOAD_LIST, LOAD_ICONS, RUNNING  };
@@ -104,6 +107,8 @@ public class IptablesLog extends TabActivity
       filterName = settings.getFilterName();
       filterAddress = settings.getFilterAddress();
       filterPort = settings.getFilterPort();
+      resolveHosts = settings.getResolveHosts();
+      resolvePorts = settings.getResolvePorts();
 
       data = (IptablesLogData) getLastNonConfigurationInstance(); 
 
@@ -113,8 +118,10 @@ public class IptablesLog extends TabActivity
       if (data != null) {
         MyLog.d("Restored run");
         ApplicationsTracker.restoreData(data);
+        resolver = data.iptablesLogResolver;
       } else {
         MyLog.d("Fresh run");
+        resolver = new NetworkResolver();
       }
 
       Resources res = getResources();

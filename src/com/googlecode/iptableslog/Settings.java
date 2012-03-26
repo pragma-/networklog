@@ -16,7 +16,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
     prefs.registerOnSharedPreferenceChangeListener(this);
   }
 
-  public boolean getResolveAddresses() {
+  public boolean getResolveHosts() {
     return prefs.getBoolean("resolve_hosts", false);
   }
 
@@ -68,7 +68,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return prefs.getBoolean("notifications_toast", false);
   }
 
-  public void setResolveAddresses(boolean value) {
+  public void setResolveHosts(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("resolve_hosts", value);
     editor.commit();
@@ -149,6 +149,24 @@ public class Settings implements OnSharedPreferenceChangeListener {
   @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
       MyLog.d("Shared prefs changed: [" + key + "]");
+
+      if(key.equals("resolve_hosts")) {
+        boolean value = prefs.getBoolean(key, false);
+        MyLog.d("New " + key + " value [" + value + "]");
+        IptablesLog.resolveHosts = value;
+        IptablesLog.logView.refreshHosts();
+        IptablesLog.appView.refreshHosts();
+        return;
+      }
+
+      if(key.equals("resolve_ports")) {
+        boolean value = prefs.getBoolean(key, false);
+        MyLog.d("New " + key + " value [" + value + "]");
+        IptablesLog.resolvePorts = value;
+        IptablesLog.logView.refreshPorts();
+        IptablesLog.appView.refreshPorts();
+        return;
+      }
 
       if(key.equals("max_log_entries")) {
         String value = prefs.getString(key, "15000");
