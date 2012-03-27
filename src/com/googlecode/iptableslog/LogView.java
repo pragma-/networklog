@@ -342,27 +342,64 @@ public class LogView extends Activity implements IptablesLogListener
             MyLog.d("[LogView] item count: " + count);
 
             String[] constraints = constraint.toString().split(",");
+            ArrayList<String> include = new ArrayList<String>();
+            ArrayList<String> exclude = new ArrayList<String>();
 
-            for(int i = 0; i < count; i++) {
-              ListItem item = localItems.get(i);
-              MyLog.d("[LogView] testing filtered item " + item + "; constraint: [" + constraint + "]");
+            for(String c : constraints) {
+              c = c.trim();
+              if(c.startsWith("!"))
+                exclude.add(c.substring(1, c.length()).trim());
+              else
+                include.add(c);
+            }
 
-              boolean matched = false;
+            if(include.size() == 0) {
+              filteredItems.addAll(localItems);
+            } else {
+              for(int i = 0; i < count; i++) {
+                ListItem item = localItems.get(i);
+                MyLog.d("[LogView] testing filtered item " + item + "; constraint: [" + constraint + "]");
 
-              for(String c : constraints) {
-                c = c.trim();
-                if((IptablesLog.filterName && item.mNameLowerCase.contains(c))
-                    || (IptablesLog.filterUid && item.mUidString.contains(c))
-                    || (IptablesLog.filterAddress && (item.srcAddr.contains(c) || item.dstAddr.contains(c)))
-                    || (IptablesLog.filterPort && (item.srcPortString.toLowerCase().equals(c) || item.dstPortString.toLowerCase().equals(c))))
-                {
-                  matched = true;
+                boolean matched = false;
+
+                for(String c : include) {
+                  if((IptablesLog.filterName && item.mNameLowerCase.contains(c))
+                      || (IptablesLog.filterUid && item.mUidString.contains(c))
+                      || (IptablesLog.filterAddress && (item.srcAddr.contains(c) || item.dstAddr.contains(c)))
+                      || (IptablesLog.filterPort && (item.srcPortString.toLowerCase().equals(c) || item.dstPortString.toLowerCase().equals(c))))
+                  {
+                    matched = true;
+                  }
+                }
+
+                if(matched) {
+                  MyLog.d("[LogView] adding filtered item " + item);
+                  filteredItems.add(item);
                 }
               }
+            }
 
-              if(matched) {
-                MyLog.d("[LogView] adding filtered item " + item);
-                filteredItems.add(item);
+            if(exclude.size() > 0) {
+              count = filteredItems.size();
+              for(int i = count - 1; i >= 0; i--) {
+                ListItem item = filteredItems.get(i);
+                
+                boolean matched = false;
+
+                for(String c : exclude) {
+                  if((IptablesLog.filterName && item.mNameLowerCase.contains(c))
+                      || (IptablesLog.filterUid && item.mUidString.contains(c))
+                      || (IptablesLog.filterAddress && (item.srcAddr.contains(c) || item.dstAddr.contains(c)))
+                      || (IptablesLog.filterPort && (item.srcPortString.toLowerCase().equals(c) || item.dstPortString.toLowerCase().equals(c))))
+                  {
+                    matched = true;
+                  }
+                }
+
+                if(matched) {
+                  MyLog.d("[LogView] removing filtered item " + item);
+                  filteredItems.remove(i);
+                }
               }
             }
 
