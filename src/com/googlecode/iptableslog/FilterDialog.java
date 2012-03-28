@@ -91,11 +91,11 @@ public class FilterDialog implements DialogInterface.OnDismissListener {
           dialog.dismiss();
         }
       })
-    .setNegativeButton("Help", new DialogInterface.OnClickListener() {
+   /* .setNegativeButton("Help", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
           new FilterHelpDialog(context);
         }
-      });
+      }) */;
     AlertDialog alert = builder.create();
     alert.setOnDismissListener(this);
     alert.show();
@@ -110,6 +110,7 @@ public class FilterDialog implements DialogInterface.OnDismissListener {
       IptablesLog.settings.setFilterPort(IptablesLog.filterPort);
     }
 
+  /*
   public class FilterHelpDialog {
     public FilterHelpDialog(final Context context) {
       AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -129,4 +130,5 @@ public class FilterDialog implements DialogInterface.OnDismissListener {
       alert.show();
     }
   }
+  */
 }

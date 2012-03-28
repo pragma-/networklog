@@ -31,7 +31,6 @@ public class LogView extends Activity implements IptablesLogListener
   // holds all entries, used for filtering
   protected ArrayList<ListItem> listDataUnfiltered;
   protected long maxLogEntries;
-  private ListView listView;
   private CustomAdapter adapter;
   private ListViewUpdater updater;
 
@@ -64,6 +63,10 @@ public class LogView extends Activity implements IptablesLogListener
       }
   }
 
+  public void refreshAdapter() {
+    adapter.notifyDataSetChanged();
+  }
+
   public void refreshHosts() {
   }
 
@@ -78,7 +81,9 @@ public class LogView extends Activity implements IptablesLogListener
           item.dstPortString = String.valueOf(item.dstPort);
         }
       }
-      adapter.notifyDataSetChanged();
+      if(!IptablesLog.outputPaused) {
+        adapter.notifyDataSetChanged();
+      }
     }  
   }
 
@@ -95,7 +100,9 @@ public class LogView extends Activity implements IptablesLogListener
           }
         }
       }
-      adapter.notifyDataSetChanged();
+      if(!IptablesLog.outputPaused) {
+        adapter.notifyDataSetChanged();
+      }
     }
   }
 
@@ -125,7 +132,7 @@ public class LogView extends Activity implements IptablesLogListener
 
       adapter = new CustomAdapter(this, R.layout.logitem, listData);
 
-      listView = new ListView(this);
+      ListView listView = new ListView(this);
       listView.setAdapter(adapter);
       listView.setTextFilterEnabled(true);
       listView.setFastScrollEnabled(true);
@@ -141,7 +148,9 @@ public class LogView extends Activity implements IptablesLogListener
 
       if(IptablesLog.filterText.length() > 0) {
         setFilter(IptablesLog.filterText);
-        adapter.notifyDataSetChanged();
+        if(!IptablesLog.outputPaused) {
+          adapter.notifyDataSetChanged();
+        }
       }
     }
 
@@ -215,7 +224,9 @@ public class LogView extends Activity implements IptablesLogListener
       listData.clear();
     }
 
-    adapter.notifyDataSetChanged();
+    if(!IptablesLog.outputPaused) {
+      adapter.notifyDataSetChanged();
+    }
   }
 
   public void pruneLogEntries() {
@@ -234,7 +245,9 @@ public class LogView extends Activity implements IptablesLogListener
         listData.remove(0);
     }
 
-    adapter.notifyDataSetChanged();
+    if(!IptablesLog.outputPaused) {
+      adapter.notifyDataSetChanged();
+    }
   }
 
   public void stopUpdater() {
@@ -275,7 +288,9 @@ public class LogView extends Activity implements IptablesLogListener
         if(IptablesLog.filterText.length() > 0)
           setFilter(IptablesLog.filterText);
 
-        adapter.notifyDataSetChanged();
+        if(!IptablesLog.outputPaused) {
+          adapter.notifyDataSetChanged();
+        }
         MyLog.d("LogViewUpdater exit: added " + i + " items");
       }
     };
@@ -422,7 +437,9 @@ public class LogView extends Activity implements IptablesLogListener
             for(int i = 0; i < count; i++)
               add(localItems.get(i));
 
-            notifyDataSetChanged();
+            if(!IptablesLog.outputPaused) {
+              notifyDataSetChanged();
+            }
           }
         }
     }

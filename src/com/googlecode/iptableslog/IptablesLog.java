@@ -41,6 +41,8 @@ public class IptablesLog extends TabActivity
   public static NetworkResolver resolver;
   public static boolean resolveHosts;
   public static boolean resolvePorts;
+
+  public static boolean outputPaused;
   
   public static State state;
   public enum State { LOAD_APPS, LOAD_LIST, LOAD_ICONS, RUNNING  };
@@ -122,9 +124,11 @@ public class IptablesLog extends TabActivity
         MyLog.d("Restored run");
         ApplicationsTracker.restoreData(data);
         resolver = data.iptablesLogResolver;
+        outputPaused = data.iptablesLogOutputPaused;
       } else {
         MyLog.d("Fresh run");
         resolver = new NetworkResolver();
+        outputPaused = false;
       }
 
       Resources res = getResources();
@@ -288,6 +292,13 @@ public class IptablesLog extends TabActivity
         item.setVisible(false);
       }
 
+      item = menu.findItem(R.id.pause);
+
+      if(outputPaused)
+        item.setTitle("Resume Output");
+      else
+        item.setTitle("Pause Output");
+
       return true;
     }
 
@@ -297,8 +308,16 @@ public class IptablesLog extends TabActivity
         case R.id.filter:
           showFilterDialog();
           break;
-        case R.id.reset:
-          confirmReset(this);
+        case R.id.pause:
+          outputPaused = !outputPaused;
+
+          if(outputPaused)
+            item.setTitle("Resume Output");
+          else {
+            item.setTitle("Pause Output");
+            logView.refreshAdapter();
+            appView.refreshAdapter();
+          }
           break;
         case R.id.exit:
           confirmExit(this);
@@ -309,26 +328,41 @@ public class IptablesLog extends TabActivity
         case R.id.sort_by_uid:
           appView.sortBy = Sort.UID;
           appView.sortData();
+          // force adapter refresh if paused
+          if(outputPaused)
+            appView.refreshAdapter();
           IptablesLog.settings.setSortBy(appView.sortBy);
           break;
         case R.id.sort_by_name:
           appView.sortBy = Sort.NAME;
           appView.sortData();
+          // force adapter refresh if paused
+          if(outputPaused)
+            appView.refreshAdapter();
           IptablesLog.settings.setSortBy(appView.sortBy);
           break;
         case R.id.sort_by_packets:
           appView.sortBy = Sort.PACKETS;
           appView.sortData();
+          // force adapter refresh if paused
+          if(outputPaused)
+            appView.refreshAdapter();
           IptablesLog.settings.setSortBy(appView.sortBy);
           break;
         case R.id.sort_by_bytes:
           appView.sortBy = Sort.BYTES;
           appView.sortData();
+          // force adapter refresh if paused
+          if(outputPaused)
+            appView.refreshAdapter();
           IptablesLog.settings.setSortBy(appView.sortBy);
           break;
         case R.id.sort_by_timestamp:
           appView.sortBy = Sort.TIMESTAMP;
           appView.sortData();
+          // force adapter refresh if paused
+          if(outputPaused)
+            appView.refreshAdapter();
           IptablesLog.settings.setSortBy(appView.sortBy);
           break;
         default:

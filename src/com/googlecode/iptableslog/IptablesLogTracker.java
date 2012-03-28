@@ -100,19 +100,21 @@ public class IptablesLogTracker {
 
   public void parseResult(String result) {
     MyLog.d("--------------- parsing result --------------");
-    int pos = 0, buffer_pos = 0; 
+    int pos = 0 /* , buffer_pos = 0 */; 
     String src, dst, lenString, sptString, dptString, uidString;
 
+    /*
     if(MyLog.enabled) {
       MyLog.d("buffer length: " + buffer.length() + "; result length: " + result.length());
       MyLog.d("buffer: [" + buffer + "] <--> [" + result + "]");
     }
 
     buffer.append(result);
+    */
 
     while((pos = result.indexOf("[IptablesLogEntry]", pos)) > -1) {
       MyLog.d("---- got [IptablesLogEntry] at " + pos + " ----");
-      buffer_pos = pos;
+      // buffer_pos = pos;
 
       pos += 18; // skip past "[IptablesLogEntry]"
 
@@ -124,6 +126,7 @@ public class IptablesLogTracker {
         continue;
       }
 
+      /*
       MyLog.d("pos: " + pos + "; buffer length: " + buffer.length());
       String line = "no newline: " + buffer.substring(pos, buffer.length());
 
@@ -132,35 +135,36 @@ public class IptablesLogTracker {
       }
 
       MyLog.d("parsing line [" + line + "]");
+      */
 
       pos = result.indexOf("SRC=", pos);
-      if(pos == -1 || pos > newline) { MyLog.d("buffering [" + line + "] for SRC"); break; };
+      if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for SRC");  */ break; };
       int space = result.indexOf(" ", pos);
-      if(space == -1 || space > newline) { MyLog.d("buffering [" + line + "] for SRC space"); break; };
+      if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for SRC space");  */ break; };
       src = result.substring(pos + 4, space);
 
       pos = result.indexOf("DST=", pos);
-      if(pos == -1 || pos > newline) { MyLog.d("buffering [" + line + "] for DST"); break; };
+      if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for DST");  */ break; };
       space = result.indexOf(" ", pos);
-      if(space == -1 || space > newline) { MyLog.d("buffering [" + line + "] for DST space"); break; };
+      if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for DST space");  */ break; };
       dst = result.substring(pos + 4, space);
       
       pos = result.indexOf("LEN=", pos);
-      if(pos == -1 || pos > newline) { MyLog.d("buffering [" + line + "] for LEN"); break; };
+      if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for LEN");  */ break; };
       space = result.indexOf(" ", pos);
-      if(space == -1 || space > newline) { MyLog.d("buffering [" + line + "] for LEN space"); break; };
+      if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for LEN space");  */ break; };
       lenString = result.substring(pos + 4, space);
      
       pos = result.indexOf("SPT=", pos);
-      if(pos == -1 || pos > newline) { MyLog.d("buffering [" + line + "] for SPT"); break; };
+      if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for SPT");  */ break; };
       space = result.indexOf(" ", pos);
-      if(space == -1 || space > newline) { MyLog.d("buffering [" + line + "] for SPT space"); break; };
+      if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for SPT space");  */ break; };
       sptString = result.substring(pos + 4, space);
     
       pos = result.indexOf("DPT=", pos);
-      if(pos == -1 || pos > newline) { MyLog.d("buffering [" + line + "] for DPT"); break; };
+      if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for DPT");  */ break; };
       space = result.indexOf(" ", pos);
-      if(space == -1 || space > newline) { MyLog.d("buffering [" + line + "] for DPT space"); break; };
+      if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for DPT space");  */ break; };
       dptString = result.substring(pos + 4, space);
 
       int lastpos = pos;
@@ -171,7 +175,7 @@ public class IptablesLogTracker {
         pos = lastpos;
       } else {
         MyLog.d("Looking for UID newline"); 
-        if(newline == -1) { MyLog.d("buffering [" + line + "] for UID newline"); break; };
+        if(newline == -1) { /* MyLog.d("buffering [" + line + "] for UID newline");  */ break; };
         uidString = result.substring(pos + 4, newline);
       }
 
@@ -283,14 +287,16 @@ public class IptablesLogTracker {
 
       notifyNewEntry(entry);
 
-      buffer_pos = pos;
+      // buffer_pos = pos;
     }
+    /*
     MyLog.d("truncating buffer_pos: " + buffer_pos + "; length: " + buffer.length());
     if(buffer_pos > buffer.length()) {
       MyLog.d("WTF buffer: [" + buffer + "]");
     } else {
       buffer.delete(0, buffer_pos - 1);
     }
+    */
   }
 
   public void notifyNewEntry(LogEntry entry) {

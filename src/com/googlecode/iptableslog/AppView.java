@@ -156,6 +156,10 @@ public class AppView extends Activity implements IptablesLogListener
     }
   }
 
+  public void refreshAdapter() {
+    adapter.notifyDataSetChanged();
+  }
+
   public void refreshHosts() {
   }
 
@@ -196,10 +200,12 @@ public class AppView extends Activity implements IptablesLogListener
 
             // apply filter if there is one set
             //if(IptablesLog.filterText.length() > 0) {
-              setFilter(IptablesLog.filterText);
+            setFilter(IptablesLog.filterText);
             //}
 
-            adapter.notifyDataSetChanged();
+            if(!IptablesLog.outputPaused) {
+              adapter.notifyDataSetChanged();
+            }
           }
         });
 
@@ -247,7 +253,9 @@ public class AppView extends Activity implements IptablesLogListener
                     setFilter(IptablesLog.filterText);
                     */
                     // refresh adapter to display icon 
-                    adapter.notifyDataSetChanged();
+                    if(!IptablesLog.outputPaused) {
+                      adapter.notifyDataSetChanged();
+                    }
                   }
                 });
               }
@@ -262,7 +270,9 @@ public class AppView extends Activity implements IptablesLogListener
               preSortData();
               sortData();
               setFilter(IptablesLog.filterText);
-              adapter.notifyDataSetChanged();
+              if(!IptablesLog.outputPaused) {
+                adapter.notifyDataSetChanged();
+              }
               IptablesLog.logView.refreshIcons();
             }
           });
@@ -511,7 +521,9 @@ public class AppView extends Activity implements IptablesLogListener
             setFilter(IptablesLog.filterText);
           //}
 
-          adapter.notifyDataSetChanged();
+            if(!IptablesLog.outputPaused) {
+              adapter.notifyDataSetChanged();
+            }
         }
 
         MyLog.d("AppViewListUpdater exit");
@@ -676,7 +688,9 @@ public class AppView extends Activity implements IptablesLogListener
 
           preSortData();
           sortData();
-          notifyDataSetChanged();
+          if(!IptablesLog.outputPaused) {
+            notifyDataSetChanged();
+          }
         }
     }
 

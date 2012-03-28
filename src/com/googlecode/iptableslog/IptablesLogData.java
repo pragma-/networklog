@@ -68,10 +68,12 @@ public class IptablesLogData {
   /* IptablesLog */
   IptablesLog.State iptablesLogState;
   NetworkResolver iptablesLogResolver;
+  boolean iptablesLogOutputPaused;
 
   public void gatherIptablesLogData() {
     iptablesLogState = IptablesLog.state;
     iptablesLogResolver = IptablesLog.resolver;
+    iptablesLogOutputPaused = IptablesLog.outputPaused;
   }
 
   public IptablesLogData() {

@@ -38,7 +38,7 @@
       android:summary="Select how to sort the app entries that have no data yet (default: By name)"
       android:entries="@array/presort_method"
       android:entryValues="@array/presort_method_values"
-      android:dialogTitle="Initial Sort" />
+      android:dialogTitle="No Data Sort" />
     <ListPreference
       android:defaultValue="BYTES"
       android:key="sort_by"
