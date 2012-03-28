@@ -22,7 +22,7 @@
   <item android:id="@+id/settings"
     android:title="Settings" />
   <item android:id="@+id/pause"
-    android:title="Pause output" />
+    android:title="Pause Output" />
   <item android:id="@+id/exit"
     android:title="Exit" />
 </menu>

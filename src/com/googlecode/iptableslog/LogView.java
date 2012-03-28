@@ -81,9 +81,8 @@ public class LogView extends Activity implements IptablesLogListener
           item.dstPortString = String.valueOf(item.dstPort);
         }
       }
-      if(!IptablesLog.outputPaused) {
-        adapter.notifyDataSetChanged();
-      }
+
+      adapter.notifyDataSetChanged();
     }  
   }
 
@@ -100,9 +99,8 @@ public class LogView extends Activity implements IptablesLogListener
           }
         }
       }
-      if(!IptablesLog.outputPaused) {
-        adapter.notifyDataSetChanged();
-      }
+
+      adapter.notifyDataSetChanged();
     }
   }
 
@@ -148,9 +146,7 @@ public class LogView extends Activity implements IptablesLogListener
 
       if(IptablesLog.filterText.length() > 0) {
         setFilter(IptablesLog.filterText);
-        if(!IptablesLog.outputPaused) {
-          adapter.notifyDataSetChanged();
-        }
+        adapter.notifyDataSetChanged();
       }
     }
 
@@ -224,9 +220,7 @@ public class LogView extends Activity implements IptablesLogListener
       listData.clear();
     }
 
-    if(!IptablesLog.outputPaused) {
-      adapter.notifyDataSetChanged();
-    }
+    adapter.notifyDataSetChanged();
   }
 
   public void pruneLogEntries() {

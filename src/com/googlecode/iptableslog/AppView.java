@@ -46,10 +46,14 @@ public class AppView extends Activity implements IptablesLogListener
     protected int sentBytes;
     protected String sentTimestamp;
     protected int sentPort;
+    protected String sentAddressString;
+    protected String sentPortString;
     protected int receivedPackets;
     protected int receivedBytes;
     protected String receivedTimestamp;
     protected int receivedPort;
+    protected String receivedAddressString;
+    protected String receivedPortString;
     protected String resolvedAddress;
   }
 
@@ -164,6 +168,13 @@ public class AppView extends Activity implements IptablesLogListener
   }
 
   public void refreshPorts() {
+    synchronized(listDataBuffer) {
+      for(ListItem item : listDataBuffer) {
+          buildUniqueHosts(item, true);
+      }
+      
+      adapter.notifyDataSetChanged();
+    }
   }
 
   public void resetData() {
@@ -402,8 +413,8 @@ public class AppView extends Activity implements IptablesLogListener
         item.totalBytes = entry.bytes;
         item.lastTimestamp = entry.timestamp;
 
-        String src = entry.src.toLowerCase() + ":" + entry.spt;
-        String dst = entry.dst.toLowerCase() + ":" + entry.dpt;
+        String src = entry.src + ":" + entry.spt;
+        String dst = entry.dst + ":" + entry.dpt;
 
         HostInfo info;
 
@@ -419,6 +430,8 @@ public class AppView extends Activity implements IptablesLogListener
           info.receivedBytes += entry.len;
           info.receivedTimestamp = entry.timestamp;
           info.receivedPort = entry.spt;
+          info.receivedAddressString = entry.src;
+          info.receivedPortString = String.valueOf(entry.spt);
 
           item.uniqueHostsList.put(src, info);
           item.uniqueHostsListNeedsSort = true;
@@ -436,6 +449,8 @@ public class AppView extends Activity implements IptablesLogListener
           info.sentBytes += entry.len;
           info.sentTimestamp = entry.timestamp;
           info.sentPort = entry.dpt;
+          info.sentAddressString = entry.dst;
+          info.sentPortString = String.valueOf(entry.dpt);
 
           item.uniqueHostsList.put(dst, info);
           item.uniqueHostsListNeedsSort = true;
@@ -463,8 +478,10 @@ public class AppView extends Activity implements IptablesLogListener
     IptablesLog.logTracker.addListener(this);
   }
 
-  public static void buildUniqueHosts(ListItem item, boolean applyToUnfiltered) {
+  public void buildUniqueHosts(ListItem item, boolean applyToUnfiltered) {
     List<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
+
+    MyLog.d("Building host list for " + item);
 
     // todo: sort by user preference (bytes, timestamp, address, ports)
     Collections.sort(list);
@@ -474,13 +491,35 @@ public class AppView extends Activity implements IptablesLogListener
     while(itr.hasNext()) {
       String host = itr.next();
       HostInfo info = item.uniqueHostsList.get(host);
+
       builder.append("<br>&nbsp;&nbsp;");
-      builder.append("<u>" + host + "</u>");
+      boolean hostSet = false;
+
       if(info.sentPackets > 0) {
+        if(IptablesLog.resolvePorts) {
+          info.sentPortString = IptablesLog.resolver.resolveService(String.valueOf(info.sentPort));
+        } else {
+          info.sentPortString = String.valueOf(info.sentPort);
+        }
+
+        builder.append("<u>- " + info.sentAddressString + ":" + info.sentPortString  + "</u>");
+        hostSet = true;
+
         builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
         builder.append("<small>Sent:</small> <b>" + info.sentPackets + "</b> <small>packets,</small> <b>" + info.sentBytes + "</b> <small>bytes</small> (" + info.sentTimestamp.substring(info.sentTimestamp.indexOf(' ') + 1, info.sentTimestamp.length()) + ")");
       }
+
       if(info.receivedPackets > 0) {
+        if(IptablesLog.resolvePorts) {
+          info.receivedPortString = IptablesLog.resolver.resolveService(String.valueOf(info.receivedPort));
+        } else {
+          info.receivedPortString = String.valueOf(info.receivedPort);
+        }
+
+        if(!hostSet) {
+          builder.append("<u>+ " + info.receivedAddressString + ":" + info.receivedPortString  + "</u>");
+        }
+
         builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
         builder.append("<small>Recv:</small> <em>" + info.receivedPackets + "</em> <small>packets,</small> <em>" + info.receivedBytes + "</em> <small>bytes</small> (" + info.receivedTimestamp.substring(info.receivedTimestamp.indexOf(' ') + 1, info.receivedTimestamp.length()) + ")");
       }
@@ -649,10 +688,12 @@ public class AppView extends Activity implements IptablesLogListener
                       HostInfo info = item.uniqueHostsList.get(host);
                       builder.append("<br>&nbsp;&nbsp;");
                       builder.append("<u>" + host + "</u>");
+
                       if(info.sentPackets > 0) {
                         builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
                         builder.append("<small>Sent:</small> <b>" + info.sentPackets + "</b> <small>packets,</small> <b>" + info.sentBytes + "</b> <small>bytes</small> (" + info.sentTimestamp.substring(info.sentTimestamp.indexOf(' ') + 1, info.sentTimestamp.length()) + ")");
                       }
+
                       if(info.receivedPackets > 0) {
                         builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
                         builder.append("<small>Recv:</small> <em>" + info.receivedPackets + "</em> <small>packets,</small> <em>" + info.receivedBytes + "</em> <small>bytes</small> (" + info.receivedTimestamp.substring(info.receivedTimestamp.indexOf(' ') + 1, info.receivedTimestamp.length()) + ")");
