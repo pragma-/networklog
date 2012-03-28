@@ -1,6 +1,9 @@
 package com.googlecode.iptableslog;
 
 import java.util.HashMap;
+import java.net.InetAddress;
+
+import android.util.Log;
 
 public class NetworkResolver {
   HashMap<String, String> serviceMap = new HashMap<String, String>();
@@ -167,6 +170,24 @@ public class NetworkResolver {
     serviceMap.put("992","STELNET");
     serviceMap.put("993","IMAPS");
     serviceMap.put("995","POP3S");
+  }
+
+  public String resolveAddress(String address) {
+    String resolved = hostMap.get(address);
+
+    if(resolved == null) {
+      try {
+      InetAddress inetAddress = InetAddress.getByName(address);
+      resolved = inetAddress.getHostName();
+      hostMap.put(address, resolved);
+      return resolved;
+      } catch (Exception e) {
+        Log.d("IptablesLog", e.toString(), e);
+        return address;
+      }
+    } else {
+      return resolved;
+    }
   }
 
   public String resolveService(String service) {

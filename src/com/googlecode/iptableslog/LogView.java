@@ -41,9 +41,11 @@ public class LogView extends Activity implements IptablesLogListener
     protected String mName;
     protected String mNameLowerCase;
     protected String srcAddr;
+    protected String srcAddrString;
     protected int srcPort;
     protected String srcPortString;
     protected String dstAddr;
+    protected String dstAddrString;
     protected int dstPort;
     protected String dstPortString;
     protected int len;
@@ -68,6 +70,19 @@ public class LogView extends Activity implements IptablesLogListener
   }
 
   public void refreshHosts() {
+    synchronized(listData) {
+      for(ListItem item : listData) {
+        if(IptablesLog.resolveHosts) {
+          item.srcAddrString = IptablesLog.resolver.resolveAddress(String.valueOf(item.srcAddr));
+          item.dstAddrString = IptablesLog.resolver.resolveAddress(String.valueOf(item.dstAddr));
+        } else {
+          item.srcAddrString = String.valueOf(item.srcAddr);
+          item.dstAddrString = String.valueOf(item.dstAddr);
+        }
+      }
+
+      adapter.notifyDataSetChanged();
+    }  
   }
 
   public void refreshPorts() {
@@ -185,6 +200,11 @@ public class LogView extends Activity implements IptablesLogListener
     item.srcAddr = entry.src;
     item.srcPort = entry.spt;
 
+    if(IptablesLog.resolveHosts)
+      item.srcAddrString = IptablesLog.resolver.resolveAddress(entry.src);
+    else
+      item.srcAddrString = entry.src;
+
     if(IptablesLog.resolvePorts)
       item.srcPortString = IptablesLog.resolver.resolveService(String.valueOf(entry.spt));
     else
@@ -192,6 +212,11 @@ public class LogView extends Activity implements IptablesLogListener
 
     item.dstAddr = entry.dst;
     item.dstPort = entry.dpt;
+
+    if(IptablesLog.resolveHosts)
+      item.dstAddrString = IptablesLog.resolver.resolveAddress(entry.dst);
+    else
+      item.dstAddrString = entry.dst;
 
     if(IptablesLog.resolvePorts)
       item.dstPortString = IptablesLog.resolver.resolveService(String.valueOf(entry.dpt));
@@ -374,7 +399,7 @@ public class LogView extends Activity implements IptablesLogListener
                 for(String c : include) {
                   if((IptablesLog.filterName && item.mNameLowerCase.contains(c))
                       || (IptablesLog.filterUid && item.mUidString.contains(c))
-                      || (IptablesLog.filterAddress && (item.srcAddr.contains(c) || item.dstAddr.contains(c)))
+                      || (IptablesLog.filterAddress && (item.srcAddrString.contains(c) || item.dstAddrString.contains(c)))
                       || (IptablesLog.filterPort && (item.srcPortString.toLowerCase().equals(c) || item.dstPortString.toLowerCase().equals(c))))
                   {
                     matched = true;
@@ -398,7 +423,7 @@ public class LogView extends Activity implements IptablesLogListener
                 for(String c : exclude) {
                   if((IptablesLog.filterName && item.mNameLowerCase.contains(c))
                       || (IptablesLog.filterUid && item.mUidString.contains(c))
-                      || (IptablesLog.filterAddress && (item.srcAddr.contains(c) || item.dstAddr.contains(c)))
+                      || (IptablesLog.filterAddress && (item.srcAddrString.contains(c) || item.dstAddrString.contains(c)))
                       || (IptablesLog.filterPort && (item.srcPortString.toLowerCase().equals(c) || item.dstPortString.toLowerCase().equals(c))))
                   {
                     matched = true;
@@ -475,13 +500,13 @@ public class LogView extends Activity implements IptablesLogListener
         name.setText("(" + item.mUid + ")" + " " + item.mName);
 
         srcAddr = holder.getSrcAddr();
-        srcAddr.setText("SRC: " + item.srcAddr);
+        srcAddr.setText("SRC: " + item.srcAddrString);
 
         srcPort = holder.getSrcPort();
         srcPort.setText(item.srcPortString);
 
         dstAddr = holder.getDstAddr();
-        dstAddr.setText("DST: " + item.dstAddr);
+        dstAddr.setText("DST: " + item.dstAddrString);
 
         dstPort = holder.getDstPort();
         dstPort.setText(item.dstPortString);
