@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.text.Html;
+import android.text.Spanned;
 import android.widget.TextView.BufferType;
 
 import java.util.Set;
@@ -65,6 +66,8 @@ public class AppView extends Activity implements IptablesLogListener
     protected HashMap<String, HostInfo> uniqueHostsList;
     protected boolean uniqueHostsListNeedsSort = false;
     protected boolean uniqueHostsIsFiltered = false;
+    protected boolean uniqueHostsIsDirty = false;
+    protected Spanned uniqueHostsSpanned;
     protected String uniqueHosts;
     protected String uniqueHostsUnfiltered;
 
@@ -525,6 +528,7 @@ public class AppView extends Activity implements IptablesLogListener
       }
     }
     item.uniqueHosts = builder.toString();
+    item.uniqueHostsIsDirty = true;
 
     if(applyToUnfiltered == true)
       item.uniqueHostsUnfiltered = new String(builder.toString());
@@ -701,6 +705,7 @@ public class AppView extends Activity implements IptablesLogListener
                     }
                   }
                   item.uniqueHosts = builder.toString();
+                  item.uniqueHostsIsDirty = true;
                   item.uniqueHostsIsFiltered = true;
                 }
               }
@@ -785,7 +790,11 @@ public class AppView extends Activity implements IptablesLogListener
           timestamp.setText("");
 
         hosts = holder.getUniqueHosts();
-        hosts.setText(Html.fromHtml(item.uniqueHosts), BufferType.SPANNABLE);
+        if(item.uniqueHostsIsDirty == true) {
+          item.uniqueHostsSpanned = Html.fromHtml(item.uniqueHosts);
+          item.uniqueHostsIsDirty = false;
+        }
+        hosts.setText(item.uniqueHostsSpanned);
 
         return convertView;
       }
