@@ -667,25 +667,18 @@ public class AppView extends Activity implements IptablesLogListener
               ListItem item = localItems.get(i);
               MyLog.d("[AppView] testing filtered item " + item + "; constraint: [" + constraint + "]");
 
-              boolean matched = false;
+              boolean matched = true;
 
               for(String c : constraints) {
                 c = c.trim();
 
-                if(IptablesLog.filterName && item.app.nameLowerCase.contains(c)) {
-                  matched = true;
-                } else if(IptablesLog.filterUid && item.app.uidString.equals(c)) {
-                  matched = true;
-                } else if(!IptablesLog.filterName || !IptablesLog.filterUid) {
-                  matched = true;
+                if((IptablesLog.filterName && !item.app.nameLowerCase.contains(c)) || (IptablesLog.filterUid && !item.app.uidString.equals(c))) {
+                  matched = false;
                 }
               }
 
               if(matched) {
-                MyLog.d("[AppView] adding filtered item " + item);
-                filteredItems.add(item);
-
-                // rebuild unique hosts list with filter applied if constraint matches address or port
+                // test filter against address/port 
                 if(IptablesLog.filterAddress || IptablesLog.filterPort) 
                 {
                   StringBuilder builder = new StringBuilder("Addrs:");
@@ -703,10 +696,10 @@ public class AppView extends Activity implements IptablesLogListener
                     matched = false;
                     for(String c : constraints) {
                       c = c.trim();
-                      if((IptablesLog.filterAddress && (info.sentPackets > 0 && info.sentAddressString.toLowerCase().contains(c))
-                            || (info.receivedPackets > 0 && info.receivedAddressString.toLowerCase().contains(c)))
-                          || (IptablesLog.filterPort && (info.sentPackets > 0 && info.sentPortString.toLowerCase().equals(c))
-                            || (info.receivedPackets > 0 && info.receivedPortString.toLowerCase().equals(c))))
+                      if((IptablesLog.filterAddress && ((info.sentPackets > 0 && info.sentAddressString.toLowerCase().contains(c))
+                            || (info.receivedPackets > 0 && info.receivedAddressString.toLowerCase().contains(c))))
+                          || (IptablesLog.filterPort && ((info.sentPackets > 0 && info.sentPortString.toLowerCase().equals(c))
+                            || (info.receivedPackets > 0 && info.receivedPortString.toLowerCase().equals(c)))))
                       {
                         matched = true;
                       }
@@ -738,7 +731,14 @@ public class AppView extends Activity implements IptablesLogListener
                     item.uniqueHosts = builder.toString();
                     item.uniqueHostsIsDirty = true;
                     item.uniqueHostsIsFiltered = true;
+
+                    MyLog.d("[AppView] adding filtered item " + item);
+                    filteredItems.add(item);
                   }
+                } else {
+                  // no filtering for host/port, matches everything
+                  MyLog.d("[AppView] adding filtered item " + item);
+                  filteredItems.add(item);
                 }
               }
             }

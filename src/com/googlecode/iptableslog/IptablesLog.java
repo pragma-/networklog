@@ -292,12 +292,14 @@ public class IptablesLog extends TabActivity
         item.setVisible(false);
       }
 
+      /*
       item = menu.findItem(R.id.pause);
 
       if(outputPaused)
         item.setTitle("Resume Output");
       else
         item.setTitle("Pause Output");
+      */
 
       return true;
     }
@@ -308,6 +310,7 @@ public class IptablesLog extends TabActivity
         case R.id.filter:
           showFilterDialog();
           break;
+          /*
         case R.id.pause:
           outputPaused = !outputPaused;
 
@@ -319,6 +322,7 @@ public class IptablesLog extends TabActivity
             appView.refreshAdapter();
           }
           break;
+          */
         case R.id.exit:
           confirmExit(this);
           break;
