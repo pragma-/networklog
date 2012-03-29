@@ -380,33 +380,43 @@ public class AppView extends Activity implements IptablesLogListener
     }
   }
 
-  public void onNewLogEntry(final IptablesLogTracker.LogEntry entry) {
-    MyLog.d("AppView: NewLogEntry: " + entry.uid + " " + entry.src + " " + entry.len);
+  public int getItemByAppUid(int uid) {
+    cachedSearchItem.app.uid = uid;
 
+    int index;
     synchronized(listDataBuffer) {
-      cachedSearchItem.app.uid = entry.uid;
-
       MyLog.d("Binary searching...");
-      int index = Collections.binarySearch(listDataBuffer, cachedSearchItem, new Comparator<ListItem>() {
+      index = Collections.binarySearch(listDataBuffer, cachedSearchItem, new Comparator<ListItem>() {
         public int compare(ListItem o1, ListItem o2) {
           //MyLog.d("Comparing " + o1.app.uid + " " + o1.app.name + " vs " + o2.app.uid + " " + o2.app.name);
           return o1.app.uid < o2.app.uid ? -1 : (o1.app.uid == o2.app.uid) ? 0 : 1;
         }
       });
 
-      MyLog.d("Search done: " + index);
-
-      if(index < 0) {
-        MyLog.d("No app entry for " + entry.uid);
-        return;
-      }
-
       // binarySearch isn't guaranteed to return the first item of items with the same uid
+      // so find the first item
       while(index > 0) {
-        if(listDataBuffer.get(index - 1).app.uid == entry.uid)
+        if(listDataBuffer.get(index - 1).app.uid == uid)
           index--;
         else break;
       }
+    }
+
+    MyLog.d("Search done, first: " + index);
+    return index;
+  }
+
+  public void onNewLogEntry(final IptablesLogTracker.LogEntry entry) {
+    MyLog.d("AppView: NewLogEntry: " + entry.uid + " " + entry.src + " " + entry.len);
+
+    int index = getItemByAppUid(entry.uid);
+
+    if(index < 0) { 
+      MyLog.d("No app entry");
+      return;
+    }
+
+    synchronized(listDataBuffer) {
 
       // generally this will iterate once, but some apps may be grouped under the same uid
       while(true) {

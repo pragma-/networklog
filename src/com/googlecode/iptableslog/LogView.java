@@ -14,8 +14,12 @@ import android.widget.Filterable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.graphics.drawable.Drawable;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -153,6 +157,8 @@ public class LogView extends Activity implements IptablesLogListener
       listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
       listView.setStackFromBottom(true);
 
+      listView.setOnItemClickListener(new CustomOnItemClickListener());
+
       layout.addView(listView);
 
       setContentView(layout);
@@ -164,6 +170,20 @@ public class LogView extends Activity implements IptablesLogListener
         adapter.notifyDataSetChanged();
       }
     }
+
+  private class CustomOnItemClickListener implements OnItemClickListener {
+    @Override
+      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Toast.makeText(getApplicationContext(), "clicked " + position + "(" + listData.get(position) + ")", Toast.LENGTH_SHORT).show();
+        ListItem item = listData.get(position);
+        startActivity(new Intent(getApplicationContext(), AppTimelineGraph.class)
+            .putExtra("app_uid", item.mUidString)
+            .putExtra("src_addr", item.srcAddr)
+            .putExtra("src_port", item.srcPort)
+            .putExtra("dst_addr", item.dstAddr)
+            .putExtra("dst_port", item.dstPort));
+      }
+  }
 
   public void startUpdater() {
     updater = new ListViewUpdater();

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.googlecode.iptableslog"
-  android:versionCode="46"
-  android:versionName="0.4.0">
-  <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="10" />
+  android:versionCode="47"
+  android:versionName="0.5.0-beta1">
+  <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="8" />
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <application android:label="@string/app_name" android:icon="@drawable/icon">
@@ -19,5 +19,6 @@
     <activity android:name="LogView" />
     <activity android:name="AppView" />
     <activity android:name="Preferences" />
+    <activity android:name="AppTimelineGraph" />
   </application>
 </manifest> 

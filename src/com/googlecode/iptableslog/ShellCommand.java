@@ -115,7 +115,9 @@ public class ShellCommand {
       }
     }
 
-    //MyLog.d("readStdoutBlocking [" + tag + "] return [" + result + "]");
+    if(MyLog.enabled) {
+      MyLog.d("readStdoutBlocking [" + tag + "] return [" + result + "]");
+    }
     return result.toString();
   }
 
@@ -146,7 +148,9 @@ public class ShellCommand {
         
         result.append(charbuf, 0, read);
       }
-      //MyLog.d("readStdout return [" + result + "]");
+      if(MyLog.enabled) {
+        MyLog.d("readStdout return [" + result + "]");
+      }
       return result.toString();
     } catch(Exception e) {
       Log.d("IptablesLog", "readStdout error", e);
