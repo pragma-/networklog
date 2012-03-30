@@ -334,8 +334,11 @@ public class IptablesLogTracker {
       ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "FindLogTracker");
       command.start(false);
       String result = "";
-      while(!command.checkForExit()) {
-        result += command.readStdoutBlocking();
+      while(true) {
+        String line = command.readStdoutBlocking();
+        if(line == null)
+          break;
+        result += line;
       }
 
       if(result == null)
@@ -428,7 +431,7 @@ public class IptablesLogTracker {
       String result;
       running = true;
       while(running && command.checkForExit() == false) {
-        // MyLog.d("LogTracker " + this + " checking stdout");
+        MyLog.d("LogTracker " + this + " checking stdout");
 
         if(command.stdoutAvailable()) {
           result = command.readStdout();

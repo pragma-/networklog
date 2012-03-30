@@ -4,7 +4,8 @@ import android.util.Log;
 
 import java.lang.Runtime;
 import java.lang.Process;
-import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
 import java.lang.Thread;
 import java.util.Arrays;
 
@@ -13,10 +14,7 @@ public class ShellCommand {
   String[] command;
   String tag = "";
   Process process;
-  InputStream stdout;
-  byte[] buf = new byte[8192 * 2];
-  char[] charbuf = new char[8192 * 2];
-  StringBuilder result = new StringBuilder(8192 * 2);
+  BufferedReader stdout;
 
   public ShellCommand(String[] command, String tag) {
     this(command);
@@ -36,7 +34,7 @@ public class ShellCommand {
         .redirectErrorStream(true)
         .start();
 
-      stdout = process.getInputStream();
+      stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
     } catch(Exception e) {
       Log.d("IptablesLog", "Failure starting shell command [" + tag + "]", e);
       return;
@@ -80,78 +78,47 @@ public class ShellCommand {
 
   public boolean stdoutAvailable() {
     try {
-      //MyLog.d("stdoutAvailable [" + tag + "]: " + stdout.available());
-      return stdout.available() > 0;
+      MyLog.d("stdoutAvailable [" + tag + "]: " + stdout.ready());
+      return stdout.ready();
     } catch (java.io.IOException e) { Log.d("IptablesLog", "stdoutAvailable error", e); return false; }
   }
 
   public String readStdoutBlocking() {
-    int read;
-
     MyLog.d("readStdoutBlocking [" + tag + "]");
+    String line;
 
-    result.setLength(0);
-    while(true) {
-      try {
-        read = stdout.read(buf);
-
-        if(read < 0) {
-          MyLog.d("readStdoutBlocking [" + tag + "] return null");
-          return null;
-        }
-
-        MyLog.d("read returned " + read);
-
-        for(int i = 0; i < read; i++) {
-          charbuf[i] = (char) buf[i];
-        }
-
-        result.append(charbuf, 0, read);
-        if(!stdoutAvailable())
-          break;
-      } catch (Exception e) {
-        Log.d("IptablesLog", "readStdoutBlocking error", e);
-        return null;
-      }
+    try {
+      line = stdout.readLine();
+    } catch (Exception e) {
+      Log.d("IptablesLog", "readStdoutBlocking error", e);
+      return null;
     }
 
     if(MyLog.enabled) {
-      MyLog.d("readStdoutBlocking [" + tag + "] return [" + result + "]");
+      MyLog.d("readStdoutBlocking [" + tag + "] return [" + line + "]");
     }
-    return result.toString();
+
+    if(line == null)
+      return null;
+    else
+      return line + "\n";
   }
 
   public String readStdout() {
-    int read;
-
     MyLog.d("readStdout [" + tag + "]");
 
     try {
-      int available;
-
-      result.setLength(0);
-      while((available = stdout.available()) > 0) {
-        MyLog.d("stdout available: " + available);
-
-        read = stdout.read(buf);
-
-        MyLog.d("read returned " + read);
-
-        if(read < 0) {
-          MyLog.d("readStdout return null");
+      if(stdout.ready()) {
+        String line = stdout.readLine();
+        MyLog.d("read line: [" + line + "]");
+        if(line == null)
           return null;
-        }
-
-        for(int i = 0; i < read; i++) {
-          charbuf[i] = (char) buf[i];
-        }
-        
-        result.append(charbuf, 0, read);
+        else
+          return line + "\n";
+      } else {
+        MyLog.d("readStdout [" + tag + "] no data");
+        return "";
       }
-      if(MyLog.enabled) {
-        MyLog.d("readStdout return [" + result + "]");
-      }
-      return result.toString();
     } catch(Exception e) {
       Log.d("IptablesLog", "readStdout error", e);
       return null;

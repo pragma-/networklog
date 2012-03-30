@@ -50,6 +50,7 @@ public class AppView extends Activity implements IptablesLogListener
     protected String sentPortString;
     protected String sentAddress;
     protected String sentAddressString;
+    
     protected int receivedPackets;
     protected int receivedBytes;
     protected String receivedTimestamp;
@@ -57,6 +58,13 @@ public class AppView extends Activity implements IptablesLogListener
     protected String receivedPortString;
     protected String receivedAddress;
     protected String receivedAddressString;
+    
+    protected ArrayList<PacketGraphItem> packetGraphBuffer;
+    protected ArrayList<PacketGraphItem> packetGraphData;
+
+    public String toString() {
+      return sentAddressString + ":" + sentPortString + " -> " + receivedAddressString + ":" + receivedPortString;
+    }
   }
 
   public class ListItem {
@@ -417,7 +425,6 @@ public class AppView extends Activity implements IptablesLogListener
     }
 
     synchronized(listDataBuffer) {
-
       // generally this will iterate once, but some apps may be grouped under the same uid
       while(true) {
         MyLog.d("while: index = " + index);
@@ -443,6 +450,7 @@ public class AppView extends Activity implements IptablesLogListener
 
           if(info == null) {
             info = new HostInfo();
+            info.packetGraphBuffer = new ArrayList<PacketGraphItem>();
           }
 
           info.receivedPackets++;
@@ -452,6 +460,10 @@ public class AppView extends Activity implements IptablesLogListener
           info.receivedAddress = entry.src;
           info.receivedAddressString = entry.src;
           info.receivedPortString = String.valueOf(entry.spt);
+
+          PacketGraphItem data = new PacketGraphItem(entry.len);
+          info.packetGraphBuffer.add(data);
+          MyLog.d("graph " + info + " added " + data);
 
           item.uniqueHostsList.put(src, info);
           item.uniqueHostsListNeedsSort = true;
@@ -463,6 +475,7 @@ public class AppView extends Activity implements IptablesLogListener
 
           if(info == null) {
             info = new HostInfo();
+            info.packetGraphBuffer = new ArrayList<PacketGraphItem>();
           }
 
           info.sentPackets++;
@@ -472,6 +485,10 @@ public class AppView extends Activity implements IptablesLogListener
           info.sentAddress = entry.dst;
           info.sentAddressString = entry.dst;
           info.sentPortString = String.valueOf(entry.dpt);
+
+          PacketGraphItem data = new PacketGraphItem(entry.len);
+          info.packetGraphBuffer.add(data);
+          MyLog.d("graph " + info + " added " + data);
 
           item.uniqueHostsList.put(dst, info);
           item.uniqueHostsListNeedsSort = true;
@@ -613,7 +630,7 @@ public class AppView extends Activity implements IptablesLogListener
           listDataBufferIsDirty = false;
         }
 
-        try { Thread.sleep(1000); } catch (Exception e) { Log.d("IptablesLog", "AppViewListUpdater", e); }
+        try { Thread.sleep(5000); } catch (Exception e) { Log.d("IptablesLog", "AppViewListUpdater", e); }
       }
       MyLog.d("Stopped AppView updater " + this);
     }

@@ -177,10 +177,12 @@ public class NetworkResolver {
 
     if(resolved == null) {
       try {
-      InetAddress inetAddress = InetAddress.getByName(address);
-      resolved = inetAddress.getHostName();
-      hostMap.put(address, resolved);
-      return resolved;
+        MyLog.d("Resolving " + address);
+        InetAddress inetAddress = InetAddress.getByName(address);
+        resolved = inetAddress.getHostName();
+        hostMap.put(address, resolved);
+        MyLog.d("Resolved " + address + " to " + resolved);
+        return resolved;
       } catch (Exception e) {
         Log.d("IptablesLog", e.toString(), e);
         return address;

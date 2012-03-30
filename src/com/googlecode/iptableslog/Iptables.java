@@ -93,15 +93,18 @@ public class Iptables {
 
       ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }, "checkRules");
       command.start(false);
-      StringBuilder result = new StringBuilder(8192);
-      while(!command.checkForExit()) {
-        result.append(command.readStdoutBlocking());
+      StringBuilder result = new StringBuilder();
+      while(true) {
+        String line = command.readStdoutBlocking();
+        if(line == null)
+          break;
+        result.append(line);
       }
 
       if(result == null)
         return true;
 
-      // MyLog.d("checkRules result: [" + result + "]");
+      MyLog.d("checkRules result: [" + result + "]");
 
       return result.indexOf("[IptablesLogEntry]", 0) == -1 ? false : true;
     }
