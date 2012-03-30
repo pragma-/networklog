@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
+import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.LineGraphView;
 import com.jjoe64.graphview.GraphView.*;
 
@@ -55,7 +56,7 @@ public class AppTimelineGraph extends Activity
       AppView.ListItem item = IptablesLog.appView.listDataBuffer.get(index);
 
       // always give data sorted by x values
-      LineGraphView graphView = new LineGraphView(this, item.toString())
+      GraphView graphView = new LineGraphView(this, item.toString())
       {
         private SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
         @Override
@@ -80,84 +81,102 @@ public class AppTimelineGraph extends Activity
 
       MyLog.d("Starting graph for " + item);
 
-      ArrayList<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
-      Collections.sort(list);
-      Iterator<String> itr = list.iterator();
-      int color = 0;
-      while(itr.hasNext())
-      {
-        String host = itr.next();
-        MyLog.d("Graphing " + host);
-        AppView.HostInfo info = item.uniqueHostsList.get(host);
-
-        if(info.packetGraphBuffer.size() > 0)
+      synchronized(item.uniqueHostsList) {
+        ArrayList<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
+        Collections.sort(list);
+        Iterator<String> itr = list.iterator();
+        int color = 0;
+        while(itr.hasNext())
         {
-          MyLog.d("number of packets: " + info.packetGraphBuffer.size());
-          ArrayList<PacketGraphItem> graphData = new ArrayList<PacketGraphItem>();
+          String host = itr.next();
+          MyLog.d("Graphing " + host);
+          AppView.HostInfo info = item.uniqueHostsList.get(host);
 
-          int timeFrameSize = 1000; // fixme: make user-definable via graph menu
-          long nextTimeFrame = 0; 
-          long frameLen = 0; // len for this time frame
-
-          for(PacketGraphItem data : info.packetGraphBuffer)
+          if(info.packetGraphBuffer.size() > 0)
           {
-            MyLog.d("processing: " + data + "; nextTimeFrame: " + nextTimeFrame + "; frameLen: " + frameLen);
-            if(nextTimeFrame == 0)
+            MyLog.d("number of packets: " + info.packetGraphBuffer.size());
+            ArrayList<PacketGraphItem> graphData = new ArrayList<PacketGraphItem>();
+
+            int timeFrameSize = 1000; // fixme: make user-definable via graph menu
+            long nextTimeFrame = 0; 
+            long frameLen = 1; // len for this time frame
+
+            for(PacketGraphItem data : info.packetGraphBuffer)
             {
-              nextTimeFrame = data.timestamp + timeFrameSize;
-              MyLog.d("setting nextTimeFrame: " + nextTimeFrame);
-            }
-            else if(data.timestamp > nextTimeFrame)
-            {
-              long time = nextTimeFrame;
-              for(; time < data.timestamp; time += timeFrameSize)
+              MyLog.d("processing: " + data + "; nextTimeFrame: " + nextTimeFrame + "; frameLen: " + frameLen);
+              if(nextTimeFrame == 0)
               {
-                MyLog.d("- plotting: (" + time + ", " + frameLen + ")");
-                graphData.add(new PacketGraphItem(time, frameLen));
-                frameLen = 0;
+                nextTimeFrame = data.timestamp + timeFrameSize;
+                MyLog.d("setting nextTimeFrame: " + nextTimeFrame);
+              }
+              else if(data.timestamp > nextTimeFrame)
+              {
+                long time = nextTimeFrame;
+                for(; time < data.timestamp; time += timeFrameSize)
+                {
+                  MyLog.d("- plotting: (" + time + ", " + frameLen + ")");
+                  graphData.add(new PacketGraphItem(time, frameLen));
+                  frameLen = 1;
+                }
+
+                nextTimeFrame = time;
+                MyLog.d("setting nextTimeFrame: " + nextTimeFrame);
               }
 
-              nextTimeFrame = time;
-              MyLog.d("setting nextTimeFrame: " + nextTimeFrame);
+              frameLen += data.len;
+              MyLog.d("Adding " + data.len + "; frameLen: " + frameLen);
             }
 
-            frameLen += data.len;
-            MyLog.d("Adding " + data.len + "; frameLen: " + frameLen);
-          }
+            MyLog.d("+ plotting: (" + nextTimeFrame + ", " + frameLen + ")");
+            graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
 
-          MyLog.d("+ plotting: (" + nextTimeFrame + ", " + frameLen + ")");
-          graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
-          
-          MyLog.d("Adding series " + info);
-          
-          GraphViewData[] seriesData = new GraphViewData[graphData.size()];
+            MyLog.d("Adding series " + info);
 
-          int i = 0;
-          for(PacketGraphItem graphItem : graphData)
-          {
-            seriesData[i] = new GraphViewData(graphItem.timestamp, graphItem.len);
-            i++;
-          }
+            GraphViewData[] seriesData = new GraphViewData[graphData.size()];
 
-          graphView.addSeries(new GraphViewSeries(info.toString(), Color.parseColor(getResources().getString(Colors.distinctColor[color])), seriesData));
-          color++;
-          if(color >= Colors.distinctColor.length)
-          {
-            color = 0;
+            int i = 0;
+            for(PacketGraphItem graphItem : graphData)
+            {
+              seriesData[i] = new GraphViewData(graphItem.timestamp, graphItem.len);
+              i++;
+            }
+
+            graphView.addSeries(new GraphViewSeries(info.toString(), Color.parseColor(getResources().getString(Colors.distinctColor[color])), seriesData));
+            color++;
+            if(color >= Colors.distinctColor.length)
+            {
+              color = 0;
+            }
           }
         }
       }
 
-      // ??? by 30 seconds viewport
-      // graphView.setViewPort(0, 1000 * 30);  // fixme: allow user-defined viewport configuration
+      double minX = graphView.getMinX(true);
+      double maxX = graphView.getMaxX(true);
+
+      double viewTimeFrame = 1000 * 60; // fixme: user-definable
+      double viewSize = viewTimeFrame;
+      double viewStart = maxX - viewTimeFrame;
+
+      if(viewStart < minX)
+      {
+        viewStart = minX;
+      }
+
+      if(viewStart + viewSize > maxX)
+      {
+        viewSize = maxX - viewStart;
+      }
+
+      graphView.setViewPort(viewStart, viewSize);
       graphView.setScrollable(true);
       graphView.setScalable(true);
-      graphView.setDrawBackground(false);
       graphView.setShowLegend(true);
       graphView.setLegendAlign(LegendAlign.BOTTOM);
       // todo calculate length of max text in legend and set width accordingly
       // graphView.setLegendWidth(300);
 
+      graphView.invalidate();
       setContentView(graphView);
     }
 }
