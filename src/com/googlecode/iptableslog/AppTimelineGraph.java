@@ -66,22 +66,23 @@ public class AppTimelineGraph extends Activity
             {
               // convert from unix timestamp to human time format
               String result = formatter.format(new Date((long) value));
-              MyLog.d("x axis label: " + result);
+              //MyLog.d("x axis label: " + result);
               return result;
             }
             else
             {
-              // y-axis, use default formatter
+              // y-axis
               String result = String.format("%.2f", value/1000.0f) + "KB";
-              MyLog.d("y axis label: " + result);
+              //MyLog.d("y axis label: " + result);
               return result;
             }
           }
       };
 
-      MyLog.d("Starting graph for " + item);
+      MyLog.d("Adding data to graph for " + item);
 
-      synchronized(item.uniqueHostsList) {
+      synchronized(item.uniqueHostsList)
+      {
         ArrayList<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
         Collections.sort(list);
         Iterator<String> itr = list.iterator();
@@ -89,58 +90,23 @@ public class AppTimelineGraph extends Activity
         while(itr.hasNext())
         {
           String host = itr.next();
-          MyLog.d("Graphing " + host);
           AppView.HostInfo info = item.uniqueHostsList.get(host);
+          MyLog.d("Graphing series " + host + "; hostinfo: " + info);
 
           if(info.packetGraphBuffer.size() > 0)
           {
             MyLog.d("number of packets: " + info.packetGraphBuffer.size());
-            ArrayList<PacketGraphItem> graphData = new ArrayList<PacketGraphItem>();
-
-            int timeFrameSize = 1000; // fixme: make user-definable via graph menu
-            long nextTimeFrame = 0; 
-            long frameLen = 1; // len for this time frame
-
-            for(PacketGraphItem data : info.packetGraphBuffer)
-            {
-              MyLog.d("processing: " + data + "; nextTimeFrame: " + nextTimeFrame + "; frameLen: " + frameLen);
-              if(nextTimeFrame == 0)
-              {
-                nextTimeFrame = data.timestamp + timeFrameSize;
-                MyLog.d("setting nextTimeFrame: " + nextTimeFrame);
-              }
-              else if(data.timestamp > nextTimeFrame)
-              {
-                long time = nextTimeFrame;
-                for(; time < data.timestamp; time += timeFrameSize)
-                {
-                  MyLog.d("- plotting: (" + time + ", " + frameLen + ")");
-                  graphData.add(new PacketGraphItem(time, frameLen));
-                  frameLen = 1;
-                }
-
-                nextTimeFrame = time;
-                MyLog.d("setting nextTimeFrame: " + nextTimeFrame);
-              }
-
-              frameLen += data.len;
-              MyLog.d("Adding " + data.len + "; frameLen: " + frameLen);
-            }
-
-            MyLog.d("+ plotting: (" + nextTimeFrame + ", " + frameLen + ")");
-            graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
-
-            MyLog.d("Adding series " + info);
-
-            GraphViewData[] seriesData = new GraphViewData[graphData.size()];
+            GraphViewData[] seriesData = new GraphViewData[info.packetGraphBuffer.size()];
 
             int i = 0;
-            for(PacketGraphItem graphItem : graphData)
+            for(PacketGraphItem data : info.packetGraphBuffer)
             {
-              seriesData[i] = new GraphViewData(graphItem.timestamp, graphItem.len);
-              i++;
+                  MyLog.d("Adding data " + data.timestamp + "; " + data.len);
+                  seriesData[i] = new GraphViewData(data.timestamp, data.len);
+                  i++;
             }
 
+            MyLog.d("Adding series data " + info);
             graphView.addSeries(new GraphViewSeries(info.toString(), Color.parseColor(getResources().getString(Colors.distinctColor[color])), seriesData));
             color++;
             if(color >= Colors.distinctColor.length)
@@ -154,9 +120,8 @@ public class AppTimelineGraph extends Activity
       double minX = graphView.getMinX(true);
       double maxX = graphView.getMaxX(true);
 
-      double viewTimeFrame = 1000 * 60; // fixme: user-definable
-      double viewSize = viewTimeFrame;
-      double viewStart = maxX - viewTimeFrame;
+      double viewSize = (maxX - minX) * 0.50f;
+      double viewStart = maxX - viewSize;
 
       if(viewStart < minX)
       {
@@ -168,14 +133,12 @@ public class AppTimelineGraph extends Activity
         viewSize = maxX - viewStart;
       }
 
+      graphView.intervalStep = 1000;
       graphView.setViewPort(viewStart, viewSize);
       graphView.setScrollable(true);
       graphView.setScalable(true);
       graphView.setShowLegend(true);
-      graphView.setLegendAlign(LegendAlign.BOTTOM);
-      // todo calculate length of max text in legend and set width accordingly
-      // graphView.setLegendWidth(300);
-
+      graphView.setLegendAlign(LegendAlign.MIDDLE);
       graphView.invalidate();
       setContentView(graphView);
     }

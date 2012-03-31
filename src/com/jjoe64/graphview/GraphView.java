@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import com.jjoe64.graphview.compatible.ScaleGestureDetector;
+import com.googlecode.iptableslog.MyLog;
 
 /**
  * GraphView is a Android View for creating zoomable and scrollable graphs.
@@ -103,7 +104,8 @@ abstract public class GraphView extends LinearLayout {
 
         if (maxY != minY) {
           paint.setStrokeCap(Paint.Cap.ROUND);
-          paint.setStrokeWidth(1);
+          // graph line width
+          paint.setStrokeWidth(2);
 
           for (int i=0; i<graphSeries.size(); i++) {
             paint.setColor(graphSeries.get(i).color);
@@ -192,11 +194,13 @@ abstract public class GraphView extends LinearLayout {
     final String description;
     final int color;
     final GraphViewData[] values;
+
     public GraphViewSeries(GraphViewData[] values) {
       description = null;
       color = 0xff0077cc; // blue version
       this.values = values;
     }
+
     public GraphViewSeries(String description, Integer color, GraphViewData[] values) {
       super();
       this.description = description;
@@ -266,6 +270,11 @@ abstract public class GraphView extends LinearLayout {
   private boolean manualYAxis;
   private double manualMaxYValue;
   private double manualMinYValue;
+  public double intervalStep;
+  public double minXCached;
+  public double maxXCached;
+  public double minYCached;
+  public double maxYCached;
 
   /**
    *
@@ -298,6 +307,7 @@ abstract public class GraphView extends LinearLayout {
       // viewport
       List<GraphViewData> listData = new ArrayList<GraphViewData>();
       for (int i=0; i<values.length; i++) {
+        // fixme: candidate for binary search?
         if (values[i].valueX >= viewportStart) {
           if (values[i].valueX > viewportStart+viewportSize) {
             listData.add(values[i]); // one more for nice scrolling
@@ -434,6 +444,10 @@ abstract public class GraphView extends LinearLayout {
     } else {
       // otherwise use the max x value
       // values must be sorted by x, so the last value has the largest X value
+
+      if(maxXCached > 0)
+        return maxXCached;
+
       double highest = 0;
       if (graphSeries.size() > 0)
       {
@@ -444,6 +458,8 @@ abstract public class GraphView extends LinearLayout {
           highest = Math.max(highest, values[values.length-1].valueX);
         }
       }
+      MyLog.d("graph getMaxX: " + highest);
+      maxXCached = highest;
       return highest;
     }
   }
@@ -453,6 +469,9 @@ abstract public class GraphView extends LinearLayout {
     if (manualYAxis) {
       largest = manualMaxYValue;
     } else {
+      if(maxYCached > 0)
+        return maxYCached;
+
       largest = Integer.MIN_VALUE;
       for (int i=0; i<graphSeries.size(); i++) {
         GraphViewData[] values = _values(i);
@@ -461,6 +480,8 @@ abstract public class GraphView extends LinearLayout {
             largest = values[ii].valueY;
       }
     }
+    MyLog.d("graph getMaxY: " + largest);
+    maxYCached = largest;
     return largest;
   }
 
@@ -471,6 +492,11 @@ abstract public class GraphView extends LinearLayout {
     } else {
       // otherwise use the min x value
       // values must be sorted by x, so the first value has the smallest X value
+      
+      // cached
+      if(minXCached > 0)
+        return minXCached;
+
       double lowest = 0;
       if (graphSeries.size() > 0)
       {
@@ -481,6 +507,8 @@ abstract public class GraphView extends LinearLayout {
           lowest = Math.min(lowest, values[0].valueX);
         }
       }
+      MyLog.d("graph getMinX: " + lowest);
+      minXCached = lowest;
       return lowest;
     }
   }
@@ -490,6 +518,9 @@ abstract public class GraphView extends LinearLayout {
     if (manualYAxis) {
       smallest = manualMinYValue;
     } else {
+      if(minYCached > 0)
+        return minYCached;
+
       smallest = Integer.MAX_VALUE;
       for (int i=0; i<graphSeries.size(); i++) {
         GraphViewData[] values = _values(i);
@@ -498,6 +529,8 @@ abstract public class GraphView extends LinearLayout {
             smallest = values[ii].valueY;
       }
     }
+    MyLog.d("graph getMinY: " + smallest);
+    minYCached = smallest;
     return smallest;
   }
 
@@ -558,6 +591,7 @@ abstract public class GraphView extends LinearLayout {
         public boolean onScale(ScaleGestureDetector detector) {
           double newSize = viewportSize*detector.getScaleFactor();
           double diff = newSize-viewportSize;
+          MyLog.d("graph onScale: current size: " + viewportSize + "; factor: " + detector.getScaleFactor() + "; new size: " + newSize + "; diff: " + diff);
           viewportStart += diff/2;
           viewportSize -= diff;
           if (diff < 0) {

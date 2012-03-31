@@ -24,24 +24,44 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return prefs.getBoolean("resolve_ports", false);
   }
 
-  public String getFilterText() {
-    return prefs.getString("filter_text", "");
+  public String getFilterTextInclude() {
+    return prefs.getString("filter_text_include", "");
   }
 
-  public boolean getFilterUid() {
-    return prefs.getBoolean("filter_by_uid", true);
+  public boolean getFilterUidInclude() {
+    return prefs.getBoolean("filter_by_uid_include", false);
   }
 
-  public boolean getFilterName() {
-    return prefs.getBoolean("filter_by_name", true);
+  public boolean getFilterNameInclude() {
+    return prefs.getBoolean("filter_by_name_include", false);
   }
 
-  public boolean getFilterAddress() {
-    return prefs.getBoolean("filter_by_address", true);
+  public boolean getFilterAddressInclude() {
+    return prefs.getBoolean("filter_by_address_include", false);
   }
 
-  public boolean getFilterPort() {
-    return prefs.getBoolean("filter_by_port", true);
+  public boolean getFilterPortInclude() {
+    return prefs.getBoolean("filter_by_port_include", false);
+  }
+
+  public String getFilterTextExclude() {
+    return prefs.getString("filter_text_exclude", "");
+  }
+
+  public boolean getFilterUidExclude() {
+    return prefs.getBoolean("filter_by_uid_exclude", false);
+  }
+
+  public boolean getFilterNameExclude() {
+    return prefs.getBoolean("filter_by_name_exclude", false);
+  }
+
+  public boolean getFilterAddressExclude() {
+    return prefs.getBoolean("filter_by_address_exclude", false);
+  }
+
+  public boolean getFilterPortExclude() {
+    return prefs.getBoolean("filter_by_port_exclude", false);
   }
 
   public long getMaxLogEntries() {
@@ -80,33 +100,63 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
-  public void setFilterText(String value) {
+  public void setFilterTextInclude(String value) {
     SharedPreferences.Editor editor = prefs.edit();
-    editor.putString("filter_text", value);
+    editor.putString("filter_text_include", value);
     editor.commit();
   }
 
-  public void setFilterUid(boolean value) {
+  public void setFilterUidInclude(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
-    editor.putBoolean("filter_by_uid", value);
+    editor.putBoolean("filter_by_uid_include", value);
     editor.commit();
   }
 
-  public void setFilterName(boolean value) {
+  public void setFilterNameInclude(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
-    editor.putBoolean("filter_by_name", value);
+    editor.putBoolean("filter_by_name_include", value);
     editor.commit();
   }
 
-  public void setFilterAddress(boolean value) {
+  public void setFilterAddressInclude(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
-    editor.putBoolean("filter_by_address", value);
+    editor.putBoolean("filter_by_address_include", value);
     editor.commit();
   }
 
-  public void setFilterPort(boolean value) {
+  public void setFilterPortInclude(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
-    editor.putBoolean("filter_by_port", value);
+    editor.putBoolean("filter_by_port_include", value);
+    editor.commit();
+  }
+
+  public void setFilterTextExclude(String value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putString("filter_text_exclude", value);
+    editor.commit();
+  }
+
+  public void setFilterUidExclude(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("filter_by_uid_exclude", value);
+    editor.commit();
+  }
+
+  public void setFilterNameExclude(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("filter_by_name_exclude", value);
+    editor.commit();
+  }
+
+  public void setFilterAddressExclude(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("filter_by_address_exclude", value);
+    editor.commit();
+  }
+
+  public void setFilterPortExclude(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("filter_by_port_exclude", value);
     editor.commit();
   }
 

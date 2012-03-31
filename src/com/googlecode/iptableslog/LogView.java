@@ -165,8 +165,9 @@ public class LogView extends Activity implements IptablesLogListener
 
       maxLogEntries = IptablesLog.settings.getMaxLogEntries();
 
-      if(IptablesLog.filterText.length() > 0) {
-        setFilter(IptablesLog.filterText);
+      if(IptablesLog.filterTextInclude.length() > 0 || IptablesLog.filterTextExclude.length() > 0) {
+        // trigger filtering
+        setFilter("");
         adapter.notifyDataSetChanged();
       }
     }
@@ -174,7 +175,6 @@ public class LogView extends Activity implements IptablesLogListener
   private class CustomOnItemClickListener implements OnItemClickListener {
     @Override
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Toast.makeText(getApplicationContext(), "clicked " + position + "(" + listData.get(position) + ")", Toast.LENGTH_SHORT).show();
         ListItem item = listData.get(position);
         startActivity(new Intent(getApplicationContext(), AppTimelineGraph.class)
             .putExtra("app_uid", item.mUidString)
@@ -324,8 +324,9 @@ public class LogView extends Activity implements IptablesLogListener
             listData.remove(0);
         }
 
-        if(IptablesLog.filterText.length() > 0)
-          setFilter(IptablesLog.filterText);
+        if(IptablesLog.filterTextInclude.length() > 0 || IptablesLog.filterTextExclude.length() > 0)
+          // trigger filtering
+          setFilter("");
 
         if(!IptablesLog.outputPaused) {
           adapter.notifyDataSetChanged();
@@ -346,14 +347,14 @@ public class LogView extends Activity implements IptablesLogListener
           runOnUiThread(runner);
         }
         
-        try { Thread.sleep(750); } catch (Exception e) { Log.d("IptablesLog", "LogViewListUpdater", e); }
+        try { Thread.sleep(2500); } catch (Exception e) { Log.d("IptablesLog", "LogViewListUpdater", e); }
       }
       MyLog.d("Stopped LogView updater " + this);
     }
   }
 
   public void setFilter(CharSequence s) {
-    MyLog.d("[LogView] setFilter(" + s + ")");
+    // MyLog.d("[LogView] setFilter(" + s + ")");
     adapter.getFilter().filter(s);
   }
 
@@ -369,13 +370,6 @@ public class LogView extends Activity implements IptablesLogListener
     private class CustomFilter extends Filter {
       @Override
         protected FilterResults performFiltering(CharSequence constraint) {
-          // store constraint for filter dialog/preferences
-          IptablesLog.filterText = constraint;
-
-          constraint = constraint.toString().toLowerCase();
-
-          MyLog.d("[LogView] filter constraint: [" + constraint + "]");
-
           FilterResults results = new FilterResults();
 
           synchronized(listDataUnfiltered) {
@@ -383,8 +377,8 @@ public class LogView extends Activity implements IptablesLogListener
             originalItems.addAll(listDataUnfiltered);
           }
 
-          if(constraint == null || constraint.length() == 0) {
-            MyLog.d("[LogView] no constraint item count: " + originalItems.size());
+          if(IptablesLog.filterTextInclude.length() == 0 && IptablesLog.filterTextExclude.length() == 0) {
+            // MyLog.d("[LogView] no constraint item count: " + originalItems.size());
             results.values = originalItems;
             results.count = originalItems.size();
           } else {
@@ -395,63 +389,52 @@ public class LogView extends Activity implements IptablesLogListener
 
             MyLog.d("[LogView] item count: " + count);
 
-            String[] constraints = constraint.toString().split(",");
-            ArrayList<String> include = new ArrayList<String>();
-            ArrayList<String> exclude = new ArrayList<String>();
-
-            for(String c : constraints) {
-              c = c.trim();
-              if(c.startsWith("!"))
-                exclude.add(c.substring(1, c.length()).trim());
-              else
-                include.add(c);
-            }
-
-            if(include.size() == 0) {
+            if(IptablesLog.filterTextIncludeList.size() == 0) {
               filteredItems.addAll(localItems);
             } else {
               for(int i = 0; i < count; i++) {
                 ListItem item = localItems.get(i);
-                MyLog.d("[LogView] testing filtered item " + item + "; constraint: [" + constraint + "]");
+                // MyLog.d("[LogView] testing filtered item " + item + "; includes: [" + IptablesLog.filterTextInclude + "]");
 
                 boolean matched = false;
 
-                for(String c : include) {
-                  if((IptablesLog.filterName && item.mNameLowerCase.contains(c))
-                      || (IptablesLog.filterUid && item.mUidString.contains(c))
-                      || (IptablesLog.filterAddress && (item.srcAddrString.contains(c) || item.dstAddrString.contains(c)))
-                      || (IptablesLog.filterPort && (item.srcPortString.toLowerCase().equals(c) || item.dstPortString.toLowerCase().equals(c))))
+                for(String c : IptablesLog.filterTextIncludeList) {
+                  if((IptablesLog.filterNameInclude && item.mNameLowerCase.contains(c))
+                      || (IptablesLog.filterUidInclude && item.mUidString.equals(c))
+                      || (IptablesLog.filterAddressInclude && (item.srcAddrString.contains(c) || item.dstAddrString.contains(c)))
+                      || (IptablesLog.filterPortInclude && (item.srcPortString.toLowerCase().equals(c) || item.dstPortString.toLowerCase().equals(c))))
                   {
                     matched = true;
                   }
                 }
 
                 if(matched) {
-                  MyLog.d("[LogView] adding filtered item " + item);
+                  // MyLog.d("[LogView] adding filtered item " + item);
                   filteredItems.add(item);
                 }
               }
             }
 
-            if(exclude.size() > 0) {
+            if(IptablesLog.filterTextExcludeList.size() > 0) {
               count = filteredItems.size();
               for(int i = count - 1; i >= 0; i--) {
                 ListItem item = filteredItems.get(i);
+                // MyLog.d("[LogView] testing filtered item " + item + "; excludes: [" + IptablesLog.filterTextExclude + "]");
                 
                 boolean matched = false;
 
-                for(String c : exclude) {
-                  if((IptablesLog.filterName && item.mNameLowerCase.contains(c))
-                      || (IptablesLog.filterUid && item.mUidString.contains(c))
-                      || (IptablesLog.filterAddress && (item.srcAddrString.contains(c) || item.dstAddrString.contains(c)))
-                      || (IptablesLog.filterPort && (item.srcPortString.toLowerCase().equals(c) || item.dstPortString.toLowerCase().equals(c))))
+                for(String c : IptablesLog.filterTextExcludeList) {
+                  if((IptablesLog.filterNameExclude && item.mNameLowerCase.contains(c))
+                      || (IptablesLog.filterUidExclude && item.mUidString.contains(c))
+                      || (IptablesLog.filterAddressExclude && (item.srcAddrString.contains(c) || item.dstAddrString.contains(c)))
+                      || (IptablesLog.filterPortExclude && (item.srcPortString.toLowerCase().equals(c) || item.dstPortString.toLowerCase().equals(c))))
                   {
                     matched = true;
                   }
                 }
 
                 if(matched) {
-                  MyLog.d("[LogView] removing filtered item " + item);
+                  // MyLog.d("[LogView] removing filtered item " + item);
                   filteredItems.remove(i);
                 }
               }

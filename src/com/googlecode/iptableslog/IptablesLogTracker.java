@@ -20,7 +20,7 @@ public class IptablesLogTracker {
   Hashtable<String, LogEntry> logEntriesHash;
   HashMap<String, Integer> logEntriesMap;
   ArrayList<IptablesLogListener> listenerList;
-  static String localIpAddr;
+  static ArrayList<String> localIpAddrs;
   ShellCommand command;
   StringBuilder buffer;
   LogTracker logTrackerRunner;
@@ -77,25 +77,30 @@ public class IptablesLogTracker {
     }
   }
 
-  public static String getLocalIpAddress() {
-    MyLog.d("getLocalIpAddress");
-    try {
-      for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+  public static void getLocalIpAddresses() {
+    MyLog.d("getLocalIpAddresses");
+    localIpAddrs = new ArrayList<String>();
+
+    try 
+    {
+      for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();)
+      {
         NetworkInterface intf = en.nextElement();
         MyLog.d(intf.toString());
-        for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+        for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();)
+        {
           InetAddress inetAddress = enumIpAddr.nextElement();
           MyLog.d(inetAddress.toString());
-          if (!inetAddress.isLoopbackAddress()) {
-            MyLog.d(inetAddress.getHostAddress().toString());
-            return inetAddress.getHostAddress().toString();
+          if (!inetAddress.isLoopbackAddress())
+          {
+            MyLog.d("Adding local IP address: [" + inetAddress.getHostAddress().toString() + "]");
+            localIpAddrs.add(inetAddress.getHostAddress().toString());
           }
         }
       }
     } catch (SocketException ex) {
       Log.e("IptablesLog", ex.toString());
     }
-    return "none";
   }
 
   public void parseResult(String result) {
@@ -396,7 +401,7 @@ public class IptablesLogTracker {
   }
 
   public void start(final boolean resumed) {
-    localIpAddr = getLocalIpAddress();
+    getLocalIpAddresses();
 
     if(resumed == false) {
       MyLog.d("adding logging rules");

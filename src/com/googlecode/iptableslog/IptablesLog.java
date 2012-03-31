@@ -18,6 +18,8 @@ import android.widget.TextView;
 import android.view.View;
 import android.view.LayoutInflater;
 
+import java.util.ArrayList;
+
 public class IptablesLog extends TabActivity
 {
   public static IptablesLogData data = null;
@@ -32,11 +34,19 @@ public class IptablesLog extends TabActivity
   
   public static Object scriptLock = new Object();
 
-  public static CharSequence filterText;
-  public static boolean filterUid;
-  public static boolean filterName;
-  public static boolean filterAddress;
-  public static boolean filterPort;
+  public static String filterTextInclude;
+  public static ArrayList<String> filterTextIncludeList = new ArrayList<String>();
+  public static boolean filterUidInclude;
+  public static boolean filterNameInclude;
+  public static boolean filterAddressInclude;
+  public static boolean filterPortInclude;
+
+  public static String filterTextExclude;
+  public static ArrayList<String> filterTextExcludeList = new ArrayList<String>();
+  public static boolean filterUidExclude;
+  public static boolean filterNameExclude;
+  public static boolean filterAddressExclude;
+  public static boolean filterPortExclude;
 
   public static NetworkResolver resolver;
   public static boolean resolveHosts;
@@ -107,11 +117,21 @@ public class IptablesLog extends TabActivity
       settings = new Settings(this);
 
       MyLog.enabled = settings.getLogcatDebug();
-      filterText = settings.getFilterText();
-      filterUid = settings.getFilterUid();
-      filterName = settings.getFilterName();
-      filterAddress = settings.getFilterAddress();
-      filterPort = settings.getFilterPort();
+
+      filterTextInclude = settings.getFilterTextInclude();
+      FilterUtils.buildList(filterTextInclude, filterTextIncludeList);
+      filterUidInclude = settings.getFilterUidInclude();
+      filterNameInclude = settings.getFilterNameInclude();
+      filterAddressInclude = settings.getFilterAddressInclude();
+      filterPortInclude = settings.getFilterPortInclude();
+
+      filterTextExclude = settings.getFilterTextExclude();
+      FilterUtils.buildList(filterTextExclude, filterTextExcludeList);
+      filterUidExclude = settings.getFilterUidExclude();
+      filterNameExclude = settings.getFilterNameExclude();
+      filterAddressExclude = settings.getFilterAddressExclude();
+      filterPortExclude = settings.getFilterPortExclude();
+
       resolveHosts = settings.getResolveHosts();
       resolvePorts = settings.getResolvePorts();
 
