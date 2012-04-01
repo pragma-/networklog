@@ -37,7 +37,8 @@ public class IptablesLogTracker {
     int dpt;
     int packets;
     int bytes;
-    String timestamp;
+    String timestampString;
+    long timestamp;
     boolean dirty;
   }
 
@@ -220,49 +221,70 @@ public class IptablesLogTracker {
       String srcDstMapKey = src + ":" + spt + " -> " + dst + ":" + dpt; 
       String dstSrcMapKey = dst + ":" + dpt + " -> " + src + ":" + spt; 
 
+      MyLog.d("Checking entry for " + uid + " " + srcDstMapKey + " and " + dstSrcMapKey);
       Integer srcDstMapUid = logEntriesMap.get(srcDstMapKey);
       Integer dstSrcMapUid = logEntriesMap.get(dstSrcMapKey);
 
-      if(srcDstMapUid == null) {
-        MyLog.d("[src-dst] No entry uid for " + uid + " [" + srcDstMapKey + "]");
-        if(uid == -1) {
-          if(dstSrcMapUid != null) {
-            MyLog.d("[dst-src] Reassigning kernel packet -1 to " + dstSrcMapUid);
-            uid = dstSrcMapUid;
+      if(uid < 0) {
+        // Unknown uid, retrieve from entries map
+        MyLog.d("Unknown uid");
+
+        if(srcDstMapUid == null || dstSrcMapUid == null) {
+          // refresh netstat and try again
+          MyLog.d("Refreshing netstat ...");
+          initEntriesMap();
+          srcDstMapUid = logEntriesMap.get(srcDstMapKey);
+          dstSrcMapUid = logEntriesMap.get(dstSrcMapKey);
+        }
+
+        if(srcDstMapUid == null) {
+          MyLog.d("[src-dst] No entry uid for " + uid + " [" + srcDstMapKey + "]");
+          if(uid == -1) {
+            if(dstSrcMapUid != null) {
+              MyLog.d("[dst-src] Reassigning kernel packet -1 to " + dstSrcMapUid);
+              uid = dstSrcMapUid;
+            } else {
+              MyLog.d("[src-dst] New kernel entry -1 for [" + srcDstMapKey + "]");
+              srcDstMapUid = uid;
+              logEntriesMap.put(srcDstMapKey, srcDstMapUid);
+            }
           } else {
-            MyLog.d("[src-dst] New kernel entry -1 for [" + srcDstMapKey + "]");
+            MyLog.d("[src-dst] New entry " + uid + " for [" + srcDstMapKey + "]");
             srcDstMapUid = uid;
             logEntriesMap.put(srcDstMapKey, srcDstMapUid);
           }
         } else {
-          MyLog.d("[src-dst] New entry " + uid + " for [" + srcDstMapKey + "]");
-          srcDstMapUid = uid;
-          logEntriesMap.put(srcDstMapKey, srcDstMapUid);
+          MyLog.d("[src-dst] Found entry uid " + srcDstMapUid + " for " + uid + " [" + srcDstMapKey + "]");
+          uid = srcDstMapUid;
         }
-      } else {
-        MyLog.d("[src-dst] Found entry uid " + srcDstMapUid + " for " + uid + " [" + srcDstMapKey + "]");
-        uid = srcDstMapUid;
-      }
-      
-      if(dstSrcMapUid == null) {
-        MyLog.d("[dst-src] No entry uid for " + uid + " [" + dstSrcMapKey + "]");
-        if(uid == -1) {
-          if(srcDstMapUid != null) {
-            MyLog.d("[src-dst] Reassigning kernel packet -1 to " + srcDstMapUid);
-            uid = srcDstMapUid;
+
+        if(dstSrcMapUid == null) {
+          MyLog.d("[dst-src] No entry uid for " + uid + " [" + dstSrcMapKey + "]");
+          if(uid == -1) {
+            if(srcDstMapUid != null) {
+              MyLog.d("[src-dst] Reassigning kernel packet -1 to " + srcDstMapUid);
+              uid = srcDstMapUid;
+            } else {
+              MyLog.d("[dst-src] New kernel entry -1 for [" + dstSrcMapKey + "]");
+              dstSrcMapUid = uid;
+              logEntriesMap.put(dstSrcMapKey, dstSrcMapUid);
+            }
           } else {
-            MyLog.d("[dst-src] New kernel entry -1 for [" + dstSrcMapKey + "]");
+            MyLog.d("[dst-src] New entry " + uid + " for [" + dstSrcMapKey + "]");
             dstSrcMapUid = uid;
             logEntriesMap.put(dstSrcMapKey, dstSrcMapUid);
           }
         } else {
-          MyLog.d("[dst-src] New entry " + uid + " for [" + dstSrcMapKey + "]");
-          dstSrcMapUid = uid;
-          logEntriesMap.put(dstSrcMapKey, dstSrcMapUid);
+          MyLog.d("[dst-src] Found entry uid " + dstSrcMapUid + " for " + uid + " [" + dstSrcMapKey + "]");
+          uid = dstSrcMapUid;
         }
       } else {
-        MyLog.d("[dst-src] Found entry uid " + dstSrcMapUid + " for " + uid + " [" + dstSrcMapKey + "]");
-        uid = dstSrcMapUid;
+        MyLog.d("Known uid");
+        if(srcDstMapUid == null || dstSrcMapUid == null) {
+          MyLog.d("Adding missing uid " + uid + " to netstat map for " + srcDstMapKey + " and " + dstSrcMapKey);
+          logEntriesMap.put(srcDstMapKey, uid);
+          logEntriesMap.put(dstSrcMapKey, uid);
+        }
       }
 
       // get packet and byte counters
@@ -283,12 +305,13 @@ public class IptablesLogTracker {
         entry.bytes += entry.len;
       }
 
-      entry.timestamp = getTimestamp();
+      entry.timestampString = getTimestamp();
+      entry.timestamp = System.currentTimeMillis();
 
       logEntriesHash.put(String.valueOf(uid), entry);
 
       if(MyLog.enabled)
-        MyLog.d("+++ entry: (" + entry.uid + ") " + entry.src + ":" + entry.spt + " -> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "] " + entry.bytes + " " + entry.timestamp);
+        MyLog.d("+++ entry: (" + entry.uid + ") " + entry.src + ":" + entry.spt + " -> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "] " + entry.bytes + " " + entry.timestampString);
 
       notifyNewEntry(entry);
 

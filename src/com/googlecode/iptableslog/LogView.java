@@ -244,7 +244,7 @@ public class LogView extends Activity implements IptablesLogListener
       item.dstPortString = String.valueOf(entry.dpt);
 
     item.len = entry.len;
-    item.timestamp = entry.timestamp;
+    item.timestamp = entry.timestampString;
 
     MyLog.d("LogView: Add item: " + item.srcAddr + " " + item.srcPort + " " + item.dstAddr + " " + item.dstPort + " " + item.len);
 

@@ -476,7 +476,7 @@ public class AppView extends Activity implements IptablesLogListener
 
   public void onNewLogEntry(final IptablesLogTracker.LogEntry entry)
   {
-    MyLog.d("AppView: NewLogEntry: " + entry.uid + " " + entry.src + " " + entry.len);
+    MyLog.d("AppView: NewLogEntry: [" + entry.uid + "] " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
 
     int index = getItemByAppUid(entry.uid);
 
@@ -487,6 +487,9 @@ public class AppView extends Activity implements IptablesLogListener
 
     synchronized(listDataBuffer)
     {
+      String src = entry.src + ":" + entry.spt;
+      String dst = entry.dst + ":" + entry.dpt;
+
       // generally this will iterate once, but some apps may be grouped under the same uid
       while(true)
       {
@@ -500,10 +503,7 @@ public class AppView extends Activity implements IptablesLogListener
 
         item.totalPackets = entry.packets;
         item.totalBytes = entry.bytes;
-        item.lastTimestamp = entry.timestamp;
-
-        String src = entry.src + ":" + entry.spt;
-        String dst = entry.dst + ":" + entry.dpt;
+        item.lastTimestamp = entry.timestampString;
 
         HostInfo info;
 
@@ -522,15 +522,23 @@ public class AppView extends Activity implements IptablesLogListener
 
             info.receivedPackets++;
             info.receivedBytes += entry.len;
-            info.receivedTimestamp = entry.timestamp;
+            info.receivedTimestamp = entry.timestampString;
+
+            MyLog.d("Added received packet " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + info.receivedPackets + "; bytes: " + info.receivedBytes);
+
             info.receivedPort = entry.spt;
+            info.receivedPortString = String.valueOf(entry.spt);
             info.receivedAddress = entry.src;
             info.receivedAddressString = entry.src;
-            info.receivedPortString = String.valueOf(entry.spt);
 
-            PacketGraphItem data = new PacketGraphItem(entry.len);
+            info.sentPort = entry.dpt;
+            info.sentPortString = String.valueOf(entry.dpt);
+            info.sentAddress = entry.dst;
+            info.sentAddressString = entry.dst;
+
+            PacketGraphItem data = new PacketGraphItem(entry.timestamp, entry.len);
             info.packetGraphBuffer.add(data);
-            MyLog.d("graph " + info + " added " + data);
+            MyLog.d("graph receivedbytes " + info.receivedBytes + " " + info + " added " + data);
 
             item.uniqueHostsList.put(src, info);
             item.uniqueHostsListNeedsSort = true;
@@ -552,15 +560,23 @@ public class AppView extends Activity implements IptablesLogListener
 
             info.sentPackets++;
             info.sentBytes += entry.len;
-            info.sentTimestamp = entry.timestamp;
+            info.sentTimestamp = entry.timestampString;
+
+            MyLog.d("Added sent packet " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + info.sentPackets + "; bytes: " + info.sentBytes);
+            
             info.sentPort = entry.dpt;
+            info.sentPortString = String.valueOf(entry.dpt);
             info.sentAddress = entry.dst;
             info.sentAddressString = entry.dst;
-            info.sentPortString = String.valueOf(entry.dpt);
 
-            PacketGraphItem data = new PacketGraphItem(entry.len);
+            info.receivedPort = entry.spt;
+            info.receivedPortString = String.valueOf(entry.spt);
+            info.receivedAddress = entry.src;
+            info.receivedAddressString = entry.src;
+
+            PacketGraphItem data = new PacketGraphItem(entry.timestamp, entry.len);
             info.packetGraphBuffer.add(data);
-            MyLog.d("graph " + info + " added " + data);
+            MyLog.d("graph sentbytes " + info.sentBytes + " " + info + " added " + data);
 
             item.uniqueHostsList.put(dst, info);
             item.uniqueHostsListNeedsSort = true;
@@ -605,67 +621,80 @@ public class AppView extends Activity implements IptablesLogListener
 
       StringBuilder builder = new StringBuilder("Addrs:");
       Iterator<String> itr = list.iterator();
-      boolean hasHost = false;
+      boolean has_host = false;
       while(itr.hasNext())
       {
         String host = itr.next();
         HostInfo info = item.uniqueHostsList.get(host);
 
-        builder.append("<br>&nbsp;&nbsp;");
-        boolean hostSet = false;
+        MyLog.d("Hostinfo entry for " + item + ": " + host);
+        MyLog.d("Sent packets: " + info.sentPackets + "; bytes: " + info.sentBytes);
+        MyLog.d("Received packets: " + info.receivedPackets + "; bytes: " + info.receivedBytes);
+        MyLog.d("Total: " + (info.sentBytes + info.receivedBytes));
 
-        if(info.sentPackets > 0)
-        {
-          if(IptablesLog.resolveHosts)
-          {
-            info.sentAddressString = IptablesLog.resolver.resolveAddress(info.sentAddress);
-          } else {
-            info.sentAddressString = info.sentAddress;
+        String addressString = null;
+        String portString = null;
+
+        if(info.receivedPackets > 0) {
+          MyLog.d("Received address: " + info.receivedAddress + ":" + info.receivedPort);
+          if(!IptablesLogTracker.localIpAddrs.contains(info.receivedAddress)) {
+            if(IptablesLog.resolveHosts) {
+              info.receivedAddressString = IptablesLog.resolver.resolveAddress(info.receivedAddress);
+            } else {
+              info.receivedAddressString = info.receivedAddress;
+            }
+
+            if(IptablesLog.resolvePorts) {
+              info.receivedPortString = IptablesLog.resolver.resolveService(String.valueOf(info.receivedPort));
+            } else {
+              info.receivedPortString = String.valueOf(info.receivedPort);
+            }
+
+            addressString = info.receivedAddressString;
+            portString = info.receivedPortString;
           }
-
-          if(IptablesLog.resolvePorts)
-          {
-            info.sentPortString = IptablesLog.resolver.resolveService(String.valueOf(info.sentPort));
-          } else {
-            info.sentPortString = String.valueOf(info.sentPort);
-          }
-
-          builder.append("<u>" + info.sentAddressString + ":" + info.sentPortString  + "</u>");
-          hostSet = true;
-          hasHost = true;
-
-          builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
-          builder.append("<small>Sent:</small> <b>" + info.sentPackets + "</b> <small>packets,</small> <b>" + info.sentBytes + "</b> <small>bytes</small> (" + info.sentTimestamp.substring(info.sentTimestamp.indexOf(' ') + 1, info.sentTimestamp.length()) + ")");
         }
 
-        if(info.receivedPackets > 0)
-        {
-          if(IptablesLog.resolveHosts)
-          {
-            info.receivedAddressString = IptablesLog.resolver.resolveAddress(info.receivedAddress);
-          } else {
-            info.receivedAddressString = info.receivedAddress;
+        if(info.sentPackets > 0) {
+          MyLog.d("Sent address: " + info.sentAddress + ":" + info.sentPort);
+          if(!IptablesLogTracker.localIpAddrs.contains(info.sentAddress)) {
+            if(IptablesLog.resolveHosts) {
+              info.sentAddressString = IptablesLog.resolver.resolveAddress(info.sentAddress);
+            } else {
+              info.sentAddressString = info.sentAddress;
+            }
+
+            if(IptablesLog.resolvePorts) {
+              info.sentPortString = IptablesLog.resolver.resolveService(String.valueOf(info.sentPort));
+            } else {
+              info.sentPortString = String.valueOf(info.sentPort);
+            }
+
+            addressString = info.sentAddressString;
+            portString = info.sentPortString;
+          }
+        }
+
+        if(addressString != null) {
+          MyLog.d("Final address: " + addressString + ":" + portString);
+
+          has_host = true;
+          builder.append("<br>&nbsp;&nbsp;");
+          builder.append("<u>" + addressString + ":" + portString  + "</u>");
+
+          if(info.sentPackets > 0) {
+            builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
+            builder.append("<small>Sent:</small> <b>" + info.sentPackets + "</b> <small>packets,</small> <b>" + info.sentBytes + "</b> <small>bytes</small> (" + info.sentTimestamp.substring(info.sentTimestamp.indexOf(' ') + 1, info.sentTimestamp.length()) + ")");
           }
 
-          if(IptablesLog.resolvePorts)
-          {
-            info.receivedPortString = IptablesLog.resolver.resolveService(String.valueOf(info.receivedPort));
-          } else {
-            info.receivedPortString = String.valueOf(info.receivedPort);
+          if(info.receivedPackets > 0) {
+            builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
+            builder.append("<small>Recv:</small> <em>" + info.receivedPackets + "</em> <small>packets,</small> <em>" + info.receivedBytes + "</em> <small>bytes</small> (" + info.receivedTimestamp.substring(info.receivedTimestamp.indexOf(' ') + 1, info.receivedTimestamp.length()) + ")");
           }
-
-          if(!hostSet)
-          {
-            builder.append("<u>" + info.receivedAddressString + ":" + info.receivedPortString  + "</u>");
-            hasHost = true;
-          }
-
-          builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
-          builder.append("<small>Recv:</small> <em>" + info.receivedPackets + "</em> <small>packets,</small> <em>" + info.receivedBytes + "</em> <small>bytes</small> (" + info.receivedTimestamp.substring(info.receivedTimestamp.indexOf(' ') + 1, info.receivedTimestamp.length()) + ")");
         }
       }
 
-      if(hasHost) {
+      if(has_host) {
         item.uniqueHosts = builder.toString();
         item.uniqueHostsIsDirty = true;
       }
@@ -974,33 +1003,43 @@ public class AppView extends Activity implements IptablesLogListener
               for(HostInfo info : item.filteredHostInfos) {
                 MyLog.d("[AppView] adding host " + info);
                 builder.append("<br>&nbsp;&nbsp;");
-                boolean host_set = false;
 
-                if(info.sentPackets > 0)
+                String addressString = null;
+                String portString = null;
+
+                if(info.sentPackets > 0 && !IptablesLogTracker.localIpAddrs.contains(info.sentAddress))
                 {
-                  has_host = true;
-                  builder.append("<u>" + info.sentAddressString + ":" + info.sentPortString + "</u>");
-                  host_set = true;
-                  builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
-                  builder.append("<small>Sent:</small> <b>" + info.sentPackets + "</b> <small>packets,</small> <b>" + info.sentBytes + "</b> <small>bytes</small> (" + info.sentTimestamp.substring(info.sentTimestamp.indexOf(' ') + 1, info.sentTimestamp.length()) + ")");
+                  addressString = info.sentAddressString;
+                  portString = info.sentPortString;
                 }
 
-                if(info.receivedPackets > 0)
+                if(info.receivedPackets > 0 && !IptablesLogTracker.localIpAddrs.contains(info.receivedAddress))
                 {
+                  addressString = info.receivedAddressString;
+                  portString = info.receivedPortString;
+                }
+
+                if(addressString != null) {
                   has_host = true;
-                  if(!host_set) 
-                    builder.append("<u>" + info.receivedAddressString + ":" + info.receivedPortString + "</u>");
-                  builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
-                  builder.append("<small>Recv:</small> <em>" + info.receivedPackets + "</em> <small>packets,</small> <em>" + info.receivedBytes + "</em> <small>bytes</small> (" + info.receivedTimestamp.substring(info.receivedTimestamp.indexOf(' ') + 1, info.receivedTimestamp.length()) + ")");
+                  builder.append("<u>" + addressString + ":" + portString + "</u>");
+
+                  if(info.sentPackets > 0) {
+                    builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
+                    builder.append("<small>Sent:</small> <b>" + info.sentPackets + "</b> <small>packets,</small> <b>" + info.sentBytes + "</b> <small>bytes</small> (" + info.sentTimestamp.substring(info.sentTimestamp.indexOf(' ') + 1, info.sentTimestamp.length()) + ")");
+                  }
+
+                  if(info.receivedPackets > 0) {
+                    builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
+                    builder.append("<small>Recv:</small> <em>" + info.receivedPackets + "</em> <small>packets,</small> <em>" + info.receivedBytes + "</em> <small>bytes</small> (" + info.receivedTimestamp.substring(info.receivedTimestamp.indexOf(' ') + 1, info.receivedTimestamp.length()) + ")");
+                  }
                 }
               }
 
-              if(has_host)
-              {
+              if(has_host) {
                 item.uniqueHosts = builder.toString();
                 item.uniqueHostsIsDirty = true;
                 item.uniqueHostsIsFiltered = true;
-              } 
+              }
             }
 
             results.values = filteredItems;
