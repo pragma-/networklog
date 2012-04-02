@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:id="@+id/interval"
+    android:title="Set Interval">
+    <menu>
+      <group android:checkableBehavior="single">
+        <item android:id="@+id/interval_100"
+          android:title="100 ms" />
+        <item android:id="@+id/interval_500"
+          android:title="500 ms" />
+        <item android:id="@+id/interval_1000"
+          android:title="1 second" />
+        <item android:id="@+id/interval_30000"
+          android:title="30 seconds" />
+        <item android:id="@+id/interval_60000"
+          android:title="1 minute" />
+        <item android:id="@+id/interval_300000"
+          android:title="5 minutes" />
+        <item android:id="@+id/interval_600000"
+          android:title="10 minutes" />
+        <item android:id="@+id/interval_900000"
+          android:title="15 minutes" />
+        <item android:id="@+id/interval_1800000"
+          android:title="30 minutes" />
+        <item android:id="@+id/interval_3600000"
+          android:title="1 hour" />
+        <item android:id="@+id/interval_7200000"
+          android:title="2 hours" />
+        <item android:id="@+id/interval_14400000"
+          android:title="4 hours" />
+        <item android:id="@+id/interval_28800000"
+          android:title="8 hours" />
+        <item android:id="@+id/interval_57600000"
+          android:title="16 hours" />
+        <item android:id="@+id/interval_115200000"
+          android:title="24 hours" />
+        <item android:id="@+id/interval_230400000"
+          android:title="48 hours" />
+      </group>
+    </menu>
+  </item>
+
+  <item android:id="@+id/viewsize"
+    android:title="Set View Size">
+    <menu>
+      <group android:checkableBehavior="single">
+        <item android:id="@+id/viewsize_100"
+          android:title="100 ms" />
+        <item android:id="@+id/viewsize_500"
+          android:title="500 ms" />
+        <item android:id="@+id/viewsize_1000"
+          android:title="1 second" />
+        <item android:id="@+id/viewsize_30000"
+          android:title="30 seconds" />
+        <item android:id="@+id/viewsize_60000"
+          android:title="1 minute" />
+        <item android:id="@+id/viewsize_300000"
+          android:title="5 minutes" />
+        <item android:id="@+id/viewsize_600000"
+          android:title="10 minutes" />
+        <item android:id="@+id/viewsize_900000"
+          android:title="15 minutes" />
+        <item android:id="@+id/viewsize_1800000"
+          android:title="30 minutes" />
+        <item android:id="@+id/viewsize_3600000"
+          android:title="1 hour" />
+        <item android:id="@+id/viewsize_7200000"
+          android:title="2 hours" />
+        <item android:id="@+id/viewsize_14400000"
+          android:title="4 hours" />
+        <item android:id="@+id/viewsize_28800000"
+          android:title="8 hours" />
+        <item android:id="@+id/viewsize_57600000"
+          android:title="16 hours" />
+        <item android:id="@+id/viewsize_115200000"
+          android:title="24 hours" />
+        <item android:id="@+id/viewsize_230400000"
+          android:title="48 hours" />
+      </group>
+    </menu>
+  </item>
+</menu>

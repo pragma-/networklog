@@ -12,56 +12,25 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Hashtable;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.LineGraphView;
 import com.jjoe64.graphview.GraphView.*;
 
-public class AppTimelineGraph extends Activity
+public class OverallAppTimelineGraph extends Activity
 {
   protected GraphView graphView;
   protected double interval = 1000;  // todo: load from prefs
-  protected double viewsize = 1000 * 60 * 15;  // todo: load from prefs
-  protected String app_uid = null;
-  protected String src_addr;
-  protected String src_port;
-  protected String dst_addr;
-  protected String dst_port;
+  protected double viewsize = 1000 * 60 * 15; // todo: load from prefs
 
   @Override
     protected void onCreate(Bundle savedInstanceState)
     {
       super.onCreate(savedInstanceState);
 
-      Bundle extras = getIntent().getExtras();
-
-      if(extras != null)
-      {
-        app_uid = extras.getString("app_uid");
-        src_addr = extras.getString("src_addr");
-        src_port = extras.getString("src_port");
-        dst_addr = extras.getString("dst_addr");
-        dst_port = extras.getString("dst_port");
-      }
-
-      if(app_uid == null)
-      {
-        // alert dialog
-        finish();
-      }
-
-      int index = IptablesLog.appView.getItemByAppUid(Integer.parseInt(app_uid));
-
-      if(index < 0)
-      {
-        // alert dialog
-        finish();
-      }
-
-      AppView.ListItem item = IptablesLog.appView.listDataBuffer.get(index);
-
       // always give data sorted by x values
-      graphView = new LineGraphView(this, item.toString() + " Timeline")
+      graphView = new LineGraphView(this, "Apps Timeline")
       {
         private SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
         @Override
@@ -323,128 +292,108 @@ public class AppTimelineGraph extends Activity
   public void buildSeries(double timeFrameSize, double viewSize) {
     graphView.graphSeries.clear();
 
-    int index = IptablesLog.appView.getItemByAppUid(Integer.parseInt(app_uid));
-
-    if(index < 0)
-    {
-      // alert dialog
-      finish();
-    }
-
-    AppView.ListItem item = IptablesLog.appView.listDataBuffer.get(index);
-
-    MyLog.d("Starting graph for " + item);
-
-    synchronized(item.uniqueHostsList) {
-      ArrayList<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
-      Collections.sort(list);
-      Iterator<String> itr = list.iterator();
+    synchronized(IptablesLog.appView.listDataBuffer) {
       int color = 0;
 
-      while(itr.hasNext())
-      {
-        String host = itr.next();
-        MyLog.d("Graphing " + host);
-        AppView.HostInfo info = item.uniqueHostsList.get(host);
+      Hashtable<String, Boolean> appPlotted = new Hashtable<String, Boolean>();
 
-        if(info.packetGraphBuffer.size() > 0)
-        {
-          MyLog.d("number of packets: " + info.packetGraphBuffer.size());
-          ArrayList<PacketGraphItem> graphData = new ArrayList<PacketGraphItem>();
+      for(AppView.ListItem item : IptablesLog.appView.listDataBuffer) {
+        // don't plot duplicate uids
+        if(appPlotted.get(item.app.uidString) == null) {
+          appPlotted.put(item.app.uidString, new Boolean(true));
 
-          double nextTimeFrame = 0; 
-          double frameLen = 1; // len for this time frame
+          if(item.packetGraphBuffer.size() > 0) {
+            MyLog.d("Starting series for " + item);
+            MyLog.d("number of packets: " + item.packetGraphBuffer.size());
 
-          for(PacketGraphItem data : info.packetGraphBuffer)
-          {
-            MyLog.d("processing: " + data + "; nextTimeFrame: " + nextTimeFrame + "; frameLen: " + frameLen);
+            ArrayList<PacketGraphItem> graphData = new ArrayList<PacketGraphItem>();
 
-            if(nextTimeFrame == 0) {
-              // first  plot
-              graphData.add(new PacketGraphItem(data.timestamp, data.len));
+            double nextTimeFrame = 0; 
+            double frameLen = 1; // len for this time frame
 
-              // set up first time frame
-              nextTimeFrame = data.timestamp + timeFrameSize;
-              frameLen = data.len;
+            for(PacketGraphItem data : item.packetGraphBuffer) {
+              MyLog.d("processing: " + data + "; nextTimeFrame: " + nextTimeFrame + "; frameLen: " + frameLen);
 
-              // get next data
-              continue;
-            }
+              if(nextTimeFrame == 0) {
+                // first  plot
+                graphData.add(new PacketGraphItem(data.timestamp, data.len));
 
-            if(data.timestamp <= nextTimeFrame) {
-              // data within current time frame, add to frame len
-              frameLen += data.len;
-              MyLog.d("Adding " + data.len + "; frameLen: " + frameLen);
-
-              // get next data
-              continue;
-            } else {
-              // data outside current time frame
-              // signifies end of frame
-              // plot frame len
-              MyLog.d("first plot: (" + nextTimeFrame + ", " + frameLen + ")");
-              graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
-
-              // set up next time frame
-              nextTimeFrame += timeFrameSize;
-              frameLen = 1;
-
-              // test for gap
-              if(data.timestamp > nextTimeFrame) {
-                // data is past this time frame, plot zero here
-                MyLog.d("post zero plot: (" + nextTimeFrame + ", " + frameLen + ")");
-                graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
-
-                if((data.timestamp - timeFrameSize) > nextTimeFrame) {
-                  MyLog.d("post pre zero plot: (" + nextTimeFrame + ", " + frameLen + ")");
-                  graphData.add(new PacketGraphItem(data.timestamp - timeFrameSize, 1));
-                }
-
-                nextTimeFrame = data.timestamp;
+                // set up first time frame
+                nextTimeFrame = data.timestamp + timeFrameSize;
                 frameLen = data.len;
 
-                MyLog.d("- plotting: (" + nextTimeFrame + ", " + frameLen + ")");
-                graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
+                // get next data
+                continue;
+              }
 
-                nextTimeFrame += timeFrameSize;
-                frameLen = 1;
+              if(data.timestamp <= nextTimeFrame) {
+                // data within current time frame, add to frame len
+                frameLen += data.len;
+                MyLog.d("Adding " + data.len + "; frameLen: " + frameLen);
+
+                // get next data
                 continue;
               } else {
-                // data is within this frame, add len
-                frameLen = data.len;
+                // data outside current time frame
+                // signifies end of frame
+                // plot frame len
+                MyLog.d("first plot: (" + nextTimeFrame + ", " + frameLen + ")");
+                graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
+
+                // set up next time frame
+                nextTimeFrame += timeFrameSize;
+                frameLen = 1;
+
+                // test for gap
+                if(data.timestamp > nextTimeFrame) {
+                  // data is past this time frame, plot zero here
+                  MyLog.d("post zero plot: (" + nextTimeFrame + ", " + frameLen + ")");
+                  graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
+
+                  if((data.timestamp - timeFrameSize) > nextTimeFrame) {
+                    MyLog.d("post pre zero plot: (" + nextTimeFrame + ", " + frameLen + ")");
+                    graphData.add(new PacketGraphItem(data.timestamp - timeFrameSize, 1));
+                  }
+
+                  nextTimeFrame = data.timestamp;
+                  frameLen = data.len;
+
+                  MyLog.d("- plotting: (" + nextTimeFrame + ", " + frameLen + ")");
+                  graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
+
+                  nextTimeFrame += timeFrameSize;
+                  frameLen = 1;
+                  continue;
+                } else {
+                  // data is within this frame, add len
+                  frameLen = data.len;
+                }
               }
             }
-          }
 
-          MyLog.d("post plotting: (" + nextTimeFrame + ", " + frameLen + ")");
-          graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
+            MyLog.d("post plotting: (" + nextTimeFrame + ", " + frameLen + ")");
+            graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
 
-          MyLog.d("post zero plotting: (" + (nextTimeFrame + timeFrameSize) +  ", " + 1 + ")");
-          graphData.add(new PacketGraphItem(nextTimeFrame + timeFrameSize, 1));
+            MyLog.d("post zero plotting: (" + (nextTimeFrame + timeFrameSize) +  ", " + 1 + ")");
+            graphData.add(new PacketGraphItem(nextTimeFrame + timeFrameSize, 1.0f));
 
-          MyLog.d("Adding series " + info);
+            MyLog.d("Adding series " + item.app);
 
-          GraphViewData[] seriesData = new GraphViewData[graphData.size()];
+            GraphViewData[] seriesData = new GraphViewData[graphData.size()];
 
-          int i = 0;
-          for(PacketGraphItem graphItem : graphData)
-          {
-            seriesData[i] = new GraphViewData(graphItem.timestamp, graphItem.len);
-            i++;
-          }
+            int i = 0;
+            for(PacketGraphItem graphItem : graphData)
+            {
+              seriesData[i] = new GraphViewData(graphItem.timestamp, graphItem.len);
+              i++;
+            }
 
-          String label = host;
-
-          if(info.sentPackets > 0 && !IptablesLogTracker.localIpAddrs.contains(info.sentAddress))
-            label = info.sentAddressString + ":" + info.sentPortString;
-          else if(info.receivedPackets > 0 && !IptablesLogTracker.localIpAddrs.contains(info.receivedAddress))
-            label = info.receivedAddressString + ":" + info.receivedPortString;
-
-          graphView.addSeries(new GraphViewSeries(label, Color.parseColor(getResources().getString(Colors.distinctColor[color])), seriesData));
-          color++;
-          if(color >= Colors.distinctColor.length)
-          {
-            color = 0;
+            graphView.addSeries(new GraphViewSeries(item.app.toString(), Color.parseColor(getResources().getString(Colors.distinctColor[color])), seriesData));
+            color++;
+            if(color >= Colors.distinctColor.length)
+            {
+              color = 0;
+            }
           }
         }
       }
@@ -473,4 +422,5 @@ public class AppTimelineGraph extends Activity
     graphView.invalidateLabels();
     graphView.invalidate();
   }
+
 }

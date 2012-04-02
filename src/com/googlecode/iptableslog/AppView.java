@@ -63,7 +63,7 @@ public class AppView extends Activity implements IptablesLogListener
     protected String receivedAddressString;
 
     protected ArrayList<PacketGraphItem> packetGraphBuffer;
-    protected ArrayList<PacketGraphItem> packetGraphData;
+    // protected ArrayList<PacketGraphItem> packetGraphData;
 
     public String toString()
     {
@@ -83,11 +83,12 @@ public class AppView extends Activity implements IptablesLogListener
     protected Spanned uniqueHostsSpanned;
     protected String uniqueHosts;
     protected ArrayList<HostInfo> filteredHostInfos;
+    protected ArrayList<PacketGraphItem> packetGraphBuffer;
 
     @Override
       public String toString()
       {
-        return app.name;
+        return "(" + app.uidString + ") " + app.name;
       }
   }
 
@@ -249,6 +250,7 @@ public class AppView extends Activity implements IptablesLogListener
             item.uniqueHostsList = new HashMap<String, HostInfo>();
             item.filteredHostInfos = new ArrayList<HostInfo>();
             item.uniqueHosts = "";
+            item.packetGraphBuffer = new ArrayList<PacketGraphItem>();
             listData.add(item);
             listDataBuffer.add(item);
           }
@@ -501,6 +503,9 @@ public class AppView extends Activity implements IptablesLogListener
 
         listDataBufferIsDirty = true;
 
+        PacketGraphItem graphItem = new PacketGraphItem(entry.timestamp, entry.len);
+
+        item.packetGraphBuffer.add(graphItem);
         item.totalPackets = entry.packets;
         item.totalBytes = entry.bytes;
         item.lastTimestamp = entry.timestampString;
@@ -536,9 +541,8 @@ public class AppView extends Activity implements IptablesLogListener
             info.sentAddress = entry.dst;
             info.sentAddressString = entry.dst;
 
-            PacketGraphItem data = new PacketGraphItem(entry.timestamp, entry.len);
-            info.packetGraphBuffer.add(data);
-            MyLog.d("graph receivedbytes " + info.receivedBytes + " " + info + " added " + data);
+            info.packetGraphBuffer.add(graphItem);
+            MyLog.d("graph receivedbytes " + info.receivedBytes + " " + info + " added " + graphItem);
 
             item.uniqueHostsList.put(src, info);
             item.uniqueHostsListNeedsSort = true;
@@ -574,9 +578,8 @@ public class AppView extends Activity implements IptablesLogListener
             info.receivedAddress = entry.src;
             info.receivedAddressString = entry.src;
 
-            PacketGraphItem data = new PacketGraphItem(entry.timestamp, entry.len);
-            info.packetGraphBuffer.add(data);
-            MyLog.d("graph sentbytes " + info.sentBytes + " " + info + " added " + data);
+            info.packetGraphBuffer.add(graphItem);
+            MyLog.d("graph sentbytes " + info.sentBytes + " " + info + " added " + graphItem);
 
             item.uniqueHostsList.put(dst, info);
             item.uniqueHostsListNeedsSort = true;

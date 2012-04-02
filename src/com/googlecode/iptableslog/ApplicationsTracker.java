@@ -26,6 +26,10 @@ public class ApplicationsTracker {
     Drawable icon;
     int uid;
     String uidString;
+
+    public String toString() {
+      return "(" + uidString + ") " + name;
+    }
   }
 
   public static void restoreData(IptablesLogData data) {

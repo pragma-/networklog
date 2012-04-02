@@ -20,5 +20,6 @@
     <activity android:name="AppView" />
     <activity android:name="Preferences" />
     <activity android:name="AppTimelineGraph" />
+    <activity android:name="OverallAppTimelineGraph" />
   </application>
 </manifest> 

@@ -21,6 +21,8 @@
   </item>
   <item android:id="@+id/settings"
     android:title="Settings" />
+  <item android:id="@+id/overallgraph"
+    android:title="Apps Timeline" />
   <item android:id="@+id/exit"
     android:title="Exit" />
 </menu>

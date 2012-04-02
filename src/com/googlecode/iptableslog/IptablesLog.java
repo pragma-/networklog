@@ -343,6 +343,9 @@ public class IptablesLog extends TabActivity
           }
           break;
           */
+        case R.id.overallgraph:
+          startActivity(new Intent(this, OverallAppTimelineGraph.class));
+          break;
         case R.id.exit:
           confirmExit(this);
           break;
