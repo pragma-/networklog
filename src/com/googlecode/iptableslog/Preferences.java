@@ -23,7 +23,6 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
       findPreference("notifications_toast").setOnPreferenceClickListener(this);
       findPreference("notifications_toast_apps_dialog").setOnPreferenceClickListener(this);
 
-
       CharSequence entries[] = {
         "1 ms",
         "100 ms",
@@ -64,33 +63,28 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
         "230400000",
       };
 
-      ListPreference pref = (ListPreference) findPreference("interval_placeholder");
+      OnPreferenceChangeListener changeListener = new OnPreferenceChangeListener() {
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+          if(preference.getKey().equals("interval_placeholder")) {
+            IptablesLog.settings.setGraphInterval(Long.parseLong((String) newValue));
+          } else {
+            IptablesLog.settings.setGraphViewsize(Long.parseLong((String) newValue));
+          }
+          return true;
+        }
+      };
 
+      ListPreference pref = (ListPreference) findPreference("interval_placeholder");
       pref.setEntries(entries);
       pref.setEntryValues(values);
       pref.setValue(String.valueOf(IptablesLog.settings.getGraphInterval()));
-
-      pref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-        public boolean onPreferenceChange(Preference preference, Object newValue) {
-          MyLog.d("[interval] pref: " + preference + "; new value: " + newValue);
-          IptablesLog.settings.setGraphInterval(Long.parseLong((String) newValue));
-          return true;
-        }
-      });
+      pref.setOnPreferenceChangeListener(changeListener); 
 
       pref = (ListPreference) findPreference("viewsize_placeholder");
-
       pref.setEntries(entries);
       pref.setEntryValues(values);
       pref.setValue(String.valueOf(IptablesLog.settings.getGraphViewsize()));
-
-      pref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-        public boolean onPreferenceChange(Preference preference, Object newValue) {
-          MyLog.d("[viewsize] pref: " + preference + "; new value: " + newValue);
-          IptablesLog.settings.setGraphViewsize(Long.parseLong((String) newValue));
-          return true;
-        }
-      });
+      pref.setOnPreferenceChangeListener(changeListener); 
     }
 
   @Override
