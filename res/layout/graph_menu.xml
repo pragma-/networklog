@@ -4,6 +4,8 @@
     android:title="Set Interval">
     <menu>
       <group android:checkableBehavior="single">
+        <item android:id="@+id/interval_1"
+          android:title="1 ms" />
         <item android:id="@+id/interval_100"
           android:title="100 ms" />
         <item android:id="@+id/interval_500"

@@ -21,8 +21,8 @@ import com.jjoe64.graphview.GraphView.*;
 public class OverallAppTimelineGraph extends Activity
 {
   protected GraphView graphView;
-  protected double interval = 1000;  // todo: load from prefs
-  protected double viewsize = 1000 * 60 * 15; // todo: load from prefs
+  protected double interval = IptablesLog.settings.getGraphInterval();
+  protected double viewsize = IptablesLog.settings.getGraphViewsize();
 
   @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -70,6 +70,9 @@ public class OverallAppTimelineGraph extends Activity
       MenuItem item = null;
 
       switch((int)interval) {
+        case 1:
+          item = menu.findItem(R.id.interval_1);
+          break;
         case 100:
           item = menu.findItem(R.id.interval_100);
           break;
@@ -183,6 +186,9 @@ public class OverallAppTimelineGraph extends Activity
   @Override
     public boolean onOptionsItemSelected(MenuItem item) {
       switch(item.getItemId()) {
+        case R.id.interval_1:
+          interval = 1;
+          break;
         case R.id.interval_100:
           interval = 100;
           break;
@@ -285,6 +291,8 @@ public class OverallAppTimelineGraph extends Activity
           return super.onOptionsItemSelected(item);
       }
 
+      IptablesLog.settings.setGraphInterval((long)interval);
+      IptablesLog.settings.setGraphViewsize((long)viewsize);
       buildSeries(interval, viewsize);
       return true;
     }

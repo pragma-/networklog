@@ -78,12 +78,19 @@
   </PreferenceCategory>
 
   <PreferenceCategory
-    android:title="Graphs/Charts">
-    <Preference
+    android:title="Timeline Graphs">
+    <ListPreference
       android:persistent="false"
-      android:key="graphs_dialog"
-      android:title="Configure graphs/charts"
-      android:summary="Configure how graphs/charts are displayed" />
+      android:key="interval_placeholder"
+      android:title="Interval"
+      android:summary="Sets how often the data is summed. To see individual packets, set to 1 ms; for kilobytes-per-second, set to 1 second; for kilobytes-per-hour set to 1 hour; etc."
+      android:dialogTitle="Set Interval" />
+    <ListPreference
+      android:persistent="false"
+      android:key="viewsize_placeholder"
+      android:title="Viewsize"
+      android:summary="Sets the time-range of data to show at once. If the range chosen is larger than the range of data available, the viewsize will automatically shrink to fit the data."
+      android:dialogTitle="Set Viewsize" />
   </PreferenceCategory>
 
   <PreferenceCategory

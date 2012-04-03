@@ -88,6 +88,14 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return prefs.getBoolean("notifications_toast", false);
   }
 
+  public long getGraphInterval() {
+    return prefs.getLong("interval", 1000);
+  }
+
+  public long getGraphViewsize() {
+    return prefs.getLong("viewsize", 1000 * 60 * 15);
+  }
+
   public void setResolveHosts(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("resolve_hosts", value);
@@ -193,6 +201,18 @@ public class Settings implements OnSharedPreferenceChangeListener {
   public void setToastNotifications(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("notifications_toast", value);
+    editor.commit();
+  }
+
+  public void setGraphInterval(long value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putLong("interval", value);
+    editor.commit();
+  }
+
+  public void setGraphViewsize(long value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putLong("viewsize", value);
     editor.commit();
   }
 
