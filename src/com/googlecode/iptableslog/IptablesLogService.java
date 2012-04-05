@@ -1,13 +1,24 @@
 package com.googlecode.iptableslog;
 
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.widget.Toast;
 import android.util.Log;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.Handler;
+import android.os.Messenger;
+import android.os.Message;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.os.RemoteException;
+
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.net.NetworkInterface;
-import java.net.InetAddress;
-import java.net.SocketException;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.io.PrintWriter;
@@ -15,18 +26,45 @@ import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.lang.Thread;
 import java.lang.Runnable;
+import java.lang.reflect.Method;
 
-public class IptablesLogTracker {
+public class IptablesLogService extends Service {
   Hashtable<String, LogEntry> logEntriesHash;
   HashMap<String, Integer> logEntriesMap;
-  ArrayList<IptablesLogListener> listenerList;
-  static ArrayList<String> localIpAddrs;
   ShellCommand command;
-  StringBuilder buffer;
-  LogTracker logTrackerRunner;
+  IptablesLogger logger;
+  String logfile = null;
+  long logfile_maxsize;
+  PrintWriter logWriter = null;
+  NotificationManager nManager;
 
-  final static String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+  //StringBuilder buffer;
+
+  static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
   static SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
+
+  ArrayList<Messenger> clients = new ArrayList<Messenger>();
+  static final int NOTIFICATION_ID = 42;
+  static final int MSG_REGISTER_CLIENT = 1;
+  static final int MSG_UNREGISTER_CLIENT = 2;
+  static final int BROADCAST_LOG_ENTRY = 3;
+  final Messenger messenger = new Messenger(new IncomingHandler());
+
+  private class IncomingHandler extends Handler {
+    @Override
+      public void handleMessage(Message msg) {
+        switch(msg.what) {
+          case MSG_REGISTER_CLIENT:
+            clients.add(msg.replyTo);
+            break;
+          case MSG_UNREGISTER_CLIENT:
+            clients.remove(msg.replyTo);
+            break;
+          default:
+            super.handleMessage(msg);
+        }
+      }
+  }
 
   public class LogEntry {
     int uid;
@@ -39,25 +77,151 @@ public class IptablesLogTracker {
     int bytes;
     String timestampString;
     long timestamp;
-    boolean dirty;
   }
 
-  public IptablesLogTracker() {
-    listenerList = new ArrayList<IptablesLogListener>();
+  public void renameLogFile(String newLogFile) {
+  }
 
-    if(IptablesLog.data == null) {
-      logEntriesHash = new Hashtable<String, LogEntry>();
-      logEntriesMap = new HashMap<String, Integer>();
-      buffer = new StringBuilder(8192 * 2);
-
-      initEntriesMap();
-    } else {
-      logEntriesHash = IptablesLog.data.iptablesLogTrackerLogEntriesHash;
-      logEntriesMap = IptablesLog.data.iptablesLogTrackerLogEntriesMap;
-      buffer = IptablesLog.data.iptablesLogTrackerBuffer;
-      command = IptablesLog.data.iptablesLogTrackerCommand;
+  public void startForeground(Notification n) {
+    try {
+      Method m = Service.class.getMethod("startForeground", new Class[] {int.class, Notification.class});
+      m.invoke(this, NOTIFICATION_ID, n);
+      MyLog.d("Started service in foreground");
+    } catch (Exception e) {
+      MyLog.d("Fallback to setForeground");
+      setForeground(true);
+      nManager.notify(NOTIFICATION_ID, n);
     }
   }
+
+  public void stopForeground() {
+    try {
+      Method m = Service.class.getMethod("stopForeground", new Class[] {boolean.class});
+      m.invoke(this, true);
+      MyLog.d("Stopped foreground service state");
+    } catch (Exception e) {
+      setForeground(false);
+      nManager.cancel(NOTIFICATION_ID);
+      MyLog.d("Fallback to setForeground(false)");
+    }
+  }
+
+  public Notification createNotification() {
+    Notification n = new Notification(R.drawable.icon, "IptablesLog logging started", System.currentTimeMillis());
+    PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, IptablesLog.class), 0);
+    n.setLatestEventInfo(this, "IptablesLog", "Iptables logging active", pi);
+    return n;
+  }
+
+  @Override
+    public void onCreate() {
+      nManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+      Notification n = createNotification();
+
+      this.startForeground(n);
+    }
+
+  @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+      MyLog.d("onStartCommand");
+
+      Bundle ext = null;
+      if(intent == null) {
+        MyLog.d("Service null intent");
+      } else {
+        ext = intent.getExtras();
+      }
+
+      final Bundle extras = ext;
+      final Context context = this;
+      final Handler handler = new Handler(Looper.getMainLooper());
+
+      // run in background thread
+      new Thread(new Runnable() {
+        public void run() {
+          String logfile_intent = null;
+          String logfile_maxsize_intent = null;
+
+          if(extras != null) {
+            logfile_intent = extras.getString("logfile");
+            logfile_maxsize_intent = extras.getString("logfile_maxsize");
+          }
+
+          if(logfile_intent == null) {
+            logfile_intent = "/sdcard/iptableslog.txt";
+          }
+
+          if(logfile_maxsize_intent == null) {
+            logfile_maxsize_intent = "12000000";
+          }
+
+          MyLog.d("IptablesLogService starting [" + logfile_intent + "; " + logfile_maxsize_intent + "]");;
+
+          final String l = logfile_intent;
+          final String m = logfile_maxsize_intent;
+
+          if(MyLog.enabled) {
+            handler.post(new Runnable() {
+              public void run() {
+                Toast.makeText(context, "IptablesLogService starting [" + l + "; " + m + "]", Toast.LENGTH_SHORT).show();
+              }
+            });
+          }
+
+          if(logfile != null) {
+            // service already started and has logfile open
+            // close logfile and rename and open new one
+          } else {
+            logfile = logfile_intent;
+
+            try {
+              logfile_maxsize = Long.parseLong(logfile_maxsize_intent);
+            } catch(Exception e) {
+              Log.w("Bad log maxsize: [" + logfile_maxsize_intent + "]: " + e.toString(), e);
+              logfile_maxsize = 12000000;
+            }
+
+            try {
+              logWriter = new PrintWriter(new BufferedWriter(new FileWriter(logfile, true)), true);
+            } catch(final Exception e) {
+              handler.post(new Runnable() {
+                public void run() {
+                  Toast.makeText(context, "Failed to start Iptableslog service: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+              });
+              stopSelf();
+              MyLog.d("after stopSelf");
+              return;
+            }
+
+            // service starting up fresh
+            logEntriesHash = new Hashtable<String, LogEntry>();
+            logEntriesMap = new HashMap<String, Integer>();
+            //buffer = new StringBuilder(8192 * 2);
+
+            initEntriesMap();
+          }
+
+          startLogging();
+        }
+      }).start();
+
+      return START_STICKY;
+    }
+
+  @Override
+    public IBinder onBind(Intent intent) {
+      return messenger.getBinder();
+    }
+
+  @Override
+    public void onDestroy() {
+      Iptables.removeRules();
+      stopLogging();
+      stopForeground();
+      Toast.makeText(this, "IptablesLogService done", Toast.LENGTH_SHORT).show(); 
+    }
+
 
   public static String getTimestamp() {
     return format.format(new Date());
@@ -78,45 +242,19 @@ public class IptablesLogTracker {
     }
   }
 
-  public static void getLocalIpAddresses() {
-    MyLog.d("getLocalIpAddresses");
-    localIpAddrs = new ArrayList<String>();
-
-    try 
-    {
-      for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();)
-      {
-        NetworkInterface intf = en.nextElement();
-        MyLog.d(intf.toString());
-        for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();)
-        {
-          InetAddress inetAddress = enumIpAddr.nextElement();
-          MyLog.d(inetAddress.toString());
-          if (!inetAddress.isLoopbackAddress())
-          {
-            MyLog.d("Adding local IP address: [" + inetAddress.getHostAddress().toString() + "]");
-            localIpAddrs.add(inetAddress.getHostAddress().toString());
-          }
-        }
-      }
-    } catch (SocketException ex) {
-      Log.e("IptablesLog", ex.toString());
-    }
-  }
-
   public void parseResult(String result) {
     MyLog.d("--------------- parsing result --------------");
     int pos = 0 /* , buffer_pos = 0 */; 
     String src, dst, lenString, sptString, dptString, uidString;
 
     /*
-    if(MyLog.enabled) {
-      MyLog.d("buffer length: " + buffer.length() + "; result length: " + result.length());
-      MyLog.d("buffer: [" + buffer + "] <--> [" + result + "]");
-    }
+       if(MyLog.enabled) {
+       MyLog.d("buffer length: " + buffer.length() + "; result length: " + result.length());
+       MyLog.d("buffer: [" + buffer + "] <--> [" + result + "]");
+       }
 
-    buffer.append(result);
-    */
+       buffer.append(result);
+       */
 
     while((pos = result.indexOf("[IptablesLogEntry]", pos)) > -1) {
       MyLog.d("---- got [IptablesLogEntry] at " + pos + " ----");
@@ -133,15 +271,15 @@ public class IptablesLogTracker {
       }
 
       /*
-      MyLog.d("pos: " + pos + "; buffer length: " + buffer.length());
-      String line = "no newline: " + buffer.substring(pos, buffer.length());
+         MyLog.d("pos: " + pos + "; buffer length: " + buffer.length());
+         String line = "no newline: " + buffer.substring(pos, buffer.length());
 
-      if(newline != -1) {
-        line = buffer.substring(pos, newline - 1);
-      }
+         if(newline != -1) {
+         line = buffer.substring(pos, newline - 1);
+         }
 
-      MyLog.d("parsing line [" + line + "]");
-      */
+         MyLog.d("parsing line [" + line + "]");
+         */
 
       pos = result.indexOf("SRC=", pos);
       if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for SRC");  */ break; };
@@ -154,19 +292,19 @@ public class IptablesLogTracker {
       space = result.indexOf(" ", pos);
       if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for DST space");  */ break; };
       dst = result.substring(pos + 4, space);
-      
+
       pos = result.indexOf("LEN=", pos);
       if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for LEN");  */ break; };
       space = result.indexOf(" ", pos);
       if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for LEN space");  */ break; };
       lenString = result.substring(pos + 4, space);
-     
+
       pos = result.indexOf("SPT=", pos);
       if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for SPT");  */ break; };
       space = result.indexOf(" ", pos);
       if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for SPT space");  */ break; };
       sptString = result.substring(pos + 4, space);
-    
+
       pos = result.indexOf("DPT=", pos);
       if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for DPT");  */ break; };
       space = result.indexOf(" ", pos);
@@ -318,40 +456,65 @@ public class IptablesLogTracker {
       // buffer_pos = pos;
     }
     /*
-    MyLog.d("truncating buffer_pos: " + buffer_pos + "; length: " + buffer.length());
-    if(buffer_pos > buffer.length()) {
-      MyLog.d("WTF buffer: [" + buffer + "]");
-    } else {
-      buffer.delete(0, buffer_pos - 1);
-    }
-    */
+       MyLog.d("truncating buffer_pos: " + buffer_pos + "; length: " + buffer.length());
+       if(buffer_pos > buffer.length()) {
+       MyLog.d("WTF buffer: [" + buffer + "]");
+       } else {
+       buffer.delete(0, buffer_pos - 1);
+       }
+       */
   }
 
   public void notifyNewEntry(LogEntry entry) {
-    synchronized(listenerList) {
-      int i = 0;
-      for(IptablesLogListener listener : listenerList) {
-        i++;
-        MyLog.d("Notifying listener " + i);
-        listener.onNewLogEntry(entry);
+    logWriter.println(entry.timestamp + " " + entry.uid + " " + entry.src + " " + entry.spt + " " + entry.dst + " " + entry.dpt + " " + entry.len);
+
+    for(int i = clients.size() - 1; i >= 0; i--) {
+      try {
+        clients.get(i).send(Message.obtain(null, BROADCAST_LOG_ENTRY, entry));
+        MyLog.d("Sending entry");
+      } catch (RemoteException e) {
+        // client dead
+        clients.remove(i);
+        MyLog.d("Dead client " + i);
       }
     }
   }
 
-  public void addListener(IptablesLogListener listener) {
-    synchronized(listenerList) {
-      MyLog.d("Adding listener");
-      listenerList.add(listener);
+  public void startLogging() {
+    MyLog.d("adding logging rules");
+    Iptables.addRules();
+
+    synchronized(IptablesLog.scriptLock) {
+      try {
+        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
+        script.println("grep IptablesLogEntry /proc/kmsg");
+        script.close();
+      } catch (java.io.IOException e) { e.printStackTrace(); }
+
+      MyLog.d("Starting iptables log tracker");
+
+      command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "IptablesLogger");
+      command.start(false);
     }
+
+    logger = new IptablesLogger();
+    new Thread(logger, "IptablesLogger").start();
+
   }
 
-  public void stop() {
-    if(logTrackerRunner != null) {
-      logTrackerRunner.stop();
+  public void stopLogging() {
+    if(logger != null) {
+      logger.stop();
     }
+
+    if(logWriter != null) {
+      logWriter.close();
+    }
+
+    killLogger();
   }
 
-  public void kill() {
+  public void killLogger() {
     synchronized(IptablesLog.scriptLock) {
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
@@ -359,7 +522,7 @@ public class IptablesLogTracker {
         script.close();
       } catch (java.io.IOException e) { e.printStackTrace(); }
 
-      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "FindLogTracker");
+      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "FindLogger");
       command.start(false);
       String result = "";
       while(true) {
@@ -415,7 +578,7 @@ public class IptablesLogTracker {
               script.close();
             } catch (java.io.IOException e) { e.printStackTrace(); }
 
-            new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "KillLogTracker").start(true);
+            new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "KillLogger").start(true);
             break;
           }
         }
@@ -423,31 +586,7 @@ public class IptablesLogTracker {
     }
   }
 
-  public void start(final boolean resumed) {
-    getLocalIpAddresses();
-
-    if(resumed == false) {
-      MyLog.d("adding logging rules");
-      Iptables.addRules();
-
-      synchronized(IptablesLog.scriptLock) {
-        try {
-          PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
-          script.println("grep IptablesLogEntry /proc/kmsg");
-          script.close();
-        } catch (java.io.IOException e) { e.printStackTrace(); }
-
-        MyLog.d("Starting iptables log tracker");
-
-        command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "IptablesLogTracker");
-        command.start(false);
-      }
-    }
-    logTrackerRunner = new LogTracker();
-    new Thread(logTrackerRunner, "LogTracker").start();
-  }
-
-  public class LogTracker implements Runnable {
+  public class IptablesLogger implements Runnable {
     boolean running = false;
 
     public void stop() {
@@ -455,16 +594,16 @@ public class IptablesLogTracker {
     }
 
     public void run() {
-      MyLog.d("LogTracker " + this + " starting");
+      MyLog.d("IptablesLogger " + this + " starting");
       String result;
       running = true;
       while(running && command.checkForExit() == false) {
-        MyLog.d("LogTracker " + this + " checking stdout");
+        MyLog.d("IptablesLogger " + this + " checking stdout");
 
         if(command.stdoutAvailable()) {
           result = command.readStdout();
         } else {
-          try { Thread.sleep(750); } catch (Exception e) { Log.d("IptablesLog", "LogTracker exception while sleeping", e); }
+          try { Thread.sleep(750); } catch (Exception e) { Log.d("IptablesLog", "IptablesLogger exception while sleeping", e); }
           continue;
         }
 
@@ -473,7 +612,7 @@ public class IptablesLogTracker {
 
         if(result == null) {
           MyLog.d("result == null");
-          MyLog.d("LogTracker " + this + " exiting [returned null]");
+          MyLog.d("IptablesLogger " + this + " exiting [returned null]");
           return;
         }
 
@@ -481,7 +620,7 @@ public class IptablesLogTracker {
         parseResult(result);
       }
 
-      MyLog.d("LogTracker " + this + " exiting [end of loop]");
+      MyLog.d("IptablesLogger " + this + " exiting [end of loop]");
     }
   }
 }

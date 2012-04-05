@@ -50,21 +50,6 @@ public class IptablesLogData {
     }
   }
 
-  /* IptablesLogTracker */
-  Hashtable<String, IptablesLogTracker.LogEntry> iptablesLogTrackerLogEntriesHash;
-  HashMap<String, Integer> iptablesLogTrackerLogEntriesMap;
-  StringBuilder iptablesLogTrackerBuffer;
-  ShellCommand iptablesLogTrackerCommand;
-
-  public void gatherIptablesLogTrackerData() {
-    if(IptablesLog.logTracker != null) {
-      iptablesLogTrackerLogEntriesHash = IptablesLog.logTracker.logEntriesHash;
-      iptablesLogTrackerLogEntriesMap = IptablesLog.logTracker.logEntriesMap;
-      iptablesLogTrackerBuffer = IptablesLog.logTracker.buffer;
-      iptablesLogTrackerCommand = IptablesLog.logTracker.command;
-    }
-  }
-
   /* IptablesLog */
   IptablesLog.State iptablesLogState;
   NetworkResolver iptablesLogResolver;
@@ -80,7 +65,6 @@ public class IptablesLogData {
     gatherApplicationsTrackerData();
     gatherLogViewData();
     gatherAppViewData();
-    gatherIptablesLogTrackerData();
     gatherIptablesLogData();
   }
 }

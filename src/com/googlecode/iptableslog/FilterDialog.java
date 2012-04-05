@@ -60,37 +60,23 @@ public class FilterDialog implements DialogInterface.OnDismissListener
     {
       public void onCheckedChanged(CompoundButton button, boolean isChecked) 
       {
-        if(button == checkboxUidInclude) 
-        {
+        if(button == checkboxUidInclude) {
           IptablesLog.filterUidInclude = isChecked;
-        } 
-        else if(button == checkboxNameInclude)
-        {
+        } else if(button == checkboxNameInclude) {
           IptablesLog.filterNameInclude = isChecked;
-        } 
-        else if(button == checkboxAddressInclude)
-        {
+        } else if(button == checkboxAddressInclude) {
           IptablesLog.filterAddressInclude = isChecked;
-        } 
-        else if(button == checkboxPortInclude)
-        {
+        } else if(button == checkboxPortInclude) {
           IptablesLog.filterPortInclude = isChecked;
         }
 
-        if(button == checkboxUidExclude)
-        {
+        if(button == checkboxUidExclude) {
           IptablesLog.filterUidExclude = isChecked;
-        } 
-        else if(button == checkboxNameExclude)
-        {
+        } else if(button == checkboxNameExclude) {
           IptablesLog.filterNameExclude = isChecked;
-        } 
-        else if(button == checkboxAddressExclude)
-        {
+        } else if(button == checkboxAddressExclude) {
           IptablesLog.filterAddressExclude = isChecked;
-        } 
-        else if(button == checkboxPortExclude)
-        {
+        } else if(button == checkboxPortExclude) {
           IptablesLog.filterPortExclude = isChecked;
         }
       }

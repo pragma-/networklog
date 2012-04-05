@@ -16,6 +16,26 @@ public class Settings implements OnSharedPreferenceChangeListener {
     prefs.registerOnSharedPreferenceChangeListener(this);
   }
 
+  public String getLogFile() {
+    return prefs.getString("logfile", "/sdcard/iptableslog.txt");
+  }
+
+  public String getLogFileMaxSize() {
+    return prefs.getString("logfile_maxsize", "12000000");
+  }
+
+  public boolean getStartServiceAtBoot() {
+    return prefs.getBoolean("startServiceAtBoot", false);
+  }
+
+  public boolean getStartServiceAtStart() {
+    return prefs.getBoolean("startServiceAtStart", true);
+  }
+
+  public boolean getStopServiceAtExit() {
+    return prefs.getBoolean("stopServiceAtExit", false);
+  }
+
   public boolean getResolveHosts() {
     return prefs.getBoolean("resolve_hosts", false);
   }
@@ -216,9 +236,82 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
+  public void setStartServiceAtBoot(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("startServiceAtBoot", value);
+    editor.commit();
+  }
+
+  public void setStartServiceAtStart(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("startServiceAtStart", value);
+    editor.commit();
+  }
+
+  public void setStopServiceAtExit(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("stopServiceAtExit", value);
+    editor.commit();
+  }
+
+  public void setLogFile(String value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putString("logfile", value);
+    editor.commit();
+  }
+
+  public void setLogFileMaxSize(String value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putString("logfile_maxsize", value);
+    editor.commit();
+  }
+
   @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
       MyLog.d("Shared prefs changed: [" + key + "]");
+
+      if(key.equals("logfile")) {
+        String value = prefs.getString(key, "/sdcard/iptableslog.txt");
+        MyLog.d("New " + key + " value [" + value + "]");
+
+        // update service
+
+        return;
+      }
+
+      if(key.equals("logfile_maxsize")) {
+        String value = prefs.getString(key, "12000000");
+        MyLog.d("New " + key + " value [" + value + "]");
+
+        // update service
+
+        return;
+      }
+
+      if(key.equals("startServiceAtBoot")) {
+        boolean value = prefs.getBoolean(key, false);
+        MyLog.d("New " + key + " value [" + value + "]");
+        if(value == true) {
+          // add boot listeners
+        } else {
+          // remove boot listeners
+        }
+        return;
+      }
+
+      if(key.equals("startServiceAtStart")) {
+        boolean value = prefs.getBoolean(key, true);
+        MyLog.d("New " + key + " value [" + value + "]");
+        IptablesLog.startServiceAtStart = value;
+        return;
+      }
+
+      if(key.equals("stopServiceAtExit")) {
+        boolean value = prefs.getBoolean(key, false);
+        MyLog.d("New " + key + " value [" + value + "]");
+        IptablesLog.stopServiceAtExit = value;
+        return;
+      }
 
       if(key.equals("resolve_hosts")) {
         boolean value = prefs.getBoolean(key, false);

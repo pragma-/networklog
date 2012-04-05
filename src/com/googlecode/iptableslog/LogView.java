@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
 
-public class LogView extends Activity implements IptablesLogListener
+public class LogView extends Activity
 {
   // bound to adapter
   protected ArrayList<ListItem> listData;
@@ -190,11 +190,6 @@ public class LogView extends Activity implements IptablesLogListener
     new Thread(updater, "LogViewUpdater").start();
   }
 
-  public void attachListener() {
-    MyLog.d("Adding LogView listener " + this);
-    IptablesLog.logTracker.addListener(this);
-  }
-
   public void restoreData(IptablesLogData data) {
     listData = data.logViewListData;
     listDataBuffer = data.logViewListDataBuffer;
@@ -207,7 +202,7 @@ public class LogView extends Activity implements IptablesLogListener
       parent.confirmExit(this);
     }
 
-  public void onNewLogEntry(final IptablesLogTracker.LogEntry entry) {
+  public void onNewLogEntry(final IptablesLogService.LogEntry entry) {
     ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.installedAppsHash.get(String.valueOf(entry.uid));
 
     if(appEntry == null) {

@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
-public class AppView extends Activity implements IptablesLogListener
+public class AppView extends Activity
 {
   // listData bound to adapter
   public ArrayList<ListItem> listData;
@@ -476,7 +476,7 @@ public class AppView extends Activity implements IptablesLogListener
     return index;
   }
 
-  public void onNewLogEntry(final IptablesLogTracker.LogEntry entry)
+  public void onNewLogEntry(final IptablesLogService.LogEntry entry)
   {
     MyLog.d("AppView: NewLogEntry: [" + entry.uid + "] " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
 
@@ -513,7 +513,7 @@ public class AppView extends Activity implements IptablesLogListener
         HostInfo info;
 
         // todo: make filtering out local IP a user preference
-        if(!IptablesLogTracker.localIpAddrs.contains(entry.src))
+        if(!IptablesLog.localIpAddrs.contains(entry.src))
         {
           synchronized(item.uniqueHostsList)
           {
@@ -550,7 +550,7 @@ public class AppView extends Activity implements IptablesLogListener
         }
 
         // todo: make filtering out local IP a user preference
-        if(!IptablesLogTracker.localIpAddrs.contains(entry.dst))
+        if(!IptablesLog.localIpAddrs.contains(entry.dst))
         {
           synchronized(item.uniqueHostsList)
           {
@@ -605,12 +605,6 @@ public class AppView extends Activity implements IptablesLogListener
       updater.stop();
   }
 
-  public void attachListener()
-  {
-    MyLog.d("Adding AppView listener " + this);
-    IptablesLog.logTracker.addListener(this);
-  }
-
   public void buildUniqueHosts(ListItem item)
   {
     synchronized(item.uniqueHostsList)
@@ -640,7 +634,7 @@ public class AppView extends Activity implements IptablesLogListener
 
         if(info.receivedPackets > 0) {
           MyLog.d("Received address: " + info.receivedAddress + ":" + info.receivedPort);
-          if(!IptablesLogTracker.localIpAddrs.contains(info.receivedAddress)) {
+          if(!IptablesLog.localIpAddrs.contains(info.receivedAddress)) {
             if(IptablesLog.resolveHosts) {
               info.receivedAddressString = IptablesLog.resolver.resolveAddress(info.receivedAddress);
             } else {
@@ -660,7 +654,7 @@ public class AppView extends Activity implements IptablesLogListener
 
         if(info.sentPackets > 0) {
           MyLog.d("Sent address: " + info.sentAddress + ":" + info.sentPort);
-          if(!IptablesLogTracker.localIpAddrs.contains(info.sentAddress)) {
+          if(!IptablesLog.localIpAddrs.contains(info.sentAddress)) {
             if(IptablesLog.resolveHosts) {
               info.sentAddressString = IptablesLog.resolver.resolveAddress(info.sentAddress);
             } else {
@@ -1010,13 +1004,13 @@ public class AppView extends Activity implements IptablesLogListener
                 String addressString = null;
                 String portString = null;
 
-                if(info.sentPackets > 0 && !IptablesLogTracker.localIpAddrs.contains(info.sentAddress))
+                if(info.sentPackets > 0 && !IptablesLog.localIpAddrs.contains(info.sentAddress))
                 {
                   addressString = info.sentAddressString;
                   portString = info.sentPortString;
                 }
 
-                if(info.receivedPackets > 0 && !IptablesLogTracker.localIpAddrs.contains(info.receivedAddress))
+                if(info.receivedPackets > 0 && !IptablesLog.localIpAddrs.contains(info.receivedAddress))
                 {
                   addressString = info.receivedAddressString;
                   portString = info.receivedPortString;

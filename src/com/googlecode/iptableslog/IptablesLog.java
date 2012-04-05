@@ -11,13 +11,27 @@ import android.view.MenuItem;
 import android.view.MenuInflater;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
+import android.content.ServiceConnection;
+import android.content.ComponentName;
+import android.os.Messenger;
+import android.os.RemoteException;
+import android.os.IBinder;
+
 import android.content.Context;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.widget.TextView;
 import android.view.View;
 import android.view.LayoutInflater;
+import android.util.Log;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
 
+import java.util.Enumeration;
+import java.net.NetworkInterface;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
 
 public class IptablesLog extends TabActivity
@@ -27,7 +41,6 @@ public class IptablesLog extends TabActivity
   public static LogView logView;
   public static AppView appView;
   
-  public static IptablesLogTracker logTracker;
   public static Settings settings;
 
   public static Handler handler;
@@ -52,7 +65,75 @@ public class IptablesLog extends TabActivity
   public static boolean resolveHosts;
   public static boolean resolvePorts;
 
+  public static boolean startServiceAtStart;
+  public static boolean stopServiceAtExit;
+
   public static boolean outputPaused;
+
+  public static ArrayList<String> localIpAddrs;
+
+  public static Messenger service = null;
+  public static boolean isBound = false;
+  public static Messenger messenger = null;
+
+  class IncomingHandler extends Handler {
+    @Override
+      public void handleMessage(Message msg) {
+        switch(msg.what) {
+          case IptablesLogService.BROADCAST_LOG_ENTRY:
+            IptablesLogService.LogEntry entry = (IptablesLogService.LogEntry) msg.obj;
+            MyLog.d("Received entry: " + entry);
+            logView.onNewLogEntry(entry);
+            appView.onNewLogEntry(entry);
+            break;
+          default:
+            super.handleMessage(msg);
+        }
+      }
+  } 
+
+  private ServiceConnection connection = new ServiceConnection() {
+    public void onServiceConnected(ComponentName className, IBinder serv) {
+      service = new Messenger(serv);
+
+      MyLog.d("Attached to service");
+
+      // Register with service
+      try {
+        Message msg = Message.obtain(null, IptablesLogService.MSG_REGISTER_CLIENT);
+        msg.replyTo = messenger;
+        service.send(msg);
+      } catch (RemoteException e) { /* do nothing */ }
+    }
+
+    public void onServiceDisconnected(ComponentName className) {
+      service = null;
+    }
+  };
+  
+  void doBindService() {
+    if(messenger == null)
+      messenger = new Messenger(new IncomingHandler());
+    bindService(new Intent(this, IptablesLogService.class), connection, Context.BIND_AUTO_CREATE);
+    isBound = true;
+    MyLog.d("Binding to service...");
+  }
+
+  void doUnbindService() {
+    if(isBound) {
+      if(service != null) {
+        try {
+          Message msg = Message.obtain(null, IptablesLogService.MSG_UNREGISTER_CLIENT);
+          msg.replyTo = messenger;
+          service.send(msg);
+        } catch (RemoteException e) { /* do nothing */ }
+
+        unbindService(connection);
+        isBound = false;
+        MyLog.d("Unbinding from service...");
+      }
+    }
+  }
   
   public static State state;
   public enum State { LOAD_APPS, LOAD_LIST, LOAD_ICONS, RUNNING  };
@@ -92,15 +173,12 @@ public class IptablesLog extends TabActivity
       state = IptablesLog.State.LOAD_ICONS;
       appView.loadIcons();
 
-      logTracker = new IptablesLogTracker();
-
-      appView.attachListener();
       appView.startUpdater();
-
-      logView.attachListener();
       logView.startUpdater();
 
-      logTracker.start(data != null);
+      if(startServiceAtStart && !isServiceRunning("com.googlecode.iptableslog.IptablesLogService")) {
+        startService();
+      }
 
       state = IptablesLog.State.RUNNING;
       MyLog.d("Init done");
@@ -112,7 +190,10 @@ public class IptablesLog extends TabActivity
     public void onCreate(Bundle savedInstanceState)
     {
       super.onCreate(savedInstanceState);
-      MyLog.d("IptablesLog onCreate");
+      MyLog.d("IptablesLog started");
+      handler = new Handler(Looper.getMainLooper());
+
+      setContentView(R.layout.main);
 
       settings = new Settings(this);
 
@@ -132,13 +213,18 @@ public class IptablesLog extends TabActivity
       filterAddressExclude = settings.getFilterAddressExclude();
       filterPortExclude = settings.getFilterPortExclude();
 
+      startServiceAtStart = settings.getStartServiceAtStart();
+      stopServiceAtExit = settings.getStopServiceAtExit();
+
       resolveHosts = settings.getResolveHosts();
       resolvePorts = settings.getResolvePorts();
 
-      data = (IptablesLogData) getLastNonConfigurationInstance(); 
+      startServiceAtStart = settings.getStartServiceAtStart();
+      stopServiceAtExit = settings.getStopServiceAtExit();
 
-      setContentView(R.layout.main);
-      handler = new Handler(Looper.getMainLooper());
+      getLocalIpAddresses();
+
+      data = (IptablesLogData) getLastNonConfigurationInstance(); 
 
       if (data != null) {
         MyLog.d("Restored run");
@@ -147,7 +233,9 @@ public class IptablesLog extends TabActivity
         outputPaused = data.iptablesLogOutputPaused;
       } else {
         MyLog.d("Fresh run");
+
         resolver = new NetworkResolver();
+        
         outputPaused = false;
       }
 
@@ -170,9 +258,6 @@ public class IptablesLog extends TabActivity
       spec = tabHost.newTabSpec("apps").setIndicator(tab).setContent(intent);
       tabHost.addTab(spec);
 
-      // todo: redesign tabs to be views instead of activities
-      //       as this should be less complex and save resources
-
       // force loading of LogView activity
       tabHost.setCurrentTab(0);
       logView = (LogView) getLocalActivityManager().getCurrentActivity();
@@ -193,15 +278,8 @@ public class IptablesLog extends TabActivity
           initRunner = new InitRunner(this);
           new Thread(initRunner, "Initialization " + initRunner).start();
         } else {
-          logTracker = new IptablesLogTracker();
-
-          appView.attachListener();
           appView.startUpdater();
-
-          logView.attachListener();
           logView.startUpdater();
-
-          logTracker.start(true);
         }
         // all data should be restored at this point, release the object
         data = null;
@@ -242,9 +320,6 @@ public class IptablesLog extends TabActivity
       if(appView != null)
         appView.stopUpdater();
 
-      if(logTracker != null)
-        logTracker.stop();
-
       synchronized(ApplicationsTracker.dialogLock) {
         if(ApplicationsTracker.dialog != null) {
           ApplicationsTracker.dialog.dismiss();
@@ -252,12 +327,8 @@ public class IptablesLog extends TabActivity
         }
       }
 
-      if(data == null) {
-        MyLog.d("Shutting down rules");
-        Iptables.removeRules();
-        IptablesLog.logTracker.kill();
-      } else {
-        MyLog.d("Not shutting down rules");
+      if(stopServiceAtExit) {
+        stopService();
       }
     }
 
@@ -312,6 +383,14 @@ public class IptablesLog extends TabActivity
         item.setVisible(false);
       }
 
+      item = menu.findItem(R.id.service_toggle);
+
+      if(isServiceRunning("com.googlecode.iptableslog.IptablesLogService")) {
+        item.setTitle("Stop logging");
+      } else {
+        item.setTitle("Start logging");
+      }
+
       /*
       item = menu.findItem(R.id.pause);
 
@@ -343,6 +422,13 @@ public class IptablesLog extends TabActivity
           }
           break;
           */
+        case R.id.service_toggle:
+          if(!isServiceRunning("com.googlecode.iptableslog.IptablesLogService")) {
+            startService();
+          } else {
+            stopService();
+          }
+          break;
         case R.id.overallgraph:
           startActivity(new Intent(this, OverallAppTimelineGraph.class));
           break;
@@ -446,5 +532,56 @@ public class IptablesLog extends TabActivity
     });
     AlertDialog alert = builder.create();
     alert.show();
+  }
+
+  public static void getLocalIpAddresses() {
+    MyLog.d("getLocalIpAddresses");
+    localIpAddrs = new ArrayList<String>();
+
+    try {
+      for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+        NetworkInterface intf = en.nextElement();
+        MyLog.d(intf.toString());
+        for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+          InetAddress inetAddress = enumIpAddr.nextElement();
+          MyLog.d(inetAddress.toString());
+          if (!inetAddress.isLoopbackAddress()) {
+            MyLog.d("Adding local IP address: [" + inetAddress.getHostAddress().toString() + "]");
+            localIpAddrs.add(inetAddress.getHostAddress().toString());
+          }
+        }
+      }
+    } catch (SocketException ex) {
+      Log.e("IptablesLog", ex.toString());
+    }
+  }
+
+  public void startService() {
+    MyLog.d("Starting service...");
+    
+    Intent intent = new Intent(this, IptablesLogService.class);
+
+    intent.putExtra("logfile", settings.getLogFile());
+    intent.putExtra("logfile_maxsize", settings.getLogFileMaxSize());
+
+    startService(intent);
+    doBindService();
+  }
+
+  public void stopService() {
+    MyLog.d("Stopping service...");
+    doUnbindService();
+    stopService(new Intent(this, IptablesLogService.class));
+  }
+
+  public boolean isServiceRunning(String serviceName) {
+    ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+    for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+      MyLog.d("Service: " + service.service.getClassName() + "; " + service.pid + "; " + service.uid + "; " + service.clientCount + "; " + service.foreground + "; " + service.process);
+      if (serviceName.equals(service.service.getClassName())) {
+        return true;
+      }
+    }
+    return false;
   }
 }

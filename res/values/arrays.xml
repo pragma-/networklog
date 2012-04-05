@@ -25,4 +25,22 @@
     <item>BYTES</item>
     <item>TIMESTAMP</item>
   </string-array>
+
+  <string-array name="logfile_maxsize_entries">
+    <item>1MB</item>
+    <item>4MB</item>
+    <item>8MB</item>
+    <item>12MB</item>
+    <item>24MB</item>
+    <item>48MB</item>
+  </string-array>
+
+  <string-array name="logfile_maxsize_values">
+    <item>1000000</item>
+    <item>4000000</item>
+    <item>8000000</item>
+    <item>12000000</item>
+    <item>24000000</item>
+    <item>48000000</item>
+  </string-array>
 </resources>

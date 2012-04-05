@@ -443,9 +443,9 @@ public class AppTimelineGraph extends Activity
 
           String label = host;
 
-          if(info.sentPackets > 0 && !IptablesLogTracker.localIpAddrs.contains(info.sentAddress))
+          if(info.sentPackets > 0 && !IptablesLog.localIpAddrs.contains(info.sentAddress))
             label = info.sentAddressString + ":" + info.sentPortString;
-          else if(info.receivedPackets > 0 && !IptablesLogTracker.localIpAddrs.contains(info.receivedAddress))
+          else if(info.receivedPackets > 0 && !IptablesLog.localIpAddrs.contains(info.receivedAddress))
             label = info.receivedAddressString + ":" + info.receivedPortString;
 
           graphView.addSeries(new GraphViewSeries(label, Color.parseColor(getResources().getString(Colors.distinctColor[color])), seriesData));

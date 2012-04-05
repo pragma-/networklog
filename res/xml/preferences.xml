@@ -20,13 +20,46 @@
   </PreferenceCategory>
 
   <PreferenceCategory
+    android:title="Log Service">
+    <EditTextPreference
+      android:defaultValue="/sdcard/iptableslog.txt"
+      android:singleLine="true"
+      android:key="logfile"
+      android:title="Log file location"
+      android:summary="Set path and filename of the log file (defaults to /sdcard/iptableslog.txt)" />
+    <ListPreference
+      android:defaultValue="12000000"
+      android:key="logfile_maxsize"
+      android:title="Log file max filesize"
+      android:summary="Select maximum log filesize; older entries will be truncated (default: 12MB)"
+      android:entries="@array/logfile_maxsize_entries"
+      android:entryValues="@array/logfile_maxsize_values"
+      android:dialogTitle="Max size" />
+    <CheckBoxPreference
+      android:defaultValue="false"
+      android:key="startServiceAtBoot"
+      android:title="Start log at boot"
+      android:summary="Start logging when device boots up" />
+    <CheckBoxPreference
+      android:defaultValue="true"
+      android:key="startServiceAtStart"
+      android:title="Start at app-start"
+      android:summary="Start logging when this app starts-up" />
+     <CheckBoxPreference
+      android:defaultValue="false"
+      android:key="stopServiceAtExit"
+      android:title="Stop at app-exit"
+      android:summary="Stop logging when this app exits" />
+  </PreferenceCategory>
+
+  <PreferenceCategory
     android:title="Log tab">
     <EditTextPreference
       android:defaultValue="15000"
       android:numeric="integer"
       android:key="max_log_entries"
       android:title="Max log entries"
-      android:summary="Limit number of entries to conserve memory" />
+      android:summary="Limit number of entries to conserve memory; older entries will be truncated" />
   </PreferenceCategory>
 
   <PreferenceCategory
@@ -83,13 +116,13 @@
       android:persistent="false"
       android:key="interval_placeholder"
       android:title="Interval"
-      android:summary="Sets how often the data is summed. To see individual packets, set to 1 ms; for kilobytes-per-second, set to 1 second; for kilobytes-per-hour set to 1 hour; etc."
+      android:summary="Sets how often the data is summed. To see individual packets, set to 1 ms; for Kbps, set to 1 second; for Kb-per-hour set to 1 hour; etc."
       android:dialogTitle="Set Interval" />
     <ListPreference
       android:persistent="false"
       android:key="viewsize_placeholder"
       android:title="Viewsize"
-      android:summary="Sets the time-range of data to show at once. If the range chosen is larger than the range of data available, the viewsize will automatically shrink to fit the data."
+      android:summary="Sets the time-range of data to show at once. If the range chosen is larger than the range of data, the viewsize will shrink to fit the data."
       android:dialogTitle="Set Viewsize" />
   </PreferenceCategory>
 
