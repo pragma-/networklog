@@ -28,6 +28,7 @@ public class ShellCommand {
 
   public void start(boolean waitForExit) {
     MyLog.d("ShellCommand: starting [" + tag + "] " + Arrays.toString(command));
+
     try {
       process = new ProcessBuilder()
         .command(command)
@@ -47,18 +48,27 @@ public class ShellCommand {
 
   public void waitForExit() {
     while(checkForExit() == false) {
-      if(stdoutAvailable())
+      if(stdoutAvailable()) {
         MyLog.d("ShellCommand waitForExit [" + tag + "] discarding read: " + readStdout());
-      else 
-        try { Thread.sleep(100); } catch (Exception e) { Log.d("IptablesLog", "waitForExit error", e); }
+      }
+      else
+        try {
+          Thread.sleep(100);
+        }
+      catch(Exception e) {
+        Log.d("IptablesLog", "waitForExit error", e);
+      }
     }
   }
 
   public void finish() {
     MyLog.d("ShellCommand: finishing [" + tag + "] " + Arrays.toString(command));
+
     try {
       stdout.close();
-    } catch (Exception e) { Log.d("IptablesLog", "Exception finishing [" + tag + "]", e); }
+    } catch(Exception e) {
+      Log.d("IptablesLog", "Exception finishing [" + tag + "]", e);
+    }
 
     process.destroy();
     process = null;
@@ -80,7 +90,10 @@ public class ShellCommand {
     try {
       MyLog.d("stdoutAvailable [" + tag + "]: " + stdout.ready());
       return stdout.ready();
-    } catch (java.io.IOException e) { Log.d("IptablesLog", "stdoutAvailable error", e); return false; }
+    } catch(java.io.IOException e) {
+      Log.d("IptablesLog", "stdoutAvailable error", e);
+      return false;
+    }
   }
 
   public String readStdoutBlocking() {
@@ -89,7 +102,7 @@ public class ShellCommand {
 
     try {
       line = stdout.readLine();
-    } catch (Exception e) {
+    } catch(Exception e) {
       Log.d("IptablesLog", "readStdoutBlocking error", e);
       return null;
     }
@@ -98,10 +111,12 @@ public class ShellCommand {
       MyLog.d("readStdoutBlocking [" + tag + "] return [" + line + "]");
     }
 
-    if(line == null)
+    if(line == null) {
       return null;
-    else
+    }
+    else {
       return line + "\n";
+    }
   }
 
   public String readStdout() {
@@ -111,10 +126,13 @@ public class ShellCommand {
       if(stdout.ready()) {
         String line = stdout.readLine();
         MyLog.d("read line: [" + line + "]");
-        if(line == null)
+
+        if(line == null) {
           return null;
-        else
+        }
+        else {
           return line + "\n";
+        }
       } else {
         MyLog.d("readStdout [" + tag + "] no data");
         return "";

@@ -1,10 +1,13 @@
 package com.googlecode.iptableslog;
 
-import android.util.Log; 
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+
+import android.os.Messenger;
+import android.content.ServiceConnection;
 
 public class IptablesLogData {
   /* ApplicationsTracker */

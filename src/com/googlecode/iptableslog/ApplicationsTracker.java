@@ -36,11 +36,13 @@ public class ApplicationsTracker {
     synchronized(installedAppsLock) {
       installedApps = data.applicationsTrackerInstalledApps;
     }
+
     installedAppsHash = data.applicationsTrackerInstalledAppsHash;
   }
 
   public static void getInstalledApps(final Context context, final Handler handler) {
     MyLog.d("Loading installed apps");
+
     synchronized(installedAppsLock) {
       if(IptablesLog.data == null) {
         installedApps = new ArrayList<AppEntry>();
@@ -62,6 +64,7 @@ public class ApplicationsTracker {
       handler.post(new Runnable() {
         public void run() {
           MyLog.d("Showing progress dialog; size: " + appCount);
+
           synchronized(dialogLock) {
             dialog = new ProgressDialog(context);
             dialog.setIndeterminate(false);
@@ -76,6 +79,7 @@ public class ApplicationsTracker {
       });
 
       int count = 0;
+
       for(final ApplicationInfo app : apps) {
         MyLog.d("Processing app " + app);
 
@@ -117,7 +121,7 @@ public class ApplicationsTracker {
           entryHash.name.concat("; " + name);
         } else {
           installedAppsHash.put(sUid, entry);
-        } 
+        }
       }
 
       AppEntry entry = new AppEntry();
@@ -132,6 +136,7 @@ public class ApplicationsTracker {
       installedAppsHash.put("-1", entry);
 
       AppEntry entryHash = installedAppsHash.get("0");
+
       if(entryHash == null) {
         entry = new AppEntry();
         entry.name = "Root";
@@ -148,6 +153,7 @@ public class ApplicationsTracker {
       handler.post(new Runnable() {
         public void run() {
           MyLog.d("Dismissing dialog");
+
           synchronized(dialogLock) {
             if(dialog != null) {
               dialog.dismiss();

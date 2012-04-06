@@ -18,8 +18,9 @@ public class Iptables {
   };
 
   public static boolean addRules() {
-    if(checkRules() == true)
+    if(checkRules() == true) {
       removeRules();
+    }
 
     synchronized(IptablesLog.scriptLock) {
       try {
@@ -39,10 +40,13 @@ public class Iptables {
 
         script.flush();
         script.close();
-      } catch (java.io.IOException e) { Log.d("IptablesLog", "addRules error", e); }
+      } catch(java.io.IOException e) {
+        Log.d("IptablesLog", "addRules error", e);
+      }
 
       new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }, "addRules").start(true);
     }
+
     return true;
   }
 
@@ -68,17 +72,21 @@ public class Iptables {
 
           script.flush();
           script.close();
-        } catch (java.io.IOException e) { Log.d("IptablesLog", "removeRules error", e); } 
+        } catch(java.io.IOException e) {
+          Log.d("IptablesLog", "removeRules error", e);
+        }
 
         new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }, "removeRules").start(true);
 
         tries++;
+
         if(tries > 3) {
           MyLog.d("Too many attempts to remove rules, moving along...");
           return false;
         }
       }
     }
+
     return true;
   }
 
@@ -89,20 +97,27 @@ public class Iptables {
         script.println("iptables -L");
         script.flush();
         script.close();
-      } catch (java.io.IOException e) { Log.d("IptablesLog", "checkRules error", e); } 
+      } catch(java.io.IOException e) {
+        Log.d("IptablesLog", "checkRules error", e);
+      }
 
       ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }, "checkRules");
       command.start(false);
       StringBuilder result = new StringBuilder();
+
       while(true) {
         String line = command.readStdoutBlocking();
-        if(line == null)
+
+        if(line == null) {
           break;
+        }
+
         result.append(line);
       }
 
-      if(result == null)
+      if(result == null) {
         return true;
+      }
 
       MyLog.d("checkRules result: [" + result + "]");
 

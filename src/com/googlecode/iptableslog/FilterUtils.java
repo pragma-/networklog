@@ -6,7 +6,7 @@ public class FilterUtils
 {
   public static void buildList(String filter, ArrayList<String> list)
   {
-    if(filter.length() > 0) 
+    if(filter.length() > 0)
     {
       list.clear();
 

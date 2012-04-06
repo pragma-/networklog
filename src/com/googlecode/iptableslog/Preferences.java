@@ -70,6 +70,7 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
           } else {
             IptablesLog.settings.setGraphViewsize(Long.parseLong((String) newValue));
           }
+
           return true;
         }
       };
@@ -78,26 +79,26 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
       pref.setEntries(entries);
       pref.setEntryValues(values);
       pref.setValue(String.valueOf(IptablesLog.settings.getGraphInterval()));
-      pref.setOnPreferenceChangeListener(changeListener); 
+      pref.setOnPreferenceChangeListener(changeListener);
 
       pref = (ListPreference) findPreference("viewsize_placeholder");
       pref.setEntries(entries);
       pref.setEntryValues(values);
       pref.setValue(String.valueOf(IptablesLog.settings.getGraphViewsize()));
-      pref.setOnPreferenceChangeListener(changeListener); 
+      pref.setOnPreferenceChangeListener(changeListener);
     }
 
   @Override
     public boolean onPreferenceClick(Preference preference) {
       MyLog.d("Preference [" + preference.getKey() + "] clicked");
 
-      if(preference.getKey().equals("notifications_statusbar") 
+      if(preference.getKey().equals("notifications_statusbar")
           || preference.getKey().equals("notifications_toast")
-          || preference.getKey().equals("notifications_statusbar_apps_dialog") 
+          || preference.getKey().equals("notifications_statusbar_apps_dialog")
           || preference.getKey().equals("notifications_toast_apps_dialog")) {
         new ComingSoonDialog(this);
         return true;
-      }
+          }
 
       if(preference.getKey().equals("filter_dialog")) {
         new FilterDialog(this);

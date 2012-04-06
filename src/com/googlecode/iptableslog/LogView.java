@@ -20,6 +20,7 @@ import android.graphics.drawable.Drawable;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Toast;
+import android.util.TypedValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ public class LogView extends Activity
   protected long maxLogEntries;
   private CustomAdapter adapter;
   private ListViewUpdater updater;
+  public TextView statusText;
 
   protected class ListItem {
     protected Drawable mIcon;
@@ -86,7 +88,7 @@ public class LogView extends Activity
       }
 
       adapter.notifyDataSetChanged();
-    }  
+    }
   }
 
   public void refreshPorts() {
@@ -102,7 +104,7 @@ public class LogView extends Activity
       }
 
       adapter.notifyDataSetChanged();
-    }  
+    }
   }
 
   public void refreshIcons() {
@@ -111,6 +113,7 @@ public class LogView extends Activity
         if(item.mIcon == null) {
           MyLog.d("[LogView] refreshing icon for " + item);
           ApplicationsTracker.AppEntry entry = ApplicationsTracker.installedAppsHash.get(String.valueOf(item.mUid));
+
           if(entry == null) {
             MyLog.d("[LogView] no app entry found, icon not refreshed");
           } else {
@@ -134,10 +137,8 @@ public class LogView extends Activity
       LinearLayout layout = new LinearLayout(this);
       layout.setOrientation(LinearLayout.VERTICAL);
 
-      TextView tv = new TextView(this);
-      tv.setText("Iptables Log");
-
-      layout.addView(tv);
+      statusText = new TextView(this);
+      layout.addView(statusText);
 
       if(IptablesLog.data == null) {
         listData = new ArrayList<ListItem>();
@@ -215,28 +216,36 @@ public class LogView extends Activity
     item.srcAddr = entry.src;
     item.srcPort = entry.spt;
 
-    if(IptablesLog.resolveHosts)
+    if(IptablesLog.resolveHosts) {
       item.srcAddrString = IptablesLog.resolver.resolveAddress(entry.src);
-    else
+    }
+    else {
       item.srcAddrString = entry.src;
+    }
 
-    if(IptablesLog.resolvePorts)
+    if(IptablesLog.resolvePorts) {
       item.srcPortString = IptablesLog.resolver.resolveService(String.valueOf(entry.spt));
-    else
+    }
+    else {
       item.srcPortString = String.valueOf(entry.spt);
+    }
 
     item.dstAddr = entry.dst;
     item.dstPort = entry.dpt;
 
-    if(IptablesLog.resolveHosts)
+    if(IptablesLog.resolveHosts) {
       item.dstAddrString = IptablesLog.resolver.resolveAddress(entry.dst);
-    else
+    }
+    else {
       item.dstAddrString = entry.dst;
+    }
 
-    if(IptablesLog.resolvePorts)
+    if(IptablesLog.resolvePorts) {
       item.dstPortString = IptablesLog.resolver.resolveService(String.valueOf(entry.dpt));
-    else
+    }
+    else {
       item.dstPortString = String.valueOf(entry.dpt);
+    }
 
     item.len = entry.len;
     item.timestamp = entry.timestampString;
@@ -246,8 +255,9 @@ public class LogView extends Activity
     synchronized(listDataBuffer) {
       listDataBuffer.add(item);
 
-      while(listDataBuffer.size() > maxLogEntries)
+      while(listDataBuffer.size() > maxLogEntries) {
         listDataBuffer.remove(0);
+      }
     }
   }
 
@@ -265,18 +275,21 @@ public class LogView extends Activity
 
   public void pruneLogEntries() {
     synchronized(listDataBuffer) {
-      while(listDataBuffer.size() > maxLogEntries)
+      while(listDataBuffer.size() > maxLogEntries) {
         listDataBuffer.remove(0);
+      }
     }
 
     synchronized(listDataUnfiltered) {
-      while(listDataUnfiltered.size() > maxLogEntries)
+      while(listDataUnfiltered.size() > maxLogEntries) {
         listDataUnfiltered.remove(0);
+      }
     }
 
     synchronized(listData) {
-      while(listData.size() > maxLogEntries)
+      while(listData.size() > maxLogEntries) {
         listData.remove(0);
+      }
     }
 
     if(!IptablesLog.outputPaused) {
@@ -285,8 +298,9 @@ public class LogView extends Activity
   }
 
   public void stopUpdater() {
-    if(updater != null)
+    if(updater != null) {
       updater.stop();
+    }
   }
 
   // todo: this is largely duplicated in AppView -- move to its own file
@@ -296,6 +310,7 @@ public class LogView extends Activity
       public void run() {
         MyLog.d("LogViewUpdater enter");
         int i = 0;
+
         synchronized(listDataBuffer) {
           synchronized(listData) {
             synchronized(listDataUnfiltered) {
@@ -304,28 +319,34 @@ public class LogView extends Activity
                 listDataUnfiltered.add(item);
                 i++;
               }
+
               listDataBuffer.clear();
             }
           }
         }
-        
+
         synchronized(listDataUnfiltered) {
-          while(listDataUnfiltered.size() > maxLogEntries)
+          while(listDataUnfiltered.size() > maxLogEntries) {
             listDataUnfiltered.remove(0);
+          }
         }
 
         synchronized(listData) {
-          while(listData.size() > maxLogEntries)
+          while(listData.size() > maxLogEntries) {
             listData.remove(0);
+          }
         }
 
         if(IptablesLog.filterTextInclude.length() > 0 || IptablesLog.filterTextExclude.length() > 0)
           // trigger filtering
+        {
           setFilter("");
+        }
 
         if(!IptablesLog.outputPaused) {
           adapter.notifyDataSetChanged();
         }
+
         MyLog.d("LogViewUpdater exit: added " + i + " items");
       }
     };
@@ -337,13 +358,20 @@ public class LogView extends Activity
     public void run() {
       running = true;
       MyLog.d("Starting LogView updater " + this);
+
       while(running) {
         if(listDataBuffer.size() > 0) {
           runOnUiThread(runner);
         }
-        
-        try { Thread.sleep(2500); } catch (Exception e) { Log.d("IptablesLog", "LogViewListUpdater", e); }
+
+        try {
+          Thread.sleep(2500);
+        }
+        catch(Exception e) {
+          Log.d("IptablesLog", "LogViewListUpdater", e);
+        }
       }
+
       MyLog.d("Stopped LogView updater " + this);
     }
   }
@@ -412,10 +440,11 @@ public class LogView extends Activity
 
             if(IptablesLog.filterTextExcludeList.size() > 0) {
               count = filteredItems.size();
+
               for(int i = count - 1; i >= 0; i--) {
                 ListItem item = filteredItems.get(i);
                 // MyLog.d("[LogView] testing filtered item " + item + "; excludes: [" + IptablesLog.filterTextExclude + "]");
-                
+
                 boolean matched = false;
 
                 for(String c : IptablesLog.filterTextExcludeList) {
@@ -451,8 +480,10 @@ public class LogView extends Activity
             clear();
 
             int count = localItems.size();
-            for(int i = 0; i < count; i++)
+
+            for(int i = 0; i < count; i++) {
               add(localItems.get(i));
+            }
 
             if(!IptablesLog.outputPaused) {
               notifyDataSetChanged();
@@ -466,6 +497,7 @@ public class LogView extends Activity
         if(filter == null) {
           filter = new CustomFilter();
         }
+
         return filter;
       }
 
@@ -538,6 +570,7 @@ public class LogView extends Activity
       if(mIcon == null) {
         mIcon = (ImageView) mView.findViewById(R.id.logIcon);
       }
+
       return mIcon;
     }
 
@@ -545,6 +578,7 @@ public class LogView extends Activity
       if(mName == null) {
         mName = (TextView) mView.findViewById(R.id.logName);
       }
+
       return mName;
     }
 
@@ -552,6 +586,7 @@ public class LogView extends Activity
       if(mSrcAddr == null) {
         mSrcAddr = (TextView) mView.findViewById(R.id.srcAddr);
       }
+
       return mSrcAddr;
     }
 
@@ -559,6 +594,7 @@ public class LogView extends Activity
       if(mSrcPort == null) {
         mSrcPort = (TextView) mView.findViewById(R.id.srcPort);
       }
+
       return mSrcPort;
     }
 
@@ -566,6 +602,7 @@ public class LogView extends Activity
       if(mDstAddr == null) {
         mDstAddr = (TextView) mView.findViewById(R.id.dstAddr);
       }
+
       return mDstAddr;
     }
 
@@ -573,6 +610,7 @@ public class LogView extends Activity
       if(mDstPort == null) {
         mDstPort = (TextView) mView.findViewById(R.id.dstPort);
       }
+
       return mDstPort;
     }
 
@@ -580,6 +618,7 @@ public class LogView extends Activity
       if(mLen == null) {
         mLen = (TextView) mView.findViewById(R.id.len);
       }
+
       return mLen;
     }
 
@@ -587,6 +626,7 @@ public class LogView extends Activity
       if(mTimestamp == null) {
         mTimestamp = (TextView) mView.findViewById(R.id.timestamp);
       }
+
       return mTimestamp;
     }
   }

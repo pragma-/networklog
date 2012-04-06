@@ -13,7 +13,7 @@ import android.view.View;
 import android.view.LayoutInflater;
 import android.text.Html;
 
-public class FilterDialog implements DialogInterface.OnDismissListener 
+public class FilterDialog implements DialogInterface.OnDismissListener
 {
   EditText editTextInclude;
   CheckBox checkboxUidInclude;
@@ -26,19 +26,21 @@ public class FilterDialog implements DialogInterface.OnDismissListener
   CheckBox checkboxNameExclude;
   CheckBox checkboxAddressExclude;
   CheckBox checkboxPortExclude;
+  Context context;
 
-  public FilterDialog(final Context context) 
+  public FilterDialog(final Context context)
   {
+    this.context = context;
     LayoutInflater inflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
     View view = inflater.inflate(R.layout.filterdialog, null);
 
-    editTextInclude = (EditText) view.findViewById(R.id.filterTextInclude); 
+    editTextInclude = (EditText) view.findViewById(R.id.filterTextInclude);
     checkboxUidInclude = (CheckBox) view.findViewById(R.id.filterUidInclude);
     checkboxNameInclude = (CheckBox) view.findViewById(R.id.filterNameInclude);
     checkboxAddressInclude = (CheckBox) view.findViewById(R.id.filterAddressInclude);
     checkboxPortInclude = (CheckBox) view.findViewById(R.id.filterPortInclude);
 
-    editTextExclude = (EditText) view.findViewById(R.id.filterTextExclude); 
+    editTextExclude = (EditText) view.findViewById(R.id.filterTextExclude);
     checkboxUidExclude = (CheckBox) view.findViewById(R.id.filterUidExclude);
     checkboxNameExclude = (CheckBox) view.findViewById(R.id.filterNameExclude);
     checkboxAddressExclude = (CheckBox) view.findViewById(R.id.filterAddressExclude);
@@ -56,9 +58,9 @@ public class FilterDialog implements DialogInterface.OnDismissListener
     checkboxAddressExclude.setChecked(IptablesLog.filterAddressExclude);
     checkboxPortExclude.setChecked(IptablesLog.filterPortExclude);
 
-    CompoundButton.OnCheckedChangeListener listener = new CompoundButton.OnCheckedChangeListener() 
+    CompoundButton.OnCheckedChangeListener listener = new CompoundButton.OnCheckedChangeListener()
     {
-      public void onCheckedChanged(CompoundButton button, boolean isChecked) 
+      public void onCheckedChanged(CompoundButton button, boolean isChecked)
       {
         if(button == checkboxUidInclude) {
           IptablesLog.filterUidInclude = isChecked;
@@ -159,7 +161,7 @@ public class FilterDialog implements DialogInterface.OnDismissListener
   }
 
   @Override
-    public void onDismiss(DialogInterface dialog) 
+    public void onDismiss(DialogInterface dialog)
     {
       IptablesLog.settings.setFilterTextInclude(IptablesLog.filterTextInclude);
       IptablesLog.settings.setFilterUidInclude(IptablesLog.filterUidInclude);
@@ -178,5 +180,7 @@ public class FilterDialog implements DialogInterface.OnDismissListener
 
       IptablesLog.appView.setFilter("");
       IptablesLog.logView.setFilter("");
+
+      IptablesLog.updateStatusText(context);
     }
 }

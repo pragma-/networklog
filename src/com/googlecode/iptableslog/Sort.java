@@ -2,9 +2,9 @@ package com.googlecode.iptableslog;
 
 import java.util.HashMap;
 
-public enum Sort 
-{ 
-  UID, NAME, PACKETS, BYTES, TIMESTAMP; 
+public enum Sort
+{
+  UID, NAME, PACKETS, BYTES, TIMESTAMP;
 
   static final HashMap<String, Sort> sortMap = new HashMap<String, Sort>();
 
@@ -19,4 +19,4 @@ public enum Sort
     MyLog.d("Sort result: [" + (result == null ? "(null)" : result) + "]");
     return sortMap.get(value);
   }
-} 
+}

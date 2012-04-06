@@ -291,11 +291,13 @@ public class Settings implements OnSharedPreferenceChangeListener {
       if(key.equals("startServiceAtBoot")) {
         boolean value = prefs.getBoolean(key, false);
         MyLog.d("New " + key + " value [" + value + "]");
+
         if(value == true) {
           // add boot listeners
         } else {
           // remove boot listeners
         }
+
         return;
       }
 

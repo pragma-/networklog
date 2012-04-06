@@ -11,9 +11,10 @@ public class MyLog {
   }
 
   public static void d(String tag, String msg) {
-    if(!enabled)
+    if(!enabled) {
       return;
-    
+    }
+
     for(String line : msg.split("\n")) {
       Log.d(tag, line);
     }

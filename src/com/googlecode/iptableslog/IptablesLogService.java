@@ -57,9 +57,11 @@ public class IptablesLogService extends Service {
           case MSG_REGISTER_CLIENT:
             clients.add(msg.replyTo);
             break;
+
           case MSG_UNREGISTER_CLIENT:
             clients.remove(msg.replyTo);
             break;
+
           default:
             super.handleMessage(msg);
         }
@@ -87,7 +89,7 @@ public class IptablesLogService extends Service {
       Method m = Service.class.getMethod("startForeground", new Class[] {int.class, Notification.class});
       m.invoke(this, NOTIFICATION_ID, n);
       MyLog.d("Started service in foreground");
-    } catch (Exception e) {
+    } catch(Exception e) {
       MyLog.d("Fallback to setForeground");
       setForeground(true);
       nManager.notify(NOTIFICATION_ID, n);
@@ -99,7 +101,7 @@ public class IptablesLogService extends Service {
       Method m = Service.class.getMethod("stopForeground", new Class[] {boolean.class});
       m.invoke(this, true);
       MyLog.d("Stopped foreground service state");
-    } catch (Exception e) {
+    } catch(Exception e) {
       setForeground(false);
       nManager.cancel(NOTIFICATION_ID);
       MyLog.d("Fallback to setForeground(false)");
@@ -126,6 +128,7 @@ public class IptablesLogService extends Service {
       MyLog.d("onStartCommand");
 
       Bundle ext = null;
+
       if(intent == null) {
         MyLog.d("Service null intent");
       } else {
@@ -219,7 +222,7 @@ public class IptablesLogService extends Service {
       Iptables.removeRules();
       stopLogging();
       stopForeground();
-      Toast.makeText(this, "IptablesLogService done", Toast.LENGTH_SHORT).show(); 
+      Toast.makeText(this, "IptablesLogService done", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -244,7 +247,7 @@ public class IptablesLogService extends Service {
 
   public void parseResult(String result) {
     MyLog.d("--------------- parsing result --------------");
-    int pos = 0 /* , buffer_pos = 0 */; 
+    int pos = 0 /* , buffer_pos = 0 */;
     String src, dst, lenString, sptString, dptString, uidString;
 
     /*
@@ -282,44 +285,90 @@ public class IptablesLogService extends Service {
          */
 
       pos = result.indexOf("SRC=", pos);
-      if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for SRC");  */ break; };
+
+      if(pos == -1 || pos > newline) {
+        /* MyLog.d("buffering [" + line + "] for SRC");  */ break;
+      };
+
       int space = result.indexOf(" ", pos);
-      if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for SRC space");  */ break; };
+
+      if(space == -1 || space > newline) {
+        /* MyLog.d("buffering [" + line + "] for SRC space");  */ break;
+      };
+
       src = result.substring(pos + 4, space);
 
       pos = result.indexOf("DST=", pos);
-      if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for DST");  */ break; };
+
+      if(pos == -1 || pos > newline) {
+        /* MyLog.d("buffering [" + line + "] for DST");  */ break;
+      };
+
       space = result.indexOf(" ", pos);
-      if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for DST space");  */ break; };
+
+      if(space == -1 || space > newline) {
+        /* MyLog.d("buffering [" + line + "] for DST space");  */ break;
+      };
+
       dst = result.substring(pos + 4, space);
 
       pos = result.indexOf("LEN=", pos);
-      if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for LEN");  */ break; };
+
+      if(pos == -1 || pos > newline) {
+        /* MyLog.d("buffering [" + line + "] for LEN");  */ break;
+      };
+
       space = result.indexOf(" ", pos);
-      if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for LEN space");  */ break; };
+
+      if(space == -1 || space > newline) {
+        /* MyLog.d("buffering [" + line + "] for LEN space");  */ break;
+      };
+
       lenString = result.substring(pos + 4, space);
 
       pos = result.indexOf("SPT=", pos);
-      if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for SPT");  */ break; };
+
+      if(pos == -1 || pos > newline) {
+        /* MyLog.d("buffering [" + line + "] for SPT");  */ break;
+      };
+
       space = result.indexOf(" ", pos);
-      if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for SPT space");  */ break; };
+
+      if(space == -1 || space > newline) {
+        /* MyLog.d("buffering [" + line + "] for SPT space");  */ break;
+      };
+
       sptString = result.substring(pos + 4, space);
 
       pos = result.indexOf("DPT=", pos);
-      if(pos == -1 || pos > newline) { /* MyLog.d("buffering [" + line + "] for DPT");  */ break; };
+
+      if(pos == -1 || pos > newline) {
+        /* MyLog.d("buffering [" + line + "] for DPT");  */ break;
+      };
+
       space = result.indexOf(" ", pos);
-      if(space == -1 || space > newline) { /* MyLog.d("buffering [" + line + "] for DPT space");  */ break; };
+
+      if(space == -1 || space > newline) {
+        /* MyLog.d("buffering [" + line + "] for DPT space");  */ break;
+      };
+
       dptString = result.substring(pos + 4, space);
 
       int lastpos = pos;
+
       pos = result.indexOf("UID=", pos);
+
       // MyLog.d("newline pos: " + newline + "; UID pos: " + pos);
       if(pos == -1 || (pos > newline && newline != -1)) {
         uidString = "-1";
         pos = lastpos;
       } else {
-        MyLog.d("Looking for UID newline"); 
-        if(newline == -1) { /* MyLog.d("buffering [" + line + "] for UID newline");  */ break; };
+        MyLog.d("Looking for UID newline");
+
+        if(newline == -1) {
+          /* MyLog.d("buffering [" + line + "] for UID newline");  */ break;
+        };
+
         uidString = result.substring(pos + 4, newline);
       }
 
@@ -330,34 +379,34 @@ public class IptablesLogService extends Service {
 
       try {
         uid = Integer.parseInt(uidString.split("[^0-9-]+")[0]);
-      } catch (Exception e) {
+      } catch(Exception e) {
         Log.e("IptablesLog", "Bad data for uid: [" + uidString + "]", e);
         uid = -13;
       }
 
       try {
         spt = Integer.parseInt(sptString.split("[^0-9-]+")[0]);
-      } catch (Exception e) {
+      } catch(Exception e) {
         Log.e("IptablesLog", "Bad data for spt: [" + sptString + "]", e);
         spt = -1;
       }
 
       try {
         dpt = Integer.parseInt(dptString.split("[^0-9-]+")[0]);
-      } catch (Exception e) {
+      } catch(Exception e) {
         Log.e("IptablesLog", "Bad data for dpt: [" + dptString + "]", e);
         dpt = -1;
       }
 
       try {
         len = Integer.parseInt(lenString.split("[^0-9-]+")[0]);
-      } catch (Exception e) {
+      } catch(Exception e) {
         Log.e("IptablesLog", "Bad data for len: [" + lenString + "]", e);
         len = -1;
       }
 
-      String srcDstMapKey = src + ":" + spt + " -> " + dst + ":" + dpt; 
-      String dstSrcMapKey = dst + ":" + dpt + " -> " + src + ":" + spt; 
+      String srcDstMapKey = src + ":" + spt + " -> " + dst + ":" + dpt;
+      String dstSrcMapKey = dst + ":" + dpt + " -> " + src + ":" + spt;
 
       MyLog.d("Checking entry for " + uid + " " + srcDstMapKey + " and " + dstSrcMapKey);
       Integer srcDstMapUid = logEntriesMap.get(srcDstMapKey);
@@ -377,6 +426,7 @@ public class IptablesLogService extends Service {
 
         if(srcDstMapUid == null) {
           MyLog.d("[src-dst] No entry uid for " + uid + " [" + srcDstMapKey + "]");
+
           if(uid == -1) {
             if(dstSrcMapUid != null) {
               MyLog.d("[dst-src] Reassigning kernel packet -1 to " + dstSrcMapUid);
@@ -398,6 +448,7 @@ public class IptablesLogService extends Service {
 
         if(dstSrcMapUid == null) {
           MyLog.d("[dst-src] No entry uid for " + uid + " [" + dstSrcMapKey + "]");
+
           if(uid == -1) {
             if(srcDstMapUid != null) {
               MyLog.d("[src-dst] Reassigning kernel packet -1 to " + srcDstMapUid);
@@ -418,6 +469,7 @@ public class IptablesLogService extends Service {
         }
       } else {
         MyLog.d("Known uid");
+
         if(srcDstMapUid == null || dstSrcMapUid == null) {
           MyLog.d("Adding missing uid " + uid + " to netstat map for " + srcDstMapKey + " and " + dstSrcMapKey);
           logEntriesMap.put(srcDstMapKey, uid);
@@ -428,8 +480,9 @@ public class IptablesLogService extends Service {
       // get packet and byte counters
       LogEntry entry = logEntriesHash.get(String.valueOf(uid));
 
-      if(entry == null)
+      if(entry == null) {
         entry = new LogEntry();
+      }
 
       entry.uid = uid;
       entry.src = src;
@@ -448,13 +501,15 @@ public class IptablesLogService extends Service {
 
       logEntriesHash.put(String.valueOf(uid), entry);
 
-      if(MyLog.enabled)
+      if(MyLog.enabled) {
         MyLog.d("+++ entry: (" + entry.uid + ") " + entry.src + ":" + entry.spt + " -> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "] " + entry.bytes + " " + entry.timestampString);
+      }
 
       notifyNewEntry(entry);
 
       // buffer_pos = pos;
     }
+
     /*
        MyLog.d("truncating buffer_pos: " + buffer_pos + "; length: " + buffer.length());
        if(buffer_pos > buffer.length()) {
@@ -472,7 +527,7 @@ public class IptablesLogService extends Service {
       try {
         clients.get(i).send(Message.obtain(null, BROADCAST_LOG_ENTRY, entry));
         MyLog.d("Sending entry");
-      } catch (RemoteException e) {
+      } catch(RemoteException e) {
         // client dead
         clients.remove(i);
         MyLog.d("Dead client " + i);
@@ -489,7 +544,9 @@ public class IptablesLogService extends Service {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
         script.println("grep IptablesLogEntry /proc/kmsg");
         script.close();
-      } catch (java.io.IOException e) { e.printStackTrace(); }
+      } catch(java.io.IOException e) {
+        e.printStackTrace();
+      }
 
       MyLog.d("Starting iptables log tracker");
 
@@ -520,20 +577,27 @@ public class IptablesLogService extends Service {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
         script.println("ps");
         script.close();
-      } catch (java.io.IOException e) { e.printStackTrace(); }
+      } catch(java.io.IOException e) {
+        e.printStackTrace();
+      }
 
       ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "FindLogger");
       command.start(false);
       String result = "";
+
       while(true) {
         String line = command.readStdoutBlocking();
-        if(line == null)
+
+        if(line == null) {
           break;
+        }
+
         result += line;
       }
 
-      if(result == null)
+      if(result == null) {
         return;
+      }
 
       int iptableslog_pid = -1;
 
@@ -546,13 +610,13 @@ public class IptablesLogService extends Service {
         try {
           pid = Integer.parseInt(tokens[1]);
           ppid = Integer.parseInt(tokens[2]);
-        } catch (NumberFormatException e) {
+        } catch(NumberFormatException e) {
           // ignored
           continue;
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch(ArrayIndexOutOfBoundsException e) {
           // ignored
           continue;
-        } catch (Exception e) {
+        } catch(Exception e) {
           Log.d("IptablesLog", "Unexpected exception", e);
           continue;
         }
@@ -576,7 +640,9 @@ public class IptablesLogService extends Service {
               PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
               script.println("kill " + pid);
               script.close();
-            } catch (java.io.IOException e) { e.printStackTrace(); }
+            } catch(java.io.IOException e) {
+              e.printStackTrace();
+            }
 
             new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "KillLogger").start(true);
             break;
@@ -597,18 +663,26 @@ public class IptablesLogService extends Service {
       MyLog.d("IptablesLogger " + this + " starting");
       String result;
       running = true;
+
       while(running && command.checkForExit() == false) {
         MyLog.d("IptablesLogger " + this + " checking stdout");
 
         if(command.stdoutAvailable()) {
           result = command.readStdout();
         } else {
-          try { Thread.sleep(750); } catch (Exception e) { Log.d("IptablesLog", "IptablesLogger exception while sleeping", e); }
+          try {
+            Thread.sleep(750);
+          }
+          catch(Exception e) {
+            Log.d("IptablesLog", "IptablesLogger exception while sleeping", e);
+          }
+
           continue;
         }
 
-        if(running == false)
+        if(running == false) {
           break;
+        }
 
         if(result == null) {
           MyLog.d("result == null");

@@ -23,6 +23,7 @@ import android.os.SystemClock;
 import android.text.Html;
 import android.text.Spanned;
 import android.widget.TextView.BufferType;
+import android.util.TypedValue;
 
 import java.util.Set;
 import java.util.ArrayList;
@@ -32,8 +33,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
-public class AppView extends Activity
-{
+public class AppView extends Activity {
   // listData bound to adapter
   public ArrayList<ListItem> listData;
   // listDataBuffer used to buffer incoming log entries and to hold original list data for filtering
@@ -44,6 +44,7 @@ public class AppView extends Activity
   public Sort sortBy;
   public ListItem cachedSearchItem;
   private ListViewUpdater updater;
+  public TextView statusText;
 
   public class HostInfo {
     protected int sentPackets;
@@ -65,8 +66,7 @@ public class AppView extends Activity
     protected ArrayList<PacketGraphItem> packetGraphBuffer;
     // protected ArrayList<PacketGraphItem> packetGraphData;
 
-    public String toString()
-    {
+    public String toString() {
       return sentAddressString + ":" + sentPortString + " -> " + receivedAddressString + ":" + receivedPortString;
     }
   }
@@ -86,120 +86,114 @@ public class AppView extends Activity
     protected ArrayList<PacketGraphItem> packetGraphBuffer;
 
     @Override
-      public String toString()
-      {
+      public String toString() {
         return "(" + app.uidString + ") " + app.name;
       }
   }
 
   protected static class SortAppsByBytes implements Comparator<ListItem> {
-    public int compare(ListItem o1, ListItem o2)
-    {
+    public int compare(ListItem o1, ListItem o2) {
       return o1.totalBytes > o2.totalBytes ? -1 : (o1.totalBytes == o2.totalBytes) ? 0 : 1;
     }
   }
 
   protected static class SortAppsByPackets implements Comparator<ListItem> {
-    public int compare(ListItem o1, ListItem o2)
-    {
+    public int compare(ListItem o1, ListItem o2) {
       return o1.totalPackets > o2.totalPackets ? -1 : (o1.totalPackets == o2.totalPackets) ? 0 : 1;
     }
   }
 
   protected static class SortAppsByTimestamp implements Comparator<ListItem> {
-    public int compare(ListItem o1, ListItem o2)
-    {
+    public int compare(ListItem o1, ListItem o2) {
       return o2.lastTimestamp.compareTo(o1.lastTimestamp.equals("") ? "0" : o1.lastTimestamp);
     }
   }
 
   protected static class SortAppsByName implements Comparator<ListItem> {
-    public int compare(ListItem o1, ListItem o2)
-    {
+    public int compare(ListItem o1, ListItem o2) {
       return o1.app.name.compareToIgnoreCase(o2.app.name);
     }
   }
 
   protected static class SortAppsByUid implements Comparator<ListItem> {
-    public int compare(ListItem o1, ListItem o2)
-    {
+    public int compare(ListItem o1, ListItem o2) {
       return o1.app.uid < o2.app.uid ? -1 : (o1.app.uid == o2.app.uid) ? 0 : 1;
     }
   }
 
-  protected void preSortData()
-  {
+  protected void preSortData() {
     Comparator<ListItem> sortMethod;
 
-    switch(preSortBy)
-    {
+    switch(preSortBy) {
       case UID:
         sortMethod = new SortAppsByUid();
         break;
+
       case NAME:
         sortMethod = new SortAppsByName();
         break;
+
       case PACKETS:
         sortMethod = new SortAppsByPackets();
         break;
+
       case BYTES:
         sortMethod = new SortAppsByBytes();
         break;
+
       case TIMESTAMP:
         sortMethod = new SortAppsByTimestamp();
         break;
+
       default:
         return;
     }
 
-    synchronized(listData)
-    {
+    synchronized(listData) {
       Collections.sort(listData, sortMethod);
     }
   }
 
-  protected void sortData()
-  {
+  protected void sortData() {
     Comparator<ListItem> sortMethod;
 
-    switch(sortBy)
-    {
+    switch(sortBy) {
       case UID:
         sortMethod = new SortAppsByUid();
         break;
+
       case NAME:
         sortMethod = new SortAppsByName();
         break;
+
       case PACKETS:
         sortMethod = new SortAppsByPackets();
         break;
+
       case BYTES:
         sortMethod = new SortAppsByBytes();
         break;
+
       case TIMESTAMP:
         sortMethod = new SortAppsByTimestamp();
         break;
+
       default:
         return;
     }
 
-    synchronized(listData)
-    {
+    synchronized(listData) {
       Collections.sort(listData, sortMethod);
     }
   }
 
-  public void refreshAdapter()
-  {
+  public void refreshAdapter() {
     adapter.notifyDataSetChanged();
   }
 
-  public void refreshHosts()
-  {
-    synchronized(listDataBuffer)
-    {
-      for(ListItem item : listDataBuffer)
-      {
+  public void refreshHosts() {
+    synchronized(listDataBuffer) {
+      for(ListItem item : listDataBuffer) {
         buildUniqueHosts(item);
       }
 
@@ -207,12 +201,9 @@ public class AppView extends Activity
     }
   }
 
-  public void refreshPorts()
-  {
-    synchronized(listDataBuffer)
-    {
-      for(ListItem item : listDataBuffer)
-      {
+  public void refreshPorts() {
+    synchronized(listDataBuffer) {
+      for(ListItem item : listDataBuffer) {
         buildUniqueHosts(item);
       }
 
@@ -220,26 +211,19 @@ public class AppView extends Activity
     }
   }
 
-  public void resetData()
-  {
+  public void resetData() {
     getInstalledApps();
   }
 
-  protected void getInstalledApps()
-  {
-    synchronized(listDataBuffer)
-    {
-      synchronized(listData)
-      {
+  protected void getInstalledApps() {
+    synchronized(listDataBuffer) {
+      synchronized(listData) {
         listData.clear();
         listDataBuffer.clear();
 
-        synchronized(ApplicationsTracker.installedAppsLock)
-        {
-          for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps)
-          {
-            if(IptablesLog.state != IptablesLog.State.RUNNING && IptablesLog.initRunner.running == false)
-            {
+        synchronized(ApplicationsTracker.installedAppsLock) {
+          for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps) {
+            if(IptablesLog.state != IptablesLog.State.RUNNING && IptablesLog.initRunner.running == false) {
               MyLog.d("[AppView] Initialization aborted");
               return;
             }
@@ -277,30 +261,28 @@ public class AppView extends Activity
     }
   }
 
-  protected void loadIcons()
-  {
-    if(IptablesLog.data == null)
-    {
-      new Thread("IconLoader")
-      {
-        public void run()
-        {
+  protected void loadIcons() {
+    if(IptablesLog.data == null) {
+      new Thread("IconLoader") {
+        public void run() {
           long nextUpdateTime = 0;
 
           int size;
-          synchronized(listDataBuffer)
-          {
+
+          synchronized(listDataBuffer) {
             size = listDataBuffer.size();
           }
-          for(int i = 0; i < size; i++)
-          {
+
+          for(int i = 0; i < size; i++) {
             ListItem item;
-            synchronized(listDataBuffer)
-            {
+
+            synchronized(listDataBuffer) {
               item = listDataBuffer.get(i);
             }
-            if(item.app.packageName == null)
+
+            if(item.app.packageName == null) {
               continue;
+            }
 
             try {
               MyLog.d("Loading icon for " + item.app.packageName + " (" + item.app.name + ", " + item.app.uid + ")");
@@ -311,27 +293,26 @@ public class AppView extends Activity
               // (once few seconds instead of immediately after each icon prevents UI lag)
               // (UI still may lag on lower end devices as loading icons is expensive)
               long currentTime = SystemClock.elapsedRealtime();
-              if(currentTime >= nextUpdateTime)
-              {
+
+              if(currentTime >= nextUpdateTime) {
                 nextUpdateTime = currentTime + 2000;
                 runOnUiThread(new Runnable() {
                   public void run() {
                     MyLog.d("Updating adapter for icons");
+
                     /*
                        preSortData();
                        sortData();
                        setFilter(IptablesLog.filterText);
                        */
-                    // refresh adapter to display icon 
+                    // refresh adapter to display icon
                     if(!IptablesLog.outputPaused) {
                       adapter.notifyDataSetChanged();
                     }
                   }
                 });
               }
-            }
-            catch (Exception e)
-            {
+            } catch(Exception e) {
               Log.d("IptablesLog", "Failure to load icon for " + item.app.packageName + " (" + item.app.name + ", " + item.app.uid + ")", e);
             }
           }
@@ -342,21 +323,22 @@ public class AppView extends Activity
               preSortData();
               sortData();
               setFilter("");
+
               if(!IptablesLog.outputPaused) {
                 adapter.notifyDataSetChanged();
               }
+
               IptablesLog.logView.refreshIcons();
             }
           });
         }
-      }.start();
+      } .start();
     }
   }
 
   /** Called when the activity is first created. */
   @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
 
       MyLog.d("AppView created");
@@ -370,13 +352,10 @@ public class AppView extends Activity
       LinearLayout layout = new LinearLayout(this);
       layout.setOrientation(LinearLayout.VERTICAL);
 
-      TextView tv = new TextView(this);
-      tv.setText("Application listing");
+      statusText = new TextView(this);
+      layout.addView(statusText);
 
-      layout.addView(tv);
-
-      if(IptablesLog.data == null)
-      {
+      if(IptablesLog.data == null) {
         listData = new ArrayList<ListItem>();
         listDataBuffer = new ArrayList<ListItem>();
         cachedSearchItem = new ListItem();
@@ -407,14 +386,12 @@ public class AppView extends Activity
   }
 
   @Override
-    public void onBackPressed()
-    {
+    public void onBackPressed() {
       IptablesLog parent = (IptablesLog) getParent();
       parent.confirmExit(this);
     }
 
-  public void restoreData(IptablesLogData data)
-  {
+  public void restoreData(IptablesLogData data) {
     listData = data.appViewListData;
     listDataBuffer = data.appViewListDataBuffer;
     listDataBufferIsDirty = data.appViewListDataBufferIsDirty;
@@ -422,38 +399,39 @@ public class AppView extends Activity
     preSortBy = data.appViewPreSortBy;
     cachedSearchItem = data.appViewCachedSearchItem;
 
-    if(listData == null)
+    if(listData == null) {
       listData = new ArrayList<ListItem>();
+    }
 
-    if(listDataBuffer == null)
+    if(listDataBuffer == null) {
       listDataBuffer = new ArrayList<ListItem>();
+    }
 
-    if(cachedSearchItem == null)
+    if(cachedSearchItem == null) {
       cachedSearchItem = new ListItem();
+    }
 
-    if(cachedSearchItem.app == null)
+    if(cachedSearchItem.app == null) {
       cachedSearchItem.app = new ApplicationsTracker.AppEntry();
+    }
 
-    if(sortBy == null)
-    {
+    if(sortBy == null) {
       sortBy = IptablesLog.settings.getSortBy();
       MyLog.d("[restoreData] Sort-by loaded from settings: " + sortBy);
     }
 
-    if(preSortBy == null)
-    {
+    if(preSortBy == null) {
       preSortBy = IptablesLog.settings.getPreSortBy();
       MyLog.d("[restoreData] Pre-sort-by loaded from settings: " + preSortBy);
     }
   }
 
-  public int getItemByAppUid(int uid)
-  {
+  public int getItemByAppUid(int uid) {
     cachedSearchItem.app.uid = uid;
 
     int index;
-    synchronized(listDataBuffer)
-    {
+
+    synchronized(listDataBuffer) {
       MyLog.d("Binary searching...");
       index = Collections.binarySearch(listDataBuffer, cachedSearchItem, new Comparator<ListItem>() {
         public int compare(ListItem o1, ListItem o2) {
@@ -464,11 +442,13 @@ public class AppView extends Activity
 
       // binarySearch isn't guaranteed to return the first item of items with the same uid
       // so find the first item
-      while(index > 0)
-      {
-        if(listDataBuffer.get(index - 1).app.uid == uid)
+      while(index > 0) {
+        if(listDataBuffer.get(index - 1).app.uid == uid) {
           index--;
-        else break;
+        }
+        else {
+          break;
+        }
       }
     }
 
@@ -476,30 +456,28 @@ public class AppView extends Activity
     return index;
   }
 
-  public void onNewLogEntry(final IptablesLogService.LogEntry entry)
-  {
+  public void onNewLogEntry(final IptablesLogService.LogEntry entry) {
     MyLog.d("AppView: NewLogEntry: [" + entry.uid + "] " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
 
     int index = getItemByAppUid(entry.uid);
 
-    if(index < 0) { 
+    if(index < 0) {
       MyLog.d("No app entry");
       return;
     }
 
-    synchronized(listDataBuffer)
-    {
+    synchronized(listDataBuffer) {
       String src = entry.src + ":" + entry.spt;
       String dst = entry.dst + ":" + entry.dpt;
 
       // generally this will iterate once, but some apps may be grouped under the same uid
-      while(true)
-      {
+      while(true) {
         MyLog.d("finding first index: " + index);
         ListItem item = listDataBuffer.get(index);
 
-        if(item.app.uid != entry.uid)
+        if(item.app.uid != entry.uid) {
           break;
+        }
 
         listDataBufferIsDirty = true;
 
@@ -513,14 +491,11 @@ public class AppView extends Activity
         HostInfo info;
 
         // todo: make filtering out local IP a user preference
-        if(!IptablesLog.localIpAddrs.contains(entry.src))
-        {
-          synchronized(item.uniqueHostsList)
-          {
+        if(!IptablesLog.localIpAddrs.contains(entry.src)) {
+          synchronized(item.uniqueHostsList) {
             info = item.uniqueHostsList.get(src);
 
-            if(info == null)
-            {
+            if(info == null) {
               info = new HostInfo();
               info.packetGraphBuffer = new ArrayList<PacketGraphItem>();
             }
@@ -550,14 +525,11 @@ public class AppView extends Activity
         }
 
         // todo: make filtering out local IP a user preference
-        if(!IptablesLog.localIpAddrs.contains(entry.dst))
-        {
-          synchronized(item.uniqueHostsList)
-          {
+        if(!IptablesLog.localIpAddrs.contains(entry.dst)) {
+          synchronized(item.uniqueHostsList) {
             info = item.uniqueHostsList.get(dst);
 
-            if(info == null)
-            {
+            if(info == null) {
               info = new HostInfo();
               info.packetGraphBuffer = new ArrayList<PacketGraphItem>();
             }
@@ -567,7 +539,7 @@ public class AppView extends Activity
             info.sentTimestamp = entry.timestampString;
 
             MyLog.d("Added sent packet " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + info.sentPackets + "; bytes: " + info.sentBytes);
-            
+
             info.sentPort = entry.dpt;
             info.sentPortString = String.valueOf(entry.dpt);
             info.sentAddress = entry.dst;
@@ -587,28 +559,27 @@ public class AppView extends Activity
         }
 
         index++;
-        if(index >= listDataBuffer.size())
+
+        if(index >= listDataBuffer.size()) {
           break;
+        }
       }
     }
   }
 
-  public void startUpdater()
-  {
+  public void startUpdater() {
     updater = new ListViewUpdater();
     new Thread(updater, "AppViewUpdater").start();
   }
 
-  public void stopUpdater()
-  {
-    if(updater != null)
+  public void stopUpdater() {
+    if(updater != null) {
       updater.stop();
+    }
   }
 
-  public void buildUniqueHosts(ListItem item)
-  {
-    synchronized(item.uniqueHostsList)
-    {
+  public void buildUniqueHosts(ListItem item) {
+    synchronized(item.uniqueHostsList) {
       List<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
 
       MyLog.d("Building host list for " + item);
@@ -619,8 +590,8 @@ public class AppView extends Activity
       StringBuilder builder = new StringBuilder("Addrs:");
       Iterator<String> itr = list.iterator();
       boolean has_host = false;
-      while(itr.hasNext())
-      {
+
+      while(itr.hasNext()) {
         String host = itr.next();
         HostInfo info = item.uniqueHostsList.get(host);
 
@@ -634,6 +605,7 @@ public class AppView extends Activity
 
         if(info.receivedPackets > 0) {
           MyLog.d("Received address: " + info.receivedAddress + ":" + info.receivedPort);
+
           if(!IptablesLog.localIpAddrs.contains(info.receivedAddress)) {
             if(IptablesLog.resolveHosts) {
               info.receivedAddressString = IptablesLog.resolver.resolveAddress(info.receivedAddress);
@@ -654,6 +626,7 @@ public class AppView extends Activity
 
         if(info.sentPackets > 0) {
           MyLog.d("Sent address: " + info.sentAddress + ":" + info.sentPort);
+
           if(!IptablesLog.localIpAddrs.contains(info.sentAddress)) {
             if(IptablesLog.resolveHosts) {
               info.sentAddressString = IptablesLog.resolver.resolveAddress(info.sentAddress);
@@ -703,18 +676,15 @@ public class AppView extends Activity
     boolean running = false;
     Runnable runner = new Runnable() {
       public void run() {
-        synchronized(listData)
-        {
+        synchronized(listData) {
           MyLog.d("AppViewListUpdater enter");
           listData.clear();
-          synchronized(listDataBuffer)
-          {
+
+          synchronized(listDataBuffer) {
             // todo: find a way so that we don't have to go through every entry
             // in listDataBuffer here (maybe use some sort of reference mapping)
-            for(ListItem item : listDataBuffer)
-            {
-              if(item.uniqueHostsListNeedsSort)
-              {
+            for(ListItem item : listDataBuffer) {
+              if(item.uniqueHostsListNeedsSort) {
                 MyLog.d("Updating " + item);
                 item.uniqueHostsListNeedsSort = false;
 
@@ -732,8 +702,7 @@ public class AppView extends Activity
           setFilter("");
           //}
 
-          if(!IptablesLog.outputPaused)
-          {
+          if(!IptablesLog.outputPaused) {
             adapter.notifyDataSetChanged();
           }
         }
@@ -742,67 +711,62 @@ public class AppView extends Activity
       }
     };
 
-    public void stop()
-    {
+    public void stop() {
       running = false;
     }
 
-    public void run()
-    {
+    public void run() {
       running = true;
       MyLog.d("Starting AppViewUpdater " + this);
-      while(running)
-      {
-        if(listDataBufferIsDirty == true)
-        {
+
+      while(running) {
+        if(listDataBufferIsDirty == true) {
           runOnUiThread(runner);
           listDataBufferIsDirty = false;
         }
 
-        try { Thread.sleep(5000); } catch (Exception e) { Log.d("IptablesLog", "AppViewListUpdater", e); }
+        try {
+          Thread.sleep(5000);
+        } catch(Exception e) {
+          Log.d("IptablesLog", "AppViewListUpdater", e);
+        }
       }
+
       MyLog.d("Stopped AppView updater " + this);
     }
   }
 
-  public void setFilter(CharSequence s)
-  {
+  public void setFilter(CharSequence s) {
     MyLog.d("[AppView] setFilter(" + s + ")");
     adapter.getFilter().filter(s);
   }
 
-  private class CustomAdapter extends ArrayAdapter<ListItem> /* implements Filterable */ {
+  private class CustomAdapter extends ArrayAdapter<ListItem> { /* implements Filterable */
     LayoutInflater mInflater = (LayoutInflater) getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
     CustomFilter filter;
     ArrayList<ListItem> originalItems = new ArrayList<ListItem>();
 
-    public CustomAdapter(Context context, int resource, List<ListItem> objects)
-    {
+    public CustomAdapter(Context context, int resource, List<ListItem> objects) {
       super(context, resource, objects);
     }
 
     private class CustomFilter extends Filter {
       @Override
-        protected FilterResults performFiltering(CharSequence constraint)
-        {
+        protected FilterResults performFiltering(CharSequence constraint) {
           FilterResults results = new FilterResults();
           MyLog.d("[AppView] performFiltering");
 
-          synchronized(listDataBuffer)
-          {
+          synchronized(listDataBuffer) {
             originalItems.clear();
             originalItems.addAll(listDataBuffer);
           }
 
-          if(IptablesLog.filterTextInclude.length() == 0 && IptablesLog.filterTextExclude.length() == 0)
-          {
+          if(IptablesLog.filterTextInclude.length() == 0 && IptablesLog.filterTextExclude.length() == 0) {
             MyLog.d("[AppView] no constraint item count: " + originalItems.size());
 
             // undo uniqueHosts filtering
-            for(ListItem item : originalItems)
-            {
-              if(item.uniqueHostsIsFiltered)
-              {
+            for(ListItem item : originalItems) {
+              if(item.uniqueHostsIsFiltered) {
                 item.uniqueHostsIsFiltered = false;
                 buildUniqueHosts(item);
               }
@@ -824,8 +788,7 @@ public class AppView extends Activity
               for(ListItem item : localItems) {
                 filteredItems.add(item);
 
-                synchronized(item.uniqueHostsList)
-                {
+                synchronized(item.uniqueHostsList) {
                   List<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
                   // todo: sort by user preference
                   Collections.sort(list);
@@ -833,8 +796,7 @@ public class AppView extends Activity
 
                   item.filteredHostInfos.clear();
 
-                  while(itr.hasNext())
-                  {
+                  while(itr.hasNext()) {
                     String host = itr.next();
                     HostInfo info = item.uniqueHostsList.get(host);
                     MyLog.d("[AppView] adding filtered host " + info);
@@ -846,33 +808,26 @@ public class AppView extends Activity
               if(IptablesLog.filterNameInclude
                   || IptablesLog.filterUidInclude
                   || IptablesLog.filterAddressInclude
-                  || IptablesLog.filterPortInclude)
-              {
-                for(int i = 0; i < count; i++)
-                {
+                  || IptablesLog.filterPortInclude) {
+                for(int i = 0; i < count; i++) {
                   ListItem item = localItems.get(i);
                   MyLog.d("[AppView] testing filtered item " + item + "; includes: [" + IptablesLog.filterTextInclude + "]");
 
                   boolean item_added = false;
                   boolean matched = true;
 
-                  for(String c : IptablesLog.filterTextIncludeList)
-                  {
-                    if((IptablesLog.filterNameInclude && !item.app.nameLowerCase.contains(c)) 
-                        || (IptablesLog.filterUidInclude && !item.app.uidString.equals(c)))
-                    {
+                  for(String c : IptablesLog.filterTextIncludeList) {
+                    if((IptablesLog.filterNameInclude && !item.app.nameLowerCase.contains(c))
+                        || (IptablesLog.filterUidInclude && !item.app.uidString.equals(c))) {
                       matched = false;
                       break;
-                    }
+                        }
                   }
 
-                  if(matched)
-                  {
-                    // test filter against address/port 
-                    if(IptablesLog.filterAddressInclude || IptablesLog.filterPortInclude) 
-                    {
-                      synchronized(item.uniqueHostsList)
-                      {
+                  if(matched) {
+                    // test filter against address/port
+                    if(IptablesLog.filterAddressInclude || IptablesLog.filterPortInclude) {
+                      synchronized(item.uniqueHostsList) {
                         List<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
                         // todo: sort by user preference (bytes, timestamp, address, ports)
                         Collections.sort(list);
@@ -880,31 +835,28 @@ public class AppView extends Activity
 
                         item.filteredHostInfos.clear();
 
-                        while(itr.hasNext())
-                        {
+                        while(itr.hasNext()) {
                           String host = itr.next();
                           MyLog.d("[AppView] testing " + host);
                           HostInfo info = item.uniqueHostsList.get(host);
                           matched = false;
-                          for(String c : IptablesLog.filterTextIncludeList)
-                          {
+
+                          for(String c : IptablesLog.filterTextIncludeList) {
                             if((IptablesLog.filterAddressInclude && ((info.sentPackets > 0 && info.sentAddressString.toLowerCase().contains(c))
                                     || (info.receivedPackets > 0 && info.receivedAddressString.toLowerCase().contains(c))))
                                 || (IptablesLog.filterPortInclude && ((info.sentPackets > 0 && info.sentPortString.toLowerCase().equals(c))
-                                    || (info.receivedPackets > 0 && info.receivedPortString.toLowerCase().equals(c)))))
-                            {
+                                    || (info.receivedPackets > 0 && info.receivedPortString.toLowerCase().equals(c))))) {
                               matched = true;
-                            }
+                                    }
                           }
 
-                          if(matched)
-                          {
-                            if(!item_added)
-                            {
+                          if(matched) {
+                            if(!item_added) {
                               MyLog.d("[AppView] adding filtered item " + item);
                               filteredItems.add(item);
                               item_added = true;
                             }
+
                             MyLog.d("[AppView] adding filtered host " + info);
                             item.filteredHostInfos.add(info);
                           }
@@ -915,8 +867,7 @@ public class AppView extends Activity
                       MyLog.d("[AppView] no filter for host/port; adding filtered item " + item);
                       filteredItems.add(item);
 
-                      synchronized(item.uniqueHostsList)
-                      {
+                      synchronized(item.uniqueHostsList) {
                         List<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
                         // todo: sort by user preference
                         Collections.sort(list);
@@ -924,8 +875,7 @@ public class AppView extends Activity
 
                         item.filteredHostInfos.clear();
 
-                        while(itr.hasNext())
-                        {
+                        while(itr.hasNext()) {
                           String host = itr.next();
                           HostInfo info = item.uniqueHostsList.get(host);
                           MyLog.d("[AppView] adding filtered host " + info);
@@ -935,11 +885,12 @@ public class AppView extends Activity
                     }
                   }
                 }
-              }
+                  }
             }
 
             if(IptablesLog.filterTextExcludeList.size() > 0) {
               count = filteredItems.size();
+
               for(int i = count - 1; i >= 0; i--) {
                 ListItem item = filteredItems.get(i);
                 MyLog.d("[AppView] testing filtered item: " + i + " " + item + "; excludes: [" + IptablesLog.filterTextExclude + "]");
@@ -948,10 +899,9 @@ public class AppView extends Activity
 
                 for(String c : IptablesLog.filterTextExcludeList) {
                   if((IptablesLog.filterNameExclude && item.app.nameLowerCase.contains(c))
-                      || IptablesLog.filterUidExclude && item.app.uidString.equals(c))
-                  {
+                      || IptablesLog.filterUidExclude && item.app.uidString.equals(c)) {
                     matched = true;
-                  }
+                      }
                 }
 
                 if(matched) {
@@ -961,31 +911,28 @@ public class AppView extends Activity
                 }
 
                 int hostinfo_count = item.filteredHostInfos.size();
+
                 for(int j = hostinfo_count - 1; j >= 0; j--) {
                   HostInfo info = item.filteredHostInfos.get(j);
 
                   matched = false;
 
-                  for(String c : IptablesLog.filterTextExcludeList)
-                  {
+                  for(String c : IptablesLog.filterTextExcludeList) {
                     if((IptablesLog.filterAddressExclude && ((info.sentPackets > 0 && info.sentAddressString.toLowerCase().contains(c))
                             || (info.receivedPackets > 0 && info.receivedAddressString.toLowerCase().contains(c))))
                         || (IptablesLog.filterPortExclude && ((info.sentPackets > 0 && info.sentPortString.toLowerCase().equals(c))
-                            || (info.receivedPackets > 0 && info.receivedPortString.toLowerCase().equals(c)))))
-                    {
+                            || (info.receivedPackets > 0 && info.receivedPortString.toLowerCase().equals(c))))) {
                       matched = true;
-                    }
+                            }
                   }
 
-                  if(matched)
-                  {
+                  if(matched) {
                     MyLog.d("[AppView] removing filtered host " + info);
                     item.filteredHostInfos.remove(j);
                   }
                 }
 
-                if(item.filteredHostInfos.size() == 0)
-                {
+                if(item.filteredHostInfos.size() == 0) {
                   MyLog.d("[AppView] removed all hosts, removing item from filter results");
                   filteredItems.remove(i);
                 }
@@ -1004,14 +951,12 @@ public class AppView extends Activity
                 String addressString = null;
                 String portString = null;
 
-                if(info.sentPackets > 0 && !IptablesLog.localIpAddrs.contains(info.sentAddress))
-                {
+                if(info.sentPackets > 0 && !IptablesLog.localIpAddrs.contains(info.sentAddress)) {
                   addressString = info.sentAddressString;
                   portString = info.sentPortString;
                 }
 
-                if(info.receivedPackets > 0 && !IptablesLog.localIpAddrs.contains(info.receivedAddress))
-                {
+                if(info.receivedPackets > 0 && !IptablesLog.localIpAddrs.contains(info.receivedAddress)) {
                   addressString = info.receivedAddressString;
                   portString = info.receivedPortString;
                 }
@@ -1049,8 +994,7 @@ public class AppView extends Activity
 
       @SuppressWarnings("unchecked")
         @Override
-        protected void publishResults(CharSequence constraint, FilterResults results)
-        {
+        protected void publishResults(CharSequence constraint, FilterResults results) {
           final ArrayList<ListItem> localItems = (ArrayList<ListItem>) results.values;
 
           if(localItems == null) {
@@ -1058,39 +1002,36 @@ public class AppView extends Activity
             return;
           }
 
-          synchronized(listData)
-          {
+          synchronized(listData) {
             listData.clear();
 
             int count = localItems.size();
-            for(int i = 0; i < count; i++)
-            {
+
+            for(int i = 0; i < count; i++) {
               listData.add(localItems.get(i));
             }
           }
 
           preSortData();
           sortData();
-          if(!IptablesLog.outputPaused)
-          {
+
+          if(!IptablesLog.outputPaused) {
             notifyDataSetChanged();
           }
         }
     }
 
     @Override
-      public CustomFilter getFilter()
-      {
-        if(filter == null)
-        {
+      public CustomFilter getFilter() {
+        if(filter == null) {
           filter = new CustomFilter();
         }
+
         return filter;
       }
 
     @Override
-      public View getView(int position, View convertView, ViewGroup parent)
-      {
+      public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder = null;
 
         ImageView icon;
@@ -1101,13 +1042,12 @@ public class AppView extends Activity
         TextView hosts;
 
         ListItem item;
-        synchronized(listData)
-        {
+
+        synchronized(listData) {
           item = listData.get(position);
         }
 
-        if(convertView == null)
-        {
+        if(convertView == null) {
           convertView = mInflater.inflate(R.layout.appitem, null);
           holder = new ViewHolder(convertView);
           convertView.setTag(holder);
@@ -1127,17 +1067,21 @@ public class AppView extends Activity
         bytes.setText("Bytes: " + item.totalBytes);
 
         timestamp = holder.getTimestamp();
-        if(item.lastTimestamp.length() > 0)
+
+        if(item.lastTimestamp.length() > 0) {
           timestamp.setText("(" + item.lastTimestamp + ")");
-        else
+        }
+        else {
           timestamp.setText("");
+        }
 
         hosts = holder.getUniqueHosts();
-        if(item.uniqueHostsIsDirty == true)
-        {
+
+        if(item.uniqueHostsIsDirty == true) {
           item.uniqueHostsSpanned = Html.fromHtml(item.uniqueHosts);
           item.uniqueHostsIsDirty = false;
         }
+
         hosts.setText(item.uniqueHostsSpanned);
 
         return convertView;
@@ -1153,62 +1097,55 @@ public class AppView extends Activity
     private TextView mTimestamp = null;
     private TextView mUniqueHosts = null;
 
-    public ViewHolder(View view)
-    {
+    public ViewHolder(View view) {
       mView = view;
     }
 
-    public ImageView getIcon()
-    {
-      if(mIcon == null)
-      {
+    public ImageView getIcon() {
+      if(mIcon == null) {
         mIcon = (ImageView) mView.findViewById(R.id.appIcon);
       }
+
       return mIcon;
     }
 
-    public TextView getName()
-    {
-      if(mName == null)
-      {
+    public TextView getName() {
+      if(mName == null) {
         mName = (TextView) mView.findViewById(R.id.appName);
       }
+
       return mName;
     }
 
-    public TextView getPackets()
-    {
-      if(mPackets == null)
-      {
+    public TextView getPackets() {
+      if(mPackets == null) {
         mPackets = (TextView) mView.findViewById(R.id.appPackets);
       }
+
       return mPackets;
     }
 
-    public TextView getBytes()
-    {
-      if(mBytes == null)
-      {
+    public TextView getBytes() {
+      if(mBytes == null) {
         mBytes = (TextView) mView.findViewById(R.id.appBytes);
       }
+
       return mBytes;
     }
 
-    public TextView getTimestamp()
-    {
-      if(mTimestamp == null)
-      {
+    public TextView getTimestamp() {
+      if(mTimestamp == null) {
         mTimestamp = (TextView) mView.findViewById(R.id.appLastTimestamp);
       }
+
       return mTimestamp;
     }
 
-    public TextView getUniqueHosts()
-    {
-      if(mUniqueHosts == null)
-      {
+    public TextView getUniqueHosts() {
+      if(mUniqueHosts == null) {
         mUniqueHosts = (TextView) mView.findViewById(R.id.appUniqueHosts);
       }
+
       return mUniqueHosts;
     }
   }
