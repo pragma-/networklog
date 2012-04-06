@@ -73,8 +73,8 @@ public class AppView extends Activity {
 
   public class ListItem {
     protected ApplicationsTracker.AppEntry app;
-    protected int totalPackets;
-    protected int totalBytes;
+    protected long totalPackets;
+    protected long totalBytes;
     protected String lastTimestamp;
     protected HashMap<String, HostInfo> uniqueHostsList;
     protected boolean uniqueHostsListNeedsSort = false;
@@ -89,6 +89,36 @@ public class AppView extends Activity {
       public String toString() {
         return "(" + app.uidString + ") " + app.name;
       }
+  }
+
+  public void clear() {
+    synchronized(listData) {
+      synchronized(listDataBuffer) {
+        for(ListItem item : listDataBuffer) {
+          synchronized(item.uniqueHostsList) {
+            List<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
+            Iterator<String> itr = list.iterator();
+            boolean has_host = false;
+
+            while(itr.hasNext()) {
+              String host = itr.next();
+              HostInfo info = item.uniqueHostsList.get(host);
+              info.packetGraphBuffer.clear();
+            }
+
+            item.uniqueHostsList.clear();
+            item.filteredHostInfos.clear();
+            item.packetGraphBuffer.clear();
+          }
+        }
+
+        listDataBuffer.clear();
+        listData.clear();
+        listDataBufferIsDirty = false;
+      }
+    }
+
+    getInstalledApps();
   }
 
   protected static class SortAppsByBytes implements Comparator<ListItem> {
@@ -209,10 +239,6 @@ public class AppView extends Activity {
 
       adapter.notifyDataSetChanged();
     }
-  }
-
-  public void resetData() {
-    getInstalledApps();
   }
 
   protected void getInstalledApps() {
@@ -456,7 +482,7 @@ public class AppView extends Activity {
     return index;
   }
 
-  public void onNewLogEntry(final IptablesLogService.LogEntry entry) {
+  public void onNewLogEntry(final LogEntry entry) {
     MyLog.d("AppView: NewLogEntry: [" + entry.uid + "] " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
 
     int index = getItemByAppUid(entry.uid);
@@ -484,8 +510,8 @@ public class AppView extends Activity {
         PacketGraphItem graphItem = new PacketGraphItem(entry.timestamp, entry.len);
 
         item.packetGraphBuffer.add(graphItem);
-        item.totalPackets = entry.packets;
-        item.totalBytes = entry.bytes;
+        item.totalPackets++;
+        item.totalBytes += entry.len;
         item.lastTimestamp = entry.timestampString;
 
         HostInfo info;

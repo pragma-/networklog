@@ -16,6 +16,10 @@ public class Settings implements OnSharedPreferenceChangeListener {
     prefs.registerOnSharedPreferenceChangeListener(this);
   }
 
+  public String getHistorySize() {
+    return prefs.getString("history_size", "900000");
+  }
+
   public String getLogFile() {
     return prefs.getString("logfile", "/sdcard/iptableslog.txt");
   }
@@ -254,6 +258,12 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
+  public void setHistorySize(String value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putString("history_size", value);
+    editor.commit();
+   }
+
   public void setLogFile(String value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putString("logfile", value);
@@ -269,6 +279,15 @@ public class Settings implements OnSharedPreferenceChangeListener {
   @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
       MyLog.d("Shared prefs changed: [" + key + "]");
+
+      if(key.equals("history_size")) {
+        String value = prefs.getString(key, "900000");
+        MyLog.d("New " + key + " value [" + value + "]");
+
+        IptablesLog.appView.clear();
+        IptablesLog.logView.clear();
+        IptablesLog.utils.loadEntriesFromFile();
+      }
 
       if(key.equals("logfile")) {
         String value = prefs.getString(key, "/sdcard/iptableslog.txt");

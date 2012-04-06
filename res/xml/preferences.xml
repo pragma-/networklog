@@ -2,6 +2,14 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
   <PreferenceCategory
     android:title="General">
+    <ListPreference
+      android:defaultValue="900000"
+      android:key="history_size"
+      android:title="Load history size"
+      android:summary="Select how much history to load when app starts (default: 15 mins)"
+      android:entries="@array/history_size_entries"
+      android:entryValues="@array/history_size_values"
+      android:dialogTitle="Load history" />
     <CheckBoxPreference
       android:defaultValue="false"
       android:key="resolve_hosts"
@@ -27,6 +35,7 @@
       android:key="logfile"
       android:title="Log file location"
       android:summary="Set path and filename of the log file (defaults to /sdcard/iptableslog.txt)" />
+    <!--
     <ListPreference
       android:defaultValue="12000000"
       android:key="logfile_maxsize"
@@ -35,6 +44,7 @@
       android:entries="@array/logfile_maxsize_entries"
       android:entryValues="@array/logfile_maxsize_values"
       android:dialogTitle="Max size" />
+-->
     <CheckBoxPreference
       android:defaultValue="false"
       android:key="startServiceAtBoot"

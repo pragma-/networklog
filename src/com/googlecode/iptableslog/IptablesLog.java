@@ -72,6 +72,8 @@ public class IptablesLog extends TabActivity
 
   public static boolean outputPaused;
 
+  public static Utils utils;
+
   public static StatusUpdater statusUpdater;
 
   public static ArrayList<String> localIpAddrs;
@@ -79,7 +81,7 @@ public class IptablesLog extends TabActivity
   public Messenger service = null;
   public boolean isBound = false;
   public Messenger messenger = null;
-  public ServiceConnection connection = connection = new ServiceConnection() {
+  public ServiceConnection connection = new ServiceConnection() {
     public void onServiceConnected(ComponentName className, IBinder serv) {
       service = new Messenger(serv);
 
@@ -105,7 +107,7 @@ public class IptablesLog extends TabActivity
       public void handleMessage(Message msg) {
         switch(msg.what) {
           case IptablesLogService.BROADCAST_LOG_ENTRY:
-            IptablesLogService.LogEntry entry = (IptablesLogService.LogEntry) msg.obj;
+            LogEntry entry = (LogEntry) msg.obj;
             MyLog.d("Received entry: " + entry);
             logView.onNewLogEntry(entry);
             appView.onNewLogEntry(entry);
@@ -152,7 +154,7 @@ public class IptablesLog extends TabActivity
   }
 
   public static State state;
-  public enum State { LOAD_APPS, LOAD_LIST, LOAD_ICONS, RUNNING  };
+  public enum State { LOAD_APPS, LOAD_LIST, LOAD_ICONS, RUNNING, EXITING  };
 
   public static InitRunner initRunner;
   public class InitRunner implements Runnable
@@ -198,6 +200,8 @@ public class IptablesLog extends TabActivity
         startService();
       }
 
+      utils.loadEntriesFromFile();
+
       state = IptablesLog.State.RUNNING;
       MyLog.d("Init done");
     }
@@ -209,6 +213,7 @@ public class IptablesLog extends TabActivity
     {
       super.onCreate(savedInstanceState);
       MyLog.d("IptablesLog started");
+      utils = new Utils();
       handler = new Handler(Looper.getMainLooper());
 
       setContentView(R.layout.main);
@@ -336,6 +341,13 @@ public class IptablesLog extends TabActivity
       super.onDestroy();
       MyLog.d("onDestroy called");
 
+      if(data == null) {
+        state = IptablesLog.State.EXITING;
+        if(stopServiceAtExit) {
+          stopService();
+        }
+      }
+
       if(initRunner != null) {
         initRunner.stop();
       }
@@ -361,10 +373,6 @@ public class IptablesLog extends TabActivity
 
       if(isBound) {
         doUnbindService();
-      }
-
-      if(data == null && stopServiceAtExit) {
-        stopService();
       }
     }
 
@@ -588,8 +596,8 @@ public class IptablesLog extends TabActivity
       .setCancelable(true)
       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
-          appView.resetData();
-          logView.resetData();
+          appView.clear();
+          logView.clear();
         }
       })
     .setNegativeButton("No", new DialogInterface.OnClickListener() {

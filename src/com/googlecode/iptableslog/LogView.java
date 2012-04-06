@@ -71,6 +71,19 @@ public class LogView extends Activity
       }
   }
 
+  public void clear() {
+    synchronized(listData) {
+      synchronized(listDataBuffer) {
+        synchronized(listDataUnfiltered) {
+          listData.clear();
+          listDataBuffer.clear();
+          listDataUnfiltered.clear();
+        }
+      }
+    }
+    adapter.notifyDataSetChanged();
+  }
+
   public void refreshAdapter() {
     adapter.notifyDataSetChanged();
   }
@@ -203,7 +216,7 @@ public class LogView extends Activity
       parent.confirmExit(this);
     }
 
-  public void onNewLogEntry(final IptablesLogService.LogEntry entry) {
+  public void onNewLogEntry(final LogEntry entry) {
     ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.installedAppsHash.get(String.valueOf(entry.uid));
 
     if(appEntry == null) {
@@ -259,18 +272,6 @@ public class LogView extends Activity
         listDataBuffer.remove(0);
       }
     }
-  }
-
-  public void resetData() {
-    synchronized(listDataBuffer) {
-      listDataBuffer.clear();
-    }
-
-    synchronized(listData) {
-      listData.clear();
-    }
-
-    adapter.notifyDataSetChanged();
   }
 
   public void pruneLogEntries() {

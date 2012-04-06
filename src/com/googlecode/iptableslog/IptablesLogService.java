@@ -17,7 +17,6 @@ import android.app.PendingIntent;
 import android.os.RemoteException;
 
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -29,7 +28,6 @@ import java.lang.Runnable;
 import java.lang.reflect.Method;
 
 public class IptablesLogService extends Service {
-  Hashtable<String, LogEntry> logEntriesHash;
   HashMap<String, Integer> logEntriesMap;
   ShellCommand command;
   IptablesLogger logger;
@@ -37,6 +35,7 @@ public class IptablesLogService extends Service {
   long logfile_maxsize;
   PrintWriter logWriter = null;
   NotificationManager nManager;
+  LogEntry entry;
 
   //StringBuilder buffer;
 
@@ -68,20 +67,10 @@ public class IptablesLogService extends Service {
       }
   }
 
-  public class LogEntry {
-    int uid;
-    String src;
-    String dst;
-    int len;
-    int spt;
-    int dpt;
-    int packets;
-    int bytes;
-    String timestampString;
-    long timestamp;
+  public void renameLogFile(String newLogFile) {
   }
 
-  public void renameLogFile(String newLogFile) {
+  public void clearLogFile() {
   }
 
   public void startForeground(Notification n) {
@@ -119,6 +108,9 @@ public class IptablesLogService extends Service {
     public void onCreate() {
       nManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
       Notification n = createNotification();
+
+      // reuse entry object
+      entry = new LogEntry();
 
       this.startForeground(n);
     }
@@ -198,7 +190,6 @@ public class IptablesLogService extends Service {
             }
 
             // service starting up fresh
-            logEntriesHash = new Hashtable<String, LogEntry>();
             logEntriesMap = new HashMap<String, Integer>();
             //buffer = new StringBuilder(8192 * 2);
 
@@ -225,6 +216,9 @@ public class IptablesLogService extends Service {
       Toast.makeText(this, "IptablesLogService done", Toast.LENGTH_SHORT).show();
     }
 
+  public static String getTimestamp(long timestamp) {
+    return format.format(timestamp);
+  }
 
   public static String getTimestamp() {
     return format.format(new Date());
@@ -477,32 +471,18 @@ public class IptablesLogService extends Service {
         }
       }
 
-      // get packet and byte counters
-      LogEntry entry = logEntriesHash.get(String.valueOf(uid));
-
-      if(entry == null) {
-        entry = new LogEntry();
-      }
-
       entry.uid = uid;
       entry.src = src;
       entry.spt = spt;
       entry.dst = dst;
       entry.dpt = dpt;
       entry.len = len;
-      entry.packets++;
-
-      if(entry.len > 0) {
-        entry.bytes += entry.len;
-      }
 
       entry.timestampString = getTimestamp();
       entry.timestamp = System.currentTimeMillis();
 
-      logEntriesHash.put(String.valueOf(uid), entry);
-
       if(MyLog.enabled) {
-        MyLog.d("+++ entry: (" + entry.uid + ") " + entry.src + ":" + entry.spt + " -> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "] " + entry.bytes + " " + entry.timestampString);
+        MyLog.d("+++ entry: (" + entry.uid + ") " + entry.src + ":" + entry.spt + " -> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "] " + entry.timestampString);
       }
 
       notifyNewEntry(entry);
