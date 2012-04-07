@@ -49,7 +49,8 @@ public class AppView extends Activity {
   public class HostInfo {
     protected int sentPackets;
     protected int sentBytes;
-    protected String sentTimestamp;
+    protected long sentTimestamp;
+    protected String sentTimestampString;
     protected int sentPort;
     protected String sentPortString;
     protected String sentAddress;
@@ -57,7 +58,8 @@ public class AppView extends Activity {
 
     protected int receivedPackets;
     protected int receivedBytes;
-    protected String receivedTimestamp;
+    protected long receivedTimestamp;
+    protected String receivedTimestampString;
     protected int receivedPort;
     protected String receivedPortString;
     protected String receivedAddress;
@@ -75,7 +77,8 @@ public class AppView extends Activity {
     protected ApplicationsTracker.AppEntry app;
     protected long totalPackets;
     protected long totalBytes;
-    protected String lastTimestamp;
+    protected long lastTimestamp;
+    protected String lastTimestampString;
     protected HashMap<String, HostInfo> uniqueHostsList;
     protected boolean uniqueHostsListNeedsSort = false;
     protected boolean uniqueHostsIsFiltered = false;
@@ -135,7 +138,7 @@ public class AppView extends Activity {
 
   protected static class SortAppsByTimestamp implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
-      return o2.lastTimestamp.compareTo(o1.lastTimestamp.equals("") ? "0" : o1.lastTimestamp);
+      return o1.lastTimestamp < o2.lastTimestamp ? -1 : (o1.lastTimestamp == o2.lastTimestamp) ? 0 : 1;
     }
   }
 
@@ -256,7 +259,8 @@ public class AppView extends Activity {
 
             ListItem item = new ListItem();
             item.app = app;
-            item.lastTimestamp = "";
+            item.lastTimestamp = 0;
+            item.lastTimestampString = "";
             item.uniqueHostsList = new HashMap<String, HostInfo>();
             item.filteredHostInfos = new ArrayList<HostInfo>();
             item.uniqueHosts = "";
@@ -512,7 +516,7 @@ public class AppView extends Activity {
         item.packetGraphBuffer.add(graphItem);
         item.totalPackets++;
         item.totalBytes += entry.len;
-        item.lastTimestamp = entry.timestampString;
+        item.lastTimestamp = entry.timestamp;
 
         HostInfo info;
 
@@ -528,7 +532,8 @@ public class AppView extends Activity {
 
             info.receivedPackets++;
             info.receivedBytes += entry.len;
-            info.receivedTimestamp = entry.timestampString;
+            info.receivedTimestamp = entry.timestamp;
+            info.receivedTimestampString = "";
 
             MyLog.d("Added received packet " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + info.receivedPackets + "; bytes: " + info.receivedBytes);
 
@@ -562,7 +567,8 @@ public class AppView extends Activity {
 
             info.sentPackets++;
             info.sentBytes += entry.len;
-            info.sentTimestamp = entry.timestampString;
+            info.sentTimestamp = entry.timestamp;
+            info.sentTimestampString = "";
 
             MyLog.d("Added sent packet " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + info.sentPackets + "; bytes: " + info.sentBytes);
 
@@ -679,13 +685,21 @@ public class AppView extends Activity {
           builder.append("<u>" + addressString + ":" + portString  + "</u>");
 
           if(info.sentPackets > 0) {
+            if(info.sentTimestampString.length() == 0) {
+              info.sentTimestampString = IptablesLog.utils.getTimestamp(info.sentTimestamp);
+            }
+
             builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
-            builder.append("<small>Sent:</small> <b>" + info.sentPackets + "</b> <small>packets,</small> <b>" + info.sentBytes + "</b> <small>bytes</small> (" + info.sentTimestamp.substring(info.sentTimestamp.indexOf(' ') + 1, info.sentTimestamp.length()) + ")");
+            builder.append("<small>Sent:</small> <b>" + info.sentPackets + "</b> <small>packets,</small> <b>" + info.sentBytes + "</b> <small>bytes</small> (" + info.sentTimestampString.substring(info.sentTimestampString.indexOf(' ') + 1, info.sentTimestampString.length()) + ")");
           }
 
           if(info.receivedPackets > 0) {
+            if(info.receivedTimestampString.length() == 0) {
+              info.receivedTimestampString = IptablesLog.utils.getTimestamp(info.receivedTimestamp);
+            }
+
             builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
-            builder.append("<small>Recv:</small> <em>" + info.receivedPackets + "</em> <small>packets,</small> <em>" + info.receivedBytes + "</em> <small>bytes</small> (" + info.receivedTimestamp.substring(info.receivedTimestamp.indexOf(' ') + 1, info.receivedTimestamp.length()) + ")");
+            builder.append("<small>Recv:</small> <em>" + info.receivedPackets + "</em> <small>packets,</small> <em>" + info.receivedBytes + "</em> <small>bytes</small> (" + info.receivedTimestampString.substring(info.receivedTimestampString.indexOf(' ') + 1, info.receivedTimestampString.length()) + ")");
           }
         }
       }
@@ -992,13 +1006,21 @@ public class AppView extends Activity {
                   builder.append("<u>" + addressString + ":" + portString + "</u>");
 
                   if(info.sentPackets > 0) {
+                    if(info.sentTimestampString.length() == 0) {
+                      info.sentTimestampString = IptablesLog.utils.getTimestamp(info.sentTimestamp);
+                    }
+
                     builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
-                    builder.append("<small>Sent:</small> <b>" + info.sentPackets + "</b> <small>packets,</small> <b>" + info.sentBytes + "</b> <small>bytes</small> (" + info.sentTimestamp.substring(info.sentTimestamp.indexOf(' ') + 1, info.sentTimestamp.length()) + ")");
+                    builder.append("<small>Sent:</small> <b>" + info.sentPackets + "</b> <small>packets,</small> <b>" + info.sentBytes + "</b> <small>bytes</small> (" + info.sentTimestampString.substring(info.sentTimestampString.indexOf(' ') + 1, info.sentTimestampString.length()) + ")");
                   }
 
                   if(info.receivedPackets > 0) {
+                    if(info.receivedTimestampString.length() == 0) {
+                      info.receivedTimestampString = IptablesLog.utils.getTimestamp(info.receivedTimestamp);
+                    }
+
                     builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
-                    builder.append("<small>Recv:</small> <em>" + info.receivedPackets + "</em> <small>packets,</small> <em>" + info.receivedBytes + "</em> <small>bytes</small> (" + info.receivedTimestamp.substring(info.receivedTimestamp.indexOf(' ') + 1, info.receivedTimestamp.length()) + ")");
+                    builder.append("<small>Recv:</small> <em>" + info.receivedPackets + "</em> <small>packets,</small> <em>" + info.receivedBytes + "</em> <small>bytes</small> (" + info.receivedTimestampString.substring(info.receivedTimestampString.indexOf(' ') + 1, info.receivedTimestampString.length()) + ")");
                   }
                 }
               }
@@ -1094,11 +1116,18 @@ public class AppView extends Activity {
 
         timestamp = holder.getTimestamp();
 
-        if(item.lastTimestamp.length() > 0) {
-          timestamp.setText("(" + item.lastTimestamp + ")");
+        if(item.lastTimestampString.length() == 0 && item.lastTimestamp != 0) {
+          MyLog.d("[appview] Setting timestamp for " + item);
+          item.lastTimestampString = IptablesLog.utils.getTimestamp(item.lastTimestamp);
+        }
+
+        if(item.lastTimestampString.length() > 0) {
+          timestamp.setText("(" + item.lastTimestampString + ")");
+          timestamp.setVisibility(View.VISIBLE);
         }
         else {
           timestamp.setText("");
+          timestamp.setVisibility(View.GONE);
         }
 
         hosts = holder.getUniqueHosts();
@@ -1108,7 +1137,12 @@ public class AppView extends Activity {
           item.uniqueHostsIsDirty = false;
         }
 
-        hosts.setText(item.uniqueHostsSpanned);
+        if(item.uniqueHosts.length() == 0) {
+          hosts.setVisibility(View.GONE);
+        } else {
+          hosts.setText(item.uniqueHostsSpanned);
+          hosts.setVisibility(View.VISIBLE);
+        }
 
         return convertView;
       }

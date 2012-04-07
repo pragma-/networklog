@@ -18,8 +18,6 @@ import android.os.RemoteException;
 
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.Date;
-import java.text.SimpleDateFormat;
 import java.io.PrintWriter;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
@@ -39,9 +37,6 @@ public class IptablesLogService extends Service {
 
   //StringBuilder buffer;
 
-  static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
-  static SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
-
   ArrayList<Messenger> clients = new ArrayList<Messenger>();
   static final int NOTIFICATION_ID = 42;
   static final int MSG_REGISTER_CLIENT = 1;
@@ -54,10 +49,12 @@ public class IptablesLogService extends Service {
       public void handleMessage(Message msg) {
         switch(msg.what) {
           case MSG_REGISTER_CLIENT:
+            MyLog.d("[service] registering client " + msg.replyTo);
             clients.add(msg.replyTo);
             break;
 
           case MSG_UNREGISTER_CLIENT:
+            MyLog.d("[service] unregistering client " + msg.replyTo);
             clients.remove(msg.replyTo);
             break;
 
@@ -77,9 +74,9 @@ public class IptablesLogService extends Service {
     try {
       Method m = Service.class.getMethod("startForeground", new Class[] {int.class, Notification.class});
       m.invoke(this, NOTIFICATION_ID, n);
-      MyLog.d("Started service in foreground");
+      MyLog.d("[service] Started service in foreground");
     } catch(Exception e) {
-      MyLog.d("Fallback to setForeground");
+      MyLog.d("[service] Fallback to setForeground");
       setForeground(true);
       nManager.notify(NOTIFICATION_ID, n);
     }
@@ -89,11 +86,11 @@ public class IptablesLogService extends Service {
     try {
       Method m = Service.class.getMethod("stopForeground", new Class[] {boolean.class});
       m.invoke(this, true);
-      MyLog.d("Stopped foreground service state");
+      MyLog.d("[service] Stopped foreground service state");
     } catch(Exception e) {
       setForeground(false);
       nManager.cancel(NOTIFICATION_ID);
-      MyLog.d("Fallback to setForeground(false)");
+      MyLog.d("[service] Fallback to setForeground(false)");
     }
   }
 
@@ -117,12 +114,12 @@ public class IptablesLogService extends Service {
 
   @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-      MyLog.d("onStartCommand");
+      MyLog.d("[service] onStartCommand");
 
       Bundle ext = null;
 
       if(intent == null) {
-        MyLog.d("Service null intent");
+        MyLog.d("[service] Service null intent");
       } else {
         ext = intent.getExtras();
       }
@@ -150,7 +147,7 @@ public class IptablesLogService extends Service {
             logfile_maxsize_intent = "12000000";
           }
 
-          MyLog.d("IptablesLogService starting [" + logfile_intent + "; " + logfile_maxsize_intent + "]");;
+          MyLog.d("[service] IptablesLog service starting [" + logfile_intent + "; " + logfile_maxsize_intent + "]");;
 
           final String l = logfile_intent;
           final String m = logfile_maxsize_intent;
@@ -158,7 +155,7 @@ public class IptablesLogService extends Service {
           if(MyLog.enabled) {
             handler.post(new Runnable() {
               public void run() {
-                Toast.makeText(context, "IptablesLogService starting [" + l + "; " + m + "]", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "IptablesLog service starting [" + l + "; " + m + "]", Toast.LENGTH_SHORT).show();
               }
             });
           }
@@ -172,7 +169,7 @@ public class IptablesLogService extends Service {
             try {
               logfile_maxsize = Long.parseLong(logfile_maxsize_intent);
             } catch(Exception e) {
-              Log.w("Bad log maxsize: [" + logfile_maxsize_intent + "]: " + e.toString(), e);
+              Log.w("[service] Bad log maxsize: [" + logfile_maxsize_intent + "]: " + e.toString(), e);
               logfile_maxsize = 12000000;
             }
 
@@ -185,7 +182,7 @@ public class IptablesLogService extends Service {
                 }
               });
               stopSelf();
-              MyLog.d("after stopSelf");
+              MyLog.d("[service] after stopSelf");
               return;
             }
 
@@ -215,14 +212,6 @@ public class IptablesLogService extends Service {
       stopForeground();
       Toast.makeText(this, "IptablesLogService done", Toast.LENGTH_SHORT).show();
     }
-
-  public static String getTimestamp(long timestamp) {
-    return format.format(timestamp);
-  }
-
-  public static String getTimestamp() {
-    return format.format(new Date());
-  }
 
   public void initEntriesMap() {
     NetStat netstat = new NetStat();
@@ -477,12 +466,10 @@ public class IptablesLogService extends Service {
       entry.dst = dst;
       entry.dpt = dpt;
       entry.len = len;
-
-      entry.timestampString = getTimestamp();
       entry.timestamp = System.currentTimeMillis();
 
       if(MyLog.enabled) {
-        MyLog.d("+++ entry: (" + entry.uid + ") " + entry.src + ":" + entry.spt + " -> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "] " + entry.timestampString);
+        MyLog.d("+++ entry: (" + entry.uid + ") " + entry.src + ":" + entry.spt + " -> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
       }
 
       notifyNewEntry(entry);
@@ -501,16 +488,18 @@ public class IptablesLogService extends Service {
   }
 
   public void notifyNewEntry(LogEntry entry) {
-    logWriter.println(entry.timestamp + " " + entry.uid + " " + entry.src + " " + entry.spt + " " + entry.dst + " " + entry.dpt + " " + entry.len);
+    logWriter.println("[service] notify entry " + entry.timestamp + " " + entry.uid + " " + entry.src + " " + entry.spt + " " + entry.dst + " " + entry.dpt + " " + entry.len);
+
+    MyLog.d("[service] clients: " + clients.size());
 
     for(int i = clients.size() - 1; i >= 0; i--) {
       try {
+        MyLog.d("[service] Sending entry to " + i);
         clients.get(i).send(Message.obtain(null, BROADCAST_LOG_ENTRY, entry));
-        MyLog.d("Sending entry");
       } catch(RemoteException e) {
         // client dead
+        MyLog.d("[service] Dead client " + i);
         clients.remove(i);
-        MyLog.d("Dead client " + i);
       }
     }
   }

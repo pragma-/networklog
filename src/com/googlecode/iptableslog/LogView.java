@@ -55,7 +55,8 @@ public class LogView extends Activity
     protected int dstPort;
     protected String dstPortString;
     protected int len;
-    protected String timestamp;
+    protected long timestamp;
+    protected String timestampString;
 
     ListItem(Drawable icon, int uid, String name) {
       mIcon = icon;
@@ -261,7 +262,8 @@ public class LogView extends Activity
     }
 
     item.len = entry.len;
-    item.timestamp = entry.timestampString;
+    item.timestamp = entry.timestamp;
+    item.timestampString = "";
 
     MyLog.d("LogView: Add item: " + item.srcAddr + " " + item.srcPort + " " + item.dstAddr + " " + item.dstPort + " " + item.len);
 
@@ -546,7 +548,13 @@ public class LogView extends Activity
         len.setText("LEN: " + item.len);
 
         timestamp = holder.getTimestamp();
-        timestamp.setText(item.timestamp);
+
+        if(item.timestampString.length() == 0) {
+          MyLog.d("[logview] Setting timestamp for " + item);
+          item.timestampString = IptablesLog.utils.getTimestamp(item.timestamp);
+        }
+
+        timestamp.setText(item.timestampString);
 
         return convertView;
       }

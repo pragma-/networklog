@@ -2,10 +2,23 @@ package com.googlecode.iptableslog;
 
 import android.util.Log;
 
+import java.util.Date;
+import java.text.SimpleDateFormat;
 import java.lang.StringBuilder;
 import java.io.RandomAccessFile;
 
 public class Utils {
+  static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+  static final SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
+
+  public static String getTimestamp(long timestamp) {
+    return format.format(timestamp);
+  }
+
+  public static String getTimestamp() {
+    return format.format(new Date());
+  }
+
   public void loadEntriesFromFile() {
     try {
       long history_size = Long.parseLong(IptablesLog.settings.getHistorySize());
@@ -142,7 +155,6 @@ public class Utils {
             }
 
             entry.timestamp = Long.parseLong(entries[0]);
-            entry.timestampString = IptablesLogService.getTimestamp(entry.timestamp);
             entry.uid = Integer.parseInt(entries[1]);
             entry.src = entries[2];
             entry.spt = Integer.parseInt(entries[3]);

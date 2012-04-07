@@ -7,6 +7,5 @@ public class LogEntry {
   int len;
   int spt;
   int dpt;
-  String timestampString;
   long timestamp;
 }
