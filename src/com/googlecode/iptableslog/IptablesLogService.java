@@ -33,6 +33,7 @@ public class IptablesLogService extends Service {
   long logfile_maxsize;
   PrintWriter logWriter = null;
   NotificationManager nManager;
+  Notification notification;
   LogEntry entry;
 
   //StringBuilder buffer;
@@ -41,10 +42,17 @@ public class IptablesLogService extends Service {
   static final int NOTIFICATION_ID = 42;
   static final int MSG_REGISTER_CLIENT = 1;
   static final int MSG_UNREGISTER_CLIENT = 2;
-  static final int BROADCAST_LOG_ENTRY = 3;
-  final Messenger messenger = new Messenger(new IncomingHandler());
+  static final int MSG_UPDATE_NOTIFICATION = 3;
+  static final int BROADCAST_LOG_ENTRY = 4;
+  final Messenger messenger = new Messenger(new IncomingHandler(this));
 
   private class IncomingHandler extends Handler {
+    Context context;
+
+    public IncomingHandler(Context context) {
+      this.context = context;
+    }
+
     @Override
       public void handleMessage(Message msg) {
         switch(msg.what) {
@@ -56,6 +64,12 @@ public class IptablesLogService extends Service {
           case MSG_UNREGISTER_CLIENT:
             MyLog.d("[service] unregistering client " + msg.replyTo);
             clients.remove(msg.replyTo);
+            break;
+
+          case MSG_UPDATE_NOTIFICATION:
+            PendingIntent pi = PendingIntent.getActivity(context, 0, new Intent(context, IptablesLog.class), 0);
+            notification.setLatestEventInfo(context, "IptablesLog", "Iptables logging active [" + ((String)msg.obj) + "]", pi);
+            nManager.notify(42, notification);
             break;
 
           default:
@@ -104,12 +118,12 @@ public class IptablesLogService extends Service {
   @Override
     public void onCreate() {
       nManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-      Notification n = createNotification();
+      notification = createNotification();
 
       // reuse entry object
       entry = new LogEntry();
 
-      this.startForeground(n);
+      this.startForeground(notification);
     }
 
   @Override
@@ -210,7 +224,7 @@ public class IptablesLogService extends Service {
       Iptables.removeRules();
       stopLogging();
       stopForeground();
-      Toast.makeText(this, "IptablesLogService done", Toast.LENGTH_SHORT).show();
+      Toast.makeText(this, "IptablesLog service done", Toast.LENGTH_SHORT).show();
     }
 
   public void initEntriesMap() {
@@ -488,7 +502,8 @@ public class IptablesLogService extends Service {
   }
 
   public void notifyNewEntry(LogEntry entry) {
-    logWriter.println("[service] notify entry " + entry.timestamp + " " + entry.uid + " " + entry.src + " " + entry.spt + " " + entry.dst + " " + entry.dpt + " " + entry.len);
+    // log entry to logfile
+    logWriter.println(entry.timestamp + " " + entry.uid + " " + entry.src + " " + entry.spt + " " + entry.dst + " " + entry.dpt + " " + entry.len);
 
     MyLog.d("[service] clients: " + clients.size());
 

@@ -3,10 +3,10 @@
   <PreferenceCategory
     android:title="General">
     <ListPreference
-      android:defaultValue="900000"
+      android:defaultValue="3600000"
       android:key="history_size"
       android:title="Load history size"
-      android:summary="Select how much history to load when app starts (default: 15 mins)"
+      android:summary="Select how much history to load when app starts (default: 1 hour)"
       android:entries="@array/history_size_entries"
       android:entryValues="@array/history_size_values"
       android:dialogTitle="Load history" />
@@ -44,12 +44,12 @@
       android:entries="@array/logfile_maxsize_entries"
       android:entryValues="@array/logfile_maxsize_values"
       android:dialogTitle="Max size" />
--->
     <CheckBoxPreference
       android:defaultValue="false"
       android:key="startServiceAtBoot"
       android:title="Start log at boot"
       android:summary="Start logging when device boots up" />
+-->
     <CheckBoxPreference
       android:defaultValue="true"
       android:key="startServiceAtStart"

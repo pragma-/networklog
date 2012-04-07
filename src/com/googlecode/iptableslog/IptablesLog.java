@@ -78,10 +78,10 @@ public class IptablesLog extends TabActivity
 
   public static ArrayList<String> localIpAddrs;
 
-  public Messenger service = null;
-  public boolean isBound = false;
-  public Messenger messenger = null;
-  public ServiceConnection connection = new ServiceConnection() {
+  public static Messenger service = null;
+  public static boolean isBound = false;
+  public static Messenger messenger = null;
+  public static ServiceConnection connection = new ServiceConnection() {
     public void onServiceConnected(ComponentName className, IBinder serv) {
       service = new Messenger(serv);
 
@@ -174,8 +174,6 @@ public class IptablesLog extends TabActivity
       MyLog.d("Init begin");
       running = true;
 
-      Looper.myLooper().prepare();
-
       state = IptablesLog.State.LOAD_APPS;
       ApplicationsTracker.getInstalledApps(context, handler);
 
@@ -200,7 +198,7 @@ public class IptablesLog extends TabActivity
         startService();
       }
 
-      utils.loadEntriesFromFile();
+      utils.loadEntriesFromFile(context, settings.getHistorySize());
 
       state = IptablesLog.State.RUNNING;
       MyLog.d("Init done");
@@ -291,6 +289,10 @@ public class IptablesLog extends TabActivity
       // display LogView tab by default
       tabHost.setCurrentTab(0);
 
+      if(isServiceRunning(this, "com.googlecode.iptableslog.IptablesLogService")) {
+        doBindService();
+      }
+
       if(data == null) {
         initRunner = new InitRunner(this);
         new Thread(initRunner, "Initialization " + initRunner).start();
@@ -303,10 +305,6 @@ public class IptablesLog extends TabActivity
         } else {
           appView.startUpdater();
           logView.startUpdater();
-        }
-
-        if(isServiceRunning(this, "com.googlecode.iptableslog.IptablesLogService")) {
-          doBindService();
         }
 
         // all data should be restored at this point, release the object
@@ -686,6 +684,18 @@ public class IptablesLog extends TabActivity
         }
 
         sb.append(" Logfile size: " + size);
+
+        if(isBound) {
+          if(service != null) {
+            try {
+              Message msg = Message.obtain(null, IptablesLogService.MSG_UPDATE_NOTIFICATION);
+              msg.obj = size;
+              service.send(msg);
+            } catch(RemoteException e) {
+              /* do nothing */
+            }
+          }
+        }
       }
     } catch(Exception e) {
       sb.append(" Bad logfile.");

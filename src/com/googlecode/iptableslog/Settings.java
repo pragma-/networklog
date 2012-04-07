@@ -7,17 +7,19 @@ import android.content.Context;
 
 public class Settings implements OnSharedPreferenceChangeListener {
   private SharedPreferences prefs;
+  private Context context;
 
   private Settings() {}
 
   public Settings(Context context) {
+    this.context = context;
     PreferenceManager.setDefaultValues(context, R.xml.preferences, false);
     prefs = PreferenceManager.getDefaultSharedPreferences(context);
     prefs.registerOnSharedPreferenceChangeListener(this);
   }
 
   public String getHistorySize() {
-    return prefs.getString("history_size", "900000");
+    return prefs.getString("history_size", "3600000");
   }
 
   public String getLogFile() {
@@ -279,15 +281,6 @@ public class Settings implements OnSharedPreferenceChangeListener {
   @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
       MyLog.d("Shared prefs changed: [" + key + "]");
-
-      if(key.equals("history_size")) {
-        String value = prefs.getString(key, "900000");
-        MyLog.d("New " + key + " value [" + value + "]");
-
-        IptablesLog.appView.clear();
-        IptablesLog.logView.clear();
-        IptablesLog.utils.loadEntriesFromFile();
-      }
 
       if(key.equals("logfile")) {
         String value = prefs.getString(key, "/sdcard/iptableslog.txt");

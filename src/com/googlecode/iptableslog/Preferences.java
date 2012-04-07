@@ -63,12 +63,24 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
         "230400000",
       };
 
+      final Context context = this;
       OnPreferenceChangeListener changeListener = new OnPreferenceChangeListener() {
         public boolean onPreferenceChange(Preference preference, Object newValue) {
+          if(preference.getKey().equals("history_size")) {
+            IptablesLog.appView.clear();
+            IptablesLog.logView.clear();
+            IptablesLog.utils.loadEntriesFromFile(context, (String)newValue);
+            return true;
+          }
+
           if(preference.getKey().equals("interval_placeholder")) {
             IptablesLog.settings.setGraphInterval(Long.parseLong((String) newValue));
-          } else {
+            return true;
+          }
+          
+          if(preference.getKey().equals("viewsize_placeholder")) {
             IptablesLog.settings.setGraphViewsize(Long.parseLong((String) newValue));
+            return true;
           }
 
           return true;
@@ -85,6 +97,9 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
       pref.setEntries(entries);
       pref.setEntryValues(values);
       pref.setValue(String.valueOf(IptablesLog.settings.getGraphViewsize()));
+      pref.setOnPreferenceChangeListener(changeListener);
+
+      pref = (ListPreference) findPreference("history_size");
       pref.setOnPreferenceChangeListener(changeListener);
     }
 
