@@ -2,6 +2,7 @@ package com.googlecode.iptableslog;
 
 import android.util.Log;
 
+import java.lang.StringBuilder;
 import java.io.RandomAccessFile;
 
 public class Utils {
@@ -30,6 +31,7 @@ public class Utils {
         long max = length;
         long history_target = System.currentTimeMillis() - history_size;
 
+        // nearest match binary search to find timestamp within logfile
         while(max >= min) {
           if(IptablesLog.state == IptablesLog.State.EXITING) {
             logfile.close();
@@ -61,6 +63,7 @@ public class Utils {
           } else if(timestamp > history_target) {
             max = mid - 1;
           } else {
+            // found exact match
             MyLog.d("Found at " + mid);
             result = mid;
             break;
@@ -73,29 +76,98 @@ public class Utils {
         logfile.seek(result);
       }
 
-      String line;
-      while((line = logfile.readLine()) != null) {
-        LogEntry entry = new LogEntry();
+      int buffer_size = (int)(length * 0.05f); // 50K buffer for 1MB, 2.4MB buffer for 48MB
+      MyLog.d("Using " + buffer_size + " byte buffer to read history");
 
-        String[] entries = line.split(" ");
+      byte[] buffer = new byte[buffer_size]; // read a nice sized chunk of data
+      byte[] partial_buffer = new byte[128]; // for holding partial lines from end of buffer
+      byte[] line = new byte[128]; // a single line in the log file
+      long buffer_length = 0;
+      int buffer_pos = 0;
+      short partial_buffer_length = 0;
+      short line_length = 0;
+      short line_pos = 0;
+      long read_so_far = 0;
 
-        if(entries.length != 7) {
-          MyLog.d("Bad entry: [" + line + "]");
-          continue;
+      LogEntry entry = new LogEntry();
+      StringBuilder sb = new StringBuilder(128);
+      char[] chars = new char[128];
+
+      while(true) {
+        buffer_length = logfile.read(buffer);
+        buffer_pos = 0;
+
+        read_so_far += buffer_length;
+        MyLog.d("[history] read " + buffer_length + "; so far: " + read_so_far + " out of " + length);
+
+        if(buffer_length == -1) {
+          // end of file
+          break;
         }
 
-        entry.timestamp = Long.parseLong(entries[0]);
-        entry.timestampString = IptablesLogService.getTimestamp(entry.timestamp);
-        entry.uid = Integer.parseInt(entries[1]);
-        entry.src = entries[2];
-        entry.spt = Integer.parseInt(entries[3]);
-        entry.dst = entries[4];
-        entry.dpt = Integer.parseInt(entries[5]);
-        entry.len = Integer.parseInt(entries[6]);
+        // reset line
+        line_length = 0;
 
-        IptablesLog.logView.onNewLogEntry(entry);
-        IptablesLog.appView.onNewLogEntry(entry);
+        // start line with previous unfinished line
+        if(partial_buffer_length > 0) {
+          for(int i = 0; i < partial_buffer_length; i++) {
+            line[line_length++] = partial_buffer[i];
+          }
+
+          // reset partial buffer
+          partial_buffer_length = 0;
+        }
+
+        // extract and parse lines
+        while(buffer_pos < buffer_length) {
+          if(buffer[buffer_pos] != '\n') {
+            line[line_length++] = buffer[buffer_pos++];
+          } else {
+            // got line
+            buffer_pos++;
+
+            for(int i = 0; i < line_length; i++) {
+              chars[i] = (char)line[i];
+            }
+
+            sb.setLength(0);
+            sb.append(chars, 0, line_length);
+
+            // todo: optimization: use indexOf/substring instead of split?
+            String[] entries = sb.toString().split(" ");
+
+            if(entries.length != 7) {
+              MyLog.d("[history] Bad entry: [" + sb.toString() + "]");
+              continue;
+            }
+
+            entry.timestamp = Long.parseLong(entries[0]);
+            entry.timestampString = IptablesLogService.getTimestamp(entry.timestamp);
+            entry.uid = Integer.parseInt(entries[1]);
+            entry.src = entries[2];
+            entry.spt = Integer.parseInt(entries[3]);
+            entry.dst = entries[4];
+            entry.dpt = Integer.parseInt(entries[5]);
+            entry.len = Integer.parseInt(entries[6]);
+
+            IptablesLog.logView.onNewLogEntry(entry);
+            IptablesLog.appView.onNewLogEntry(entry);
+
+            // reset line
+            line_length = 0;
+          }
+        }
+
+        if(buffer[buffer_pos - 1] != '\n') {
+          // no newline; must be last line of buffer
+          partial_buffer_length = 0;
+
+          for(int i = 0; i < line_length; i++) {
+            partial_buffer[partial_buffer_length++] = line[i];
+          }
+        }
       }
+
       logfile.close();
     } catch (Exception e) {
       Log.w("IptablesLog", "loadEntriesFromFile", e);
