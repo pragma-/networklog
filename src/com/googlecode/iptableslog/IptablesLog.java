@@ -496,11 +496,7 @@ public class IptablesLog extends TabActivity
         case R.id.sort_by_uid:
           appView.sortBy = Sort.UID;
           appView.sortData();
-
-          // force adapter refresh if paused
-          if(outputPaused) {
-            appView.refreshAdapter();
-          }
+          appView.refreshAdapter();
 
           IptablesLog.settings.setSortBy(appView.sortBy);
           break;
@@ -508,11 +504,7 @@ public class IptablesLog extends TabActivity
         case R.id.sort_by_name:
           appView.sortBy = Sort.NAME;
           appView.sortData();
-
-          // force adapter refresh if paused
-          if(outputPaused) {
-            appView.refreshAdapter();
-          }
+          appView.refreshAdapter();
 
           IptablesLog.settings.setSortBy(appView.sortBy);
           break;
@@ -520,11 +512,7 @@ public class IptablesLog extends TabActivity
         case R.id.sort_by_packets:
           appView.sortBy = Sort.PACKETS;
           appView.sortData();
-
-          // force adapter refresh if paused
-          if(outputPaused) {
-            appView.refreshAdapter();
-          }
+          appView.refreshAdapter();
 
           IptablesLog.settings.setSortBy(appView.sortBy);
           break;
@@ -532,11 +520,7 @@ public class IptablesLog extends TabActivity
         case R.id.sort_by_bytes:
           appView.sortBy = Sort.BYTES;
           appView.sortData();
-
-          // force adapter refresh if paused
-          if(outputPaused) {
-            appView.refreshAdapter();
-          }
+          appView.refreshAdapter();
 
           IptablesLog.settings.setSortBy(appView.sortBy);
           break;
@@ -544,11 +528,7 @@ public class IptablesLog extends TabActivity
         case R.id.sort_by_timestamp:
           appView.sortBy = Sort.TIMESTAMP;
           appView.sortData();
-
-          // force adapter refresh if paused
-          if(outputPaused) {
-            appView.refreshAdapter();
-          }
+          appView.refreshAdapter();
 
           IptablesLog.settings.setSortBy(appView.sortBy);
           break;

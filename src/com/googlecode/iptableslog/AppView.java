@@ -138,7 +138,7 @@ public class AppView extends Activity {
 
   protected static class SortAppsByTimestamp implements Comparator<ListItem> {
     public int compare(ListItem o1, ListItem o2) {
-      return o1.lastTimestamp < o2.lastTimestamp ? -1 : (o1.lastTimestamp == o2.lastTimestamp) ? 0 : 1;
+      return o1.lastTimestamp > o2.lastTimestamp ? -1 : (o1.lastTimestamp == o2.lastTimestamp) ? 0 : 1;
     }
   }
 
