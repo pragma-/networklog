@@ -101,6 +101,11 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
       final Context context = this;
       OnPreferenceChangeListener changeListener = new OnPreferenceChangeListener() {
         public boolean onPreferenceChange(Preference preference, Object newValue) {
+          if(preference.getKey().equals("logfile_trim")) {
+
+            return true;
+          }
+
           if(preference.getKey().equals("history_size")) {
             IptablesLog.appView.clear();
             IptablesLog.logView.clear();

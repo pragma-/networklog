@@ -37,6 +37,7 @@ public class LogView extends Activity
   protected ArrayList<ListItem> listDataUnfiltered;
   protected long maxLogEntries;
   private CustomAdapter adapter;
+  protected ListView listView;
   private ListViewUpdater updater;
   public TextView statusText;
 
@@ -48,10 +49,12 @@ public class LogView extends Activity
     protected String mNameLowerCase;
     protected String srcAddr;
     protected String srcAddrString;
+    protected boolean srcAddrResolved;
     protected int srcPort;
     protected String srcPortString;
     protected String dstAddr;
     protected String dstAddrString;
+    protected boolean dstAddrResolved;
     protected int dstPort;
     protected String dstPortString;
     protected int len;
@@ -91,16 +94,15 @@ public class LogView extends Activity
 
   public void refreshHosts() {
     synchronized(listData) {
-      for(ListItem item : listData) {
-        if(IptablesLog.resolveHosts) {
-          item.srcAddrString = IptablesLog.resolver.resolveAddress(String.valueOf(item.srcAddr));
-          item.dstAddrString = IptablesLog.resolver.resolveAddress(String.valueOf(item.dstAddr));
-        } else {
+      if(!IptablesLog.resolveHosts) {
+        for(ListItem item : listData) {
           item.srcAddrString = String.valueOf(item.srcAddr);
+          item.srcAddrResolved = false;
           item.dstAddrString = String.valueOf(item.dstAddr);
+          item.dstAddrResolved = false;
         }
       }
-
+      
       adapter.notifyDataSetChanged();
     }
   }
@@ -164,7 +166,7 @@ public class LogView extends Activity
 
       adapter = new CustomAdapter(this, R.layout.logitem, listData);
 
-      ListView listView = new ListView(this);
+      listView = new ListView(this);
       listView.setAdapter(adapter);
       listView.setTextFilterEnabled(true);
       listView.setFastScrollEnabled(true);
@@ -230,12 +232,8 @@ public class LogView extends Activity
     item.srcAddr = entry.src;
     item.srcPort = entry.spt;
 
-    if(IptablesLog.resolveHosts) {
-      item.srcAddrString = IptablesLog.resolver.resolveAddress(entry.src);
-    }
-    else {
-      item.srcAddrString = entry.src;
-    }
+    item.srcAddrString = entry.src;
+    item.srcAddrResolved = false;
 
     if(IptablesLog.resolvePorts) {
       item.srcPortString = IptablesLog.resolver.resolveService(String.valueOf(entry.spt));
@@ -247,12 +245,8 @@ public class LogView extends Activity
     item.dstAddr = entry.dst;
     item.dstPort = entry.dpt;
 
-    if(IptablesLog.resolveHosts) {
-      item.dstAddrString = IptablesLog.resolver.resolveAddress(entry.dst);
-    }
-    else {
-      item.dstAddrString = entry.dst;
-    }
+    item.dstAddrString = entry.dst;
+    item.dstAddrResolved = false;
 
     if(IptablesLog.resolvePorts) {
       item.dstPortString = IptablesLog.resolver.resolveService(String.valueOf(entry.dpt));
@@ -532,12 +526,30 @@ public class LogView extends Activity
         name = holder.getName();
         name.setText("(" + item.mUid + ")" + " " + item.mName);
 
+        if(IptablesLog.resolveHosts && !item.srcAddrResolved) {
+          String resolved = IptablesLog.resolver.resolveAddress(item.srcAddr);
+
+          if(resolved != null) {
+            item.srcAddrString = resolved;
+            item.srcAddrResolved = true;
+          }
+        }
+
         srcAddr = holder.getSrcAddr();
         srcAddr.setText("SRC: " + item.srcAddrString);
 
         srcPort = holder.getSrcPort();
         srcPort.setText(item.srcPortString);
 
+        if(IptablesLog.resolveHosts && !item.dstAddrResolved) {
+          String resolved = IptablesLog.resolver.resolveAddress(item.dstAddr);
+
+          if(resolved != null) {
+            item.dstAddrString = resolved;
+            item.dstAddrResolved = true;
+          }
+        }
+        
         dstAddr = holder.getDstAddr();
         dstAddr.setText("DST: " + item.dstAddrString);
 
@@ -550,7 +562,6 @@ public class LogView extends Activity
         timestamp = holder.getTimestamp();
 
         if(item.timestampString.length() == 0) {
-          MyLog.d("[logview] Setting timestamp for " + item);
           item.timestampString = Timestamp.getTimestamp(item.timestamp);
         }
 

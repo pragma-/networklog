@@ -640,7 +640,13 @@ public class AppView extends Activity {
 
           if(!IptablesLog.localIpAddrs.contains(info.receivedAddress)) {
             if(IptablesLog.resolveHosts) {
-              info.receivedAddressString = IptablesLog.resolver.resolveAddress(info.receivedAddress);
+              String resolved = IptablesLog.resolver.resolveAddress(info.receivedAddress);
+
+              if(resolved != null) {
+                info.receivedAddressString = resolved;
+              } else {
+                info.receivedAddressString = info.receivedAddress;
+              }
             } else {
               info.receivedAddressString = info.receivedAddress;
             }
@@ -661,7 +667,13 @@ public class AppView extends Activity {
 
           if(!IptablesLog.localIpAddrs.contains(info.sentAddress)) {
             if(IptablesLog.resolveHosts) {
-              info.sentAddressString = IptablesLog.resolver.resolveAddress(info.sentAddress);
+              String resolved = IptablesLog.resolver.resolveAddress(info.sentAddress);
+              
+              if(resolved != null) {
+                info.sentAddressString = resolved;
+              } else {
+                info.sentAddressString = info.sentAddress;
+              }
             } else {
               info.sentAddressString = info.sentAddress;
             }
@@ -1116,8 +1128,7 @@ public class AppView extends Activity {
 
         timestamp = holder.getTimestamp();
 
-        if(item.lastTimestampString.length() == 0 && item.lastTimestamp != 0) {
-          MyLog.d("[appview] Setting timestamp for " + item);
+        if(item.lastTimestamp != 0) {
           item.lastTimestampString = Timestamp.getTimestamp(item.lastTimestamp);
         }
 

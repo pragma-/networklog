@@ -6,8 +6,9 @@ import java.net.InetAddress;
 import android.util.Log;
 
 public class NetworkResolver {
-  HashMap<String, String> serviceMap = new HashMap<String, String>();
-  HashMap<String, String> hostMap = new HashMap<String, String>();
+  final HashMap<String, String> serviceMap = new HashMap<String, String>();
+  final HashMap<String, String> resolvedHostMap = new HashMap<String, String>();
+  final HashMap<String, Object> resolvingHostMap = new HashMap<String, Object>();
 
   public NetworkResolver() {
     serviceMap.put("1", "TCPMUX");
@@ -172,21 +173,56 @@ public class NetworkResolver {
     serviceMap.put("995", "POP3S");
   }
 
-  public String resolveAddress(String address) {
-    String resolved = hostMap.get(address);
+  public String resolveAddress(final String address) {
+    Object resolving;
+
+    synchronized(resolvingHostMap) {
+      resolving = resolvingHostMap.get(address);
+    }
+
+    if(resolving != null) {
+      return null;
+    }
+
+    String resolved;
+
+    synchronized(resolvedHostMap) {
+      resolved = resolvedHostMap.get(address);
+    }
 
     if(resolved == null) {
-      try {
-        MyLog.d("Resolving " + address);
-        InetAddress inetAddress = InetAddress.getByName(address);
-        resolved = inetAddress.getHostName();
-        hostMap.put(address, resolved);
-        MyLog.d("Resolved " + address + " to " + resolved);
-        return resolved;
-      } catch(Exception e) {
-        Log.d("IptablesLog", e.toString(), e);
-        return address;
-      }
+      resolvingHostMap.put(address, address);
+
+      new Thread(new Runnable() {
+        public void run() {
+          try {
+            MyLog.d("Resolving " + address);
+
+            InetAddress inetAddress = InetAddress.getByName(address);
+            String resolved = inetAddress.getHostName();
+            
+            synchronized(resolvedHostMap) {
+              resolvedHostMap.put(address, resolved);
+            }
+
+            synchronized(resolvingHostMap) {
+              resolvingHostMap.remove(address);
+            }
+
+            MyLog.d("Resolved " + address + " to " + resolved);
+            IptablesLog.handler.post(new Runnable() {
+              public void run() {
+                IptablesLog.appView.refreshHosts();
+                IptablesLog.logView.refreshAdapter();
+              }
+            });
+          } catch(Exception e) {
+            Log.d("IptablesLog", e.toString(), e);
+          }
+        }
+      }, "NetResolv:" + address).start();
+
+      return null;
     } else {
       return resolved;
     }

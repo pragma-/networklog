@@ -2,14 +2,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
   <PreferenceCategory
     android:title="General">
-    <ListPreference
-      android:defaultValue="3600000"
-      android:key="history_size"
-      android:title="Load history size"
-      android:summary="Select how much history to load when app starts (default: 1 hour)"
-      android:entries="@array/history_size_entries"
-      android:entryValues="@array/history_size_values"
-      android:dialogTitle="Load history" />
     <CheckBoxPreference
       android:defaultValue="false"
       android:key="resolve_hosts"
@@ -35,15 +27,23 @@
       android:key="logfile"
       android:title="Log file location"
       android:summary="Set path and filename of the log file (defaults to /sdcard/iptableslog.txt)" />
-    <!--
     <ListPreference
-      android:defaultValue="12000000"
-      android:key="logfile_maxsize"
-      android:title="Log file max filesize"
-      android:summary="Select maximum log filesize; older entries will be truncated (default: 12MB)"
-      android:entries="@array/logfile_maxsize_entries"
-      android:entryValues="@array/logfile_maxsize_values"
-      android:dialogTitle="Max size" />
+      android:defaultValue="3600000"
+      android:key="history_size"
+      android:title="Load logfile history"
+      android:summary="Select how much history to load, effective immediately and at app start (default: 1 hour)"
+      android:entries="@array/timerange_entries"
+      android:entryValues="@array/timerange_values"
+      android:dialogTitle="Load history" />
+    <ListPreference
+      android:defaultValue="2419200000"
+      android:key="logfile_trim"
+      android:title="Trim logfile"
+      android:summary="Select time range to delete from logfile, effective immediately (default: older than 1 month)"
+      android:entries="@array/timerange_entries"
+      android:entryValues="@array/timerange_values"
+      android:dialogTitle="Delete older than" />
+<!--
     <CheckBoxPreference
       android:defaultValue="false"
       android:key="startServiceAtBoot"
@@ -65,7 +65,7 @@
   <PreferenceCategory
     android:title="Log tab">
     <EditTextPreference
-      android:defaultValue="15000"
+      android:defaultValue="150000"
       android:numeric="integer"
       android:key="max_log_entries"
       android:title="Max log entries"

@@ -141,7 +141,7 @@ public class HistoryLoader {
             }
           });
 
-          long progress_increment_size = (long)((length - starting_pos) * 0.05);
+          long progress_increment_size = (long)((length - starting_pos) * 0.01);
           next_progress_increment = progress_increment_size;
 
           MyLog.d("[history] increment size: " + progress_increment_size);

@@ -1,5 +1,6 @@
 package com.googlecode.iptableslog;
 
+import android.content.ContextWrapper;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +19,7 @@ import android.os.RemoteException;
 
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
@@ -166,14 +168,6 @@ public class IptablesLogService extends Service {
           final String l = logfile_intent;
           final String m = logfile_maxsize_intent;
 
-          if(MyLog.enabled) {
-            handler.post(new Runnable() {
-              public void run() {
-                Toast.makeText(context, "IptablesLog service starting [" + l + "; " + m + "]", Toast.LENGTH_SHORT).show();
-              }
-            });
-          }
-
           if(logfile != null) {
             // service already started and has logfile open
             // close logfile and rename and open new one
@@ -221,7 +215,7 @@ public class IptablesLogService extends Service {
 
   @Override
     public void onDestroy() {
-      Iptables.removeRules();
+      Iptables.removeRules(this);
       stopLogging();
       stopForeground();
       Toast.makeText(this, "IptablesLog service done", Toast.LENGTH_SHORT).show();
@@ -521,11 +515,13 @@ public class IptablesLogService extends Service {
 
   public void startLogging() {
     MyLog.d("adding logging rules");
-    Iptables.addRules();
+    Iptables.addRules(this);
 
     synchronized(IptablesLog.scriptLock) {
+      String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + Iptables.SCRIPT;
+
       try {
-        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
+        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
         script.println("grep IptablesLogEntry /proc/kmsg");
         script.close();
       } catch(java.io.IOException e) {
@@ -534,7 +530,7 @@ public class IptablesLogService extends Service {
 
       MyLog.d("Starting iptables log tracker");
 
-      command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "IptablesLogger");
+      command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "IptablesLogger");
       command.start(false);
     }
 
@@ -557,15 +553,17 @@ public class IptablesLogService extends Service {
 
   public void killLogger() {
     synchronized(IptablesLog.scriptLock) {
+      String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + Iptables.SCRIPT;
+
       try {
-        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
+        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
         script.println("ps");
         script.close();
       } catch(java.io.IOException e) {
         e.printStackTrace();
       }
 
-      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "FindLogger");
+      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "FindLogger");
       command.start(false);
       String result = "";
 
@@ -621,14 +619,14 @@ public class IptablesLogService extends Service {
             MyLog.d("Killing tracker " + pid);
 
             try {
-              PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(Iptables.SCRIPT)));
+              PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
               script.println("kill " + pid);
               script.close();
             } catch(java.io.IOException e) {
               e.printStackTrace();
             }
 
-            new ShellCommand(new String[] { "su", "-c", "sh " + Iptables.SCRIPT }, "KillLogger").start(true);
+            new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "KillLogger").start(true);
             break;
           }
         }

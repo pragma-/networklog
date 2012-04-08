@@ -1,14 +1,18 @@
 package com.googlecode.iptableslog;
 
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.util.Log;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 
 
 public class Iptables {
-  public static final String SCRIPT = "/sdcard/iptableslog.sh";
+  public static final String SCRIPT = "iptableslog.sh";
+
   public static final String[] CELL_INTERFACES = {
     "rmnet+", "ppp+", "pdp+"
   };
@@ -17,14 +21,16 @@ public class Iptables {
     "eth+", "wlan+", "tiwlan+", "athwlan+"
   };
 
-  public static boolean addRules() {
-    if(checkRules() == true) {
-      removeRules();
+  public static boolean addRules(Context context) {
+    if(checkRules(context) == true) {
+      removeRules(context);
     }
 
     synchronized(IptablesLog.scriptLock) {
+      String scriptFile = new ContextWrapper(context).getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
+
       try {
-        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(SCRIPT)));
+        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
 
         for(String iface : CELL_INTERFACES) {
           script.println("iptables -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
@@ -44,19 +50,21 @@ public class Iptables {
         Log.d("IptablesLog", "addRules error", e);
       }
 
-      new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }, "addRules").start(true);
+      new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "addRules").start(true);
     }
 
     return true;
   }
 
-  public static boolean removeRules() {
+  public static boolean removeRules(Context context) {
     int tries = 0;
 
-    while(checkRules() == true) {
+    while(checkRules(context) == true) {
       synchronized(IptablesLog.scriptLock) {
+        String scriptFile = new ContextWrapper(context).getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
+
         try {
-          PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(SCRIPT)));
+          PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
 
           for(String iface : CELL_INTERFACES) {
             script.println("iptables -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
@@ -76,7 +84,7 @@ public class Iptables {
           Log.d("IptablesLog", "removeRules error", e);
         }
 
-        new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }, "removeRules").start(true);
+        new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "removeRules").start(true);
 
         tries++;
 
@@ -90,10 +98,12 @@ public class Iptables {
     return true;
   }
 
-  public static boolean checkRules() {
+  public static boolean checkRules(Context context) {
     synchronized(IptablesLog.scriptLock) {
+      String scriptFile = new ContextWrapper(context).getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
+
       try {
-        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(SCRIPT)));
+        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
         script.println("iptables -L");
         script.flush();
         script.close();
@@ -101,7 +111,7 @@ public class Iptables {
         Log.d("IptablesLog", "checkRules error", e);
       }
 
-      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + SCRIPT }, "checkRules");
+      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "checkRules");
       command.start(false);
       StringBuilder result = new StringBuilder();
 

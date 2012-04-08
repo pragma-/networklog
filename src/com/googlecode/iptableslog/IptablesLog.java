@@ -258,11 +258,7 @@ public class IptablesLog extends TabActivity
         history.dialog_max = data.historyDialogMax;
         history.dialog_progress = data.historyDialogProgress;
 
-        MyLog.d("dialog showing: " + history.dialog_showing);
-        MyLog.d("dialog: " + history.dialog);
-
         if(history.dialog_showing && history.dialog == null) {
-          MyLog.d("showing progress dialog");
           history.createProgressDialog(this);
         }
       } else {
@@ -569,9 +565,20 @@ public class IptablesLog extends TabActivity
   }
 
   public void confirmExit(Context context) {
+    StringBuilder message = new StringBuilder("Are you sure you want to exit?");
+    boolean serviceRunning = isServiceRunning(context, "com.googlecode.iptableslog.IptablesLogService");
+
+    if(serviceRunning) {
+      if(stopServiceAtExit) {
+        message.append("\n\nLogging will be stopped.");
+      } else {
+        message.append("\n\nLogging will continue in background service.");
+      }
+    }
+
     AlertDialog.Builder builder = new AlertDialog.Builder(context);
     builder.setTitle("Confirm exit")
-      .setMessage("Are you sure you want to exit?")
+      .setMessage(message.toString())
       .setCancelable(true)
       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {

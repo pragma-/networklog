@@ -91,7 +91,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
   }
 
   public long getMaxLogEntries() {
-    return Long.parseLong(prefs.getString("max_log_entries", "15000"));
+    return Long.parseLong(prefs.getString("max_log_entries", "150000"));
   }
 
   public Sort getPreSortBy() {
@@ -346,7 +346,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
       }
 
       if(key.equals("max_log_entries")) {
-        String value = prefs.getString(key, "15000");
+        String value = prefs.getString(key, "150000");
         MyLog.d("New " + key + " value [" + value + "]");
         IptablesLog.logView.maxLogEntries = Long.parseLong(value);
         IptablesLog.logView.pruneLogEntries();
