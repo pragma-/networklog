@@ -686,7 +686,7 @@ public class AppView extends Activity {
 
           if(info.sentPackets > 0) {
             if(info.sentTimestampString.length() == 0) {
-              info.sentTimestampString = IptablesLog.utils.getTimestamp(info.sentTimestamp);
+              info.sentTimestampString = Timestamp.getTimestamp(info.sentTimestamp);
             }
 
             builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
@@ -695,7 +695,7 @@ public class AppView extends Activity {
 
           if(info.receivedPackets > 0) {
             if(info.receivedTimestampString.length() == 0) {
-              info.receivedTimestampString = IptablesLog.utils.getTimestamp(info.receivedTimestamp);
+              info.receivedTimestampString = Timestamp.getTimestamp(info.receivedTimestamp);
             }
 
             builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
@@ -1007,7 +1007,7 @@ public class AppView extends Activity {
 
                   if(info.sentPackets > 0) {
                     if(info.sentTimestampString.length() == 0) {
-                      info.sentTimestampString = IptablesLog.utils.getTimestamp(info.sentTimestamp);
+                      info.sentTimestampString = Timestamp.getTimestamp(info.sentTimestamp);
                     }
 
                     builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
@@ -1016,7 +1016,7 @@ public class AppView extends Activity {
 
                   if(info.receivedPackets > 0) {
                     if(info.receivedTimestampString.length() == 0) {
-                      info.receivedTimestampString = IptablesLog.utils.getTimestamp(info.receivedTimestamp);
+                      info.receivedTimestampString = Timestamp.getTimestamp(info.receivedTimestamp);
                     }
 
                     builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
@@ -1118,7 +1118,7 @@ public class AppView extends Activity {
 
         if(item.lastTimestampString.length() == 0 && item.lastTimestamp != 0) {
           MyLog.d("[appview] Setting timestamp for " + item);
-          item.lastTimestampString = IptablesLog.utils.getTimestamp(item.lastTimestamp);
+          item.lastTimestampString = Timestamp.getTimestamp(item.lastTimestamp);
         }
 
         if(item.lastTimestampString.length() > 0) {

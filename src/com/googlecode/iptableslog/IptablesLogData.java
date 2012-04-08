@@ -53,6 +53,17 @@ public class IptablesLogData {
     }
   }
 
+  /* HistoryLoader */
+  boolean historyDialogShowing;
+  int historyDialogMax;
+  int historyDialogProgress;
+
+  public void gatherHistoryLoaderData() {
+    historyDialogShowing = IptablesLog.history.dialog_showing;
+    historyDialogMax = IptablesLog.history.dialog_max;
+    historyDialogProgress = IptablesLog.history.dialog_progress;
+  }
+
   /* IptablesLog */
   IptablesLog.State iptablesLogState;
   NetworkResolver iptablesLogResolver;
@@ -64,10 +75,12 @@ public class IptablesLogData {
     iptablesLogOutputPaused = IptablesLog.outputPaused;
   }
 
+  /* gather data */
   public IptablesLogData() {
     gatherApplicationsTrackerData();
     gatherLogViewData();
     gatherAppViewData();
     gatherIptablesLogData();
+    gatherHistoryLoaderData();
   }
 }

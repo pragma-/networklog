@@ -551,7 +551,7 @@ public class LogView extends Activity
 
         if(item.timestampString.length() == 0) {
           MyLog.d("[logview] Setting timestamp for " + item);
-          item.timestampString = IptablesLog.utils.getTimestamp(item.timestamp);
+          item.timestampString = Timestamp.getTimestamp(item.timestamp);
         }
 
         timestamp.setText(item.timestampString);

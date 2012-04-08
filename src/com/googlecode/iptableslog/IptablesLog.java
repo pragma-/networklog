@@ -72,7 +72,7 @@ public class IptablesLog extends TabActivity
 
   public static boolean outputPaused;
 
-  public static Utils utils;
+  public static HistoryLoader history;
 
   public static StatusUpdater statusUpdater;
 
@@ -198,7 +198,7 @@ public class IptablesLog extends TabActivity
         startService();
       }
 
-      utils.loadEntriesFromFile(context, settings.getHistorySize());
+      history.loadEntriesFromFile(context, settings.getHistorySize());
 
       state = IptablesLog.State.RUNNING;
       MyLog.d("Init done");
@@ -211,7 +211,7 @@ public class IptablesLog extends TabActivity
     {
       super.onCreate(savedInstanceState);
       MyLog.d("IptablesLog started");
-      utils = new Utils();
+      history = new HistoryLoader();
       handler = new Handler(Looper.getMainLooper());
 
       setContentView(R.layout.main);
@@ -252,11 +252,23 @@ public class IptablesLog extends TabActivity
         ApplicationsTracker.restoreData(data);
         resolver = data.iptablesLogResolver;
         outputPaused = data.iptablesLogOutputPaused;
+
+        // restore history loading progress dialog
+        history.dialog_showing = data.historyDialogShowing;
+        history.dialog_max = data.historyDialogMax;
+        history.dialog_progress = data.historyDialogProgress;
+
+        MyLog.d("dialog showing: " + history.dialog_showing);
+        MyLog.d("dialog: " + history.dialog);
+
+        if(history.dialog_showing && history.dialog == null) {
+          MyLog.d("showing progress dialog");
+          history.createProgressDialog(this);
+        }
       } else {
         MyLog.d("Fresh run");
 
         resolver = new NetworkResolver();
-
         outputPaused = false;
       }
 
@@ -340,10 +352,19 @@ public class IptablesLog extends TabActivity
       MyLog.d("onDestroy called");
 
       if(data == null) {
+        // exiting
         state = IptablesLog.State.EXITING;
         if(stopServiceAtExit) {
           stopService();
         }
+      } else {
+        // changing configuration
+
+      }
+
+      if(history.dialog_showing == true) {
+        history.dialog.dismiss();
+        history.dialog = null;
       }
 
       if(initRunner != null) {
@@ -380,7 +401,6 @@ public class IptablesLog extends TabActivity
       data = new IptablesLogData();
       return data;
     }
-
 
   @Override
     public boolean onCreateOptionsMenu(Menu menu) {

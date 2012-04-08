@@ -11,9 +11,44 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 
 public class Preferences extends PreferenceActivity implements OnPreferenceClickListener {
+  private PreferenceConfigurationData data = null;
+
+
+  private class PreferenceConfigurationData {
+    boolean history_dialog_showing;
+    int history_dialog_max;
+    int history_dialog_progress;
+
+    PreferenceConfigurationData() {
+      history_dialog_showing = IptablesLog.history.dialog_showing;
+      history_dialog_max = IptablesLog.history.dialog_max;
+      history_dialog_progress = IptablesLog.history.dialog_progress;
+    }
+  }
+
+  @Override
+    public void onDestroy() {
+      super.onDestroy();
+      MyLog.d("Destroying preferences activity");
+
+      if(IptablesLog.history.dialog_showing) {
+        IptablesLog.history.dialog.dismiss();
+        IptablesLog.history.dialog = null;
+      }
+    }
+
+  @Override
+    public Object onRetainNonConfigurationInstance() {
+      MyLog.d("Saving preference run");
+      data = new PreferenceConfigurationData();
+      return data;
+    }
+
   @Override
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
+
+      MyLog.d("Creating preferences activity");
 
       addPreferencesFromResource(R.xml.preferences);
 
@@ -69,7 +104,7 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
           if(preference.getKey().equals("history_size")) {
             IptablesLog.appView.clear();
             IptablesLog.logView.clear();
-            IptablesLog.utils.loadEntriesFromFile(context, (String)newValue);
+            IptablesLog.history.loadEntriesFromFile(context, (String)newValue);
             return true;
           }
 
@@ -101,6 +136,16 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
 
       pref = (ListPreference) findPreference("history_size");
       pref.setOnPreferenceChangeListener(changeListener);
+
+      data = (PreferenceConfigurationData) getLastNonConfigurationInstance();
+
+      if(data != null) {
+        MyLog.d("Restored preferences run");
+
+        if(data.history_dialog_showing && IptablesLog.history.dialog == null) {
+          IptablesLog.history.createProgressDialog(this);
+        }
+      }
     }
 
   @Override

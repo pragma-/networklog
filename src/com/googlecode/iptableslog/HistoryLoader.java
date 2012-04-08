@@ -5,23 +5,34 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 
-import java.util.Date;
-import java.text.SimpleDateFormat;
 import java.lang.StringBuilder;
 import java.io.RandomAccessFile;
 
-public class Utils {
-  static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
-  static final SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
+public class HistoryLoader {
   static boolean canceled = false;
-  static ProgressDialog dialog;
+  static boolean dialog_showing = false;
+  static int dialog_max = 0;
+  static int dialog_progress = 0;
+  static ProgressDialog dialog = null;
 
-  public static String getTimestamp(long timestamp) {
-    return format.format(timestamp);
-  }
+  public void createProgressDialog(Context context) {
+    dialog = new ProgressDialog(context);
+    dialog.setIndeterminate(false);
+    dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+    dialog.setMax(dialog_max);
+    dialog.setCancelable(false);
+    dialog.setTitle("");
+    dialog.setMessage("Loading history");
 
-  public static String getTimestamp() {
-    return format.format(new Date());
+    dialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Cancel", new DialogInterface.OnClickListener() {
+      public void onClick(DialogInterface dialog, int which) {
+        canceled = true;
+      }
+    });
+
+    dialog_showing = true;
+    dialog.show();
+    dialog.setProgress(dialog_progress);
   }
 
   public void loadEntriesFromFile(Context context, String historySize) {
@@ -122,26 +133,11 @@ public class Utils {
           StringBuilder sb = new StringBuilder(128);
           char[] chars = new char[128];
 
-          final DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-              canceled = true;
-            }
-          };
-
           IptablesLog.handler.post(new Runnable() {
             public void run() {
-              dialog = new ProgressDialog(context_final);
-              dialog.setIndeterminate(false);
-              dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-              dialog.setMax((int)(length - starting_pos));
-              dialog.setCancelable(false);
-              dialog.setTitle("");
-              dialog.setMessage("Loading history");
-
-              dialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Cancel", listener);
-
-              dialog.show();
-              dialog.setProgress(0);
+              dialog_max = (int)(length - starting_pos);
+              dialog_progress = 0;
+              createProgressDialog(context_final);
             }
           });
 
@@ -188,8 +184,10 @@ public class Utils {
 
                   if(processed_so_far >= next_progress_increment) {
                     next_progress_increment += progress_increment_size;
-                    final int progress = (int)processed_so_far;
-                    dialog.setProgress(progress);
+                    dialog_progress = (int)processed_so_far;
+                    if(dialog_showing && dialog != null) {
+                      dialog.setProgress(dialog_progress);
+                    }
                   }
 
                   for(int i = 0; i < line_length; i++) {
@@ -237,7 +235,14 @@ public class Utils {
           } catch(Exception e) {
             Log.w("IptablesLog", "loadEntriesFromFile", e);
           } finally {
-            dialog.dismiss();
+            if(dialog_showing) {
+              dialog_showing = false;
+
+              if(dialog != null) {
+                dialog.dismiss();
+                dialog = null;
+              }
+            }
           }
         }
       }, "LoadHistory").start();
