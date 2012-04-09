@@ -58,7 +58,7 @@ public class AppTimelineGraph extends Activity
         finish();
       }
 
-      AppView.ListItem item = IptablesLog.appView.listDataBuffer.get(index);
+      AppView.GroupItem item = IptablesLog.appView.groupDataBuffer.get(index);
 
       // always give data sorted by x values
       graphView = new LineGraphView(this, item.toString() + " Timeline")
@@ -403,12 +403,12 @@ public class AppTimelineGraph extends Activity
       finish();
     }
 
-    AppView.ListItem item = IptablesLog.appView.listDataBuffer.get(index);
+    AppView.GroupItem item = IptablesLog.appView.groupDataBuffer.get(index);
 
     MyLog.d("Starting graph for " + item);
 
-    synchronized(item.uniqueHostsList) {
-      ArrayList<String> list = new ArrayList<String>(item.uniqueHostsList.keySet());
+    synchronized(item.childrenData) {
+      ArrayList<String> list = new ArrayList<String>(item.childrenData.keySet());
       Collections.sort(list);
       Iterator<String> itr = list.iterator();
       int color = 0;
@@ -417,7 +417,7 @@ public class AppTimelineGraph extends Activity
       {
         String host = itr.next();
         MyLog.d("Graphing " + host);
-        AppView.HostInfo info = item.uniqueHostsList.get(host);
+        AppView.ChildItem info = item.childrenData.get(host);
 
         if(info.packetGraphBuffer.size() > 0)
         {

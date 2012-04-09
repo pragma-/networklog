@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:padding="5dp">
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:textSize="14sp"
+    android:id="@+id/hostName" />
+
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/sentLabel"
+    android:text="  Sent: "
+    android:textSize="12sp"
+    android:textStyle="normal"
+    android:layout_below="@id/hostName" />
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/sentPackets"
+    android:textSize="14sp"
+    android:textStyle="bold" 
+    android:layout_alignBaseline="@id/sentLabel"
+    android:layout_toRightOf="@id/sentLabel" />
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/sentPacketsLabel"
+    android:text=" packets, "
+    android:textSize="12sp"
+    android:textStyle="normal"
+    android:layout_alignBaseline="@id/sentLabel"
+    android:layout_toRightOf="@id/sentPackets" />
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/sentBytes"
+    android:textSize="14sp"
+    android:textStyle="bold"
+    android:layout_alignBaseline="@id/sentLabel"
+    android:layout_toRightOf="@id/sentPacketsLabel" />
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/sentBytesLabel"
+    android:text=" bytes "
+    android:textSize="12sp"
+    android:textStyle="normal"
+    android:layout_alignBaseline="@id/sentLabel"
+    android:layout_toRightOf="@id/sentBytes" />
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/sentTimestamp"
+    android:textSize="14sp"
+    android:textStyle="bold"
+    android:layout_alignBaseline="@id/sentLabel"
+    android:layout_toRightOf="@id/sentBytesLabel" />
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/receivedLabel"
+    android:text="  Recv: "
+    android:textSize="12sp"
+    android:textStyle="normal"
+    android:layout_below="@id/sentLabel" />
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/receivedPackets"
+    android:textSize="14sp"
+    android:textStyle="bold" 
+    android:layout_alignBaseline="@id/receivedLabel"
+    android:layout_toRightOf="@id/receivedLabel" />
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/receivedPacketsLabel"
+    android:text=" packets, "
+    android:textSize="12sp"
+    android:textStyle="normal"
+    android:layout_alignBaseline="@id/receivedLabel"
+    android:layout_toRightOf="@id/receivedPackets" />
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/receivedBytes"
+    android:textSize="14sp"
+    android:textStyle="bold"
+    android:layout_alignBaseline="@id/receivedLabel"
+    android:layout_toRightOf="@id/receivedPacketsLabel" />
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/receivedBytesLabel"
+    android:text=" bytes "
+    android:textSize="12sp"
+    android:textStyle="normal"
+    android:layout_alignBaseline="@id/receivedLabel"
+    android:layout_toRightOf="@id/receivedBytes" />
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/receivedTimestamp"
+    android:textSize="14sp"
+    android:textStyle="bold"
+    android:layout_alignBaseline="@id/receivedLabel"
+    android:layout_toRightOf="@id/receivedBytesLabel" />
+
+</RelativeLayout>

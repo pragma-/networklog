@@ -35,18 +35,18 @@ public class IptablesLogData {
   }
 
   /* AppView */
-  ArrayList<AppView.ListItem> appViewListData;
-  ArrayList<AppView.ListItem> appViewListDataBuffer;
-  boolean appViewListDataBufferIsDirty;
+  ArrayList<AppView.GroupItem> appViewGroupData;
+  ArrayList<AppView.GroupItem> appViewGroupDataBuffer;
+  boolean appViewGroupDataBufferIsDirty;
   Sort appViewSortBy;
   Sort appViewPreSortBy;
-  AppView.ListItem appViewCachedSearchItem;
+  AppView.GroupItem appViewCachedSearchItem;
 
   public void gatherAppViewData() {
     if(IptablesLog.appView != null) {
-      appViewListData = IptablesLog.appView.listData;
-      appViewListDataBuffer = IptablesLog.appView.listDataBuffer;
-      appViewListDataBufferIsDirty = IptablesLog.appView.listDataBufferIsDirty;
+      appViewGroupData = IptablesLog.appView.groupData;
+      appViewGroupDataBuffer = IptablesLog.appView.groupDataBuffer;
+      appViewGroupDataBufferIsDirty = IptablesLog.appView.groupDataBufferIsDirty;
       appViewSortBy = IptablesLog.appView.sortBy;
       appViewPreSortBy = IptablesLog.appView.preSortBy;
       appViewCachedSearchItem = IptablesLog.appView.cachedSearchItem;

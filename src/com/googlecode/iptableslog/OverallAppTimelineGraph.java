@@ -364,12 +364,12 @@ public class OverallAppTimelineGraph extends Activity
   public void buildSeries(double timeFrameSize, double viewSize) {
     graphView.graphSeries.clear();
 
-    synchronized(IptablesLog.appView.listDataBuffer) {
+    synchronized(IptablesLog.appView.groupDataBuffer) {
       int color = 0;
 
       Hashtable<String, Boolean> appPlotted = new Hashtable<String, Boolean>();
 
-      for(AppView.ListItem item : IptablesLog.appView.listDataBuffer) {
+      for(AppView.GroupItem item : IptablesLog.appView.groupDataBuffer) {
         // don't plot duplicate uids
         if(appPlotted.get(item.app.uidString) == null) {
           appPlotted.put(item.app.uidString, new Boolean(true));

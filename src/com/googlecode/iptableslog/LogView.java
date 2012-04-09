@@ -37,7 +37,6 @@ public class LogView extends Activity
   protected ArrayList<ListItem> listDataUnfiltered;
   protected long maxLogEntries;
   private CustomAdapter adapter;
-  protected ListView listView;
   private ListViewUpdater updater;
   public TextView statusText;
 
@@ -166,7 +165,7 @@ public class LogView extends Activity
 
       adapter = new CustomAdapter(this, R.layout.logitem, listData);
 
-      listView = new ListView(this);
+      ListView listView = new ListView(this);
       listView.setAdapter(adapter);
       listView.setTextFilterEnabled(true);
       listView.setFastScrollEnabled(true);

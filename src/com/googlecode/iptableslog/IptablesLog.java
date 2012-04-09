@@ -174,6 +174,8 @@ public class IptablesLog extends TabActivity
       MyLog.d("Init begin");
       running = true;
 
+      Looper.myLooper().prepare();
+
       state = IptablesLog.State.LOAD_APPS;
       ApplicationsTracker.getInstalledApps(context, handler);
 
@@ -212,7 +214,7 @@ public class IptablesLog extends TabActivity
       super.onCreate(savedInstanceState);
       MyLog.d("IptablesLog started");
       history = new HistoryLoader();
-      handler = new Handler(Looper.getMainLooper());
+      handler = new Handler();
 
       setContentView(R.layout.main);
 
