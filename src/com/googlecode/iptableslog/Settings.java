@@ -331,8 +331,8 @@ public class Settings implements OnSharedPreferenceChangeListener {
         boolean value = prefs.getBoolean(key, false);
         MyLog.d("New " + key + " value [" + value + "]");
         IptablesLog.resolveHosts = value;
-        IptablesLog.logView.refreshHosts();
-        IptablesLog.appView.refreshHosts();
+        IptablesLog.logView.refreshAdapter();
+        IptablesLog.appView.refreshAdapter();
         return;
       }
 
@@ -340,8 +340,8 @@ public class Settings implements OnSharedPreferenceChangeListener {
         boolean value = prefs.getBoolean(key, false);
         MyLog.d("New " + key + " value [" + value + "]");
         IptablesLog.resolvePorts = value;
-        IptablesLog.logView.refreshPorts();
-        IptablesLog.appView.refreshPorts();
+        IptablesLog.logView.refreshAdapter();
+        IptablesLog.appView.refreshAdapter();
         return;
       }
 

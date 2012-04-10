@@ -51,13 +51,10 @@ public class AppView extends Activity {
     protected long totalPackets;
     protected long totalBytes;
     protected long lastTimestamp;
-    protected String lastTimestampString;
     protected HashMap<String, ChildItem> childrenData;
     protected boolean childrenDataNeedsSort = false;
-    protected boolean uniqueHostsIsFiltered = false;
-    protected boolean uniqueHostsIsDirty = false;
-    protected Spanned uniqueHostsSpanned;
-    protected String uniqueHosts;
+    protected boolean childrenAreFiltered = false;
+    protected boolean childrenAreDirty = false;
     protected ArrayList<ChildItem> filteredChildItems;
     protected ArrayList<PacketGraphItem> packetGraphBuffer;
 
@@ -71,25 +68,20 @@ public class AppView extends Activity {
     protected int sentPackets;
     protected int sentBytes;
     protected long sentTimestamp;
-    protected String sentTimestampString;
     protected int sentPort;
-    protected String sentPortString;
     protected String sentAddress;
-    protected String sentAddressString;
 
     protected int receivedPackets;
     protected int receivedBytes;
     protected long receivedTimestamp;
-    protected String receivedTimestampString;
     protected int receivedPort;
-    protected String receivedPortString;
     protected String receivedAddress;
-    protected String receivedAddressString;
 
     protected ArrayList<PacketGraphItem> packetGraphBuffer;
 
     public String toString() {
-      return sentAddressString + ":" + sentPortString + " -> " + receivedAddressString + ":" + receivedPortString;
+      // todo: resolver here
+      return sentAddress + ":" + sentPort + " -> " + receivedAddress + ":" + receivedPort;
     }
   }
 
@@ -259,10 +251,8 @@ public class AppView extends Activity {
             GroupItem item = new GroupItem();
             item.app = app;
             item.lastTimestamp = 0;
-            item.lastTimestampString = "";
             item.childrenData = new HashMap<String, ChildItem>();
             item.filteredChildItems = new ArrayList<ChildItem>();
-            item.uniqueHosts = "";
             item.packetGraphBuffer = new ArrayList<PacketGraphItem>();
             groupData.add(item);
             groupDataBuffer.add(item);
@@ -535,19 +525,14 @@ public class AppView extends Activity {
             childData.receivedPackets++;
             childData.receivedBytes += entry.len;
             childData.receivedTimestamp = entry.timestamp;
-            childData.receivedTimestampString = "";
 
             MyLog.d("Added received packet " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + childData.receivedPackets + "; bytes: " + childData.receivedBytes);
 
             childData.receivedPort = entry.spt;
-            childData.receivedPortString = String.valueOf(entry.spt);
             childData.receivedAddress = entry.src;
-            childData.receivedAddressString = entry.src;
 
             childData.sentPort = entry.dpt;
-            childData.sentPortString = String.valueOf(entry.dpt);
             childData.sentAddress = entry.dst;
-            childData.sentAddressString = entry.dst;
 
             childData.packetGraphBuffer.add(graphItem);
             MyLog.d("graph receivedbytes " + childData.receivedBytes + " " + childData + " added " + graphItem);
@@ -570,19 +555,14 @@ public class AppView extends Activity {
             childData.sentPackets++;
             childData.sentBytes += entry.len;
             childData.sentTimestamp = entry.timestamp;
-            childData.sentTimestampString = "";
 
             MyLog.d("Added sent packet " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + childData.sentPackets + "; bytes: " + childData.sentBytes);
 
             childData.sentPort = entry.dpt;
-            childData.sentPortString = String.valueOf(entry.dpt);
             childData.sentAddress = entry.dst;
-            childData.sentAddressString = entry.dst;
 
             childData.receivedPort = entry.spt;
-            childData.receivedPortString = String.valueOf(entry.spt);
             childData.receivedAddress = entry.src;
-            childData.receivedAddressString = entry.src;
 
             childData.packetGraphBuffer.add(graphItem);
             MyLog.d("graph sentbytes " + childData.sentBytes + " " + childData + " added " + graphItem);
@@ -609,119 +589,6 @@ public class AppView extends Activity {
   public void stopUpdater() {
     if(updater != null) {
       updater.stop();
-    }
-  }
-
-  public void buildUniqueHosts(GroupItem item) {
-    synchronized(item.childrenData) {
-      List<String> list = new ArrayList<String>(item.childrenData.keySet());
-
-      MyLog.d("Building host list for " + item);
-
-      // todo: sort by user preference (bytes, timestamp, address, ports)
-      Collections.sort(list);
-
-      StringBuilder builder = new StringBuilder("Addrs:");
-      Iterator<String> itr = list.iterator();
-      boolean has_host = false;
-
-      while(itr.hasNext()) {
-        String host = itr.next();
-        ChildItem childData = item.childrenData.get(host);
-
-        MyLog.d("HostchildData entry for " + item + ": " + host);
-        MyLog.d("Sent packets: " + childData.sentPackets + "; bytes: " + childData.sentBytes);
-        MyLog.d("Received packets: " + childData.receivedPackets + "; bytes: " + childData.receivedBytes);
-        MyLog.d("Total: " + (childData.sentBytes + childData.receivedBytes));
-
-        String addressString = null;
-        String portString = null;
-
-        if(childData.receivedPackets > 0) {
-          MyLog.d("Received address: " + childData.receivedAddress + ":" + childData.receivedPort);
-
-          if(!IptablesLog.localIpAddrs.contains(childData.receivedAddress)) {
-            if(IptablesLog.resolveHosts) {
-              String resolved = IptablesLog.resolver.resolveAddress(childData.receivedAddress);
-
-              if(resolved != null) {
-                childData.receivedAddressString = resolved;
-              } else {
-                childData.receivedAddressString = childData.receivedAddress;
-              }
-            } else {
-              childData.receivedAddressString = childData.receivedAddress;
-            }
-
-            if(IptablesLog.resolvePorts) {
-              childData.receivedPortString = IptablesLog.resolver.resolveService(String.valueOf(childData.receivedPort));
-            } else {
-              childData.receivedPortString = String.valueOf(childData.receivedPort);
-            }
-
-            addressString = childData.receivedAddressString;
-            portString = childData.receivedPortString;
-          }
-        }
-
-        if(childData.sentPackets > 0) {
-          MyLog.d("Sent address: " + childData.sentAddress + ":" + childData.sentPort);
-
-          if(!IptablesLog.localIpAddrs.contains(childData.sentAddress)) {
-            if(IptablesLog.resolveHosts) {
-              String resolved = IptablesLog.resolver.resolveAddress(childData.sentAddress);
-
-              if(resolved != null) {
-                childData.sentAddressString = resolved;
-              } else {
-                childData.sentAddressString = childData.sentAddress;
-              }
-            } else {
-              childData.sentAddressString = childData.sentAddress;
-            }
-
-            if(IptablesLog.resolvePorts) {
-              childData.sentPortString = IptablesLog.resolver.resolveService(String.valueOf(childData.sentPort));
-            } else {
-              childData.sentPortString = String.valueOf(childData.sentPort);
-            }
-
-            addressString = childData.sentAddressString;
-            portString = childData.sentPortString;
-          }
-        }
-
-        if(addressString != null) {
-          MyLog.d("Final address: " + addressString + ":" + portString);
-
-          has_host = true;
-          builder.append("<br>&nbsp;&nbsp;");
-          builder.append("<u>" + addressString + ":" + portString  + "</u>");
-
-          if(childData.sentPackets > 0) {
-            if(childData.sentTimestampString.length() == 0) {
-              childData.sentTimestampString = Timestamp.getTimestamp(childData.sentTimestamp);
-            }
-
-            builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
-            builder.append("<small>Sent:</small> <b>" + childData.sentPackets + "</b> <small>packets,</small> <b>" + childData.sentBytes + "</b> <small>bytes</small> (" + childData.sentTimestampString.substring(childData.sentTimestampString.indexOf(' ') + 1, childData.sentTimestampString.length()) + ")");
-          }
-
-          if(childData.receivedPackets > 0) {
-            if(childData.receivedTimestampString.length() == 0) {
-              childData.receivedTimestampString = Timestamp.getTimestamp(childData.receivedTimestamp);
-            }
-
-            builder.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;");
-            builder.append("<small>Recv:</small> <em>" + childData.receivedPackets + "</em> <small>packets,</small> <em>" + childData.receivedBytes + "</em> <small>bytes</small> (" + childData.receivedTimestampString.substring(childData.receivedTimestampString.indexOf(' ') + 1, childData.receivedTimestampString.length()) + ")");
-          }
-        }
-      }
-
-      if(has_host) {
-        item.uniqueHosts = builder.toString();
-        item.uniqueHostsIsDirty = true;
-      }
     }
   }
 
@@ -818,8 +685,8 @@ public class AppView extends Activity {
 
           // undo uniqueHosts filtering
           for(GroupItem item : originalItems) {
-            if(item.uniqueHostsIsFiltered) {
-              item.uniqueHostsIsFiltered = false;
+            if(item.childrenAreFiltered) {
+              item.childrenAreFiltered = false;
               //buildUniqueHosts(item);
             }
           }
@@ -1137,63 +1004,6 @@ public class AppView extends Activity {
       }
 
     @Override
-      public View getChildView(int groupPosition, int childPosition,
-          boolean isLastChild, View convertView, ViewGroup parent) 
-      {
-        ChildViewHolder holder = null;
-
-        TextView host;
-
-        TextView sentPackets;
-        TextView sentBytes;
-        TextView sentTimestamp;
-
-        TextView receivedPackets;
-        TextView receivedBytes;
-        TextView receivedTimestamp;
-
-        ChildItem item;
-
-        synchronized(groupData) {
-          item = (ChildItem) getChild(groupPosition, childPosition);
-        }
-
-        if(item == null) {
-          MyLog.d("child (" + groupPosition + "," + childPosition + ") not found");
-          return null;
-        }
-
-        if(convertView == null) {
-          convertView = mInflater.inflate(R.layout.hostitem, null);
-          holder = new ChildViewHolder(convertView);
-          convertView.setTag(holder);
-        } else {
-          holder = (ChildViewHolder) convertView.getTag();
-        }
-
-        host = holder.getHost();
-        host.setText("lol");
-
-        sentPackets = holder.getSentPackets();
-        sentBytes = holder.getSentBytes();
-        sentTimestamp = holder.getSentTimestamp();
-
-        sentPackets.setText(String.valueOf(item.sentPackets));
-        sentBytes.setText(String.valueOf(item.sentBytes));
-        //sentTimestamp.setText("(" + item.sentTimestampString.substring(item.sentTimestampString.indexOf(' ') + 1, item.sentTimestampString.length()) + ")");
-
-        receivedPackets = holder.getReceivedPackets();
-        receivedBytes = holder.getReceivedBytes();
-        receivedTimestamp = holder.getReceivedTimestamp();
-
-        receivedPackets.setText(String.valueOf(item.receivedPackets));
-        receivedBytes.setText(String.valueOf(item.receivedBytes));
-        //receivedTimestamp.setText("(" + item.receivedTimestampString.substring(item.receivedTimestampString.indexOf(' ') + 1, item.receivedTimestampString.length()) + ")");
-
-        return convertView;
-      }
-
-    @Override
       public View getGroupView(int groupPosition, boolean isExpanded,
           View convertView, ViewGroup parent)
       {
@@ -1234,19 +1044,123 @@ public class AppView extends Activity {
 
         timestamp = holder.getTimestamp();
 
-        // fixme: remove this soon
         if(item.lastTimestamp != 0) {
-          item.lastTimestampString = Timestamp.getTimestamp(item.lastTimestamp);
-        }
-
-        if(item.lastTimestampString.length() > 0) {
-          timestamp.setText("(" + item.lastTimestampString + ")");
+          timestamp.setText("(" + Timestamp.getTimestamp(item.lastTimestamp) + ")");
           timestamp.setVisibility(View.VISIBLE);
-        }
-        else {
-          timestamp.setText("");
+        } else {
           timestamp.setVisibility(View.GONE);
         }
+
+        return convertView;
+      }
+
+    @Override
+      public View getChildView(int groupPosition, int childPosition,
+          boolean isLastChild, View convertView, ViewGroup parent) 
+      {
+        ChildViewHolder holder = null;
+
+        TextView host;
+
+        TextView sentPackets;
+        TextView sentBytes;
+        TextView sentTimestamp;
+
+        TextView receivedPackets;
+        TextView receivedBytes;
+        TextView receivedTimestamp;
+
+        ChildItem item;
+
+        synchronized(groupData) {
+          item = (ChildItem) getChild(groupPosition, childPosition);
+        }
+
+        if(item == null) {
+          MyLog.d("child (" + groupPosition + "," + childPosition + ") not found");
+          return null;
+        }
+
+        if(convertView == null) {
+          convertView = mInflater.inflate(R.layout.hostitem, null);
+          holder = new ChildViewHolder(convertView);
+          convertView.setTag(holder);
+        } else {
+          holder = (ChildViewHolder) convertView.getTag();
+        }
+
+        host = holder.getHost();
+
+        String hostString = null;
+
+        if(item.sentPackets > 0 && !IptablesLog.localIpAddrs.contains(item.sentAddress)) {
+          String sentAddressString;
+          String sentPortString;
+
+          if(IptablesLog.resolveHosts) {
+            sentAddressString = IptablesLog.resolver.resolveAddress(item.sentAddress);
+
+            if(sentAddressString == null) {
+              sentAddressString = item.sentAddress;
+            }
+
+          } else {
+            sentAddressString = item.sentAddress;
+          }
+
+          if(IptablesLog.resolvePorts) {
+            sentPortString = IptablesLog.resolver.resolveService(String.valueOf(item.sentPort));
+          } else {
+            sentPortString = String.valueOf(item.sentPort);
+          }
+
+          hostString = sentAddressString + ":" + sentPortString;
+        }
+        else if(item.receivedPackets > 0 && !IptablesLog.localIpAddrs.contains(item.receivedAddress)) {
+          String receivedAddressString;
+          String receivedPortString;
+
+          if(IptablesLog.resolveHosts) {
+            receivedAddressString = IptablesLog.resolver.resolveAddress(item.receivedAddress);
+
+            if(receivedAddressString == null) {
+              receivedAddressString = item.receivedAddress;
+            }
+
+          } else {
+            receivedAddressString = item.receivedAddress;
+          }
+
+          if(IptablesLog.resolvePorts) {
+            receivedPortString = IptablesLog.resolver.resolveService(String.valueOf(item.receivedPort));
+          } else {
+            receivedPortString = String.valueOf(item.receivedPort);
+          }
+
+          hostString = receivedAddressString + ":" + receivedPortString;
+        }
+
+        host.setText(Html.fromHtml(hostString));
+
+        sentPackets = holder.getSentPackets();
+        sentBytes = holder.getSentBytes();
+        sentTimestamp = holder.getSentTimestamp();
+
+        sentPackets.setText(String.valueOf(item.sentPackets));
+        sentBytes.setText(String.valueOf(item.sentBytes));
+
+        String timestampString = Timestamp.getTimestamp(item.sentTimestamp);
+        sentTimestamp.setText("(" + timestampString.substring(timestampString.indexOf(' ') + 1, timestampString.length()) + ")");
+
+        receivedPackets = holder.getReceivedPackets();
+        receivedBytes = holder.getReceivedBytes();
+        receivedTimestamp = holder.getReceivedTimestamp();
+
+        receivedPackets.setText(String.valueOf(item.receivedPackets));
+        receivedBytes.setText(String.valueOf(item.receivedBytes));
+
+        timestampString = Timestamp.getTimestamp(item.receivedTimestamp);
+        receivedTimestamp.setText("(" + timestampString.substring(timestampString.indexOf(' ') + 1, timestampString.length()) + ")");
 
         return convertView;
       }

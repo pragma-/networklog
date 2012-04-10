@@ -509,10 +509,50 @@ public class AppTimelineGraph extends Activity
           String label = host;
 
           if(info.sentPackets > 0 && !IptablesLog.localIpAddrs.contains(info.sentAddress)) {
-            label = info.sentAddressString + ":" + info.sentPortString;
+            String sentAddressString;
+            String sentPortString;
+
+            if(IptablesLog.resolveHosts) {
+              sentAddressString = IptablesLog.resolver.resolveAddress(info.sentAddress);
+
+              if(sentAddressString == null) {
+                sentAddressString = info.sentAddress;
+              }
+
+            } else {
+              sentAddressString = info.sentAddress;
+            }
+
+            if(IptablesLog.resolvePorts) {
+              sentPortString = IptablesLog.resolver.resolveService(String.valueOf(info.sentPort));
+            } else {
+              sentPortString = String.valueOf(info.sentPort);
+            }
+
+            label = sentAddressString + ":" + sentPortString;
           }
           else if(info.receivedPackets > 0 && !IptablesLog.localIpAddrs.contains(info.receivedAddress)) {
-            label = info.receivedAddressString + ":" + info.receivedPortString;
+            String receivedAddressString;
+            String receivedPortString;
+
+            if(IptablesLog.resolveHosts) {
+              receivedAddressString = IptablesLog.resolver.resolveAddress(info.receivedAddress);
+
+              if(receivedAddressString == null) {
+                receivedAddressString = info.receivedAddress;
+              }
+
+            } else {
+              receivedAddressString = info.receivedAddress;
+            }
+
+            if(IptablesLog.resolvePorts) {
+              receivedPortString = IptablesLog.resolver.resolveService(String.valueOf(info.receivedPort));
+            } else {
+              receivedPortString = String.valueOf(info.receivedPort);
+            }
+
+            label = receivedAddressString + ":" + receivedPortString;
           }
 
           graphView.addSeries(new GraphViewSeries(label, Color.parseColor(getResources().getString(Colors.distinctColor[color])), seriesData));

@@ -47,18 +47,11 @@ public class LogView extends Activity
     protected String mName;
     protected String mNameLowerCase;
     protected String srcAddr;
-    protected String srcAddrString;
-    protected boolean srcAddrResolved;
     protected int srcPort;
-    protected String srcPortString;
     protected String dstAddr;
-    protected String dstAddrString;
-    protected boolean dstAddrResolved;
     protected int dstPort;
-    protected String dstPortString;
     protected int len;
     protected long timestamp;
-    protected String timestampString;
 
     ListItem(Drawable icon, int uid, String name) {
       mIcon = icon;
@@ -89,37 +82,6 @@ public class LogView extends Activity
 
   public void refreshAdapter() {
     adapter.notifyDataSetChanged();
-  }
-
-  public void refreshHosts() {
-    synchronized(listData) {
-      if(!IptablesLog.resolveHosts) {
-        for(ListItem item : listData) {
-          item.srcAddrString = String.valueOf(item.srcAddr);
-          item.srcAddrResolved = false;
-          item.dstAddrString = String.valueOf(item.dstAddr);
-          item.dstAddrResolved = false;
-        }
-      }
-      
-      adapter.notifyDataSetChanged();
-    }
-  }
-
-  public void refreshPorts() {
-    synchronized(listData) {
-      for(ListItem item : listData) {
-        if(IptablesLog.resolvePorts) {
-          item.srcPortString = IptablesLog.resolver.resolveService(String.valueOf(item.srcPort));
-          item.dstPortString = IptablesLog.resolver.resolveService(String.valueOf(item.dstPort));
-        } else {
-          item.srcPortString = String.valueOf(item.srcPort);
-          item.dstPortString = String.valueOf(item.dstPort);
-        }
-      }
-
-      adapter.notifyDataSetChanged();
-    }
   }
 
   public void refreshIcons() {
@@ -231,32 +193,11 @@ public class LogView extends Activity
     item.srcAddr = entry.src;
     item.srcPort = entry.spt;
 
-    item.srcAddrString = entry.src;
-    item.srcAddrResolved = false;
-
-    if(IptablesLog.resolvePorts) {
-      item.srcPortString = IptablesLog.resolver.resolveService(String.valueOf(entry.spt));
-    }
-    else {
-      item.srcPortString = String.valueOf(entry.spt);
-    }
-
     item.dstAddr = entry.dst;
     item.dstPort = entry.dpt;
 
-    item.dstAddrString = entry.dst;
-    item.dstAddrResolved = false;
-
-    if(IptablesLog.resolvePorts) {
-      item.dstPortString = IptablesLog.resolver.resolveService(String.valueOf(entry.dpt));
-    }
-    else {
-      item.dstPortString = String.valueOf(entry.dpt);
-    }
-
     item.len = entry.len;
     item.timestamp = entry.timestamp;
-    item.timestampString = "";
 
     MyLog.d("LogView: Add item: " + item.srcAddr + " " + item.srcPort + " " + item.dstAddr + " " + item.dstPort + " " + item.len);
 
@@ -417,11 +358,45 @@ public class LogView extends Activity
 
                 boolean matched = false;
 
+                String srcAddrResolved;
+                String srcPortResolved;
+                String dstAddrResolved;
+                String dstPortResolved;
+
+                if(IptablesLog.resolveHosts) {
+                  srcAddrResolved = IptablesLog.resolver.resolveAddress(item.srcAddr);
+
+                  if(srcAddrResolved == null) {
+                    srcAddrResolved = "";
+                  }
+
+                  dstAddrResolved = IptablesLog.resolver.resolveAddress(item.dstAddr);
+
+                  if(dstAddrResolved == null) {
+                    dstAddrResolved = item.dstAddr;
+                  }
+                } else {
+                  srcAddrResolved = "";
+                  dstAddrResolved = "";
+                }
+
+                if(IptablesLog.resolvePorts) {
+                  srcPortResolved = IptablesLog.resolver.resolveService(String.valueOf(item.srcPort));
+                  dstPortResolved = IptablesLog.resolver.resolveService(String.valueOf(item.dstPort));
+                } else {
+                  srcPortResolved = "";
+                  dstPortResolved = "";
+                }
+
                 for(String c : IptablesLog.filterTextIncludeList) {
                   if((IptablesLog.filterNameInclude && item.mNameLowerCase.contains(c))
                       || (IptablesLog.filterUidInclude && item.mUidString.equals(c))
-                      || (IptablesLog.filterAddressInclude && (item.srcAddrString.contains(c) || item.dstAddrString.contains(c)))
-                      || (IptablesLog.filterPortInclude && (item.srcPortString.toLowerCase().equals(c) || item.dstPortString.toLowerCase().equals(c))))
+                      || (IptablesLog.filterAddressInclude && 
+                        ((item.srcAddr.contains(c) || srcAddrResolved.contains(c)) 
+                         || (item.dstAddr.contains(c) || dstAddrResolved.contains(c))))
+                      || (IptablesLog.filterPortInclude && 
+                        ((String.valueOf(item.srcPort).toLowerCase().equals(c) || srcPortResolved.toLowerCase().equals(c))
+                         || (String.valueOf(item.dstPort).toLowerCase().equals(c) || dstPortResolved.toLowerCase().equals(c)))))
                   {
                     matched = true;
                   }
@@ -443,11 +418,41 @@ public class LogView extends Activity
 
                 boolean matched = false;
 
+                String srcAddrResolved;
+                String srcPortResolved;
+                String dstAddrResolved;
+                String dstPortResolved;
+
+                if(IptablesLog.resolveHosts) {
+                  srcAddrResolved = IptablesLog.resolver.resolveAddress(item.srcAddr);
+
+                  if(srcAddrResolved == null) {
+                    srcAddrResolved = "";
+                  }
+
+                  dstAddrResolved = IptablesLog.resolver.resolveAddress(item.dstAddr);
+
+                  if(dstAddrResolved == null) {
+                    dstAddrResolved = item.dstAddr;
+                  }
+                } else {
+                  srcAddrResolved = "";
+                  dstAddrResolved = "";
+                }
+
+                if(IptablesLog.resolvePorts) {
+                  srcPortResolved = IptablesLog.resolver.resolveService(String.valueOf(item.srcPort));
+                  dstPortResolved = IptablesLog.resolver.resolveService(String.valueOf(item.dstPort));
+                } else {
+                  srcPortResolved = "";
+                  dstPortResolved = "";
+                }
+
                 for(String c : IptablesLog.filterTextExcludeList) {
                   if((IptablesLog.filterNameExclude && item.mNameLowerCase.contains(c))
                       || (IptablesLog.filterUidExclude && item.mUidString.contains(c))
-                      || (IptablesLog.filterAddressExclude && (item.srcAddrString.contains(c) || item.dstAddrString.contains(c)))
-                      || (IptablesLog.filterPortExclude && (item.srcPortString.toLowerCase().equals(c) || item.dstPortString.toLowerCase().equals(c))))
+                      || (IptablesLog.filterAddressExclude && ((item.srcAddr.contains(c) || srcAddrResolved.contains(c)) || (item.dstAddr.contains(c) || dstAddrResolved.contains(c))))
+                      || (IptablesLog.filterPortExclude && ((String.valueOf(item.srcPort).toLowerCase().equals(c) || srcPortResolved.toLowerCase().equals(c)) || (String.valueOf(item.dstPort).toLowerCase().equals(c) || dstPortResolved.toLowerCase().equals(c)))))
                   {
                     matched = true;
                   }
@@ -525,46 +530,56 @@ public class LogView extends Activity
         name = holder.getName();
         name.setText("(" + item.mUid + ")" + " " + item.mName);
 
-        if(IptablesLog.resolveHosts && !item.srcAddrResolved) {
+        srcAddr = holder.getSrcAddr();
+
+        if(IptablesLog.resolveHosts) {
           String resolved = IptablesLog.resolver.resolveAddress(item.srcAddr);
 
           if(resolved != null) {
-            item.srcAddrString = resolved;
-            item.srcAddrResolved = true;
+            srcAddr.setText("SRC: " + resolved);
+          } else {
+            srcAddr.setText("SRC: " + item.srcAddr);
           }
+        } else {
+          srcAddr.setText("SRC: " + item.srcAddr);
         }
 
-        srcAddr = holder.getSrcAddr();
-        srcAddr.setText("SRC: " + item.srcAddrString);
-
         srcPort = holder.getSrcPort();
-        srcPort.setText(item.srcPortString);
 
-        if(IptablesLog.resolveHosts && !item.dstAddrResolved) {
+        if(IptablesLog.resolvePorts) {
+          srcPort.setText(IptablesLog.resolver.resolveService(String.valueOf(item.srcPort)));
+        } else {
+          srcPort.setText(String.valueOf(item.srcPort));
+        }
+
+        dstAddr = holder.getDstAddr();
+
+        if(IptablesLog.resolveHosts) {
           String resolved = IptablesLog.resolver.resolveAddress(item.dstAddr);
 
           if(resolved != null) {
-            item.dstAddrString = resolved;
-            item.dstAddrResolved = true;
+            dstAddr.setText("DST: " + resolved);
+          } else {
+            dstAddr.setText("DST: " + item.dstAddr);
           }
+        } else {
+          dstAddr.setText("DST: " + item.dstAddr);
         }
         
-        dstAddr = holder.getDstAddr();
-        dstAddr.setText("DST: " + item.dstAddrString);
-
         dstPort = holder.getDstPort();
-        dstPort.setText(item.dstPortString);
+
+        if(IptablesLog.resolvePorts) {
+          dstPort.setText(IptablesLog.resolver.resolveService(String.valueOf(item.dstPort)));
+        } else {
+          dstPort.setText(String.valueOf(item.dstPort));
+        }
 
         len = holder.getLen();
         len.setText("LEN: " + item.len);
 
         timestamp = holder.getTimestamp();
 
-        if(item.timestampString.length() == 0) {
-          item.timestampString = Timestamp.getTimestamp(item.timestamp);
-        }
-
-        timestamp.setText(item.timestampString);
+        timestamp.setText(Timestamp.getTimestamp(item.timestamp));
 
         return convertView;
       }
