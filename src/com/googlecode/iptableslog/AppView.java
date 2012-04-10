@@ -392,8 +392,8 @@ public class AppView extends Activity {
       lv.setSmoothScrollbarEnabled(false);
       lv.setGroupIndicator(null);
       lv.setChildIndicator(null);
-      //lv.setDividerHeight(0);
-      //lv.setChildDivider(getResources().getDrawable(R.color.transparent));
+      lv.setDividerHeight(0);
+      lv.setChildDivider(getResources().getDrawable(R.color.transparent));
       layout.addView(lv);
       setContentView(layout);
     }
@@ -1030,6 +1030,11 @@ public class AppView extends Activity {
           holder = (GroupViewHolder) convertView.getTag();
         }
 
+        if(groupPosition == 0) {
+          holder.getDivider().setVisibility(View.GONE);
+        } else {
+          holder.getDivider().setVisibility(View.VISIBLE);
+        }
         icon = holder.getIcon();
         icon.setImageDrawable(item.app.icon);
 
@@ -1140,27 +1145,58 @@ public class AppView extends Activity {
           hostString = receivedAddressString + ":" + receivedPortString;
         }
 
-        host.setText(Html.fromHtml(hostString));
+        host.setText(Html.fromHtml("<u>" + hostString + "</u>"));
 
         sentPackets = holder.getSentPackets();
         sentBytes = holder.getSentBytes();
         sentTimestamp = holder.getSentTimestamp();
 
-        sentPackets.setText(String.valueOf(item.sentPackets));
-        sentBytes.setText(String.valueOf(item.sentBytes));
+        if(item.sentPackets > 0) {
+          sentPackets.setText(String.valueOf(item.sentPackets));
+          sentBytes.setText(String.valueOf(item.sentBytes));
 
-        String timestampString = Timestamp.getTimestamp(item.sentTimestamp);
-        sentTimestamp.setText("(" + timestampString.substring(timestampString.indexOf(' ') + 1, timestampString.length()) + ")");
+          String timestampString = Timestamp.getTimestamp(item.sentTimestamp);
+          sentTimestamp.setText("(" + timestampString.substring(timestampString.indexOf(' ') + 1, timestampString.length()) + ")");
+
+          sentPackets.setVisibility(View.VISIBLE);
+          sentBytes.setVisibility(View.VISIBLE);
+          sentTimestamp.setVisibility(View.VISIBLE);
+          holder.getSentLabel().setVisibility(View.VISIBLE);
+          holder.getSentPacketsLabel().setVisibility(View.VISIBLE);
+          holder.getSentBytesLabel().setVisibility(View.VISIBLE);
+        } else {
+          sentPackets.setVisibility(View.GONE);
+          sentBytes.setVisibility(View.GONE);
+          sentTimestamp.setVisibility(View.GONE);
+          holder.getSentLabel().setVisibility(View.GONE);
+          holder.getSentPacketsLabel().setVisibility(View.GONE);
+          holder.getSentBytesLabel().setVisibility(View.GONE);
+        }
 
         receivedPackets = holder.getReceivedPackets();
         receivedBytes = holder.getReceivedBytes();
         receivedTimestamp = holder.getReceivedTimestamp();
 
-        receivedPackets.setText(String.valueOf(item.receivedPackets));
-        receivedBytes.setText(String.valueOf(item.receivedBytes));
+        if(item.receivedPackets > 0) {
+          receivedPackets.setText(String.valueOf(item.receivedPackets));
+          receivedBytes.setText(String.valueOf(item.receivedBytes));
 
-        timestampString = Timestamp.getTimestamp(item.receivedTimestamp);
-        receivedTimestamp.setText("(" + timestampString.substring(timestampString.indexOf(' ') + 1, timestampString.length()) + ")");
+          String timestampString = Timestamp.getTimestamp(item.receivedTimestamp);
+          receivedTimestamp.setText("(" + timestampString.substring(timestampString.indexOf(' ') + 1, timestampString.length()) + ")");
+          receivedPackets.setVisibility(View.VISIBLE);
+          receivedBytes.setVisibility(View.VISIBLE);
+          receivedTimestamp.setVisibility(View.VISIBLE);
+          holder.getReceivedLabel().setVisibility(View.VISIBLE);
+          holder.getReceivedPacketsLabel().setVisibility(View.VISIBLE);
+          holder.getReceivedBytesLabel().setVisibility(View.VISIBLE);
+        } else {
+          receivedPackets.setVisibility(View.GONE);
+          receivedBytes.setVisibility(View.GONE);
+          receivedTimestamp.setVisibility(View.GONE);
+          holder.getReceivedLabel().setVisibility(View.GONE);
+          holder.getReceivedPacketsLabel().setVisibility(View.GONE);
+          holder.getReceivedBytesLabel().setVisibility(View.GONE);
+        }
 
         return convertView;
       }
@@ -1168,6 +1204,7 @@ public class AppView extends Activity {
 
   private class GroupViewHolder {
     private View mView;
+    private ImageView mDivider = null;
     private ImageView mIcon = null;
     private TextView mName = null;
     private TextView mPackets = null;
@@ -1177,6 +1214,14 @@ public class AppView extends Activity {
 
     public GroupViewHolder(View view) {
       mView = view;
+    }
+
+    public ImageView getDivider() {
+      if(mDivider == null) {
+        mDivider = (ImageView) mView.findViewById(R.id.appDivider);
+      }
+
+      return mDivider;
     }
 
     public ImageView getIcon() {
@@ -1224,12 +1269,18 @@ public class AppView extends Activity {
     private View mView;
     private TextView mHost = null;
 
+    private TextView mSentLabel = null;
     private TextView mSentPackets = null;
+    private TextView mSentPacketsLabel = null;
     private TextView mSentBytes = null;
+    private TextView mSentBytesLabel = null;
     private TextView mSentTimestamp = null;
 
+    private TextView mReceivedLabel = null;
     private TextView mReceivedPackets = null;
+    private TextView mReceivedPacketsLabel = null;
     private TextView mReceivedBytes = null;
+    private TextView mReceivedBytesLabel = null;
     private TextView mReceivedTimestamp = null;
 
     public ChildViewHolder(View view) {
@@ -1244,6 +1295,30 @@ public class AppView extends Activity {
       return mHost;
     }
     
+    public TextView getSentLabel() {
+      if(mSentLabel == null) {
+        mSentLabel = (TextView) mView.findViewById(R.id.sentLabel);
+      }
+
+      return mSentLabel;
+    }
+
+    public TextView getSentPacketsLabel() {
+      if(mSentPacketsLabel == null) {
+        mSentPacketsLabel = (TextView) mView.findViewById(R.id.sentPacketsLabel);
+      }
+
+      return mSentPacketsLabel;
+    }
+
+    public TextView getSentBytesLabel() {
+      if(mSentBytesLabel == null) {
+        mSentBytesLabel = (TextView) mView.findViewById(R.id.sentBytesLabel);
+      }
+
+      return mSentBytesLabel;
+    }
+
     public TextView getSentPackets() {
       if(mSentPackets == null) {
         mSentPackets = (TextView) mView.findViewById(R.id.sentPackets);
@@ -1266,6 +1341,30 @@ public class AppView extends Activity {
       }
 
       return mSentTimestamp;
+    }
+
+    public TextView getReceivedLabel() {
+      if(mReceivedLabel == null) {
+        mReceivedLabel = (TextView) mView.findViewById(R.id.receivedLabel);
+      }
+
+      return mReceivedLabel;
+    }
+
+    public TextView getReceivedPacketsLabel() {
+      if(mReceivedPacketsLabel == null) {
+        mReceivedPacketsLabel = (TextView) mView.findViewById(R.id.receivedPacketsLabel);
+      }
+
+      return mReceivedPacketsLabel;
+    }
+
+    public TextView getReceivedBytesLabel() {
+      if(mReceivedBytesLabel == null) {
+        mReceivedBytesLabel = (TextView) mView.findViewById(R.id.receivedBytesLabel);
+      }
+
+      return mReceivedBytesLabel;
     }
 
     public TextView getReceivedPackets() {
