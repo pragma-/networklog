@@ -154,7 +154,7 @@ public class IptablesLog extends TabActivity
   }
 
   public static State state;
-  public enum State { LOAD_APPS, LOAD_LIST, LOAD_ICONS, RUNNING, EXITING  };
+  public enum State { LOAD_APPS, LOAD_LIST, RUNNING, EXITING  };
 
   public static InitRunner initRunner;
   public class InitRunner implements Runnable
@@ -189,9 +189,6 @@ public class IptablesLog extends TabActivity
       if(running == false) {
         return;
       }
-
-      state = IptablesLog.State.LOAD_ICONS;
-      appView.loadIcons();
 
       appView.startUpdater();
       logView.startUpdater();

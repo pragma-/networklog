@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
+import android.widget.Toast;
 
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -59,6 +60,8 @@ public class AppTimelineGraph extends Activity
       }
 
       AppView.GroupItem item = IptablesLog.appView.groupDataBuffer.get(index);
+
+      Toast.makeText(this, "Loading " + item + " graph", Toast.LENGTH_SHORT).show();
 
       // always give data sorted by x values
       graphView = new LineGraphView(this, item.toString() + " Timeline")

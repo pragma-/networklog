@@ -9,17 +9,20 @@ import android.os.Handler;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 
 public class ApplicationsTracker {
   public static ArrayList<AppEntry> installedApps;
-  public static Hashtable<String, AppEntry> installedAppsHash;
+  public static HashMap<String, AppEntry> installedAppsHash;
+  public static HashMap<String, Object> loadingIcon = new HashMap<String, Object>();
+  public static HashMap<String, Object> loadingLabel = new HashMap<String, Object>();
   public static ProgressDialog dialog;
   public static int appCount;
   public static Object dialogLock = new Object();
   public static Object installedAppsLock = new Object();
 
   public static class AppEntry {
+    boolean labelLoaded;
     String name;
     String nameLowerCase;
     String packageName;
@@ -40,27 +43,149 @@ public class ApplicationsTracker {
     installedAppsHash = data.applicationsTrackerInstalledAppsHash;
   }
 
+  public static String loadLabel(final Context context, final String packageName, final Object ref) {
+    AppEntry item = null;
+
+    for(AppEntry app : installedApps) {
+      if(app.packageName.equals(packageName)) {
+        item = app;
+        break;
+      }
+    }
+
+    if(item == null) {
+      MyLog.d("Failed to find item for " + packageName);
+      return packageName;
+    }
+
+    if(item.labelLoaded) {
+      return item.name;
+    }
+
+    Object loading;
+    synchronized(loadingLabel) {
+      loading = loadingLabel.get(packageName);
+    }
+
+    if(loading == null) {
+      synchronized(loadingLabel) {
+        loadingLabel.put(packageName, packageName);
+      }
+
+      final AppEntry entry = item;
+      new Thread(new Runnable() {
+        public void run() {
+          MyLog.d("Loading label for " + entry);
+          PackageManager pm = context.getPackageManager();
+          List<ApplicationInfo> apps = pm.getInstalledApplications(0);
+
+          for(final ApplicationInfo app : apps) {
+            if(app.packageName.equals(packageName)) {
+              entry.name = context.getPackageManager().getApplicationLabel(app).toString();
+              entry.nameLowerCase = entry.name.toLowerCase();
+              entry.labelLoaded = true;
+              
+              synchronized(loadingLabel) {
+                loadingLabel.remove(packageName);
+              }
+
+              if(ref instanceof LogView.ListItem) {
+                ((LogView.ListItem)ref).mLabelLoaded = true;
+              } else if(ref instanceof AppView.GroupItem) {
+                ((AppView.GroupItem)ref).app.labelLoaded = true;
+              }
+
+              IptablesLog.handler.post(new Runnable() {
+                public void run() {
+                  IptablesLog.logView.refreshAdapter();
+                  IptablesLog.appView.refreshAdapter();
+                }
+              });
+            }
+          }
+        }
+      }, "LoadLabel:" + packageName).start();
+
+      return packageName;
+    }
+
+    return packageName;
+  }
+
+  public static Drawable loadIcon(final Context context, final String packageName) {
+    AppEntry item = null;
+
+    for(AppEntry app : installedApps) {
+      if(app.packageName.equals(packageName)) {
+        item = app;
+        break;
+      }
+    }
+
+    if(item == null) {
+      MyLog.d("Failed to find item for " + packageName);
+      return null;
+    }
+
+    if(item.icon != null) {
+      return item.icon;
+    }
+
+    Object loading;
+    synchronized(loadingIcon) {
+      loading = loadingIcon.get(packageName);
+    }
+
+    if(loading == null) {
+      synchronized(loadingIcon) {
+        loadingIcon.put(packageName, packageName);
+      }
+
+      final AppEntry entry = item;
+      new Thread(new Runnable() {
+        public void run() {
+          MyLog.d("Loading icon for " + entry);
+          try {
+            entry.icon = context.getPackageManager().getApplicationIcon(packageName);
+
+            synchronized(loadingIcon) {
+              loadingIcon.remove(packageName);
+            }
+
+            IptablesLog.handler.post(new Runnable() {
+              public void run() {
+                IptablesLog.logView.refreshAdapter();
+                IptablesLog.appView.refreshAdapter();
+              }
+            });
+          } catch(Exception e) {
+          }
+        }
+      }, "LoadIcon:" + packageName).start();
+
+      return null;
+    }
+
+    return null;
+  }
+
   public static void getInstalledApps(final Context context, final Handler handler) {
     MyLog.d("Loading installed apps");
 
     synchronized(installedAppsLock) {
       if(IptablesLog.data == null) {
         installedApps = new ArrayList<AppEntry>();
-        installedAppsHash = new Hashtable<String, AppEntry>();
+        installedAppsHash = new HashMap<String, AppEntry>();
       } else {
         restoreData(IptablesLog.data);
         installedApps.clear();
         installedAppsHash.clear();
       }
 
-      MyLog.d("Get package manager");
-      List<ApplicationInfo> apps = new ArrayList<ApplicationInfo>();
       PackageManager pm = context.getPackageManager();
-
-      MyLog.d("Getting apps");
-      apps = pm.getInstalledApplications(0);
-
+      List<ApplicationInfo> apps = pm.getInstalledApplications(0);
       appCount = apps.size();
+
       handler.post(new Runnable() {
         public void run() {
           MyLog.d("Showing progress dialog; size: " + appCount);
@@ -100,16 +225,24 @@ public class ApplicationsTracker {
           }
         });
 
-        String name = app.loadLabel(pm).toString();
-        MyLog.d("Label: " + name);
         int uid = app.uid;
         String sUid = Integer.toString(uid);
 
         AppEntry entryHash = installedAppsHash.get(sUid);
 
         AppEntry entry = new AppEntry();
-        entry.name = name;
-        entry.nameLowerCase = name.toLowerCase();
+        
+        if(app.name != null) {
+          MyLog.d("Set name [" + app.name + "]");
+          entry.name = new String(app.name);
+          entry.nameLowerCase = app.name.toLowerCase();
+        } else {
+          MyLog.d("Set packageName [" + app.packageName + "]");
+          entry.name = new String(app.packageName);
+          entry.nameLowerCase = app.packageName.toLowerCase();
+        }
+
+        entry.labelLoaded = false;
         entry.icon = null;
         entry.uid = uid;
         entry.uidString = String.valueOf(uid);
@@ -118,7 +251,7 @@ public class ApplicationsTracker {
         installedApps.add(entry);
 
         if(entryHash != null) {
-          entryHash.name.concat("; " + name);
+          entryHash.name.concat("; " + entry.name);
         } else {
           installedAppsHash.put(sUid, entry);
         }
@@ -128,7 +261,8 @@ public class ApplicationsTracker {
       entry.name = "Kernel";
       entry.nameLowerCase = "kernel";
       entry.icon = context.getResources().getDrawable(R.drawable.linux_icon);
-      entry.packageName = null;
+      entry.packageName = entry.nameLowerCase;
+      entry.labelLoaded = true;
       entry.uid = -1;
       entry.uidString = "-1";
 
@@ -142,7 +276,8 @@ public class ApplicationsTracker {
         entry.name = "Root";
         entry.nameLowerCase = "root";
         entry.icon = context.getResources().getDrawable(R.drawable.root_icon);
-        entry.packageName = null;
+        entry.packageName = entry.nameLowerCase;
+        entry.labelLoaded = true;
         entry.uid = 0;
         entry.uidString = "0";
 

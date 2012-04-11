@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnChildClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.Filter;
@@ -280,81 +282,6 @@ public class AppView extends Activity {
     }
   }
 
-  protected void loadIcons() {
-    if(IptablesLog.data == null) {
-      new Thread("IconLoader") {
-        public void run() {
-          long nextUpdateTime = 0;
-
-          int size;
-
-          synchronized(groupDataBuffer) {
-            size = groupDataBuffer.size();
-          }
-
-          for(int i = 0; i < size; i++) {
-            GroupItem item;
-
-            synchronized(groupDataBuffer) {
-              item = groupDataBuffer.get(i);
-            }
-
-            if(item.app.packageName == null) {
-              continue;
-            }
-
-            try {
-              MyLog.d("Loading icon for " + item.app.packageName + " (" + item.app.name + ", " + item.app.uid + ")");
-              Drawable icon = getPackageManager().getApplicationIcon(item.app.packageName);
-              item.app.icon = icon;
-
-              // refresh adapter to display icons once every second while still loading icons
-              // (once few seconds instead of immediately after each icon prevents UI lag)
-              // (UI still may lag on lower end devices as loading icons is expensive)
-              long currentTime = SystemClock.elapsedRealtime();
-
-              if(currentTime >= nextUpdateTime) {
-                nextUpdateTime = currentTime + 2000;
-                runOnUiThread(new Runnable() {
-                  public void run() {
-                    MyLog.d("Updating adapter for icons");
-
-                    /*
-                       preSortData();
-                       sortData();
-                       setFilter(IptablesLog.filterText);
-                       */
-                    // refresh adapter to display icon
-                    if(!IptablesLog.outputPaused) {
-                      adapter.notifyDataSetChanged();
-                    }
-                  }
-                });
-              }
-            } catch(Exception e) {
-              Log.d("IptablesLog", "Failure to load icon for " + item.app.packageName + " (" + item.app.name + ", " + item.app.uid + ")", e);
-            }
-          }
-
-          // refresh adapter to display icons
-          runOnUiThread(new Runnable() {
-            public void run() {
-              preSortData();
-              sortData();
-              setFilter("");
-
-              if(!IptablesLog.outputPaused) {
-                adapter.notifyDataSetChanged();
-              }
-
-              IptablesLog.logView.refreshIcons();
-            }
-          });
-        }
-      } .start();
-    }
-  }
-
   /** Called when the activity is first created. */
   @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -395,17 +322,42 @@ public class AppView extends Activity {
       lv.setDividerHeight(0);
       lv.setChildDivider(getResources().getDrawable(R.color.transparent));
       layout.addView(lv);
+
+      lv.setOnItemLongClickListener(new OnItemLongClickListener() {
+        @Override
+        public boolean onItemLongClick(AdapterView parent, View v, 
+          int position, long id) 
+        {
+          GroupItem group = (GroupItem) adapter.getGroup(ExpandableListView.getPackedPositionGroup(id));
+
+          startActivity(new Intent(getApplicationContext(), AppTimelineGraph.class)
+            .putExtra("app_uid", group.app.uidString));
+
+          return true;
+        }
+      });
+
+      lv.setOnChildClickListener(new OnChildClickListener() {
+        @Override
+        public boolean onChildClick(ExpandableListView parent, View v, 
+          int groupPosition, int childPosition, long id)
+        {
+          GroupItem group = (GroupItem) adapter.getGroup(groupPosition);
+          ChildItem child = (ChildItem) adapter.getChild(groupPosition, childPosition);
+
+          startActivity(new Intent(getApplicationContext(), AppTimelineGraph.class)
+            .putExtra("app_uid", group.app.uidString)
+            .putExtra("src_addr", child.receivedAddress)
+            .putExtra("src_port", child.receivedPort)
+            .putExtra("dst_addr", child.sentAddress)
+            .putExtra("dst_port", child.sentPort));
+
+          return true;
+        }
+      });
+
       setContentView(layout);
     }
-
-  private class CustomOnItemClickListener implements OnItemClickListener {
-    @Override
-      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        GroupItem item = groupData.get(position);
-        startActivity(new Intent(getApplicationContext(), AppTimelineGraph.class)
-            .putExtra("app_uid", item.app.uidString));
-      }
-  }
 
   @Override
     public void onBackPressed() {
@@ -1035,10 +987,21 @@ public class AppView extends Activity {
         } else {
           holder.getDivider().setVisibility(View.VISIBLE);
         }
+
         icon = holder.getIcon();
+
+        if(item.app.icon == null) {
+          item.app.icon = ApplicationsTracker.loadIcon(getApplicationContext(), item.app.packageName);
+        }
+
         icon.setImageDrawable(item.app.icon);
 
         name = holder.getName();
+
+        if(item.app.labelLoaded == false) {
+          item.app.name = ApplicationsTracker.loadLabel(getApplicationContext(), item.app.packageName, item);
+        }
+
         name.setText("(" + item.app.uid + ")" + " " + item.app.name);
 
         packets = holder.getPackets();

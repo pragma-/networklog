@@ -4,15 +4,11 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
-
-import android.os.Messenger;
-import android.content.ServiceConnection;
 
 public class IptablesLogData {
   /* ApplicationsTracker */
   ArrayList<ApplicationsTracker.AppEntry> applicationsTrackerInstalledApps;
-  Hashtable<String, ApplicationsTracker.AppEntry> applicationsTrackerInstalledAppsHash;
+  HashMap<String, ApplicationsTracker.AppEntry> applicationsTrackerInstalledAppsHash;
   int applicationsTrackerAppCount;
 
   public void gatherApplicationsTrackerData() {

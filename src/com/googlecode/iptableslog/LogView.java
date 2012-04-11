@@ -44,6 +44,7 @@ public class LogView extends Activity
     protected Drawable mIcon;
     protected int mUid;
     protected String mUidString;
+    protected boolean mLabelLoaded;
     protected String mName;
     protected String mNameLowerCase;
     protected String srcAddr;
@@ -82,25 +83,6 @@ public class LogView extends Activity
 
   public void refreshAdapter() {
     adapter.notifyDataSetChanged();
-  }
-
-  public void refreshIcons() {
-    synchronized(listData) {
-      for(ListItem item : listData) {
-        if(item.mIcon == null) {
-          MyLog.d("[LogView] refreshing icon for " + item);
-          ApplicationsTracker.AppEntry entry = ApplicationsTracker.installedAppsHash.get(String.valueOf(item.mUid));
-
-          if(entry == null) {
-            MyLog.d("[LogView] no app entry found, icon not refreshed");
-          } else {
-            item.mIcon = entry.icon;
-          }
-        }
-      }
-
-      adapter.notifyDataSetChanged();
-    }
   }
 
   /** Called when the activity is first created. */
@@ -525,6 +507,15 @@ public class LogView extends Activity
 
         holder = (ViewHolder) convertView.getTag();
         icon = holder.getIcon();
+
+        if(item.mIcon == null) {
+          item.mIcon = ApplicationsTracker.loadIcon(getApplicationContext(), ApplicationsTracker.installedAppsHash.get(item.mUidString).packageName);
+        }
+
+        if(item.mLabelLoaded == false) {
+          item.mName = ApplicationsTracker.loadLabel(getApplicationContext(), ApplicationsTracker.installedAppsHash.get(item.mUidString).packageName, item);
+        }
+
         icon.setImageDrawable(item.mIcon);
 
         name = holder.getName();
