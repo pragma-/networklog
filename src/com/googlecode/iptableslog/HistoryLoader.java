@@ -111,6 +111,9 @@ public class HistoryLoader {
 
       final long starting_pos = result;
 
+      IptablesLog.logView.stopUpdater();
+      IptablesLog.appView.stopUpdater();
+
       final Context context_final = context;
       new Thread(new Runnable() {
         public void run() {
@@ -243,6 +246,9 @@ public class HistoryLoader {
                 dialog = null;
               }
             }
+
+            IptablesLog.logView.startUpdater();
+            IptablesLog.appView.startUpdater();
           }
         }
       }, "LoadHistory").start();

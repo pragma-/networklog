@@ -44,7 +44,6 @@ public class LogView extends Activity
     protected Drawable mIcon;
     protected int mUid;
     protected String mUidString;
-    protected boolean mLabelLoaded;
     protected String mName;
     protected String mNameLowerCase;
     protected String srcAddr;
@@ -355,7 +354,7 @@ public class LogView extends Activity
                   dstAddrResolved = IptablesLog.resolver.resolveAddress(item.dstAddr);
 
                   if(dstAddrResolved == null) {
-                    dstAddrResolved = item.dstAddr;
+                    dstAddrResolved = "";
                   }
                 } else {
                   srcAddrResolved = "";
@@ -374,8 +373,8 @@ public class LogView extends Activity
                   if((IptablesLog.filterNameInclude && item.mNameLowerCase.contains(c))
                       || (IptablesLog.filterUidInclude && item.mUidString.equals(c))
                       || (IptablesLog.filterAddressInclude && 
-                        ((item.srcAddr.contains(c) || srcAddrResolved.contains(c)) 
-                         || (item.dstAddr.contains(c) || dstAddrResolved.contains(c))))
+                        ((item.srcAddr.contains(c) || srcAddrResolved.toLowerCase().contains(c)) 
+                         || (item.dstAddr.contains(c) || dstAddrResolved.toLowerCase().contains(c))))
                       || (IptablesLog.filterPortInclude && 
                         ((String.valueOf(item.srcPort).toLowerCase().equals(c) || srcPortResolved.toLowerCase().equals(c))
                          || (String.valueOf(item.dstPort).toLowerCase().equals(c) || dstPortResolved.toLowerCase().equals(c)))))
@@ -415,7 +414,7 @@ public class LogView extends Activity
                   dstAddrResolved = IptablesLog.resolver.resolveAddress(item.dstAddr);
 
                   if(dstAddrResolved == null) {
-                    dstAddrResolved = item.dstAddr;
+                    dstAddrResolved = "";
                   }
                 } else {
                   srcAddrResolved = "";
@@ -433,8 +432,8 @@ public class LogView extends Activity
                 for(String c : IptablesLog.filterTextExcludeList) {
                   if((IptablesLog.filterNameExclude && item.mNameLowerCase.contains(c))
                       || (IptablesLog.filterUidExclude && item.mUidString.contains(c))
-                      || (IptablesLog.filterAddressExclude && ((item.srcAddr.contains(c) || srcAddrResolved.contains(c)) || (item.dstAddr.contains(c) || dstAddrResolved.contains(c))))
-                      || (IptablesLog.filterPortExclude && ((String.valueOf(item.srcPort).toLowerCase().equals(c) || srcPortResolved.toLowerCase().equals(c)) || (String.valueOf(item.dstPort).toLowerCase().equals(c) || dstPortResolved.toLowerCase().equals(c)))))
+                      || (IptablesLog.filterAddressExclude && ((item.srcAddr.contains(c) || srcAddrResolved.toLowerCase().contains(c)) || (item.dstAddr.contains(c) || dstAddrResolved.toLowerCase().contains(c))))
+                      || (IptablesLog.filterPortExclude && ((String.valueOf(item.srcPort).equals(c) || srcPortResolved.toLowerCase().equals(c)) || (String.valueOf(item.dstPort).equals(c) || dstPortResolved.toLowerCase().equals(c)))))
                   {
                     matched = true;
                   }
@@ -510,10 +509,6 @@ public class LogView extends Activity
 
         if(item.mIcon == null) {
           item.mIcon = ApplicationsTracker.loadIcon(getApplicationContext(), ApplicationsTracker.installedAppsHash.get(item.mUidString).packageName);
-        }
-
-        if(item.mLabelLoaded == false) {
-          item.mName = ApplicationsTracker.loadLabel(getApplicationContext(), ApplicationsTracker.installedAppsHash.get(item.mUidString).packageName, item);
         }
 
         icon.setImageDrawable(item.mIcon);

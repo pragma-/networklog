@@ -36,7 +36,9 @@
     <item>12 hours</item>
     <item>24 hours</item>
     <item>2 days</item>
+    <item>4 days</item>
     <item>1 week</item>
+    <item>2 weeks</item>
     <item>1 month</item>
     <item>all</item>
   </string-array>
@@ -51,7 +53,9 @@
     <item>43200000</item>
     <item>86400000</item>
     <item>172800000</item>
+    <item>345600000</item>
     <item>604800000</item>
+    <item>1209600000</item>
     <item>2419200000</item>
     <item>-1</item>
    </string-array>

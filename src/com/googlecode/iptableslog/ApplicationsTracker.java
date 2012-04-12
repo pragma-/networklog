@@ -20,9 +20,11 @@ public class ApplicationsTracker {
   public static int appCount;
   public static Object dialogLock = new Object();
   public static Object installedAppsLock = new Object();
+  public static PackageManager pm = null;
+  // todo: move apps into installedApps and consoldiate memory
+  public static List<ApplicationInfo> apps = null;
 
   public static class AppEntry {
-    boolean labelLoaded;
     String name;
     String nameLowerCase;
     String packageName;
@@ -41,75 +43,6 @@ public class ApplicationsTracker {
     }
 
     installedAppsHash = data.applicationsTrackerInstalledAppsHash;
-  }
-
-  public static String loadLabel(final Context context, final String packageName, final Object ref) {
-    AppEntry item = null;
-
-    for(AppEntry app : installedApps) {
-      if(app.packageName.equals(packageName)) {
-        item = app;
-        break;
-      }
-    }
-
-    if(item == null) {
-      MyLog.d("Failed to find item for " + packageName);
-      return packageName;
-    }
-
-    if(item.labelLoaded) {
-      return item.name;
-    }
-
-    Object loading;
-    synchronized(loadingLabel) {
-      loading = loadingLabel.get(packageName);
-    }
-
-    if(loading == null) {
-      synchronized(loadingLabel) {
-        loadingLabel.put(packageName, packageName);
-      }
-
-      final AppEntry entry = item;
-      new Thread(new Runnable() {
-        public void run() {
-          MyLog.d("Loading label for " + entry);
-          PackageManager pm = context.getPackageManager();
-          List<ApplicationInfo> apps = pm.getInstalledApplications(0);
-
-          for(final ApplicationInfo app : apps) {
-            if(app.packageName.equals(packageName)) {
-              entry.name = context.getPackageManager().getApplicationLabel(app).toString();
-              entry.nameLowerCase = entry.name.toLowerCase();
-              entry.labelLoaded = true;
-              
-              synchronized(loadingLabel) {
-                loadingLabel.remove(packageName);
-              }
-
-              if(ref instanceof LogView.ListItem) {
-                ((LogView.ListItem)ref).mLabelLoaded = true;
-              } else if(ref instanceof AppView.GroupItem) {
-                ((AppView.GroupItem)ref).app.labelLoaded = true;
-              }
-
-              IptablesLog.handler.post(new Runnable() {
-                public void run() {
-                  IptablesLog.logView.refreshAdapter();
-                  IptablesLog.appView.refreshAdapter();
-                }
-              });
-            }
-          }
-        }
-      }, "LoadLabel:" + packageName).start();
-
-      return packageName;
-    }
-
-    return packageName;
   }
 
   public static Drawable loadIcon(final Context context, final String packageName) {
@@ -146,7 +79,7 @@ public class ApplicationsTracker {
         public void run() {
           MyLog.d("Loading icon for " + entry);
           try {
-            entry.icon = context.getPackageManager().getApplicationIcon(packageName);
+            entry.icon = pm.getApplicationIcon(packageName);
 
             synchronized(loadingIcon) {
               loadingIcon.remove(packageName);
@@ -182,8 +115,14 @@ public class ApplicationsTracker {
         installedAppsHash.clear();
       }
 
-      PackageManager pm = context.getPackageManager();
-      List<ApplicationInfo> apps = pm.getInstalledApplications(0);
+      if(pm == null) {
+        pm = context.getPackageManager();
+      }
+
+      if(apps == null) {
+        apps = pm.getInstalledApplications(0);
+      }
+
       appCount = apps.size();
 
       handler.post(new Runnable() {
@@ -231,18 +170,9 @@ public class ApplicationsTracker {
         AppEntry entryHash = installedAppsHash.get(sUid);
 
         AppEntry entry = new AppEntry();
-        
-        if(app.name != null) {
-          MyLog.d("Set name [" + app.name + "]");
-          entry.name = new String(app.name);
-          entry.nameLowerCase = app.name.toLowerCase();
-        } else {
-          MyLog.d("Set packageName [" + app.packageName + "]");
-          entry.name = new String(app.packageName);
-          entry.nameLowerCase = app.packageName.toLowerCase();
-        }
 
-        entry.labelLoaded = false;
+        entry.name = pm.getApplicationLabel(app).toString();
+        entry.nameLowerCase = entry.name.toLowerCase();
         entry.icon = null;
         entry.uid = uid;
         entry.uidString = String.valueOf(uid);
@@ -262,7 +192,6 @@ public class ApplicationsTracker {
       entry.nameLowerCase = "kernel";
       entry.icon = context.getResources().getDrawable(R.drawable.linux_icon);
       entry.packageName = entry.nameLowerCase;
-      entry.labelLoaded = true;
       entry.uid = -1;
       entry.uidString = "-1";
 
@@ -277,7 +206,6 @@ public class ApplicationsTracker {
         entry.nameLowerCase = "root";
         entry.icon = context.getResources().getDrawable(R.drawable.root_icon);
         entry.packageName = entry.nameLowerCase;
-        entry.labelLoaded = true;
         entry.uid = 0;
         entry.uidString = "0";
 
