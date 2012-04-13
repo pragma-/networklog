@@ -187,10 +187,10 @@ public class IptablesLogService extends Service {
               handler.post(new Runnable() {
                 public void run() {
                   Toast.makeText(context, "Failed to start Iptableslog service: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                  stopSelf();
+                  MyLog.d("[service] after stopSelf");
                 }
               });
-              stopSelf();
-              MyLog.d("[service] after stopSelf");
               return;
             }
 
@@ -201,7 +201,15 @@ public class IptablesLogService extends Service {
             initEntriesMap();
           }
 
-          startLogging();
+          if(!startLogging()) {
+            MyLog.d("[service] start logging error, aborting");
+            handler.post(new Runnable() {
+              public void run() {
+                stopSelf();
+                MyLog.d("[service] after stopSelf");
+              }
+            });
+          }
         }
       }).start();
 
@@ -215,6 +223,7 @@ public class IptablesLogService extends Service {
 
   @Override
     public void onDestroy() {
+      MyLog.d("[service] onDestroy");
       Iptables.removeRules(this);
       stopLogging();
       stopForeground();
@@ -543,9 +552,11 @@ public class IptablesLogService extends Service {
     }
   }
 
-  public void startLogging() {
+  public boolean startLogging() {
     MyLog.d("adding logging rules");
-    Iptables.addRules(this);
+    if(!Iptables.addRules(this)) {
+      return false;
+    }
 
     synchronized(IptablesLog.scriptLock) {
       String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + Iptables.SCRIPT;
@@ -561,12 +572,18 @@ public class IptablesLogService extends Service {
       MyLog.d("Starting iptables log tracker");
 
       command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "IptablesLogger");
-      command.start(false);
+      final String error = command.start(false);
+
+      if(error != null) {
+        Iptables.showError(this, "Start log error", error);
+        return false;
+      }
     }
 
     logger = new IptablesLogger();
     new Thread(logger, "IptablesLogger").start();
 
+    return true;
   }
 
   public void stopLogging() {

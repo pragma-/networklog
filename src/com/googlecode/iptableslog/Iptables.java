@@ -2,7 +2,12 @@ package com.googlecode.iptableslog;
 
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.util.Log;
+import android.app.Activity;
+import android.os.Bundle;
+import android.content.Intent;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -50,7 +55,12 @@ public class Iptables {
         Log.d("IptablesLog", "addRules error", e);
       }
 
-      new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "addRules").start(true);
+      String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "addRules").start(true);
+
+      if(error != null) {
+        showError(context, "Add rules error", error);
+        return false;
+      }
     }
 
     return true;
@@ -84,7 +94,12 @@ public class Iptables {
           Log.d("IptablesLog", "removeRules error", e);
         }
 
-        new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "removeRules").start(true);
+        String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "removeRules").start(true);
+
+        if(error != null) {
+          showError(context, "Remove rules error", error);
+          return false;
+        }
 
         tries++;
 
@@ -112,7 +127,13 @@ public class Iptables {
       }
 
       ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "checkRules");
-      command.start(false);
+      String error = command.start(false);
+
+      if(error != null) {
+        showError(context, "Check rules error", error);
+        return false;
+      }
+
       StringBuilder result = new StringBuilder();
 
       while(true) {
@@ -129,9 +150,25 @@ public class Iptables {
         return true;
       }
 
+      command.checkForExit();
+      if(command.exit != 0) {
+        showError(context, "Check rules error", result.toString());
+        return false;
+      }
+
       MyLog.d("checkRules result: [" + result + "]");
 
       return result.indexOf("[IptablesLogEntry]", 0) == -1 ? false : true;
     }
+  }
+
+  public static void showError(final Context context, final String title, final String message) {
+    MyLog.d("Got error: [" + title + "] [" + message + "]");
+
+    context.startActivity(new Intent(context, ErrorDialogActivity.class)
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        .putExtra("title", title)
+        .putExtra("message", message));
+
   }
 }

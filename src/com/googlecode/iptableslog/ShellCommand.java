@@ -15,6 +15,7 @@ public class ShellCommand {
   String tag = "";
   Process process;
   BufferedReader stdout;
+  public int exit;
 
   public ShellCommand(String[] command, String tag) {
     this(command);
@@ -26,7 +27,7 @@ public class ShellCommand {
     rt = Runtime.getRuntime();
   }
 
-  public void start(boolean waitForExit) {
+  public String start(boolean waitForExit) {
     MyLog.d("ShellCommand: starting [" + tag + "] " + Arrays.toString(command));
 
     try {
@@ -38,12 +39,13 @@ public class ShellCommand {
       stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
     } catch(Exception e) {
       Log.d("IptablesLog", "Failure starting shell command [" + tag + "]", e);
-      return;
+      return e.getCause().getMessage();
     }
 
     if(waitForExit) {
       waitForExit();
     }
+    return null;
   }
 
   public void waitForExit() {
@@ -65,7 +67,9 @@ public class ShellCommand {
     MyLog.d("ShellCommand: finishing [" + tag + "] " + Arrays.toString(command));
 
     try {
-      stdout.close();
+      if(stdout != null) {
+        stdout.close();
+      }
     } catch(Exception e) {
       Log.d("IptablesLog", "Exception finishing [" + tag + "]", e);
     }
@@ -76,7 +80,7 @@ public class ShellCommand {
 
   public boolean checkForExit() {
     try {
-      int exit = process.exitValue();
+      exit = process.exitValue();
       MyLog.d("ShellCommand exited: [" + tag + "] exit " + exit);
     } catch(Exception IllegalThreadStateException) {
       return false;
@@ -100,6 +104,10 @@ public class ShellCommand {
     MyLog.d("readStdoutBlocking [" + tag + "]");
     String line;
 
+    if(stdout == null) {
+      return null;
+    }
+
     try {
       line = stdout.readLine();
     } catch(Exception e) {
@@ -121,6 +129,10 @@ public class ShellCommand {
 
   public String readStdout() {
     MyLog.d("readStdout [" + tag + "]");
+
+    if(stdout == null) {
+      return null;
+    }
 
     try {
       if(stdout.ready()) {

@@ -39,6 +39,7 @@ import java.io.File;
 public class IptablesLog extends TabActivity
 {
   public static IptablesLogData data = null;
+  public static Context context;
 
   public static LogView logView;
   public static AppView appView;
@@ -98,6 +99,8 @@ public class IptablesLog extends TabActivity
     }
 
     public void onServiceDisconnected(ComponentName className) {
+      MyLog.d("Detached from service");
+      isBound = false;
       service = null;
     }
   };
@@ -129,7 +132,7 @@ public class IptablesLog extends TabActivity
       messenger = new Messenger(new IncomingHandler());
     }
 
-    bindService(new Intent(this, IptablesLogService.class), connection, Context.BIND_AUTO_CREATE);
+    bindService(new Intent(this, IptablesLogService.class), connection, 0);
     isBound = true;
     MyLog.d("Binding to service...");
   }
@@ -212,6 +215,7 @@ public class IptablesLog extends TabActivity
       MyLog.d("IptablesLog started");
       history = new HistoryLoader();
       handler = new Handler();
+      context = this;
 
       setContentView(R.layout.main);
 
