@@ -39,7 +39,6 @@ import java.io.File;
 public class IptablesLog extends TabActivity
 {
   public static IptablesLogData data = null;
-  public static Context context;
 
   public static LogView logView;
   public static AppView appView;
@@ -215,7 +214,6 @@ public class IptablesLog extends TabActivity
       MyLog.d("IptablesLog started");
       history = new HistoryLoader();
       handler = new Handler();
-      context = this;
 
       setContentView(R.layout.main);
 

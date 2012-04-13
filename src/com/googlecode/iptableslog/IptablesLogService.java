@@ -188,7 +188,6 @@ public class IptablesLogService extends Service {
                 public void run() {
                   Toast.makeText(context, "Failed to start Iptableslog service: " + e.getMessage(), Toast.LENGTH_LONG).show();
                   stopSelf();
-                  MyLog.d("[service] after stopSelf");
                 }
               });
               return;
@@ -206,7 +205,6 @@ public class IptablesLogService extends Service {
             handler.post(new Runnable() {
               public void run() {
                 stopSelf();
-                MyLog.d("[service] after stopSelf");
               }
             });
           }

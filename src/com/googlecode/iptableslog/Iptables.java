@@ -2,11 +2,7 @@ package com.googlecode.iptableslog;
 
 import android.content.Context;
 import android.content.ContextWrapper;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.util.Log;
-import android.app.Activity;
-import android.os.Bundle;
 import android.content.Intent;
 
 import java.io.File;
