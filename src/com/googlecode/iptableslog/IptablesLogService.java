@@ -239,7 +239,7 @@ public class IptablesLogService extends Service {
   public void parseResult(String result) {
     MyLog.d("--------------- parsing result --------------");
     int pos = 0 /* , buffer_pos = 0 */;
-    String src, dst, lenString, sptString, dptString, uidString;
+    String in, out, src, dst, lenString, sptString, dptString, uidString;
 
     /*
        if(MyLog.enabled) {
@@ -275,13 +275,41 @@ public class IptablesLogService extends Service {
          MyLog.d("parsing line [" + line + "]");
          */
 
+      pos = result.indexOf("IN=", pos);
+
+      if(pos == -1 || pos > newline) {
+        /* MyLog.d("buffering [" + line + "] for IN");  */ break;
+      };
+
+      int space = result.indexOf(" ", pos);
+
+      if(space == -1 || space > newline) {
+        /* MyLog.d("buffering [" + line + "] for IN space");  */ break;
+      };
+
+      in = result.substring(pos + 3, space);
+
+      pos = result.indexOf("OUT=", pos);
+
+      if(pos == -1 || pos > newline) {
+        /* MyLog.d("buffering [" + line + "] for OUT");  */ break;
+      };
+
+      space = result.indexOf(" ", pos);
+
+      if(space == -1 || space > newline) {
+        /* MyLog.d("buffering [" + line + "] for OUT space");  */ break;
+      };
+
+      out = result.substring(pos + 4, space);
+
       pos = result.indexOf("SRC=", pos);
 
       if(pos == -1 || pos > newline) {
         /* MyLog.d("buffering [" + line + "] for SRC");  */ break;
       };
 
-      int space = result.indexOf(" ", pos);
+      space = result.indexOf(" ", pos);
 
       if(space == -1 || space > newline) {
         /* MyLog.d("buffering [" + line + "] for SRC space");  */ break;
@@ -469,6 +497,8 @@ public class IptablesLogService extends Service {
       }
 
       entry.uid = uid;
+      entry.in = in;
+      entry.out = out;
       entry.src = src;
       entry.spt = spt;
       entry.dst = dst;
@@ -477,7 +507,7 @@ public class IptablesLogService extends Service {
       entry.timestamp = System.currentTimeMillis();
 
       if(MyLog.enabled) {
-        MyLog.d("+++ entry: (" + entry.uid + ") " + entry.src + ":" + entry.spt + " -> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
+        MyLog.d("+++ entry: (" + entry.uid + ") in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " -> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
       }
 
       notifyNewEntry(entry);
@@ -497,7 +527,7 @@ public class IptablesLogService extends Service {
 
   public void notifyNewEntry(LogEntry entry) {
     // log entry to logfile
-    logWriter.println(entry.timestamp + " " + entry.uid + " " + entry.src + " " + entry.spt + " " + entry.dst + " " + entry.dpt + " " + entry.len);
+    logWriter.println(entry.timestamp + "," + entry.in + "," + entry.out + "," + entry.uid + "," + entry.src + "," + entry.spt + "," + entry.dst + "," + entry.dpt + "," + entry.len);
 
     MyLog.d("[service] clients: " + clients.size());
 

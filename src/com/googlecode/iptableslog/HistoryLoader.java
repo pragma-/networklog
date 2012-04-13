@@ -201,20 +201,37 @@ public class HistoryLoader {
                   sb.append(chars, 0, line_length);
 
                   // todo: optimization: use indexOf/substring instead of split?
-                  String[] entries = sb.toString().split(" ");
+                  String[] entries = sb.toString().split(",");
 
-                  if(entries.length != 7) {
+                  if(entries.length != 9) {
                     MyLog.d("[history] Bad entry: [" + sb.toString() + "]");
                     continue;
                   }
 
+                  for(int k = 0; k < entries.length; k++) {
+                    MyLog.d("Entry " + k + ": " + entries[k]);
+                  }
+
                   entry.timestamp = Long.parseLong(entries[0]);
-                  entry.uid = Integer.parseInt(entries[1]);
-                  entry.src = entries[2];
-                  entry.spt = Integer.parseInt(entries[3]);
-                  entry.dst = entries[4];
-                  entry.dpt = Integer.parseInt(entries[5]);
-                  entry.len = Integer.parseInt(entries[6]);
+
+                  if(entries[1].length() != 0) {
+                    entry.in = new String(entries[1]);
+                  } else {
+                    entry.in = null;
+                  }
+
+                  if(entries[2].length() != 0) {
+                    entry.out = new String(entries[2]);
+                  } else {
+                    entry.out = null;
+                  }
+
+                  entry.uid = Integer.parseInt(entries[3]);
+                  entry.src = new String(entries[4]);
+                  entry.spt = Integer.parseInt(entries[5]);
+                  entry.dst = new String(entries[6]);
+                  entry.dpt = Integer.parseInt(entries[7]);
+                  entry.len = Integer.parseInt(entries[8]);
 
                   IptablesLog.logView.onNewLogEntry(entry);
                   IptablesLog.appView.onNewLogEntry(entry);

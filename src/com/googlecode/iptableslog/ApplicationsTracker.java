@@ -21,8 +21,6 @@ public class ApplicationsTracker {
   public static Object dialogLock = new Object();
   public static Object installedAppsLock = new Object();
   public static PackageManager pm = null;
-  // todo: move apps into installedApps and consoldiate memory
-  public static List<ApplicationInfo> apps = null;
 
   public static class AppEntry {
     String name;
@@ -79,6 +77,10 @@ public class ApplicationsTracker {
         public void run() {
           MyLog.d("Loading icon for " + entry);
           try {
+            if(pm == null) {
+              pm = context.getPackageManager();
+            }
+
             entry.icon = pm.getApplicationIcon(packageName);
 
             synchronized(loadingIcon) {
@@ -119,9 +121,7 @@ public class ApplicationsTracker {
         pm = context.getPackageManager();
       }
 
-      if(apps == null) {
-        apps = pm.getInstalledApplications(0);
-      }
+      List<ApplicationInfo> apps = pm.getInstalledApplications(0);
 
       appCount = apps.size();
 

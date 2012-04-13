@@ -75,12 +75,14 @@ public class AppView extends Activity {
     protected long sentTimestamp;
     protected int sentPort;
     protected String sentAddress;
+    protected String out; // interface (rmnet, wifi, etc)
 
     protected int receivedPackets;
     protected int receivedBytes;
     protected long receivedTimestamp;
     protected int receivedPort;
     protected String receivedAddress;
+    protected String in; // interface (rmnet, wifi, etc)
 
     protected ArrayList<PacketGraphItem> packetGraphBuffer;
 
@@ -218,26 +220,6 @@ public class AppView extends Activity {
 
   public void refreshAdapter() {
     adapter.notifyDataSetChanged();
-  }
-
-  public void refreshHosts() {
-    synchronized(groupDataBuffer) {
-      for(GroupItem item : groupDataBuffer) {
-        //buildUniqueHosts(item);
-      }
-
-      adapter.notifyDataSetChanged();
-    }
-  }
-
-  public void refreshPorts() {
-    synchronized(groupDataBuffer) {
-      for(GroupItem item : groupDataBuffer) {
-        //buildUniqueHosts(item);
-      }
-
-      adapter.notifyDataSetChanged();
-    }
   }
 
   protected void getInstalledApps() {
@@ -438,7 +420,7 @@ public class AppView extends Activity {
   }
 
   public void onNewLogEntry(final LogEntry entry) {
-    MyLog.d("AppView: NewLogEntry: [" + entry.uid + "] " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
+    MyLog.d("AppView: NewLogEntry: [" + entry.uid + "] in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
 
     int index = getItemByAppUid(entry.uid);
 
@@ -471,8 +453,7 @@ public class AppView extends Activity {
 
         ChildItem childData;
 
-        // todo: make filtering out local IP a user preference
-        if(!IptablesLog.localIpAddrs.contains(entry.src)) {
+        if(entry.in != null && entry.in.length() != 0) {
           synchronized(item.childrenData) {
             childData = item.childrenData.get(src);
 
@@ -481,28 +462,30 @@ public class AppView extends Activity {
               childData.packetGraphBuffer = new ArrayList<PacketGraphItem>();
             }
 
+            childData.in = new String(entry.in);
+
+            childData.out = null;
             childData.receivedPackets++;
             childData.receivedBytes += entry.len;
             childData.receivedTimestamp = entry.timestamp;
 
-            MyLog.d("Added received packet " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + childData.receivedPackets + "; bytes: " + childData.receivedBytes);
+            MyLog.d("Added received packet in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + childData.receivedPackets + "; bytes: " + childData.receivedBytes);
 
             childData.receivedPort = entry.spt;
-            childData.receivedAddress = entry.src;
+            childData.receivedAddress = new String(entry.src);
 
             childData.sentPort = entry.dpt;
-            childData.sentAddress = entry.dst;
+            childData.sentAddress = new String(entry.dst);
 
             childData.packetGraphBuffer.add(graphItem);
-            MyLog.d("graph receivedbytes " + childData.receivedBytes + " " + childData + " added " + graphItem);
+//            MyLog.d("graph receivedbytes " + childData.receivedBytes + " " + childData + " added " + graphItem);
 
             item.childrenData.put(src, childData);
             item.childrenDataNeedsSort = true;
           }
         }
 
-        // todo: make filtering out local IP a user preference
-        if(!IptablesLog.localIpAddrs.contains(entry.dst)) {
+        if(entry.out != null && entry.out.length() != 0) {
           synchronized(item.childrenData) {
             childData = item.childrenData.get(dst);
 
@@ -511,11 +494,13 @@ public class AppView extends Activity {
               childData.packetGraphBuffer = new ArrayList<PacketGraphItem>();
             }
 
+            childData.in = null;
+            childData.out = new String(entry.out);
             childData.sentPackets++;
             childData.sentBytes += entry.len;
             childData.sentTimestamp = entry.timestamp;
 
-            MyLog.d("Added sent packet " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + childData.sentPackets + "; bytes: " + childData.sentBytes);
+            MyLog.d("Added sent packet in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + childData.sentPackets + "; bytes: " + childData.sentBytes);
 
             childData.sentPort = entry.dpt;
             childData.sentAddress = entry.dst;
@@ -524,7 +509,7 @@ public class AppView extends Activity {
             childData.receivedAddress = entry.src;
 
             childData.packetGraphBuffer.add(graphItem);
-            MyLog.d("graph sentbytes " + childData.sentBytes + " " + childData + " added " + graphItem);
+//            MyLog.d("graph sentbytes " + childData.sentBytes + " " + childData + " added " + graphItem);
 
             item.childrenData.put(dst, childData);
             item.childrenDataNeedsSort = true;
@@ -1076,6 +1061,8 @@ public class AppView extends Activity {
           return null;
         }
 
+        MyLog.d("getChildView: testing in=" + item.in + " out=" + item.out + " " + item);
+
         if(convertView == null) {
           convertView = mInflater.inflate(R.layout.hostitem, null);
           holder = new ChildViewHolder(convertView);
@@ -1088,7 +1075,7 @@ public class AppView extends Activity {
 
         String hostString = null;
 
-        if(item.sentPackets > 0 && !IptablesLog.localIpAddrs.contains(item.sentAddress)) {
+        if(item.sentPackets > 0 && item.out != null) {
           String sentAddressString;
           String sentPortString;
 
@@ -1111,7 +1098,7 @@ public class AppView extends Activity {
 
           hostString = sentAddressString + ":" + sentPortString;
         }
-        else if(item.receivedPackets > 0 && !IptablesLog.localIpAddrs.contains(item.receivedAddress)) {
+        else if(item.receivedPackets > 0 && item.in != null) {
           String receivedAddressString;
           String receivedPortString;
 
@@ -1135,6 +1122,7 @@ public class AppView extends Activity {
           hostString = receivedAddressString + ":" + receivedPortString;
         }
 
+        MyLog.d("Set host in=" + item.in + " out=" + item.out + " " + hostString);
         host.setText(Html.fromHtml("<u>" + hostString + "</u>"));
 
         sentPackets = holder.getSentPackets();

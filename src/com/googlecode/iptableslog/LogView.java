@@ -44,6 +44,8 @@ public class LogView extends Activity
     protected Drawable mIcon;
     protected int mUid;
     protected String mUidString;
+    protected String in;
+    protected String out;
     protected String mName;
     protected String mNameLowerCase;
     protected String srcAddr;
@@ -171,16 +173,28 @@ public class LogView extends Activity
 
     final ListItem item = new ListItem(appEntry.icon, appEntry.uid, appEntry.name);
 
-    item.srcAddr = entry.src;
+    if(entry.in != null) {
+      item.in = new String(entry.in);
+    } else {
+      item.in = null;
+    }
+
+    if(entry.out != null) {
+      item.out = new String(entry.out);
+    } else {
+      item.out = null;
+    }
+
+    item.srcAddr = new String(entry.src);
     item.srcPort = entry.spt;
 
-    item.dstAddr = entry.dst;
+    item.dstAddr = new String(entry.dst);
     item.dstPort = entry.dpt;
 
     item.len = entry.len;
     item.timestamp = entry.timestamp;
 
-    MyLog.d("LogView: Add item: " + item.srcAddr + " " + item.srcPort + " " + item.dstAddr + " " + item.dstPort + " " + item.len);
+    MyLog.d("LogView: Add item: in=" + item.in + " out=" + item.out + " " + item.srcAddr + " " + item.srcPort + " " + item.dstAddr + " " + item.dstPort + " " + item.len);
 
     synchronized(listDataBuffer) {
       listDataBuffer.add(item);
@@ -489,6 +503,7 @@ public class LogView extends Activity
 
         ImageView icon;
         TextView name;
+        TextView iface;
         TextView srcAddr;
         TextView srcPort;
         TextView dstAddr;
@@ -515,6 +530,14 @@ public class LogView extends Activity
 
         name = holder.getName();
         name.setText("(" + item.mUid + ")" + " " + item.mName);
+
+        iface = holder.getInterface();
+
+        if(item.in != null) {
+          iface.setText(item.in);
+        } else {
+          iface.setText(item.out);
+        }
 
         srcAddr = holder.getSrcAddr();
 
@@ -575,6 +598,7 @@ public class LogView extends Activity
     private View mView;
     private ImageView mIcon = null;
     private TextView mName = null;
+    private TextView mInterface = null;
     private TextView mSrcAddr = null;
     private TextView mSrcPort = null;
     private TextView mDstAddr = null;
@@ -600,6 +624,14 @@ public class LogView extends Activity
       }
 
       return mName;
+    }
+
+    public TextView getInterface() {
+      if(mInterface == null) {
+        mInterface = (TextView) mView.findViewById(R.id.logInterface);
+      }
+
+      return mInterface;
     }
 
     public TextView getSrcAddr() {

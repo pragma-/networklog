@@ -10,9 +10,18 @@
       android:adjustViewBounds="false" />
     <TextView
       android:id="@+id/logName" 
-      android:layout_width="fill_parent"
+      android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_toRightOf="@id/logIcon" />
+    <TextView
+      android:id="@+id/logInterface" 
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="right"
+      android:layout_alignBottom="@id/logName"
+      android:layout_alignParentRight="true"
+      android:layout_toRightOf="@id/logName" />
+
 
     <TextView
       android:id="@+id/srcAddr" 

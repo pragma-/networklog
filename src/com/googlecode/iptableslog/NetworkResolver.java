@@ -212,7 +212,7 @@ public class NetworkResolver {
             MyLog.d("Resolved " + address + " to " + resolved);
             IptablesLog.handler.post(new Runnable() {
               public void run() {
-                IptablesLog.appView.refreshHosts();
+                IptablesLog.appView.refreshAdapter();
                 IptablesLog.logView.refreshAdapter();
               }
             });

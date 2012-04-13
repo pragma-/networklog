@@ -511,7 +511,7 @@ public class AppTimelineGraph extends Activity
 
           String label = host;
 
-          if(info.sentPackets > 0 && !IptablesLog.localIpAddrs.contains(info.sentAddress)) {
+          if(info.sentPackets > 0 && info.out != null && info.out.length() != 0) {
             String sentAddressString;
             String sentPortString;
 
@@ -534,7 +534,7 @@ public class AppTimelineGraph extends Activity
 
             label = sentAddressString + ":" + sentPortString;
           }
-          else if(info.receivedPackets > 0 && !IptablesLog.localIpAddrs.contains(info.receivedAddress)) {
+          else if(info.receivedPackets > 0 && info.in != null && info.in.length() != 0) {
             String receivedAddressString;
             String receivedPortString;
 
