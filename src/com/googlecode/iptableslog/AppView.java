@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnGroupExpandListener;
+import android.widget.ExpandableListView.OnGroupCollapseListener;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseExpandableListAdapter;
@@ -26,6 +28,7 @@ import android.text.Html;
 import android.text.Spanned;
 import android.widget.TextView.BufferType;
 import android.util.TypedValue;
+import android.os.Parcelable;
 
 import java.util.Set;
 import java.util.ArrayList;
@@ -41,6 +44,7 @@ public class AppView extends Activity {
   // groupDataBuffer used to buffer incoming log entries and to hold original list data for filtering
   public ArrayList<GroupItem> groupDataBuffer;
   public boolean groupDataBufferIsDirty = false;
+  private ExpandableListView listView;
   private CustomAdapter adapter;
   public Sort preSortBy;
   public Sort sortBy;
@@ -62,6 +66,7 @@ public class AppView extends Activity {
     protected boolean childrenAreFiltered = false;
     protected boolean childrenAreDirty = false;
     protected ArrayList<PacketGraphItem> packetGraphBuffer;
+    protected boolean isExpanded = false;
 
     @Override
       public String toString() {
@@ -219,7 +224,24 @@ public class AppView extends Activity {
   }
 
   public void refreshAdapter() {
+    int index = listView.getFirstVisiblePosition();
+    View v = listView.getChildAt(0);
+    int top = (v == null) ? 0 : v.getTop();
+
+    MyLog.d("listview index: " + index + "; top: " + top);
+
     adapter.notifyDataSetChanged();
+
+    listView.setSelectionFromTop(index, top);
+
+    int size = adapter.getGroupCount();
+    for(int i = 0; i < size; i++) {
+      if(((GroupItem)adapter.getGroup(i)).isExpanded == true) {
+        listView.expandGroup(i);
+      } else {
+        listView.collapseGroup(i);
+      }
+    }
   }
 
   protected void getInstalledApps() {
@@ -250,14 +272,9 @@ public class AppView extends Activity {
           public void run() {
             preSortData();
 
-            // apply filter if there is one set
-            //if(IptablesLog.filterText.length() > 0) {
             setFilter("");
-            //}
 
-            if(!IptablesLog.outputPaused) {
-              adapter.notifyDataSetChanged();
-            }
+            refreshAdapter();
           }
         });
 
@@ -287,7 +304,7 @@ public class AppView extends Activity {
       layout.addView(statusText);
 
       TextView tv = new TextView(this);
-      tv.setText("Press for connection stats, long-press for graph");
+      tv.setText("Press for connections, long-press for graph");
       layout.addView(tv);
 
       if(IptablesLog.data == null) {
@@ -301,18 +318,32 @@ public class AppView extends Activity {
 
       adapter = new CustomAdapter();
 
-      ExpandableListView lv = new ExpandableListView(this);
-      lv.setAdapter(adapter);
-      lv.setTextFilterEnabled(true);
-      lv.setFastScrollEnabled(true);
-      lv.setSmoothScrollbarEnabled(false);
-      lv.setGroupIndicator(null);
-      lv.setChildIndicator(null);
-      lv.setDividerHeight(0);
-      lv.setChildDivider(getResources().getDrawable(R.color.transparent));
-      layout.addView(lv);
+      listView = new ExpandableListView(this);
+      listView.setAdapter(adapter);
+      listView.setTextFilterEnabled(true);
+      listView.setFastScrollEnabled(true);
+      listView.setSmoothScrollbarEnabled(false);
+      listView.setGroupIndicator(null);
+      listView.setChildIndicator(null);
+      listView.setDividerHeight(0);
+      listView.setChildDivider(getResources().getDrawable(R.color.transparent));
+      layout.addView(listView);
 
-      lv.setOnItemLongClickListener(new OnItemLongClickListener() {
+      listView.setOnGroupExpandListener(new OnGroupExpandListener() {
+        @Override
+        public void onGroupExpand(int groupPosition) {
+          ((GroupItem)adapter.getGroup(groupPosition)).isExpanded = true;
+        }
+      });
+
+      listView.setOnGroupCollapseListener(new OnGroupCollapseListener() {
+        @Override
+        public void onGroupCollapse(int groupPosition) {
+          ((GroupItem)adapter.getGroup(groupPosition)).isExpanded = false;
+        }
+      });
+
+      listView.setOnItemLongClickListener(new OnItemLongClickListener() {
         @Override
         public boolean onItemLongClick(AdapterView parent, View v, 
           int position, long id) 
@@ -326,7 +357,7 @@ public class AppView extends Activity {
         }
       });
 
-      lv.setOnChildClickListener(new OnChildClickListener() {
+      listView.setOnChildClickListener(new OnChildClickListener() {
         @Override
         public boolean onChildClick(ExpandableListView parent, View v, 
           int groupPosition, int childPosition, long id)
@@ -543,7 +574,6 @@ public class AppView extends Activity {
       public void run() {
         synchronized(groupData) {
           MyLog.d("AppViewListUpdater enter");
-          groupData.clear();
 
           synchronized(groupDataBuffer) {
             // todo: find a way so that we don't have to go through every entry
@@ -553,23 +583,15 @@ public class AppView extends Activity {
                 MyLog.d("Updating " + item);
                 item.childrenDataNeedsSort = false;
 
-                //buildUniqueHosts(item);
-                groupData.add(item);
+                //sortChildrenData(item);
               }
             }
           }
 
           preSortData();
           sortData();
-
-          // apply filter if there is one set
-          //if(IptablesLog.filterText.length() > 0) {
           setFilter("");
-          //}
-
-          if(!IptablesLog.outputPaused) {
-            adapter.notifyDataSetChanged();
-          }
+          refreshAdapter();
         }
 
         MyLog.d("AppViewListUpdater exit");
@@ -882,6 +904,8 @@ public class AppView extends Activity {
       @SuppressWarnings("unchecked")
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
+          MyLog.d("Publishing filter results");
+          
           final ArrayList<GroupItem> localItems = (ArrayList<GroupItem>) results.values;
 
           if(localItems == null) {
@@ -890,21 +914,23 @@ public class AppView extends Activity {
           }
 
           synchronized(groupData) {
-            groupData.clear();
-
             int count = localItems.size();
 
-            for(int i = 0; i < count; i++) {
+            for(int i = count - 1; i >= 0; i--) {
               groupData.add(localItems.get(i));
+            }
+
+            int group_count = groupData.size();
+
+            for(int i = group_count - count - 1; i >= 0; i--) {
+              groupData.remove(i);
             }
           }
 
           preSortData();
           sortData();
 
-          if(!IptablesLog.outputPaused) {
-            notifyDataSetChanged();
-          }
+          refreshAdapter();
         }
     }
 
@@ -1061,8 +1087,6 @@ public class AppView extends Activity {
           return null;
         }
 
-        MyLog.d("getChildView: testing in=" + item.in + " out=" + item.out + " " + item);
-
         if(convertView == null) {
           convertView = mInflater.inflate(R.layout.hostitem, null);
           holder = new ChildViewHolder(convertView);
@@ -1122,7 +1146,6 @@ public class AppView extends Activity {
           hostString = receivedAddressString + ":" + receivedPortString;
         }
 
-        MyLog.d("Set host in=" + item.in + " out=" + item.out + " " + hostString);
         host.setText(Html.fromHtml("<u>" + hostString + "</u>"));
 
         sentPackets = holder.getSentPackets();

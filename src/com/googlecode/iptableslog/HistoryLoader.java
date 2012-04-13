@@ -208,10 +208,6 @@ public class HistoryLoader {
                     continue;
                   }
 
-                  for(int k = 0; k < entries.length; k++) {
-                    MyLog.d("Entry " + k + ": " + entries[k]);
-                  }
-
                   entry.timestamp = Long.parseLong(entries[0]);
 
                   if(entries[1].length() != 0) {

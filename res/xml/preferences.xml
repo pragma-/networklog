@@ -35,6 +35,7 @@
       android:entries="@array/timerange_entries"
       android:entryValues="@array/timerange_values"
       android:dialogTitle="Load history" />
+<!--
     <ListPreference
       android:defaultValue="2419200000"
       android:key="logfile_trim"
@@ -43,7 +44,6 @@
       android:entries="@array/timerange_entries"
       android:entryValues="@array/timerange_values"
       android:dialogTitle="Delete older than" />
-<!--
     <CheckBoxPreference
       android:defaultValue="false"
       android:key="startServiceAtBoot"

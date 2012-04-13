@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
-import android.widget.Toast;
 
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -29,8 +28,6 @@ public class OverallAppTimelineGraph extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
       super.onCreate(savedInstanceState);
-
-      Toast.makeText(this, "Loading graph", Toast.LENGTH_SHORT).show();
 
       // always give data sorted by x values
       graphView = new LineGraphView(this, "Apps Timeline")
