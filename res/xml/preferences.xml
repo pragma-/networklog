@@ -51,7 +51,7 @@
       android:summary="Start logging when device boots up" />
 -->
     <CheckBoxPreference
-      android:defaultValue="true"
+      android:defaultValue="false"
       android:key="startServiceAtStart"
       android:title="Start at app-start"
       android:summary="Start logging when this app starts-up" />

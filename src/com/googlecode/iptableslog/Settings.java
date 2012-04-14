@@ -35,7 +35,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
   }
 
   public boolean getStartServiceAtStart() {
-    return prefs.getBoolean("startServiceAtStart", true);
+    return prefs.getBoolean("startServiceAtStart", false);
   }
 
   public boolean getStopServiceAtExit() {
@@ -314,7 +314,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
       }
 
       if(key.equals("startServiceAtStart")) {
-        boolean value = prefs.getBoolean(key, true);
+        boolean value = prefs.getBoolean(key, false);
         MyLog.d("New " + key + " value [" + value + "]");
         IptablesLog.startServiceAtStart = value;
         return;

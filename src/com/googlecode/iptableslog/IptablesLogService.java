@@ -211,7 +211,7 @@ public class IptablesLogService extends Service {
         }
       }).start();
 
-      return START_STICKY;
+      return Service.START_NOT_STICKY;
     }
 
   @Override
