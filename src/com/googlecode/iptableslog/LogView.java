@@ -533,7 +533,7 @@ public class LogView extends Activity
 
         iface = holder.getInterface();
 
-        if(item.in != null) {
+        if(item.in != null && item.in.length() != 0) {
           iface.setText(item.in);
         } else {
           iface.setText(item.out);

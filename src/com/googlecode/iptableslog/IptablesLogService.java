@@ -216,6 +216,7 @@ public class IptablesLogService extends Service {
 
   @Override
     public IBinder onBind(Intent intent) {
+      MyLog.d("[service] onBind");
       return messenger.getBinder();
     }
 
@@ -540,11 +541,11 @@ public class IptablesLogService extends Service {
 
     for(int i = clients.size() - 1; i >= 0; i--) {
       try {
-        MyLog.d("[service] Sending entry to " + i);
+        MyLog.d("[service] Sending entry to " + clients.get(i));
         clients.get(i).send(Message.obtain(null, BROADCAST_LOG_ENTRY, entry));
       } catch(RemoteException e) {
         // client dead
-        MyLog.d("[service] Dead client " + i);
+        MyLog.d("[service] Dead client " + clients.get(i));
         clients.remove(i);
       }
     }

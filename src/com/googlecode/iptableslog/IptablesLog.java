@@ -79,8 +79,8 @@ public class IptablesLog extends TabActivity
   public static ArrayList<String> localIpAddrs;
 
   public static Messenger service = null;
-  public static boolean isBound = false;
   public static Messenger messenger = null;
+  public static boolean isBound = false;
   public static ServiceConnection connection = new ServiceConnection() {
     public void onServiceConnected(ComponentName className, IBinder serv) {
       service = new Messenger(serv);
@@ -107,6 +107,8 @@ public class IptablesLog extends TabActivity
   class IncomingHandler extends Handler {
     @Override
       public void handleMessage(Message msg) {
+        MyLog.d("Received message: " + msg);
+
         switch(msg.what) {
           case IptablesLogService.BROADCAST_LOG_ENTRY:
             LogEntry entry = (LogEntry) msg.obj;
@@ -127,9 +129,8 @@ public class IptablesLog extends TabActivity
       doUnbindService();
     }
 
-    if(messenger == null) {
-      messenger = new Messenger(new IncomingHandler());
-    }
+    messenger = new Messenger(new IncomingHandler());
+    MyLog.d("Created messenger: " + messenger);
 
     bindService(new Intent(this, IptablesLogService.class), connection, 0);
     isBound = true;
