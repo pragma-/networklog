@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.googlecode.iptableslog"
-  android:versionCode="75"
-  android:versionName="0.7.3">
+  android:versionCode="76"
+  android:versionName="0.7.4">
   <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="8" />
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <application android:label="@string/app_name" android:icon="@drawable/icon">
     <activity android:name="IptablesLog"
+      android:launchMode="singleTask"
       android:label="@string/app_name">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />

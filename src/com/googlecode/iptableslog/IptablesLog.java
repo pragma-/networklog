@@ -149,8 +149,14 @@ public class IptablesLog extends TabActivity
           /* do nothing */
         }
 
-        unbindService(connection);
-        isBound = false;
+        try {
+          unbindService(connection);
+        } catch(Exception e) {
+          Log.d("IptablesLog", "Ignored unbind exception:", e);
+        } finally {
+          isBound = false;
+        }
+
         MyLog.d("Unbinding from service...");
       }
     }

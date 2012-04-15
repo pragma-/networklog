@@ -69,7 +69,9 @@ public class IptablesLogService extends Service {
             break;
 
           case MSG_UPDATE_NOTIFICATION:
-            PendingIntent pi = PendingIntent.getActivity(context, 0, new Intent(context, IptablesLog.class), 0);
+            Intent i = new Intent(context, IptablesLog.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            PendingIntent pi = PendingIntent.getActivity(context, 0, i, 0);
             notification.setLatestEventInfo(context, "IptablesLog", "Iptables logging active [" + ((String)msg.obj) + "]", pi);
             nManager.notify(42, notification);
             break;
@@ -112,7 +114,9 @@ public class IptablesLogService extends Service {
 
   public Notification createNotification() {
     Notification n = new Notification(R.drawable.icon, "IptablesLog logging started", System.currentTimeMillis());
-    PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, IptablesLog.class), 0);
+    Intent i = new Intent(this, IptablesLog.class);
+    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+    PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
     n.setLatestEventInfo(this, "IptablesLog", "Iptables logging active", pi);
     return n;
   }
