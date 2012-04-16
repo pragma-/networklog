@@ -48,7 +48,7 @@ public class Iptables {
         script.flush();
         script.close();
       } catch(java.io.IOException e) {
-        Log.d("IptablesLog", "addRules error", e);
+        Log.e("IptablesLog", "addRules error", e);
       }
 
       String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "addRules").start(true);
@@ -87,7 +87,7 @@ public class Iptables {
           script.flush();
           script.close();
         } catch(java.io.IOException e) {
-          Log.d("IptablesLog", "removeRules error", e);
+          Log.e("IptablesLog", "removeRules error", e);
         }
 
         String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "removeRules").start(true);
@@ -119,7 +119,7 @@ public class Iptables {
         script.flush();
         script.close();
       } catch(java.io.IOException e) {
-        Log.d("IptablesLog", "checkRules error", e);
+        Log.e("IptablesLog", "checkRules error", e);
       }
 
       ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "checkRules");

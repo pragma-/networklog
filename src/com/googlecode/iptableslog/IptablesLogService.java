@@ -28,24 +28,12 @@ import java.lang.Runnable;
 import java.lang.reflect.Method;
 
 public class IptablesLogService extends Service {
-  HashMap<String, Integer> logEntriesMap;
-  ShellCommand command;
-  IptablesLogger logger;
-  String logfile = null;
-  long logfile_maxsize;
-  PrintWriter logWriter = null;
-  NotificationManager nManager;
-  Notification notification;
-  LogEntry entry;
-
-  //StringBuilder buffer;
-
   ArrayList<Messenger> clients = new ArrayList<Messenger>();
   static final int NOTIFICATION_ID = 42;
   static final int MSG_REGISTER_CLIENT = 1;
   static final int MSG_UNREGISTER_CLIENT = 2;
   static final int MSG_UPDATE_NOTIFICATION = 3;
-  static final int BROADCAST_LOG_ENTRY = 4;
+  static final int MSG_BROADCAST_LOG_ENTRY = 4;
   final Messenger messenger = new Messenger(new IncomingHandler(this));
 
   private class IncomingHandler extends Handler {
@@ -57,6 +45,8 @@ public class IptablesLogService extends Service {
 
     @Override
       public void handleMessage(Message msg) {
+        MyLog.d("[service] got message: " + msg);
+
         switch(msg.what) {
           case MSG_REGISTER_CLIENT:
             MyLog.d("[service] registering client " + msg.replyTo);
@@ -69,6 +59,7 @@ public class IptablesLogService extends Service {
             break;
 
           case MSG_UPDATE_NOTIFICATION:
+            MyLog.d("[service] updating notification: " + ((String)msg.obj));
             Intent i = new Intent(context, IptablesLog.class);
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pi = PendingIntent.getActivity(context, 0, i, 0);
@@ -76,11 +67,34 @@ public class IptablesLogService extends Service {
             nManager.notify(42, notification);
             break;
 
+          case MSG_BROADCAST_LOG_ENTRY:
+            MyLog.d("[service] got MSG_BROADCOAST_LOG_ENTRY unexpectedly");
+            break;
+
           default:
+            MyLog.d("[service] unhandled message");
             super.handleMessage(msg);
         }
       }
   }
+
+  @Override
+    public IBinder onBind(Intent intent) {
+      MyLog.d("[service] onBind");
+      return messenger.getBinder();
+    }
+
+  HashMap<String, Integer> logEntriesMap;
+  ShellCommand command;
+  IptablesLogger logger;
+  String logfile = null;
+  long logfile_maxsize;
+  PrintWriter logWriter = null;
+  NotificationManager nManager;
+  Notification notification;
+  LogEntry entry;
+
+  //StringBuilder buffer;
 
   public void renameLogFile(String newLogFile) {
   }
@@ -123,6 +137,8 @@ public class IptablesLogService extends Service {
 
   @Override
     public void onCreate() {
+      MyLog.d("[service] onCreate");
+
       nManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
       notification = createNotification();
 
@@ -151,20 +167,12 @@ public class IptablesLogService extends Service {
       // run in background thread
       new Thread(new Runnable() {
         public void run() {
-          String logfile_intent = null;
-          String logfile_maxsize_intent = null;
+          String logfile_intent = "/sdcard/iptableslog.txt";
+          String logfile_maxsize_intent = "12000000";
 
           if(extras != null) {
             logfile_intent = extras.getString("logfile");
             logfile_maxsize_intent = extras.getString("logfile_maxsize");
-          }
-
-          if(logfile_intent == null) {
-            logfile_intent = "/sdcard/iptableslog.txt";
-          }
-
-          if(logfile_maxsize_intent == null) {
-            logfile_maxsize_intent = "12000000";
           }
 
           MyLog.d("[service] IptablesLog service starting [" + logfile_intent + "; " + logfile_maxsize_intent + "]");;
@@ -188,6 +196,7 @@ public class IptablesLogService extends Service {
             try {
               logWriter = new PrintWriter(new BufferedWriter(new FileWriter(logfile, true)), true);
             } catch(final Exception e) {
+              Log.e("IptablesLog", "Exception opening logfile [" + logfile +"]", e);
               handler.post(new Runnable() {
                 public void run() {
                   Toast.makeText(context, "Failed to start Iptableslog service: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -216,12 +225,6 @@ public class IptablesLogService extends Service {
       }).start();
 
       return Service.START_NOT_STICKY;
-    }
-
-  @Override
-    public IBinder onBind(Intent intent) {
-      MyLog.d("[service] onBind");
-      return messenger.getBinder();
     }
 
   @Override
@@ -541,12 +544,12 @@ public class IptablesLogService extends Service {
     // log entry to logfile
     logWriter.println(entry.timestamp + "," + entry.in + "," + entry.out + "," + entry.uid + "," + entry.src + "," + entry.spt + "," + entry.dst + "," + entry.dpt + "," + entry.len);
 
-    MyLog.d("[service] clients: " + clients.size());
+    MyLog.d("[service] notifyNewEntry: clients: " + clients.size());
 
     for(int i = clients.size() - 1; i >= 0; i--) {
       try {
         MyLog.d("[service] Sending entry to " + clients.get(i));
-        clients.get(i).send(Message.obtain(null, BROADCAST_LOG_ENTRY, entry));
+        clients.get(i).send(Message.obtain(null, MSG_BROADCAST_LOG_ENTRY, entry));
       } catch(RemoteException e) {
         // client dead
         MyLog.d("[service] Dead client " + clients.get(i));

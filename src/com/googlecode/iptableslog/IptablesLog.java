@@ -81,11 +81,13 @@ public class IptablesLog extends TabActivity
   public static Messenger service = null;
   public static Messenger messenger = null;
   public static boolean isBound = false;
+
   public static ServiceConnection connection = new ServiceConnection() {
     public void onServiceConnected(ComponentName className, IBinder serv) {
       service = new Messenger(serv);
+      isBound = true;
 
-      MyLog.d("Attached to service");
+      MyLog.d("Attached to service; setting isBound true");
 
       // Register with service
       try {
@@ -94,23 +96,24 @@ public class IptablesLog extends TabActivity
         service.send(msg);
       } catch(RemoteException e) {
         /* do nothing */
+        Log.d("IptablesLog", "RemoteException registering with service", e);
       }
     }
 
     public void onServiceDisconnected(ComponentName className) {
-      MyLog.d("Detached from service");
-      isBound = false;
+      MyLog.d("Detached from service; setting isBound false");
       service = null;
+      isBound = false;
     }
   };
 
   class IncomingHandler extends Handler {
     @Override
       public void handleMessage(Message msg) {
-        MyLog.d("Received message: " + msg);
+        MyLog.d("[client] Received message: " + msg);
 
         switch(msg.what) {
-          case IptablesLogService.BROADCAST_LOG_ENTRY:
+          case IptablesLogService.MSG_BROADCAST_LOG_ENTRY:
             LogEntry entry = (LogEntry) msg.obj;
             MyLog.d("Received entry: " + entry);
             logView.onNewLogEntry(entry);
@@ -126,15 +129,17 @@ public class IptablesLog extends TabActivity
   void doBindService() {
     MyLog.d("doBindService");
     if(isBound) {
+      MyLog.d("Already bound to service; unbinding...");
       doUnbindService();
     }
 
     messenger = new Messenger(new IncomingHandler());
     MyLog.d("Created messenger: " + messenger);
 
+    MyLog.d("Binding connection to service: " + connection);
+    //bindService(new Intent(this, IptablesLogService.class), connection, 0);
     bindService(new Intent(this, IptablesLogService.class), connection, 0);
-    isBound = true;
-    MyLog.d("Binding to service...");
+    MyLog.d("doBindService done");
   }
 
   void doUnbindService() {
@@ -142,22 +147,26 @@ public class IptablesLog extends TabActivity
     if(isBound) {
       if(service != null) {
         try {
+          MyLog.d("Unregistering from service; service: " + service + "; messenger: " + messenger);
           Message msg = Message.obtain(null, IptablesLogService.MSG_UNREGISTER_CLIENT);
           msg.replyTo = messenger;
           service.send(msg);
         } catch(RemoteException e) {
           /* do nothing */
+          Log.d("IptablesLog", "RemoteException unregistering with service", e);
         }
 
         try {
+          MyLog.d("Unbinding connection from service:" + connection);
           unbindService(connection);
         } catch(Exception e) {
           Log.d("IptablesLog", "Ignored unbind exception:", e);
         } finally {
+          MyLog.d("Setting isBound false");
           isBound = false;
         }
 
-        MyLog.d("Unbinding from service...");
+        MyLog.d("doUnbindService done");
       }
     }
   }
@@ -728,6 +737,7 @@ public class IptablesLog extends TabActivity
               service.send(msg);
             } catch(RemoteException e) {
               /* do nothing */
+              Log.d("IptablesLog", "RemoteException updating notification", e);
             }
           }
         }
