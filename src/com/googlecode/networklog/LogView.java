@@ -174,21 +174,21 @@ public class LogView extends Activity
     final ListItem item = new ListItem(appEntry.icon, appEntry.uid, appEntry.name);
 
     if(entry.in != null) {
-      item.in = new String(entry.in);
+      item.in = entry.in;
     } else {
       item.in = null;
     }
 
     if(entry.out != null) {
-      item.out = new String(entry.out);
+      item.out = entry.out;
     } else {
       item.out = null;
     }
 
-    item.srcAddr = new String(entry.src);
+    item.srcAddr = entry.src;
     item.srcPort = entry.spt;
 
-    item.dstAddr = new String(entry.dst);
+    item.dstAddr = entry.dst;
     item.dstPort = entry.dpt;
 
     item.len = entry.len;
@@ -297,7 +297,7 @@ public class LogView extends Activity
         }
 
         try {
-          Thread.sleep(2500);
+          Thread.sleep(1000);
         }
         catch(Exception e) {
           Log.d("NetworkLog", "LogViewListUpdater", e);
@@ -323,10 +323,12 @@ public class LogView extends Activity
     }
 
     private class CustomFilter extends Filter {
+      FilterResults results = new FilterResults();
+      ArrayList<ListItem> filteredItems = new ArrayList<ListItem>();
+      ArrayList<ListItem> localItems = new ArrayList<ListItem>();
+
       @Override
         protected FilterResults performFiltering(CharSequence constraint) {
-          FilterResults results = new FilterResults();
-
           synchronized(listDataUnfiltered) {
             originalItems.clear();
             originalItems.addAll(listDataUnfiltered);
@@ -337,8 +339,8 @@ public class LogView extends Activity
             results.values = originalItems;
             results.count = originalItems.size();
           } else {
-            ArrayList<ListItem> filteredItems = new ArrayList<ListItem>();
-            ArrayList<ListItem> localItems = new ArrayList<ListItem>();
+            localItems.clear();
+            filteredItems.clear();
             localItems.addAll(originalItems);
             int count = localItems.size();
 

@@ -97,6 +97,12 @@ public class AppView extends Activity {
     }
   }
 
+  Comparator comparator = new Comparator<GroupItem>() {
+    public int compare(GroupItem o1, GroupItem o2) {
+      return o1.app.uid < o2.app.uid ? -1 : (o1.app.uid == o2.app.uid) ? 0 : 1;
+    }
+  };
+
   public void clear() {
     synchronized(groupData) {
       synchronized(groupDataBuffer) {
@@ -426,13 +432,7 @@ public class AppView extends Activity {
     int index;
 
     synchronized(groupDataBuffer) {
-      MyLog.d("Binary searching...");
-      index = Collections.binarySearch(groupDataBuffer, cachedSearchItem, new Comparator<GroupItem>() {
-        public int compare(GroupItem o1, GroupItem o2) {
-          //MyLog.d("Comparing " + o1.app.uid + " " + o1.app.name + " vs " + o2.app.uid + " " + o2.app.name);
-          return o1.app.uid < o2.app.uid ? -1 : (o1.app.uid == o2.app.uid) ? 0 : 1;
-        }
-      });
+      index = Collections.binarySearch(groupDataBuffer, cachedSearchItem, comparator);
 
       // binarySearch isn't guaranteed to return the first item of items with the same uid
       // so find the first item
@@ -493,7 +493,7 @@ public class AppView extends Activity {
               childData.packetGraphBuffer = new ArrayList<PacketGraphItem>();
             }
 
-            childData.in = new String(entry.in);
+            childData.in = entry.in;
 
             childData.out = null;
             childData.receivedPackets++;
@@ -503,10 +503,10 @@ public class AppView extends Activity {
             MyLog.d("Added received packet in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + childData.receivedPackets + "; bytes: " + childData.receivedBytes);
 
             childData.receivedPort = entry.spt;
-            childData.receivedAddress = new String(entry.src);
+            childData.receivedAddress = entry.src;
 
             childData.sentPort = entry.dpt;
-            childData.sentAddress = new String(entry.dst);
+            childData.sentAddress = entry.dst;
 
             childData.packetGraphBuffer.add(graphItem);
 //            MyLog.d("graph receivedbytes " + childData.receivedBytes + " " + childData + " added " + graphItem);
@@ -526,7 +526,7 @@ public class AppView extends Activity {
             }
 
             childData.in = null;
-            childData.out = new String(entry.out);
+            childData.out = entry.out;
             childData.sentPackets++;
             childData.sentBytes += entry.len;
             childData.sentTimestamp = entry.timestamp;
@@ -613,7 +613,7 @@ public class AppView extends Activity {
         }
 
         try {
-          Thread.sleep(5000);
+          Thread.sleep(1000);
         } catch(Exception e) {
           Log.d("NetworkLog", "AppViewListUpdater", e);
         }
@@ -635,10 +635,12 @@ public class AppView extends Activity {
 
     private class CustomFilter extends Filter {
       ArrayList<GroupItem> originalItems = new ArrayList<GroupItem>();
+      FilterResults results = new FilterResults();
+      ArrayList<GroupItem> filteredItems = new ArrayList<GroupItem>();
+      ArrayList<GroupItem> localItems = new ArrayList<GroupItem>();
 
       @Override
         protected FilterResults performFiltering(CharSequence constraint) {
-          FilterResults results = new FilterResults();
           MyLog.d("[AppView] performFiltering");
 
           synchronized(groupDataBuffer) {
@@ -660,8 +662,8 @@ public class AppView extends Activity {
             results.values = originalItems;
             results.count = originalItems.size();
           } else {
-            ArrayList<GroupItem> filteredItems = new ArrayList<GroupItem>();
-            ArrayList<GroupItem> localItems = new ArrayList<GroupItem>();
+            filteredItems.clear();
+            localItems.clear();
             localItems.addAll(originalItems);
             int count = localItems.size();
 

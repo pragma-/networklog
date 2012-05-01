@@ -706,7 +706,7 @@ public class NetworkLogService extends Service {
           result = command.readStdout();
         } else {
           try {
-            Thread.sleep(750);
+            Thread.sleep(500);
           }
           catch(Exception e) {
             Log.d("NetworkLog", "NetworkLogger exception while sleeping", e);
