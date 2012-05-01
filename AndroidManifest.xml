@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.googlecode.networklog"
-  android:versionCode="78"
+  android:versionCode="79"
   android:versionName="1.1">
   <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="8" />
   <uses-permission android:name="android.permission.INTERNET" />
