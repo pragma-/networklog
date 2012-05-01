@@ -1,4 +1,4 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import android.preference.PreferenceManager;
 import android.content.SharedPreferences;
@@ -23,7 +23,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
   }
 
   public String getLogFile() {
-    return prefs.getString("logfile", "/sdcard/iptableslog.txt");
+    return prefs.getString("logfile", "/sdcard/networklog.txt");
   }
 
   public String getLogFileMaxSize() {
@@ -283,7 +283,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
       MyLog.d("Shared prefs changed: [" + key + "]");
 
       if(key.equals("logfile")) {
-        String value = prefs.getString(key, "/sdcard/iptableslog.txt");
+        String value = prefs.getString(key, "/sdcard/networklog.txt");
         MyLog.d("New " + key + " value [" + value + "]");
 
         // update service
@@ -316,40 +316,40 @@ public class Settings implements OnSharedPreferenceChangeListener {
       if(key.equals("startServiceAtStart")) {
         boolean value = prefs.getBoolean(key, false);
         MyLog.d("New " + key + " value [" + value + "]");
-        IptablesLog.startServiceAtStart = value;
+        NetworkLog.startServiceAtStart = value;
         return;
       }
 
       if(key.equals("stopServiceAtExit")) {
         boolean value = prefs.getBoolean(key, false);
         MyLog.d("New " + key + " value [" + value + "]");
-        IptablesLog.stopServiceAtExit = value;
+        NetworkLog.stopServiceAtExit = value;
         return;
       }
 
       if(key.equals("resolve_hosts")) {
         boolean value = prefs.getBoolean(key, false);
         MyLog.d("New " + key + " value [" + value + "]");
-        IptablesLog.resolveHosts = value;
-        IptablesLog.logView.refreshAdapter();
-        IptablesLog.appView.refreshAdapter();
+        NetworkLog.resolveHosts = value;
+        NetworkLog.logView.refreshAdapter();
+        NetworkLog.appView.refreshAdapter();
         return;
       }
 
       if(key.equals("resolve_ports")) {
         boolean value = prefs.getBoolean(key, false);
         MyLog.d("New " + key + " value [" + value + "]");
-        IptablesLog.resolvePorts = value;
-        IptablesLog.logView.refreshAdapter();
-        IptablesLog.appView.refreshAdapter();
+        NetworkLog.resolvePorts = value;
+        NetworkLog.logView.refreshAdapter();
+        NetworkLog.appView.refreshAdapter();
         return;
       }
 
       if(key.equals("max_log_entries")) {
         String value = prefs.getString(key, "150000");
         MyLog.d("New " + key + " value [" + value + "]");
-        IptablesLog.logView.maxLogEntries = Long.parseLong(value);
-        IptablesLog.logView.pruneLogEntries();
+        NetworkLog.logView.maxLogEntries = Long.parseLong(value);
+        NetworkLog.logView.pruneLogEntries();
         return;
       }
 
@@ -363,18 +363,18 @@ public class Settings implements OnSharedPreferenceChangeListener {
       if(key.equals("presort_by")) {
         String value = prefs.getString(key, "BYTES");
         MyLog.d("New " + key + " value [" + value + "]");
-        IptablesLog.appView.preSortBy = Sort.forValue(value);
-        IptablesLog.appView.preSortData();
-        IptablesLog.appView.sortData();
+        NetworkLog.appView.preSortBy = Sort.forValue(value);
+        NetworkLog.appView.preSortData();
+        NetworkLog.appView.sortData();
         return;
       }
 
       if(key.equals("sort_by")) {
         String value = prefs.getString(key, "BYTES");
         MyLog.d("New " + key + " value [" + value + "]");
-        IptablesLog.appView.sortBy = Sort.forValue(value);
-        IptablesLog.appView.preSortData();
-        IptablesLog.appView.sortData();
+        NetworkLog.appView.sortBy = Sort.forValue(value);
+        NetworkLog.appView.preSortData();
+        NetworkLog.appView.sortData();
         return;
       }
     }

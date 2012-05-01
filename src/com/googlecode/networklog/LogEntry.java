@@ -1,4 +1,4 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 public class LogEntry {
   int uid;

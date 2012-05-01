@@ -1,4 +1,4 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import android.content.Context;
 import android.preference.PreferenceActivity;
@@ -20,9 +20,9 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
     int history_dialog_progress;
 
     PreferenceConfigurationData() {
-      history_dialog_showing = IptablesLog.history.dialog_showing;
-      history_dialog_max = IptablesLog.history.dialog_max;
-      history_dialog_progress = IptablesLog.history.dialog_progress;
+      history_dialog_showing = NetworkLog.history.dialog_showing;
+      history_dialog_max = NetworkLog.history.dialog_max;
+      history_dialog_progress = NetworkLog.history.dialog_progress;
     }
   }
 
@@ -31,9 +31,9 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
       super.onDestroy();
       MyLog.d("Destroying preferences activity");
 
-      if(IptablesLog.history.dialog_showing) {
-        IptablesLog.history.dialog.dismiss();
-        IptablesLog.history.dialog = null;
+      if(NetworkLog.history.dialog_showing) {
+        NetworkLog.history.dialog.dismiss();
+        NetworkLog.history.dialog = null;
       }
     }
 
@@ -107,19 +107,19 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
           }
 
           if(preference.getKey().equals("history_size")) {
-            IptablesLog.appView.clear();
-            IptablesLog.logView.clear();
-            IptablesLog.history.loadEntriesFromFile(context, (String)newValue);
+            NetworkLog.appView.clear();
+            NetworkLog.logView.clear();
+            NetworkLog.history.loadEntriesFromFile(context, (String)newValue);
             return true;
           }
 
           if(preference.getKey().equals("interval_placeholder")) {
-            IptablesLog.settings.setGraphInterval(Long.parseLong((String) newValue));
+            NetworkLog.settings.setGraphInterval(Long.parseLong((String) newValue));
             return true;
           }
           
           if(preference.getKey().equals("viewsize_placeholder")) {
-            IptablesLog.settings.setGraphViewsize(Long.parseLong((String) newValue));
+            NetworkLog.settings.setGraphViewsize(Long.parseLong((String) newValue));
             return true;
           }
 
@@ -130,13 +130,13 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
       ListPreference pref = (ListPreference) findPreference("interval_placeholder");
       pref.setEntries(entries);
       pref.setEntryValues(values);
-      pref.setValue(String.valueOf(IptablesLog.settings.getGraphInterval()));
+      pref.setValue(String.valueOf(NetworkLog.settings.getGraphInterval()));
       pref.setOnPreferenceChangeListener(changeListener);
 
       pref = (ListPreference) findPreference("viewsize_placeholder");
       pref.setEntries(entries);
       pref.setEntryValues(values);
-      pref.setValue(String.valueOf(IptablesLog.settings.getGraphViewsize()));
+      pref.setValue(String.valueOf(NetworkLog.settings.getGraphViewsize()));
       pref.setOnPreferenceChangeListener(changeListener);
 
       pref = (ListPreference) findPreference("history_size");
@@ -147,8 +147,8 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
       if(data != null) {
         MyLog.d("Restored preferences run");
 
-        if(data.history_dialog_showing && IptablesLog.history.dialog == null) {
-          IptablesLog.history.createProgressDialog(this);
+        if(data.history_dialog_showing && NetworkLog.history.dialog == null) {
+          NetworkLog.history.createProgressDialog(this);
         }
       }
     }

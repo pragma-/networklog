@@ -1,4 +1,4 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import android.app.Activity;
 import android.app.AlertDialog;

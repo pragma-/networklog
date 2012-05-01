@@ -1,4 +1,4 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -12,7 +12,7 @@ import java.io.BufferedWriter;
 
 
 public class Iptables {
-  public static final String SCRIPT = "iptableslog.sh";
+  public static final String SCRIPT = "networklog.sh";
 
   public static final String[] CELL_INTERFACES = {
     "rmnet+", "ppp+", "pdp+"
@@ -27,28 +27,28 @@ public class Iptables {
       removeRules(context);
     }
 
-    synchronized(IptablesLog.scriptLock) {
+    synchronized(NetworkLog.scriptLock) {
       String scriptFile = new ContextWrapper(context).getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
 
         for(String iface : CELL_INTERFACES) {
-          script.println("iptables -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
+          script.println("iptables -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
 
-          script.println("iptables -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
+          script.println("iptables -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
         }
 
         for(String iface : WIFI_INTERFACES) {
-          script.println("iptables -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
+          script.println("iptables -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
 
-          script.println("iptables -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
+          script.println("iptables -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
         }
 
         script.flush();
         script.close();
       } catch(java.io.IOException e) {
-        Log.e("IptablesLog", "addRules error", e);
+        Log.e("NetworkLog", "addRules error", e);
       }
 
       String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "addRules").start(true);
@@ -66,28 +66,28 @@ public class Iptables {
     int tries = 0;
 
     while(checkRules(context) == true) {
-      synchronized(IptablesLog.scriptLock) {
+      synchronized(NetworkLog.scriptLock) {
         String scriptFile = new ContextWrapper(context).getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
 
         try {
           PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
 
           for(String iface : CELL_INTERFACES) {
-            script.println("iptables -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
+            script.println("iptables -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
 
-            script.println("iptables -D INPUT -i " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
+            script.println("iptables -D INPUT -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
           }
 
           for(String iface : WIFI_INTERFACES) {
-            script.println("iptables -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
+            script.println("iptables -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
 
-            script.println("iptables -D INPUT -i " + iface + " -j LOG --log-prefix \"[IptablesLogEntry]\" --log-uid");
+            script.println("iptables -D INPUT -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
           }
 
           script.flush();
           script.close();
         } catch(java.io.IOException e) {
-          Log.e("IptablesLog", "removeRules error", e);
+          Log.e("NetworkLog", "removeRules error", e);
         }
 
         String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "removeRules").start(true);
@@ -110,7 +110,7 @@ public class Iptables {
   }
 
   public static boolean checkRules(Context context) {
-    synchronized(IptablesLog.scriptLock) {
+    synchronized(NetworkLog.scriptLock) {
       String scriptFile = new ContextWrapper(context).getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
 
       try {
@@ -119,7 +119,7 @@ public class Iptables {
         script.flush();
         script.close();
       } catch(java.io.IOException e) {
-        Log.e("IptablesLog", "checkRules error", e);
+        Log.e("NetworkLog", "checkRules error", e);
       }
 
       ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "checkRules");
@@ -154,7 +154,7 @@ public class Iptables {
 
       MyLog.d("checkRules result: [" + result + "]");
 
-      return result.indexOf("[IptablesLogEntry]", 0) == -1 ? false : true;
+      return result.indexOf("[NetworkLogEntry]", 0) == -1 ? false : true;
     }
   }
 

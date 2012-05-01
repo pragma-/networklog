@@ -1,10 +1,10 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import android.util.Log;
 
 public class MyLog {
   public static boolean enabled = true;
-  public static String tag = "IptablesLog";
+  public static String tag = "NetworkLog";
 
   public static void d(String msg) {
     d(tag, msg);

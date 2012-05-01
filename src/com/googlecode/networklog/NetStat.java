@@ -1,4 +1,4 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -28,7 +28,7 @@ public class NetStat {
         ((v << 8) & 0x00FF0000) | ((v >> 8) & 0x0000FF00);
       return ((adr >> 24) & 0xff) + "." + ((adr >> 16) & 0xff) + "." + ((adr >> 8) & 0xff) + "." + (adr & 0xff);
     } catch(Exception e) {
-      Log.w("IptablesLog", e.toString(), e);
+      Log.w("NetworkLog", e.toString(), e);
       return "-1.-1.-1.-1";
     }
   }
@@ -46,7 +46,7 @@ public class NetStat {
         return "-2.-2.-2.-2";
       }
     } catch(Exception e) {
-      Log.w("IptablesLog", e.toString(), e);
+      Log.w("NetworkLog", e.toString(), e);
       return "-1.-1.-1.-1";
     }
   }
@@ -55,7 +55,7 @@ public class NetStat {
     try {
       return Integer.parseInt(hexa, 16);
     } catch(Exception e) {
-      Log.w("IptablesLog", e.toString(), e);
+      Log.w("NetworkLog", e.toString(), e);
       return -1;
     }
   }
@@ -193,7 +193,7 @@ public class NetStat {
 
       in.close();
     } catch(Exception e) {
-      Log.w("IptablesLog", e.toString(), e);
+      Log.w("NetworkLog", e.toString(), e);
     }
 
     return connections;

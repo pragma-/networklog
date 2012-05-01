@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-  <string name="app_name">Iptables Log</string>
+  <string name="app_name">Network Log</string>
 
   <string name="filterHelp">
     <![CDATA[

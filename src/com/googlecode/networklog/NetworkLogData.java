@@ -1,11 +1,11 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class IptablesLogData {
+public class NetworkLogData {
   /* ApplicationsTracker */
   ArrayList<ApplicationsTracker.AppEntry> applicationsTrackerInstalledApps;
   HashMap<String, ApplicationsTracker.AppEntry> applicationsTrackerInstalledAppsHash;
@@ -23,10 +23,10 @@ public class IptablesLogData {
   ArrayList<LogView.ListItem> logViewListDataUnfiltered;
 
   public void gatherLogViewData() {
-    if(IptablesLog.logView != null) {
-      logViewListData = IptablesLog.logView.listData;
-      logViewListDataBuffer = IptablesLog.logView.listDataBuffer;
-      logViewListDataUnfiltered = IptablesLog.logView.listDataUnfiltered;
+    if(NetworkLog.logView != null) {
+      logViewListData = NetworkLog.logView.listData;
+      logViewListDataBuffer = NetworkLog.logView.listDataBuffer;
+      logViewListDataUnfiltered = NetworkLog.logView.listDataUnfiltered;
     }
   }
 
@@ -39,13 +39,13 @@ public class IptablesLogData {
   AppView.GroupItem appViewCachedSearchItem;
 
   public void gatherAppViewData() {
-    if(IptablesLog.appView != null) {
-      appViewGroupData = IptablesLog.appView.groupData;
-      appViewGroupDataBuffer = IptablesLog.appView.groupDataBuffer;
-      appViewGroupDataBufferIsDirty = IptablesLog.appView.groupDataBufferIsDirty;
-      appViewSortBy = IptablesLog.appView.sortBy;
-      appViewPreSortBy = IptablesLog.appView.preSortBy;
-      appViewCachedSearchItem = IptablesLog.appView.cachedSearchItem;
+    if(NetworkLog.appView != null) {
+      appViewGroupData = NetworkLog.appView.groupData;
+      appViewGroupDataBuffer = NetworkLog.appView.groupDataBuffer;
+      appViewGroupDataBufferIsDirty = NetworkLog.appView.groupDataBufferIsDirty;
+      appViewSortBy = NetworkLog.appView.sortBy;
+      appViewPreSortBy = NetworkLog.appView.preSortBy;
+      appViewCachedSearchItem = NetworkLog.appView.cachedSearchItem;
     }
   }
 
@@ -55,28 +55,28 @@ public class IptablesLogData {
   int historyDialogProgress;
 
   public void gatherHistoryLoaderData() {
-    historyDialogShowing = IptablesLog.history.dialog_showing;
-    historyDialogMax = IptablesLog.history.dialog_max;
-    historyDialogProgress = IptablesLog.history.dialog_progress;
+    historyDialogShowing = NetworkLog.history.dialog_showing;
+    historyDialogMax = NetworkLog.history.dialog_max;
+    historyDialogProgress = NetworkLog.history.dialog_progress;
   }
 
-  /* IptablesLog */
-  IptablesLog.State iptablesLogState;
+  /* NetworkLog */
+  NetworkLog.State iptablesLogState;
   NetworkResolver iptablesLogResolver;
   boolean iptablesLogOutputPaused;
 
-  public void gatherIptablesLogData() {
-    iptablesLogState = IptablesLog.state;
-    iptablesLogResolver = IptablesLog.resolver;
-    iptablesLogOutputPaused = IptablesLog.outputPaused;
+  public void gatherNetworkLogData() {
+    iptablesLogState = NetworkLog.state;
+    iptablesLogResolver = NetworkLog.resolver;
+    iptablesLogOutputPaused = NetworkLog.outputPaused;
   }
 
   /* gather data */
-  public IptablesLogData() {
+  public NetworkLogData() {
     gatherApplicationsTrackerData();
     gatherLogViewData();
     gatherAppViewData();
-    gatherIptablesLogData();
+    gatherNetworkLogData();
     gatherHistoryLoaderData();
   }
 }

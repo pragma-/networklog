@@ -1,4 +1,4 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -35,7 +35,7 @@ public class ApplicationsTracker {
     }
   }
 
-  public static void restoreData(IptablesLogData data) {
+  public static void restoreData(NetworkLogData data) {
     synchronized(installedAppsLock) {
       installedApps = data.applicationsTrackerInstalledApps;
     }
@@ -87,10 +87,10 @@ public class ApplicationsTracker {
               loadingIcon.remove(packageName);
             }
 
-            IptablesLog.handler.post(new Runnable() {
+            NetworkLog.handler.post(new Runnable() {
               public void run() {
-                IptablesLog.logView.refreshAdapter();
-                IptablesLog.appView.refreshAdapter();
+                NetworkLog.logView.refreshAdapter();
+                NetworkLog.appView.refreshAdapter();
               }
             });
           } catch(Exception e) {
@@ -108,11 +108,11 @@ public class ApplicationsTracker {
     MyLog.d("Loading installed apps");
 
     synchronized(installedAppsLock) {
-      if(IptablesLog.data == null) {
+      if(NetworkLog.data == null) {
         installedApps = new ArrayList<AppEntry>();
         installedAppsHash = new HashMap<String, AppEntry>();
       } else {
-        restoreData(IptablesLog.data);
+        restoreData(NetworkLog.data);
         installedApps.clear();
         installedAppsHash.clear();
       }
@@ -147,7 +147,7 @@ public class ApplicationsTracker {
       for(final ApplicationInfo app : apps) {
         MyLog.d("Processing app " + app);
 
-        if(IptablesLog.initRunner.running == false) {
+        if(NetworkLog.initRunner.running == false) {
           MyLog.d("[ApplicationsTracker] Initialization aborted");
           return;
         }

@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.googlecode.iptableslog"
-  android:versionCode="77"
-  android:versionName="0.7.5">
+  package="com.googlecode.networklog"
+  android:versionCode="78"
+  android:versionName="1.1">
   <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="8" />
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <application android:label="@string/app_name" android:icon="@drawable/icon">
-    <activity android:name="IptablesLog"
+    <activity android:name="NetworkLog"
       android:launchMode="singleTask"
+      android:alwaysRetainTaskState="true"
       android:label="@string/app_name">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
@@ -22,7 +23,7 @@
     <activity android:name="OverallAppTimelineGraph" />
     <activity android:name="ErrorDialogActivity"
       android:theme="@android:style/Theme.Translucent" />
-    <service android:name=".IptablesLogService"
-      android:label="IptablesLogService" />
+    <service android:name=".NetworkLogService"
+      android:label="NetworkLogService" />
   </application>
 </manifest> 

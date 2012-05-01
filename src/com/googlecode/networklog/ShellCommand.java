@@ -1,4 +1,4 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import android.util.Log;
 
@@ -38,7 +38,7 @@ public class ShellCommand {
 
       stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
     } catch(Exception e) {
-      Log.e("IptablesLog", "Failure starting shell command [" + tag + "]", e);
+      Log.e("NetworkLog", "Failure starting shell command [" + tag + "]", e);
       return e.getCause().getMessage();
     }
 
@@ -58,7 +58,7 @@ public class ShellCommand {
           Thread.sleep(100);
         }
       catch(Exception e) {
-        Log.e("IptablesLog", "waitForExit error", e);
+        Log.e("NetworkLog", "waitForExit error", e);
       }
     }
   }
@@ -71,7 +71,7 @@ public class ShellCommand {
         stdout.close();
       }
     } catch(Exception e) {
-      Log.e("IptablesLog", "Exception finishing [" + tag + "]", e);
+      Log.e("NetworkLog", "Exception finishing [" + tag + "]", e);
     }
 
     process.destroy();
@@ -95,7 +95,7 @@ public class ShellCommand {
       MyLog.d("stdoutAvailable [" + tag + "]: " + stdout.ready());
       return stdout.ready();
     } catch(java.io.IOException e) {
-      Log.e("IptablesLog", "stdoutAvailable error", e);
+      Log.e("NetworkLog", "stdoutAvailable error", e);
       return false;
     }
   }
@@ -111,7 +111,7 @@ public class ShellCommand {
     try {
       line = stdout.readLine();
     } catch(Exception e) {
-      Log.e("IptablesLog", "readStdoutBlocking error", e);
+      Log.e("NetworkLog", "readStdoutBlocking error", e);
       return null;
     }
 
@@ -150,7 +150,7 @@ public class ShellCommand {
         return "";
       }
     } catch(Exception e) {
-      Log.e("IptablesLog", "readStdout error", e);
+      Log.e("NetworkLog", "readStdout error", e);
       return null;
     }
   }

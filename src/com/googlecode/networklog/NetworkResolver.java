@@ -1,4 +1,4 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import java.util.HashMap;
 import java.net.InetAddress;
@@ -210,14 +210,14 @@ public class NetworkResolver {
             }
 
             MyLog.d("Resolved " + address + " to " + resolved);
-            IptablesLog.handler.post(new Runnable() {
+            NetworkLog.handler.post(new Runnable() {
               public void run() {
-                IptablesLog.appView.refreshAdapter();
-                IptablesLog.logView.refreshAdapter();
+                NetworkLog.appView.refreshAdapter();
+                NetworkLog.logView.refreshAdapter();
               }
             });
           } catch(Exception e) {
-            Log.d("IptablesLog", e.toString(), e);
+            Log.d("NetworkLog", e.toString(), e);
           }
         }
       }, "NetResolv:" + address).start();

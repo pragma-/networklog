@@ -1,4 +1,4 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import android.util.Log;
 import android.app.ProgressDialog;
@@ -47,7 +47,7 @@ public class HistoryLoader {
         return;
       }
 
-      final RandomAccessFile logfile = new RandomAccessFile(IptablesLog.settings.getLogFile(), "r");
+      final RandomAccessFile logfile = new RandomAccessFile(NetworkLog.settings.getLogFile(), "r");
 
       final long length = logfile.length();
 
@@ -64,7 +64,7 @@ public class HistoryLoader {
 
         // nearest match binary search to find timestamp within logfile
         while(max >= min) {
-          if(IptablesLog.state == IptablesLog.State.EXITING) {
+          if(NetworkLog.state == NetworkLog.State.EXITING) {
             logfile.close();
             return;
           }
@@ -111,8 +111,8 @@ public class HistoryLoader {
 
       final long starting_pos = result;
 
-      IptablesLog.logView.stopUpdater();
-      IptablesLog.appView.stopUpdater();
+      NetworkLog.logView.stopUpdater();
+      NetworkLog.appView.stopUpdater();
 
       final Context context_final = context;
       new Thread(new Runnable() {
@@ -136,7 +136,7 @@ public class HistoryLoader {
           StringBuilder sb = new StringBuilder(128);
           char[] chars = new char[128];
 
-          IptablesLog.handler.post(new Runnable() {
+          NetworkLog.handler.post(new Runnable() {
             public void run() {
               dialog_max = (int)(length - starting_pos);
               dialog_progress = 0;
@@ -229,8 +229,8 @@ public class HistoryLoader {
                   entry.dpt = Integer.parseInt(entries[7]);
                   entry.len = Integer.parseInt(entries[8]);
 
-                  IptablesLog.logView.onNewLogEntry(entry);
-                  IptablesLog.appView.onNewLogEntry(entry);
+                  NetworkLog.logView.onNewLogEntry(entry);
+                  NetworkLog.appView.onNewLogEntry(entry);
 
                   // reset line
                   line_length = 0;
@@ -249,7 +249,7 @@ public class HistoryLoader {
 
             logfile.close();
           } catch(Exception e) {
-            Log.w("IptablesLog", "loadEntriesFromFile", e);
+            Log.w("NetworkLog", "loadEntriesFromFile", e);
           } finally {
             if(dialog_showing) {
               dialog_showing = false;
@@ -260,13 +260,13 @@ public class HistoryLoader {
               }
             }
 
-            IptablesLog.logView.startUpdater();
-            IptablesLog.appView.startUpdater();
+            NetworkLog.logView.startUpdater();
+            NetworkLog.appView.startUpdater();
           }
         }
       }, "LoadHistory").start();
     } catch (Exception e) {
-      Log.w("IptablesLog", "loadEntriesFromFile", e);
+      Log.w("NetworkLog", "loadEntriesFromFile", e);
     }
   }
 }

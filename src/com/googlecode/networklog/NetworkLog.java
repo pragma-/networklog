@@ -1,4 +1,4 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import android.app.TabActivity;
 import android.os.Bundle;
@@ -36,9 +36,9 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.io.File;
 
-public class IptablesLog extends TabActivity
+public class NetworkLog extends TabActivity
 {
-  public static IptablesLogData data = null;
+  public static NetworkLogData data = null;
 
   public static LogView logView;
   public static AppView appView;
@@ -91,12 +91,12 @@ public class IptablesLog extends TabActivity
 
       // Register with service
       try {
-        Message msg = Message.obtain(null, IptablesLogService.MSG_REGISTER_CLIENT);
+        Message msg = Message.obtain(null, NetworkLogService.MSG_REGISTER_CLIENT);
         msg.replyTo = messenger;
         service.send(msg);
       } catch(RemoteException e) {
         /* do nothing */
-        Log.d("IptablesLog", "RemoteException registering with service", e);
+        Log.d("NetworkLog", "RemoteException registering with service", e);
       }
     }
 
@@ -113,7 +113,7 @@ public class IptablesLog extends TabActivity
         MyLog.d("[client] Received message: " + msg);
 
         switch(msg.what) {
-          case IptablesLogService.MSG_BROADCAST_LOG_ENTRY:
+          case NetworkLogService.MSG_BROADCAST_LOG_ENTRY:
             LogEntry entry = (LogEntry) msg.obj;
             MyLog.d("Received entry: " + entry);
             logView.onNewLogEntry(entry);
@@ -137,8 +137,7 @@ public class IptablesLog extends TabActivity
     MyLog.d("Created messenger: " + messenger);
 
     MyLog.d("Binding connection to service: " + connection);
-    //bindService(new Intent(this, IptablesLogService.class), connection, 0);
-    bindService(new Intent(this, IptablesLogService.class), connection, 0);
+    bindService(new Intent(this, NetworkLogService.class), connection, 0);
     MyLog.d("doBindService done");
   }
 
@@ -148,19 +147,19 @@ public class IptablesLog extends TabActivity
       if(service != null) {
         try {
           MyLog.d("Unregistering from service; service: " + service + "; messenger: " + messenger);
-          Message msg = Message.obtain(null, IptablesLogService.MSG_UNREGISTER_CLIENT);
+          Message msg = Message.obtain(null, NetworkLogService.MSG_UNREGISTER_CLIENT);
           msg.replyTo = messenger;
           service.send(msg);
         } catch(RemoteException e) {
           /* do nothing */
-          Log.d("IptablesLog", "RemoteException unregistering with service", e);
+          Log.d("NetworkLog", "RemoteException unregistering with service", e);
         }
 
         try {
           MyLog.d("Unbinding connection from service:" + connection);
           unbindService(connection);
         } catch(Exception e) {
-          Log.d("IptablesLog", "Ignored unbind exception:", e);
+          Log.d("NetworkLog", "Ignored unbind exception:", e);
         } finally {
           MyLog.d("Setting isBound false");
           isBound = false;
@@ -194,14 +193,14 @@ public class IptablesLog extends TabActivity
 
       Looper.myLooper().prepare();
 
-      state = IptablesLog.State.LOAD_APPS;
+      state = NetworkLog.State.LOAD_APPS;
       ApplicationsTracker.getInstalledApps(context, handler);
 
       if(running == false) {
         return;
       }
 
-      state = IptablesLog.State.LOAD_LIST;
+      state = NetworkLog.State.LOAD_LIST;
       appView.getInstalledApps();
 
       if(running == false) {
@@ -211,13 +210,13 @@ public class IptablesLog extends TabActivity
       appView.startUpdater();
       logView.startUpdater();
 
-      if(startServiceAtStart && !isServiceRunning(context, "com.googlecode.iptableslog.IptablesLogService")) {
+      if(startServiceAtStart && !isServiceRunning(context, "com.googlecode.networklog.NetworkLogService")) {
         startService();
       }
 
       history.loadEntriesFromFile(context, settings.getHistorySize());
 
-      state = IptablesLog.State.RUNNING;
+      state = NetworkLog.State.RUNNING;
       MyLog.d("Init done");
     }
   }
@@ -227,7 +226,7 @@ public class IptablesLog extends TabActivity
     public void onCreate(Bundle savedInstanceState)
     {
       super.onCreate(savedInstanceState);
-      MyLog.d("IptablesLog started");
+      MyLog.d("NetworkLog started");
       history = new HistoryLoader();
       handler = new Handler();
 
@@ -262,7 +261,7 @@ public class IptablesLog extends TabActivity
 
       getLocalIpAddresses();
 
-      data = (IptablesLogData) getLastNonConfigurationInstance();
+      data = (NetworkLogData) getLastNonConfigurationInstance();
 
       if(data != null) {
         MyLog.d("Restored run");
@@ -314,7 +313,7 @@ public class IptablesLog extends TabActivity
       // display LogView tab by default
       tabHost.setCurrentTab(0);
 
-      if(isServiceRunning(this, "com.googlecode.iptableslog.IptablesLogService")) {
+      if(isServiceRunning(this, "com.googlecode.networklog.NetworkLogService")) {
         doBindService();
       }
 
@@ -324,7 +323,7 @@ public class IptablesLog extends TabActivity
       } else {
         state = data.iptablesLogState;
 
-        if(state != IptablesLog.State.RUNNING) {
+        if(state != NetworkLog.State.RUNNING) {
           initRunner = new InitRunner(this);
           new Thread(initRunner, "Initialization " + initRunner).start();
         } else {
@@ -336,7 +335,7 @@ public class IptablesLog extends TabActivity
         data = null;
         MyLog.d("data object released");
 
-        state = IptablesLog.State.RUNNING;
+        state = NetworkLog.State.RUNNING;
       }
       statusUpdater = new StatusUpdater();
       new Thread(statusUpdater, "StatusUpdater").start();
@@ -366,7 +365,7 @@ public class IptablesLog extends TabActivity
 
       if(data == null) {
         // exiting
-        state = IptablesLog.State.EXITING;
+        state = NetworkLog.State.EXITING;
         if(stopServiceAtExit) {
           stopService();
         }
@@ -411,7 +410,7 @@ public class IptablesLog extends TabActivity
   @Override
     public Object onRetainNonConfigurationInstance() {
       MyLog.d("Saving run");
-      data = new IptablesLogData();
+      data = new NetworkLogData();
       return data;
     }
 
@@ -453,7 +452,7 @@ public class IptablesLog extends TabActivity
             break;
 
           default:
-            IptablesLog.settings.setSortBy(Sort.BYTES);
+            NetworkLog.settings.setSortBy(Sort.BYTES);
             appView.sortBy = Sort.BYTES;
             item = menu.findItem(R.id.sort_by_bytes);
         }
@@ -465,7 +464,7 @@ public class IptablesLog extends TabActivity
 
       item = menu.findItem(R.id.service_toggle);
 
-      if(isServiceRunning(this, "com.googlecode.iptableslog.IptablesLogService")) {
+      if(isServiceRunning(this, "com.googlecode.networklog.NetworkLogService")) {
         item.setTitle("Stop logging");
       } else {
         item.setTitle("Start logging");
@@ -504,7 +503,7 @@ public class IptablesLog extends TabActivity
              break;
              */
         case R.id.service_toggle:
-          if(!isServiceRunning(this, "com.googlecode.iptableslog.IptablesLogService")) {
+          if(!isServiceRunning(this, "com.googlecode.networklog.NetworkLogService")) {
             startService();
           } else {
             stopService();
@@ -517,7 +516,8 @@ public class IptablesLog extends TabActivity
           break;
 
         case R.id.exit:
-          confirmExit(this);
+          finish();
+          // confirmExit(this);
           break;
 
         case R.id.settings:
@@ -529,7 +529,7 @@ public class IptablesLog extends TabActivity
           appView.sortData();
           appView.refreshAdapter();
 
-          IptablesLog.settings.setSortBy(appView.sortBy);
+          NetworkLog.settings.setSortBy(appView.sortBy);
           break;
 
         case R.id.sort_by_name:
@@ -537,7 +537,7 @@ public class IptablesLog extends TabActivity
           appView.sortData();
           appView.refreshAdapter();
 
-          IptablesLog.settings.setSortBy(appView.sortBy);
+          NetworkLog.settings.setSortBy(appView.sortBy);
           break;
 
         case R.id.sort_by_packets:
@@ -545,7 +545,7 @@ public class IptablesLog extends TabActivity
           appView.sortData();
           appView.refreshAdapter();
 
-          IptablesLog.settings.setSortBy(appView.sortBy);
+          NetworkLog.settings.setSortBy(appView.sortBy);
           break;
 
         case R.id.sort_by_bytes:
@@ -553,7 +553,7 @@ public class IptablesLog extends TabActivity
           appView.sortData();
           appView.refreshAdapter();
 
-          IptablesLog.settings.setSortBy(appView.sortBy);
+          NetworkLog.settings.setSortBy(appView.sortBy);
           break;
 
         case R.id.sort_by_timestamp:
@@ -561,7 +561,7 @@ public class IptablesLog extends TabActivity
           appView.sortData();
           appView.refreshAdapter();
 
-          IptablesLog.settings.setSortBy(appView.sortBy);
+          NetworkLog.settings.setSortBy(appView.sortBy);
           break;
 
         default:
@@ -573,7 +573,8 @@ public class IptablesLog extends TabActivity
 
   @Override
     public void onBackPressed() {
-      confirmExit(this);
+      finish();
+      //confirmExit(this);
     }
 
   public void showFilterDialog() {
@@ -583,7 +584,7 @@ public class IptablesLog extends TabActivity
 
   public void confirmExit(Context context) {
     StringBuilder message = new StringBuilder("Are you sure you want to exit?");
-    boolean serviceRunning = isServiceRunning(context, "com.googlecode.iptableslog.IptablesLogService");
+    boolean serviceRunning = isServiceRunning(context, "com.googlecode.networklog.NetworkLogService");
 
     if(serviceRunning) {
       if(stopServiceAtExit) {
@@ -599,7 +600,7 @@ public class IptablesLog extends TabActivity
       .setCancelable(true)
       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
-          IptablesLog.this.finish();
+          NetworkLog.this.finish();
         }
       })
     .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -651,14 +652,14 @@ public class IptablesLog extends TabActivity
         }
       }
     } catch(SocketException ex) {
-      Log.e("IptablesLog", ex.toString());
+      Log.e("NetworkLog", ex.toString());
     }
   }
 
   public void startService() {
     MyLog.d("Starting service...");
 
-    Intent intent = new Intent(this, IptablesLogService.class);
+    Intent intent = new Intent(this, NetworkLogService.class);
 
     intent.putExtra("logfile", settings.getLogFile());
     intent.putExtra("logfile_maxsize", settings.getLogFileMaxSize());
@@ -675,7 +676,7 @@ public class IptablesLog extends TabActivity
   public void stopService() {
     MyLog.d("Stopping service...");
     doUnbindService();
-    stopService(new Intent(this, IptablesLogService.class));
+    stopService(new Intent(this, NetworkLogService.class));
     updateStatusText(this);
   }
 
@@ -696,7 +697,7 @@ public class IptablesLog extends TabActivity
   public static void updateStatusText(Context context) {
     StringBuilder sb = new StringBuilder();
 
-    if(isServiceRunning(context, "com.googlecode.iptableslog.IptablesLogService")) {
+    if(isServiceRunning(context, "com.googlecode.networklog.NetworkLogService")) {
       if(filterTextInclude.length() > 0 || filterTextExclude.length() > 0) {
         sb.append("Filter: ");
 
@@ -732,12 +733,12 @@ public class IptablesLog extends TabActivity
         if(isBound) {
           if(service != null) {
             try {
-              Message msg = Message.obtain(null, IptablesLogService.MSG_UPDATE_NOTIFICATION);
+              Message msg = Message.obtain(null, NetworkLogService.MSG_UPDATE_NOTIFICATION);
               msg.obj = size;
               service.send(msg);
             } catch(RemoteException e) {
               /* do nothing */
-              Log.d("IptablesLog", "RemoteException updating notification", e);
+              Log.d("NetworkLog", "RemoteException updating notification", e);
             }
           }
         }
@@ -770,7 +771,7 @@ public class IptablesLog extends TabActivity
       while(running) {
         runOnUiThread(runner);
 
-        try { Thread.sleep(15000); } catch(Exception e) { Log.d("IptablesLog", "StatusUpdater", e); }
+        try { Thread.sleep(15000); } catch(Exception e) { Log.d("NetworkLog", "StatusUpdater", e); }
       }
       MyLog.d("Stopped status updater " + this);
     }

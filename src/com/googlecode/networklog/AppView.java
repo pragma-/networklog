@@ -1,4 +1,4 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import android.util.Log;
 
@@ -252,7 +252,7 @@ public class AppView extends Activity {
 
         synchronized(ApplicationsTracker.installedAppsLock) {
           for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps) {
-            if(IptablesLog.state != IptablesLog.State.RUNNING && IptablesLog.initRunner.running == false) {
+            if(NetworkLog.state != NetworkLog.State.RUNNING && NetworkLog.initRunner.running == false) {
               MyLog.d("[AppView] Initialization aborted");
               return;
             }
@@ -291,10 +291,10 @@ public class AppView extends Activity {
 
       MyLog.d("AppView created");
 
-      sortBy = IptablesLog.settings.getSortBy();
+      sortBy = NetworkLog.settings.getSortBy();
       MyLog.d("Sort-by loaded from settings: " + sortBy);
 
-      preSortBy = IptablesLog.settings.getPreSortBy();
+      preSortBy = NetworkLog.settings.getPreSortBy();
       MyLog.d("Pre-sort-by loaded from settings: " + preSortBy);
 
       LinearLayout layout = new LinearLayout(this);
@@ -307,13 +307,13 @@ public class AppView extends Activity {
       tv.setText("Press for connections, long-press for graph");
       layout.addView(tv);
 
-      if(IptablesLog.data == null) {
+      if(NetworkLog.data == null) {
         groupData = new ArrayList<GroupItem>();
         groupDataBuffer = new ArrayList<GroupItem>();
         cachedSearchItem = new GroupItem();
         cachedSearchItem.app = new ApplicationsTracker.AppEntry();
       } else {
-        restoreData(IptablesLog.data);
+        restoreData(NetworkLog.data);
       }
 
       adapter = new CustomAdapter();
@@ -381,11 +381,11 @@ public class AppView extends Activity {
 
   @Override
     public void onBackPressed() {
-      IptablesLog parent = (IptablesLog) getParent();
+      NetworkLog parent = (NetworkLog) getParent();
       parent.confirmExit(this);
     }
 
-  public void restoreData(IptablesLogData data) {
+  public void restoreData(NetworkLogData data) {
     groupData = data.appViewGroupData;
     groupDataBuffer = data.appViewGroupDataBuffer;
     groupDataBufferIsDirty = data.appViewGroupDataBufferIsDirty;
@@ -410,12 +410,12 @@ public class AppView extends Activity {
     }
 
     if(sortBy == null) {
-      sortBy = IptablesLog.settings.getSortBy();
+      sortBy = NetworkLog.settings.getSortBy();
       MyLog.d("[restoreData] Sort-by loaded from settings: " + sortBy);
     }
 
     if(preSortBy == null) {
-      preSortBy = IptablesLog.settings.getPreSortBy();
+      preSortBy = NetworkLog.settings.getPreSortBy();
       MyLog.d("[restoreData] Pre-sort-by loaded from settings: " + preSortBy);
     }
   }
@@ -615,7 +615,7 @@ public class AppView extends Activity {
         try {
           Thread.sleep(5000);
         } catch(Exception e) {
-          Log.d("IptablesLog", "AppViewListUpdater", e);
+          Log.d("NetworkLog", "AppViewListUpdater", e);
         }
       }
 
@@ -646,7 +646,7 @@ public class AppView extends Activity {
             originalItems.addAll(groupDataBuffer);
           }
 
-          if(IptablesLog.filterTextInclude.length() == 0 && IptablesLog.filterTextExclude.length() == 0) {
+          if(NetworkLog.filterTextInclude.length() == 0 && NetworkLog.filterTextExclude.length() == 0) {
             MyLog.d("[AppView] no constraint item count: " + originalItems.size());
 
             // undo uniqueHosts filtering
@@ -667,7 +667,7 @@ public class AppView extends Activity {
 
             MyLog.d("[AppView] item count: " + count);
 
-            if(IptablesLog.filterTextIncludeList.size() == 0) {
+            if(NetworkLog.filterTextIncludeList.size() == 0) {
               MyLog.d("[AppView] no include filter, adding all items");
 
               for(GroupItem item : localItems) {
@@ -691,21 +691,21 @@ public class AppView extends Activity {
                 }
               }
             } else {
-              if(IptablesLog.filterNameInclude
-                  || IptablesLog.filterUidInclude
-                  || IptablesLog.filterAddressInclude
-                  || IptablesLog.filterPortInclude) 
+              if(NetworkLog.filterNameInclude
+                  || NetworkLog.filterUidInclude
+                  || NetworkLog.filterAddressInclude
+                  || NetworkLog.filterPortInclude) 
               {
                 for(int i = 0; i < count; i++) {
                   GroupItem item = localItems.get(i);
-                  MyLog.d("[AppView] testing filtered item " + item + "; includes: [" + IptablesLog.filterTextInclude + "]");
+                  MyLog.d("[AppView] testing filtered item " + item + "; includes: [" + NetworkLog.filterTextInclude + "]");
 
                   boolean item_added = false;
                   boolean matched = true;
 
-                  for(String c : IptablesLog.filterTextIncludeList) {
-                    if((IptablesLog.filterNameInclude && !item.app.nameLowerCase.contains(c))
-                        || (IptablesLog.filterUidInclude && !item.app.uidString.equals(c))) {
+                  for(String c : NetworkLog.filterTextIncludeList) {
+                    if((NetworkLog.filterNameInclude && !item.app.nameLowerCase.contains(c))
+                        || (NetworkLog.filterUidInclude && !item.app.uidString.equals(c))) {
                       matched = false;
                       break;
                         }
@@ -713,7 +713,7 @@ public class AppView extends Activity {
 
                   if(matched) {
                     // test filter against address/port
-                    if(IptablesLog.filterAddressInclude || IptablesLog.filterPortInclude) {
+                    if(NetworkLog.filterAddressInclude || NetworkLog.filterPortInclude) {
                       synchronized(item.childrenData) {
                         List<String> list = new ArrayList<String>(item.childrenData.keySet());
                         // todo: sort by user preference (bytes, timestamp, address, ports)
@@ -735,14 +735,14 @@ public class AppView extends Activity {
                           String receivedAddressResolved;
                           String receivedPortResolved;
 
-                          if(IptablesLog.resolveHosts) {
-                            sentAddressResolved = IptablesLog.resolver.resolveAddress(childData.sentAddress);
+                          if(NetworkLog.resolveHosts) {
+                            sentAddressResolved = NetworkLog.resolver.resolveAddress(childData.sentAddress);
 
                             if(sentAddressResolved == null) {
                               sentAddressResolved = "";
                             }
 
-                            receivedAddressResolved = IptablesLog.resolver.resolveAddress(childData.receivedAddress);
+                            receivedAddressResolved = NetworkLog.resolver.resolveAddress(childData.receivedAddress);
 
                             if(receivedAddressResolved == null) {
                               receivedAddressResolved = "";
@@ -752,18 +752,18 @@ public class AppView extends Activity {
                             receivedAddressResolved = "";
                           }
 
-                          if(IptablesLog.resolvePorts) {
-                            sentPortResolved = IptablesLog.resolver.resolveService(String.valueOf(childData.sentPort));
-                            receivedPortResolved = IptablesLog.resolver.resolveService(String.valueOf(childData.receivedPort));
+                          if(NetworkLog.resolvePorts) {
+                            sentPortResolved = NetworkLog.resolver.resolveService(String.valueOf(childData.sentPort));
+                            receivedPortResolved = NetworkLog.resolver.resolveService(String.valueOf(childData.receivedPort));
                           } else {
                             sentPortResolved = "";
                             receivedPortResolved = "";
                           }
 
-                          for(String c : IptablesLog.filterTextIncludeList) {
-                            if((IptablesLog.filterAddressInclude && ((childData.sentPackets > 0 && (childData.sentAddress.contains(c) || sentAddressResolved.toLowerCase().contains(c)))
+                          for(String c : NetworkLog.filterTextIncludeList) {
+                            if((NetworkLog.filterAddressInclude && ((childData.sentPackets > 0 && (childData.sentAddress.contains(c) || sentAddressResolved.toLowerCase().contains(c)))
                                     || (childData.receivedPackets > 0 && (childData.receivedAddress.contains(c) || receivedAddressResolved.toLowerCase().contains(c)))))
-                                || (IptablesLog.filterPortInclude && ((childData.sentPackets > 0 && (String.valueOf(childData.sentPort).equals(c) || sentPortResolved.toLowerCase().equals(c)))
+                                || (NetworkLog.filterPortInclude && ((childData.sentPackets > 0 && (String.valueOf(childData.sentPort).equals(c) || sentPortResolved.toLowerCase().equals(c)))
                                     || (childData.receivedPackets > 0 && (String.valueOf(childData.receivedPort).equals(c) || receivedPortResolved.toLowerCase().equals(c)))))) {
                               matched = true;
                                     }
@@ -809,18 +809,18 @@ public class AppView extends Activity {
               }
             }
 
-            if(IptablesLog.filterTextExcludeList.size() > 0) {
+            if(NetworkLog.filterTextExcludeList.size() > 0) {
               count = filteredItems.size();
 
               for(int i = count - 1; i >= 0; i--) {
                 GroupItem item = filteredItems.get(i);
-                MyLog.d("[AppView] testing filtered item: " + i + " " + item + "; excludes: [" + IptablesLog.filterTextExclude + "]");
+                MyLog.d("[AppView] testing filtered item: " + i + " " + item + "; excludes: [" + NetworkLog.filterTextExclude + "]");
 
                 boolean matched = false;
 
-                for(String c : IptablesLog.filterTextExcludeList) {
-                  if((IptablesLog.filterNameExclude && item.app.nameLowerCase.contains(c))
-                      || IptablesLog.filterUidExclude && item.app.uidString.equals(c)) 
+                for(String c : NetworkLog.filterTextExcludeList) {
+                  if((NetworkLog.filterNameExclude && item.app.nameLowerCase.contains(c))
+                      || NetworkLog.filterUidExclude && item.app.uidString.equals(c)) 
                   {
                     matched = true;
                   }
@@ -846,14 +846,14 @@ public class AppView extends Activity {
                   String receivedAddressResolved;
                   String receivedPortResolved;
 
-                  if(IptablesLog.resolveHosts) {
-                    sentAddressResolved = IptablesLog.resolver.resolveAddress(childData.sentAddress);
+                  if(NetworkLog.resolveHosts) {
+                    sentAddressResolved = NetworkLog.resolver.resolveAddress(childData.sentAddress);
 
                     if(sentAddressResolved == null) {
                       sentAddressResolved = "";
                     }
 
-                    receivedAddressResolved = IptablesLog.resolver.resolveAddress(childData.receivedAddress);
+                    receivedAddressResolved = NetworkLog.resolver.resolveAddress(childData.receivedAddress);
 
                     if(receivedAddressResolved == null) {
                       receivedAddressResolved = "";
@@ -863,18 +863,18 @@ public class AppView extends Activity {
                     receivedAddressResolved = "";
                   }
 
-                  if(IptablesLog.resolvePorts) {
-                    sentPortResolved = IptablesLog.resolver.resolveService(String.valueOf(childData.sentPort));
-                    receivedPortResolved = IptablesLog.resolver.resolveService(String.valueOf(childData.receivedPort));
+                  if(NetworkLog.resolvePorts) {
+                    sentPortResolved = NetworkLog.resolver.resolveService(String.valueOf(childData.sentPort));
+                    receivedPortResolved = NetworkLog.resolver.resolveService(String.valueOf(childData.receivedPort));
                   } else {
                     sentPortResolved = "";
                     receivedPortResolved = "";
                   }
 
-                  for(String c : IptablesLog.filterTextExcludeList) {
-                    if((IptablesLog.filterAddressExclude && ((childData.sentPackets > 0 && (childData.sentAddress.contains(c) || sentAddressResolved.toLowerCase().contains(c)))
+                  for(String c : NetworkLog.filterTextExcludeList) {
+                    if((NetworkLog.filterAddressExclude && ((childData.sentPackets > 0 && (childData.sentAddress.contains(c) || sentAddressResolved.toLowerCase().contains(c)))
                             || (childData.receivedPackets > 0 && (childData.receivedAddress.contains(c) || receivedAddressResolved.toLowerCase().contains(c)))))
-                        || (IptablesLog.filterPortExclude && ((childData.sentPackets > 0 && (String.valueOf(childData.sentPort).equals(c) || sentPortResolved.toLowerCase().equals(c)))
+                        || (NetworkLog.filterPortExclude && ((childData.sentPackets > 0 && (String.valueOf(childData.sentPort).equals(c) || sentPortResolved.toLowerCase().equals(c)))
                             || (childData.receivedPackets > 0 && (String.valueOf(childData.receivedPort).equals(c) || receivedPortResolved.toLowerCase().equals(c)))))) {
                       matched = true;
                             }
@@ -1103,8 +1103,8 @@ public class AppView extends Activity {
           String sentAddressString;
           String sentPortString;
 
-          if(IptablesLog.resolveHosts) {
-            sentAddressString = IptablesLog.resolver.resolveAddress(item.sentAddress);
+          if(NetworkLog.resolveHosts) {
+            sentAddressString = NetworkLog.resolver.resolveAddress(item.sentAddress);
 
             if(sentAddressString == null) {
               sentAddressString = item.sentAddress;
@@ -1114,8 +1114,8 @@ public class AppView extends Activity {
             sentAddressString = item.sentAddress;
           }
 
-          if(IptablesLog.resolvePorts) {
-            sentPortString = IptablesLog.resolver.resolveService(String.valueOf(item.sentPort));
+          if(NetworkLog.resolvePorts) {
+            sentPortString = NetworkLog.resolver.resolveService(String.valueOf(item.sentPort));
           } else {
             sentPortString = String.valueOf(item.sentPort);
           }
@@ -1126,8 +1126,8 @@ public class AppView extends Activity {
           String receivedAddressString;
           String receivedPortString;
 
-          if(IptablesLog.resolveHosts) {
-            receivedAddressString = IptablesLog.resolver.resolveAddress(item.receivedAddress);
+          if(NetworkLog.resolveHosts) {
+            receivedAddressString = NetworkLog.resolver.resolveAddress(item.receivedAddress);
 
             if(receivedAddressString == null) {
               receivedAddressString = item.receivedAddress;
@@ -1137,8 +1137,8 @@ public class AppView extends Activity {
             receivedAddressString = item.receivedAddress;
           }
 
-          if(IptablesLog.resolvePorts) {
-            receivedPortString = IptablesLog.resolver.resolveService(String.valueOf(item.receivedPort));
+          if(NetworkLog.resolvePorts) {
+            receivedPortString = NetworkLog.resolver.resolveService(String.valueOf(item.receivedPort));
           } else {
             receivedPortString = String.valueOf(item.receivedPort);
           }

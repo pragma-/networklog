@@ -1,4 +1,4 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import android.app.Activity;
 import android.content.Context;
@@ -46,40 +46,40 @@ public class FilterDialog implements DialogInterface.OnDismissListener
     checkboxAddressExclude = (CheckBox) view.findViewById(R.id.filterAddressExclude);
     checkboxPortExclude = (CheckBox) view.findViewById(R.id.filterPortExclude);
 
-    editTextInclude.setText(IptablesLog.filterTextInclude);
-    checkboxUidInclude.setChecked(IptablesLog.filterUidInclude);
-    checkboxNameInclude.setChecked(IptablesLog.filterNameInclude);
-    checkboxAddressInclude.setChecked(IptablesLog.filterAddressInclude);
-    checkboxPortInclude.setChecked(IptablesLog.filterPortInclude);
+    editTextInclude.setText(NetworkLog.filterTextInclude);
+    checkboxUidInclude.setChecked(NetworkLog.filterUidInclude);
+    checkboxNameInclude.setChecked(NetworkLog.filterNameInclude);
+    checkboxAddressInclude.setChecked(NetworkLog.filterAddressInclude);
+    checkboxPortInclude.setChecked(NetworkLog.filterPortInclude);
 
-    editTextExclude.setText(IptablesLog.filterTextExclude);
-    checkboxUidExclude.setChecked(IptablesLog.filterUidExclude);
-    checkboxNameExclude.setChecked(IptablesLog.filterNameExclude);
-    checkboxAddressExclude.setChecked(IptablesLog.filterAddressExclude);
-    checkboxPortExclude.setChecked(IptablesLog.filterPortExclude);
+    editTextExclude.setText(NetworkLog.filterTextExclude);
+    checkboxUidExclude.setChecked(NetworkLog.filterUidExclude);
+    checkboxNameExclude.setChecked(NetworkLog.filterNameExclude);
+    checkboxAddressExclude.setChecked(NetworkLog.filterAddressExclude);
+    checkboxPortExclude.setChecked(NetworkLog.filterPortExclude);
 
     CompoundButton.OnCheckedChangeListener listener = new CompoundButton.OnCheckedChangeListener()
     {
       public void onCheckedChanged(CompoundButton button, boolean isChecked)
       {
         if(button == checkboxUidInclude) {
-          IptablesLog.filterUidInclude = isChecked;
+          NetworkLog.filterUidInclude = isChecked;
         } else if(button == checkboxNameInclude) {
-          IptablesLog.filterNameInclude = isChecked;
+          NetworkLog.filterNameInclude = isChecked;
         } else if(button == checkboxAddressInclude) {
-          IptablesLog.filterAddressInclude = isChecked;
+          NetworkLog.filterAddressInclude = isChecked;
         } else if(button == checkboxPortInclude) {
-          IptablesLog.filterPortInclude = isChecked;
+          NetworkLog.filterPortInclude = isChecked;
         }
 
         if(button == checkboxUidExclude) {
-          IptablesLog.filterUidExclude = isChecked;
+          NetworkLog.filterUidExclude = isChecked;
         } else if(button == checkboxNameExclude) {
-          IptablesLog.filterNameExclude = isChecked;
+          NetworkLog.filterNameExclude = isChecked;
         } else if(button == checkboxAddressExclude) {
-          IptablesLog.filterAddressExclude = isChecked;
+          NetworkLog.filterAddressExclude = isChecked;
         } else if(button == checkboxPortExclude) {
-          IptablesLog.filterPortExclude = isChecked;
+          NetworkLog.filterPortExclude = isChecked;
         }
       }
     };
@@ -102,7 +102,7 @@ public class FilterDialog implements DialogInterface.OnDismissListener
 
       public void onTextChanged(CharSequence s, int start, int before, int count)
       {
-        IptablesLog.filterTextInclude = s.toString().trim();
+        NetworkLog.filterTextInclude = s.toString().trim();
       }
     };
 
@@ -116,7 +116,7 @@ public class FilterDialog implements DialogInterface.OnDismissListener
 
       public void onTextChanged(CharSequence s, int start, int before, int count)
       {
-        IptablesLog.filterTextExclude = s.toString().trim();
+        NetworkLog.filterTextExclude = s.toString().trim();
       }
     };
 
@@ -128,19 +128,19 @@ public class FilterDialog implements DialogInterface.OnDismissListener
       .setCancelable(true)
       .setPositiveButton("Reset", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
-          IptablesLog.filterTextInclude = "";
-          IptablesLog.filterTextIncludeList.clear();
-          IptablesLog.filterUidInclude = false;
-          IptablesLog.filterNameInclude = false;
-          IptablesLog.filterAddressInclude = false;
-          IptablesLog.filterPortInclude = false;
+          NetworkLog.filterTextInclude = "";
+          NetworkLog.filterTextIncludeList.clear();
+          NetworkLog.filterUidInclude = false;
+          NetworkLog.filterNameInclude = false;
+          NetworkLog.filterAddressInclude = false;
+          NetworkLog.filterPortInclude = false;
 
-          IptablesLog.filterTextExclude = "";
-          IptablesLog.filterTextExcludeList.clear();
-          IptablesLog.filterUidExclude = false;
-          IptablesLog.filterNameExclude = false;
-          IptablesLog.filterAddressExclude = false;
-          IptablesLog.filterPortExclude = false;
+          NetworkLog.filterTextExclude = "";
+          NetworkLog.filterTextExcludeList.clear();
+          NetworkLog.filterUidExclude = false;
+          NetworkLog.filterNameExclude = false;
+          NetworkLog.filterAddressExclude = false;
+          NetworkLog.filterPortExclude = false;
         }
       })
     .setNeutralButton("Done", new DialogInterface.OnClickListener() {
@@ -163,24 +163,24 @@ public class FilterDialog implements DialogInterface.OnDismissListener
   @Override
     public void onDismiss(DialogInterface dialog)
     {
-      IptablesLog.settings.setFilterTextInclude(IptablesLog.filterTextInclude);
-      IptablesLog.settings.setFilterUidInclude(IptablesLog.filterUidInclude);
-      IptablesLog.settings.setFilterNameInclude(IptablesLog.filterNameInclude);
-      IptablesLog.settings.setFilterAddressInclude(IptablesLog.filterAddressInclude);
-      IptablesLog.settings.setFilterPortInclude(IptablesLog.filterPortInclude);
+      NetworkLog.settings.setFilterTextInclude(NetworkLog.filterTextInclude);
+      NetworkLog.settings.setFilterUidInclude(NetworkLog.filterUidInclude);
+      NetworkLog.settings.setFilterNameInclude(NetworkLog.filterNameInclude);
+      NetworkLog.settings.setFilterAddressInclude(NetworkLog.filterAddressInclude);
+      NetworkLog.settings.setFilterPortInclude(NetworkLog.filterPortInclude);
 
-      IptablesLog.settings.setFilterTextExclude(IptablesLog.filterTextExclude);
-      IptablesLog.settings.setFilterUidExclude(IptablesLog.filterUidExclude);
-      IptablesLog.settings.setFilterNameExclude(IptablesLog.filterNameExclude);
-      IptablesLog.settings.setFilterAddressExclude(IptablesLog.filterAddressExclude);
-      IptablesLog.settings.setFilterPortExclude(IptablesLog.filterPortExclude);
+      NetworkLog.settings.setFilterTextExclude(NetworkLog.filterTextExclude);
+      NetworkLog.settings.setFilterUidExclude(NetworkLog.filterUidExclude);
+      NetworkLog.settings.setFilterNameExclude(NetworkLog.filterNameExclude);
+      NetworkLog.settings.setFilterAddressExclude(NetworkLog.filterAddressExclude);
+      NetworkLog.settings.setFilterPortExclude(NetworkLog.filterPortExclude);
 
-      FilterUtils.buildList(IptablesLog.filterTextInclude, IptablesLog.filterTextIncludeList);
-      FilterUtils.buildList(IptablesLog.filterTextExclude, IptablesLog.filterTextExcludeList);
+      FilterUtils.buildList(NetworkLog.filterTextInclude, NetworkLog.filterTextIncludeList);
+      FilterUtils.buildList(NetworkLog.filterTextExclude, NetworkLog.filterTextExcludeList);
 
-      IptablesLog.appView.setFilter("");
-      IptablesLog.logView.setFilter("");
+      NetworkLog.appView.setFilter("");
+      NetworkLog.logView.setFilter("");
 
-      IptablesLog.updateStatusText(context);
+      NetworkLog.updateStatusText(context);
     }
 }

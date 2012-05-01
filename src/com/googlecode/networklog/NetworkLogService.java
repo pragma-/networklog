@@ -1,4 +1,4 @@
-package com.googlecode.iptableslog;
+package com.googlecode.networklog;
 
 import android.content.ContextWrapper;
 import android.app.Service;
@@ -27,7 +27,7 @@ import java.lang.Thread;
 import java.lang.Runnable;
 import java.lang.reflect.Method;
 
-public class IptablesLogService extends Service {
+public class NetworkLogService extends Service {
   ArrayList<Messenger> clients = new ArrayList<Messenger>();
   static final int NOTIFICATION_ID = 42;
   static final int MSG_REGISTER_CLIENT = 1;
@@ -60,10 +60,10 @@ public class IptablesLogService extends Service {
 
           case MSG_UPDATE_NOTIFICATION:
             MyLog.d("[service] updating notification: " + ((String)msg.obj));
-            Intent i = new Intent(context, IptablesLog.class);
+            Intent i = new Intent(context, NetworkLog.class);
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pi = PendingIntent.getActivity(context, 0, i, 0);
-            notification.setLatestEventInfo(context, "IptablesLog", "Iptables logging active [" + ((String)msg.obj) + "]", pi);
+            notification.setLatestEventInfo(context, "Network Log", "Logging active [" + ((String)msg.obj) + "]", pi);
             nManager.notify(42, notification);
             break;
 
@@ -86,7 +86,7 @@ public class IptablesLogService extends Service {
 
   HashMap<String, Integer> logEntriesMap;
   ShellCommand command;
-  IptablesLogger logger;
+  NetworkLogger logger;
   String logfile = null;
   long logfile_maxsize;
   PrintWriter logWriter = null;
@@ -127,11 +127,11 @@ public class IptablesLogService extends Service {
   }
 
   public Notification createNotification() {
-    Notification n = new Notification(R.drawable.icon, "IptablesLog logging started", System.currentTimeMillis());
-    Intent i = new Intent(this, IptablesLog.class);
+    Notification n = new Notification(R.drawable.icon, "Network logging started", System.currentTimeMillis());
+    Intent i = new Intent(this, NetworkLog.class);
     i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
     PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
-    n.setLatestEventInfo(this, "IptablesLog", "Iptables logging active", pi);
+    n.setLatestEventInfo(this, "Network Log", "Logging active", pi);
     return n;
   }
 
@@ -167,7 +167,7 @@ public class IptablesLogService extends Service {
       // run in background thread
       new Thread(new Runnable() {
         public void run() {
-          String logfile_intent = "/sdcard/iptableslog.txt";
+          String logfile_intent = "/sdcard/networklog.txt";
           String logfile_maxsize_intent = "12000000";
 
           if(extras != null) {
@@ -175,7 +175,7 @@ public class IptablesLogService extends Service {
             logfile_maxsize_intent = extras.getString("logfile_maxsize");
           }
 
-          MyLog.d("[service] IptablesLog service starting [" + logfile_intent + "; " + logfile_maxsize_intent + "]");;
+          MyLog.d("[service] NetworkLog service starting [" + logfile_intent + "; " + logfile_maxsize_intent + "]");;
 
           final String l = logfile_intent;
           final String m = logfile_maxsize_intent;
@@ -196,7 +196,7 @@ public class IptablesLogService extends Service {
             try {
               logWriter = new PrintWriter(new BufferedWriter(new FileWriter(logfile, true)), true);
             } catch(final Exception e) {
-              Log.e("IptablesLog", "Exception opening logfile [" + logfile +"]", e);
+              Log.e("NetworkLog", "Exception opening logfile [" + logfile +"]", e);
               handler.post(new Runnable() {
                 public void run() {
                   Toast.makeText(context, "Failed to start Iptableslog service: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -224,7 +224,7 @@ public class IptablesLogService extends Service {
         }
       }).start();
 
-      return Service.START_NOT_STICKY;
+      return Service.START_STICKY;
     }
 
   @Override
@@ -233,7 +233,7 @@ public class IptablesLogService extends Service {
       Iptables.removeRules(this);
       stopLogging();
       stopForeground();
-      Toast.makeText(this, "IptablesLog service done", Toast.LENGTH_SHORT).show();
+      Toast.makeText(this, "Network Log service done", Toast.LENGTH_SHORT).show();
     }
 
   public void initEntriesMap() {
@@ -265,14 +265,14 @@ public class IptablesLogService extends Service {
        buffer.append(result);
        */
 
-    while((pos = result.indexOf("[IptablesLogEntry]", pos)) > -1) {
-      MyLog.d("---- got [IptablesLogEntry] at " + pos + " ----");
+    while((pos = result.indexOf("[NetworkLogEntry]", pos)) > -1) {
+      MyLog.d("---- got [NetworkLogEntry] at " + pos + " ----");
       // buffer_pos = pos;
 
-      pos += 18; // skip past "[IptablesLogEntry]"
+      pos += "[NetworkLogEntry]".length(); // skip past "[NetworkLogEntry]"
 
       int newline = result.indexOf("\n", pos);
-      int nextEntry = result.indexOf("[IptablesLogEntry]", pos);
+      int nextEntry = result.indexOf("[NetworkLogEntry]", pos);
 
       if(nextEntry != -1 && nextEntry < newline) {
         MyLog.d("Skipping corrupted entry");
@@ -414,28 +414,28 @@ public class IptablesLogService extends Service {
       try {
         uid = Integer.parseInt(uidString.split("[^0-9-]+")[0]);
       } catch(Exception e) {
-        Log.e("IptablesLog", "Bad data for uid: [" + uidString + "]", e);
+        Log.e("NetworkLog", "Bad data for uid: [" + uidString + "]", e);
         uid = -13;
       }
 
       try {
         spt = Integer.parseInt(sptString.split("[^0-9-]+")[0]);
       } catch(Exception e) {
-        Log.e("IptablesLog", "Bad data for spt: [" + sptString + "]", e);
+        Log.e("NetworkLog", "Bad data for spt: [" + sptString + "]", e);
         spt = -1;
       }
 
       try {
         dpt = Integer.parseInt(dptString.split("[^0-9-]+")[0]);
       } catch(Exception e) {
-        Log.e("IptablesLog", "Bad data for dpt: [" + dptString + "]", e);
+        Log.e("NetworkLog", "Bad data for dpt: [" + dptString + "]", e);
         dpt = -1;
       }
 
       try {
         len = Integer.parseInt(lenString.split("[^0-9-]+")[0]);
       } catch(Exception e) {
-        Log.e("IptablesLog", "Bad data for len: [" + lenString + "]", e);
+        Log.e("NetworkLog", "Bad data for len: [" + lenString + "]", e);
         len = -1;
       }
 
@@ -564,12 +564,12 @@ public class IptablesLogService extends Service {
       return false;
     }
 
-    synchronized(IptablesLog.scriptLock) {
+    synchronized(NetworkLog.scriptLock) {
       String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + Iptables.SCRIPT;
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        script.println("grep IptablesLogEntry /proc/kmsg");
+        script.println("grep NetworkLogEntry /proc/kmsg");
         script.close();
       } catch(java.io.IOException e) {
         e.printStackTrace();
@@ -577,7 +577,7 @@ public class IptablesLogService extends Service {
 
       MyLog.d("Starting iptables log tracker");
 
-      command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "IptablesLogger");
+      command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "NetworkLogger");
       final String error = command.start(false);
 
       if(error != null) {
@@ -586,8 +586,8 @@ public class IptablesLogService extends Service {
       }
     }
 
-    logger = new IptablesLogger();
-    new Thread(logger, "IptablesLogger").start();
+    logger = new NetworkLogger();
+    new Thread(logger, "NetworkLogger").start();
 
     return true;
   }
@@ -605,7 +605,7 @@ public class IptablesLogService extends Service {
   }
 
   public void killLogger() {
-    synchronized(IptablesLog.scriptLock) {
+    synchronized(NetworkLog.scriptLock) {
       String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + Iptables.SCRIPT;
 
       try {
@@ -634,7 +634,7 @@ public class IptablesLogService extends Service {
         return;
       }
 
-      int iptableslog_pid = -1;
+      int networklog_pid = -1;
 
       for(String line : result.split("\n")) {
         // MyLog.d("ps - parsing line [" + line + "]");
@@ -652,21 +652,21 @@ public class IptablesLogService extends Service {
           // ignored
           continue;
         } catch(Exception e) {
-          Log.d("IptablesLog", "Unexpected exception", e);
+          Log.d("NetworkLog", "Unexpected exception", e);
           continue;
         }
 
         // MyLog.d("cmd: " + cmd + "; pid: " + pid + "; ppid: " + ppid);
 
-        if(cmd.equals("com.googlecode.iptableslog")) {
-          iptableslog_pid = pid;
-          MyLog.d("IptablesLog pid: " + iptableslog_pid);
+        if(cmd.equals("com.googlecode.networklog")) {
+          networklog_pid = pid;
+          MyLog.d("NetworkLog pid: " + networklog_pid);
           continue;
         }
 
-        if(ppid == iptableslog_pid) {
+        if(ppid == networklog_pid) {
           MyLog.d(cmd + " is our child");
-          iptableslog_pid = pid;
+          networklog_pid = pid;
 
           if(cmd.equals("grep")) {
             MyLog.d("Killing tracker " + pid);
@@ -687,7 +687,7 @@ public class IptablesLogService extends Service {
     }
   }
 
-  public class IptablesLogger implements Runnable {
+  public class NetworkLogger implements Runnable {
     boolean running = false;
 
     public void stop() {
@@ -695,12 +695,12 @@ public class IptablesLogService extends Service {
     }
 
     public void run() {
-      MyLog.d("IptablesLogger " + this + " starting");
+      MyLog.d("NetworkLogger " + this + " starting");
       String result;
       running = true;
 
       while(running && command.checkForExit() == false) {
-        MyLog.d("IptablesLogger " + this + " checking stdout");
+        MyLog.d("NetworkLogger " + this + " checking stdout");
 
         if(command.stdoutAvailable()) {
           result = command.readStdout();
@@ -709,7 +709,7 @@ public class IptablesLogService extends Service {
             Thread.sleep(750);
           }
           catch(Exception e) {
-            Log.d("IptablesLog", "IptablesLogger exception while sleeping", e);
+            Log.d("NetworkLog", "NetworkLogger exception while sleeping", e);
           }
 
           continue;
@@ -721,7 +721,7 @@ public class IptablesLogService extends Service {
 
         if(result == null) {
           MyLog.d("result == null");
-          MyLog.d("IptablesLogger " + this + " exiting [returned null]");
+          MyLog.d("NetworkLogger " + this + " exiting [returned null]");
           return;
         }
 
@@ -729,7 +729,7 @@ public class IptablesLogService extends Service {
         parseResult(result);
       }
 
-      MyLog.d("IptablesLogger " + this + " exiting [end of loop]");
+      MyLog.d("NetworkLogger " + this + " exiting [end of loop]");
     }
   }
 }
