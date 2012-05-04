@@ -64,7 +64,7 @@ public class NetworkLogService extends Service {
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pi = PendingIntent.getActivity(context, 0, i, 0);
             notification.setLatestEventInfo(context, "Network Log", "Logging active [" + ((String)msg.obj) + "]", pi);
-            nManager.notify(42, notification);
+            nManager.notify(NOTIFICATION_ID, notification);
             break;
 
           case MSG_BROADCAST_LOG_ENTRY:
@@ -173,6 +173,7 @@ public class NetworkLogService extends Service {
           if(extras != null) {
             logfile_intent = extras.getString("logfile");
             logfile_maxsize_intent = extras.getString("logfile_maxsize");
+            MyLog.d("[service] set logfile: " + logfile_intent);
           }
 
           MyLog.d("[service] NetworkLog service starting [" + logfile_intent + "; " + logfile_maxsize_intent + "]");;
@@ -199,7 +200,7 @@ public class NetworkLogService extends Service {
               Log.e("NetworkLog", "Exception opening logfile [" + logfile +"]", e);
               handler.post(new Runnable() {
                 public void run() {
-                  Toast.makeText(context, "Failed to start Iptableslog service: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                  Iptables.showError(context, "Network Log Error", "Failed to start Network Log service: " + e.getMessage());
                   stopSelf();
                 }
               });
@@ -581,7 +582,7 @@ public class NetworkLogService extends Service {
       final String error = command.start(false);
 
       if(error != null) {
-        Iptables.showError(this, "Start log error", error);
+        Iptables.showError(this, "Network Log Error", error);
         return false;
       }
     }

@@ -639,11 +639,11 @@ public class NetworkLog extends TabActivity
     try {
       for(Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
         NetworkInterface intf = en.nextElement();
-        MyLog.d(intf.toString());
+        MyLog.d("Network interface found: " + intf.toString());
 
         for(Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
           InetAddress inetAddress = enumIpAddr.nextElement();
-          MyLog.d(inetAddress.toString());
+          MyLog.d("InetAddress: " + inetAddress.toString());
 
           if(!inetAddress.isLoopbackAddress()) {
             MyLog.d("Adding local IP address: [" + inetAddress.getHostAddress().toString() + "]");

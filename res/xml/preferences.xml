@@ -44,12 +44,12 @@
       android:entries="@array/timerange_entries"
       android:entryValues="@array/timerange_values"
       android:dialogTitle="Delete older than" />
+-->
     <CheckBoxPreference
       android:defaultValue="false"
       android:key="startServiceAtBoot"
       android:title="Start log at boot"
       android:summary="Start logging when device boots up" />
--->
     <CheckBoxPreference
       android:defaultValue="false"
       android:key="startServiceAtStart"

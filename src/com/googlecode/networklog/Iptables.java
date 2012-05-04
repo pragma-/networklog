@@ -15,7 +15,7 @@ public class Iptables {
   public static final String SCRIPT = "networklog.sh";
 
   public static final String[] CELL_INTERFACES = {
-    "rmnet+", "ppp+", "pdp+"
+    "rmnet+", "ppp+", "pdp+", "pnp+", "rmnet_sdio+"
   };
 
   public static final String[] WIFI_INTERFACES = {
@@ -165,6 +165,5 @@ public class Iptables {
         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         .putExtra("title", title)
         .putExtra("message", message));
-
   }
 }
