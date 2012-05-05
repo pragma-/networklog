@@ -619,7 +619,11 @@ public class NetworkLogService extends Service {
 
       ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "FindLogger");
       command.start(false);
-      String result = "";
+
+      int networklog_pid = -1;
+      String string, pid_string, ppid_string, cmd = "";
+      int pid = 0, ppid = 0, token, pos, space;
+      boolean error = false;
 
       while(true) {
         String line = command.readStdoutBlocking();
@@ -628,32 +632,56 @@ public class NetworkLogService extends Service {
           break;
         }
 
-        result += line;
-      }
-
-      if(result == null) {
-        return;
-      }
-
-      int networklog_pid = -1;
-
-      for(String line : result.split("\n")) {
         // MyLog.d("ps - parsing line [" + line + "]");
-        String tokens[] = line.split("\\s+");
-        String cmd = tokens[tokens.length - 1];
-        int pid, ppid;
 
-        try {
-          pid = Integer.parseInt(tokens[1]);
-          ppid = Integer.parseInt(tokens[2]);
-        } catch(NumberFormatException e) {
-          // ignored
-          continue;
-        } catch(ArrayIndexOutOfBoundsException e) {
-          // ignored
-          continue;
-        } catch(Exception e) {
-          Log.d("NetworkLog", "Unexpected exception", e);
+        token = 0;
+        pos = 0;
+        error = false;
+
+        // get tokens
+        while(true) {
+          space = line.indexOf(' ', pos);
+
+          if(space == -1) {
+            // last token
+            cmd = line.substring(pos, line.length() - 1);
+            break;
+          }
+
+          string = line.substring(pos, space);
+
+          try {
+            switch(token) {
+              case 1:
+                pid = Integer.parseInt(string);
+                break;
+              case 2:
+                ppid = Integer.parseInt(string);
+                break;
+              default:
+            }
+          } catch(NumberFormatException e) {
+            error = true;
+            break;
+          } catch(ArrayIndexOutOfBoundsException e) {
+            error = true;
+            break;
+          } catch(Exception e) {
+            error = true;
+            Log.d("NetworkLog", "Unexpected exception", e);
+            break;
+          }
+
+          token++;
+          
+          pos = space + 1;
+
+          while(line.charAt(pos) == ' ') {
+            pos++;
+          }
+        }
+
+        if(error == true) {
           continue;
         }
 
