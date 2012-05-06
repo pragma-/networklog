@@ -217,8 +217,6 @@ public class HistoryLoader {
                   delim = 0;
                   done = false;
 
-                  MyLog.d("Parsing string [" + string + "]");
-
                   if(string.length() == 0) {
                     line_length = 0;
                     continue;
