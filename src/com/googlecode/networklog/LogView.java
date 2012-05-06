@@ -194,7 +194,9 @@ public class LogView extends Activity
     item.len = entry.len;
     item.timestamp = entry.timestamp;
 
-    MyLog.d("LogView: Add item: in=" + item.in + " out=" + item.out + " " + item.srcAddr + " " + item.srcPort + " " + item.dstAddr + " " + item.dstPort + " " + item.len);
+    if(MyLog.enabled) {
+      MyLog.d("LogView: Add item: in=" + item.in + " out=" + item.out + " " + item.srcAddr + " " + item.srcPort + " " + item.dstAddr + " " + item.dstPort + " " + item.len);
+    }
 
     synchronized(listDataBuffer) {
       listDataBuffer.add(item);

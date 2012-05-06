@@ -451,7 +451,9 @@ public class AppView extends Activity {
   }
 
   public void onNewLogEntry(final LogEntry entry) {
-    MyLog.d("AppView: NewLogEntry: [" + entry.uid + "] in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
+    if(MyLog.enabled) {
+      MyLog.d("AppView: NewLogEntry: [" + entry.uid + "] in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
+    }
 
     int index = getItemByAppUid(entry.uid);
 

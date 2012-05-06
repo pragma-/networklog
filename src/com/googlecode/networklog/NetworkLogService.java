@@ -303,7 +303,7 @@ public class NetworkLogService extends Service {
         /* MyLog.d("buffering [" + line + "] for IN space");  */ break;
       };
 
-      in = result.substring(pos + 3, space);
+      in = StringPool.get(result.substring(pos + 3, space));
 
       pos = result.indexOf("OUT=", pos);
 
@@ -317,7 +317,7 @@ public class NetworkLogService extends Service {
         /* MyLog.d("buffering [" + line + "] for OUT space");  */ break;
       };
 
-      out = result.substring(pos + 4, space);
+      out = StringPool.get(result.substring(pos + 4, space));
 
       pos = result.indexOf("SRC=", pos);
 
@@ -331,7 +331,7 @@ public class NetworkLogService extends Service {
         /* MyLog.d("buffering [" + line + "] for SRC space");  */ break;
       };
 
-      src = result.substring(pos + 4, space);
+      src = StringPool.get(result.substring(pos + 4, space));
 
       pos = result.indexOf("DST=", pos);
 
@@ -345,7 +345,7 @@ public class NetworkLogService extends Service {
         /* MyLog.d("buffering [" + line + "] for DST space");  */ break;
       };
 
-      dst = result.substring(pos + 4, space);
+      dst = StringPool.get(result.substring(pos + 4, space));
 
       pos = result.indexOf("LEN=", pos);
 

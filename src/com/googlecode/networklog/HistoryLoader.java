@@ -211,21 +211,21 @@ public class HistoryLoader {
                   entry.timestamp = Long.parseLong(entries[0]);
 
                   if(entries[1].length() != 0) {
-                    entry.in = new String(entries[1]);
+                    entry.in = StringPool.get(entries[1]);
                   } else {
                     entry.in = null;
                   }
 
                   if(entries[2].length() != 0) {
-                    entry.out = new String(entries[2]);
+                    entry.out = StringPool.get(entries[2]);
                   } else {
                     entry.out = null;
                   }
 
                   entry.uid = Integer.parseInt(entries[3]);
-                  entry.src = new String(entries[4]);
+                  entry.src = StringPool.get(entries[4]);
                   entry.spt = Integer.parseInt(entries[5]);
-                  entry.dst = new String(entries[6]);
+                  entry.dst = StringPool.get(entries[6]);
                   entry.dpt = Integer.parseInt(entries[7]);
                   entry.len = Integer.parseInt(entries[8]);
 
