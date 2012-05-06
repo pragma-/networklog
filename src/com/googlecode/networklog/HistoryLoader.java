@@ -31,8 +31,12 @@ public class HistoryLoader {
     });
 
     dialog_showing = true;
-    dialog.show();
-    dialog.setProgress(dialog_progress);
+    NetworkLog.handler.post(new Runnable() {
+      public void run() {
+        dialog.show();
+        dialog.setProgress(dialog_progress);
+      }
+    });
   }
 
   public void loadEntriesFromFile(Context context, String historySize) {
@@ -87,7 +91,7 @@ public class HistoryLoader {
 
           MyLog.d("[history] Testing line [" + line + "]");
 
-          long timestamp = Long.parseLong(line.split("[^0-9-]+")[0]);
+          long timestamp = Long.parseLong(line.split("[^0-9-]+", 2)[0]);
 
           MyLog.d("[history] comparing timestamp " + timestamp + " <=> " + history_target);
 
@@ -117,7 +121,7 @@ public class HistoryLoader {
       final Context context_final = context;
       new Thread(new Runnable() {
         public void run() {
-          int buffer_size = (int)(length * 0.05f); // 50K buffer for 1MB, 2.4MB buffer for 48MB
+          int buffer_size = 1024 * 8;
           MyLog.d("Using " + buffer_size + " byte buffer to read history");
 
           byte[] buffer = new byte[buffer_size]; // read a nice sized chunk of data
@@ -149,13 +153,20 @@ public class HistoryLoader {
 
           MyLog.d("[history] increment size: " + progress_increment_size);
 
+          int token, pos, delim, i;
+          String string;
+          boolean done;
+
           try {
             while(!canceled) {
               buffer_length = logfile.read(buffer);
               buffer_pos = 0;
 
               read_so_far += buffer_length;
-              MyLog.d("[history] read " + buffer_length + "; so far: " + read_so_far + " out of " + length);
+
+              if(MyLog.enabled) {
+                MyLog.d("[history] read " + buffer_length + "; so far: " + read_so_far + " out of " + length);
+              }
 
               if(buffer_length == -1) {
                 // end of file
@@ -167,7 +178,7 @@ public class HistoryLoader {
 
               // start line with previous unfinished line
               if(partial_buffer_length > 0) {
-                for(int i = 0; i < partial_buffer_length; i++) {
+                for(i = 0; i < partial_buffer_length; i++) {
                   line[line_length++] = partial_buffer[i];
                 }
 
@@ -193,41 +204,83 @@ public class HistoryLoader {
                     }
                   }
 
-                  for(int i = 0; i < line_length; i++) {
+                  for(i = 0; i < line_length; i++) {
                     chars[i] = (char)line[i];
                   }
 
                   sb.setLength(0);
                   sb.append(chars, 0, line_length);
+                  string = sb.toString();
 
-                  // todo: optimization: use indexOf/substring instead of split?
-                  String[] entries = sb.toString().split(",");
+                  token = 0;
+                  pos = 0;
+                  delim = 0;
+                  done = false;
 
-                  if(entries.length != 9) {
-                    MyLog.d("[history] Bad entry: [" + sb.toString() + "]");
+                  MyLog.d("Parsing string [" + string + "]");
+
+                  if(string.length() == 0) {
+                    line_length = 0;
                     continue;
                   }
 
-                  entry.timestamp = Long.parseLong(entries[0]);
+                  while(!done) {
+                    delim = string.indexOf(',', pos);
 
-                  if(entries[1].length() != 0) {
-                    entry.in = StringPool.get(entries[1]);
-                  } else {
-                    entry.in = null;
+                    if(delim == -1) {
+                      delim = string.length();
+                      done = true;
+                    }
+
+                    // MyLog.d("Got token " + token + " (" + pos + "," + delim + ") [" + string.substring(pos, delim) + "]"); 
+
+                    switch(token) {
+                      case 0:
+                        entry.timestamp = Long.parseLong(string.substring(pos, delim));
+                        break;
+                      case 1:
+                        if((delim - pos) != 0) {
+                          entry.in = StringPool.get(string.substring(pos, delim));
+                        } else {
+                          entry.in = null;
+                        }
+                        break;
+                      case 2:
+                        if((delim - pos) != 0) {
+                          entry.out = StringPool.get(string.substring(pos, delim));
+                        } else {
+                          entry.out = null;
+                        }
+                        break;
+                      case 3:
+                        entry.uid = Integer.parseInt(string.substring(pos, delim));
+                        break;
+                      case 4:
+                        entry.src = StringPool.get(string.substring(pos, delim));
+                        break;
+                      case 5:
+                        entry.spt = Integer.parseInt(string.substring(pos, delim));
+                        break;
+                      case 6:
+                        entry.dst = StringPool.get(string.substring(pos, delim));
+                        break;
+                      case 7:
+                        entry.dpt = Integer.parseInt(string.substring(pos, delim));
+                        break;
+                      case 8:
+                        entry.len = Integer.parseInt(string.substring(pos, delim));
+                        break;
+                    }
+
+                    token++;
+                    pos = delim + 1;
                   }
 
-                  if(entries[2].length() != 0) {
-                    entry.out = StringPool.get(entries[2]);
-                  } else {
-                    entry.out = null;
+                  if(token != 9) {
+                    MyLog.d("Skipping malformed entry");
+                    line_length = 0;
+                    continue;
                   }
-
-                  entry.uid = Integer.parseInt(entries[3]);
-                  entry.src = StringPool.get(entries[4]);
-                  entry.spt = Integer.parseInt(entries[5]);
-                  entry.dst = StringPool.get(entries[6]);
-                  entry.dpt = Integer.parseInt(entries[7]);
-                  entry.len = Integer.parseInt(entries[8]);
 
                   NetworkLog.logView.onNewLogEntry(entry);
                   NetworkLog.appView.onNewLogEntry(entry);
@@ -241,7 +294,7 @@ public class HistoryLoader {
                 // no newline; must be last line of buffer
                 partial_buffer_length = 0;
 
-                for(int i = 0; i < line_length; i++) {
+                for(i = 0; i < line_length; i++) {
                   partial_buffer[partial_buffer_length++] = line[i];
                 }
               }

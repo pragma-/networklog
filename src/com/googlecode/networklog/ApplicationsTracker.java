@@ -157,7 +157,6 @@ public class ApplicationsTracker {
           public void run() {
             synchronized(dialogLock) {
               if(dialog != null) {
-                MyLog.d("Updating dialog progress: " + progress + " " + app.processName);
                 dialog.setProgress(progress);
               }
             }

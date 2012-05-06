@@ -243,17 +243,23 @@ public class NetworkLogService extends Service {
 
     for(NetStat.Connection connection : connections) {
       String mapKey = connection.src + ":" + connection.spt + " -> " + connection.dst + ":" + connection.dpt;
-      MyLog.d("[netstat src-dst] New entry " + connection.uid + " for [" + mapKey + "]");
+      if(MyLog.enabled) {
+        MyLog.d("[netstat src-dst] New entry " + connection.uid + " for [" + mapKey + "]");
+      }
       logEntriesMap.put(mapKey, Integer.valueOf(connection.uid));
 
       mapKey = connection.dst + ":" + connection.dpt + " -> " + connection.src + ":" + connection.spt;
-      MyLog.d("[netstat dst-src] New entry " + connection.uid + " for [" + mapKey + "]");
+      if(MyLog.enabled) {
+        MyLog.d("[netstat dst-src] New entry " + connection.uid + " for [" + mapKey + "]");
+      }
       logEntriesMap.put(mapKey, Integer.valueOf(connection.uid));
     }
   }
 
   public void parseResult(String result) {
-    MyLog.d("--------------- parsing result --------------");
+    if(MyLog.enabled) {
+      MyLog.d("--------------- parsing network entry --------------");
+    }
     int pos = 0 /* , buffer_pos = 0 */;
     String in, out, src, dst, lenString, sptString, dptString, uidString;
 
@@ -267,7 +273,9 @@ public class NetworkLogService extends Service {
        */
 
     while((pos = result.indexOf("[NetworkLogEntry]", pos)) > -1) {
-      MyLog.d("---- got [NetworkLogEntry] at " + pos + " ----");
+      if(MyLog.enabled) {
+        MyLog.d("---- got [NetworkLogEntry] at " + pos + " ----");
+      }
       // buffer_pos = pos;
 
       pos += "[NetworkLogEntry]".length(); // skip past "[NetworkLogEntry]"
@@ -276,7 +284,9 @@ public class NetworkLogService extends Service {
       int nextEntry = result.indexOf("[NetworkLogEntry]", pos);
 
       if(nextEntry != -1 && nextEntry < newline) {
-        MyLog.d("Skipping corrupted entry");
+        if(MyLog.enabled) {
+          MyLog.d("Skipping corrupted entry");
+        }
         continue;
       }
 
@@ -398,7 +408,9 @@ public class NetworkLogService extends Service {
         uidString = "-1";
         pos = lastpos;
       } else {
-        MyLog.d("Looking for UID newline");
+        if(MyLog.enabled) {
+          MyLog.d("Looking for UID newline");
+        }
 
         if(newline == -1) {
           /* MyLog.d("buffering [" + line + "] for UID newline");  */ break;
@@ -407,106 +419,131 @@ public class NetworkLogService extends Service {
         uidString = result.substring(pos + 4, newline);
       }
 
-      int uid;
-      int spt;
-      int dpt;
-      int len;
+      int uid = -13;
+      int spt = -1;
+      int dpt = -1;
+      int len = -1;
+
+      int end, length;
 
       try {
-        uid = Integer.parseInt(uidString.split("[^0-9-]+")[0]);
-      } catch(Exception e) {
-        Log.e("NetworkLog", "Bad data for uid: [" + uidString + "]", e);
-        uid = -13;
-      }
+        length = uidString.length();
+        // uidString could be "-1", so check for '-'; but the other strings will be > 0
+        for(end = 0; end < length && (uidString.charAt(end) == '-' || Character.isDigit(uidString.charAt(end))); end++);
+        uid = Integer.parseInt(uidString.substring(0, end));
 
-      try {
-        spt = Integer.parseInt(sptString.split("[^0-9-]+")[0]);
+        length = sptString.length();
+        for(end = 0; end < length && Character.isDigit(sptString.charAt(end)); end++);
+        spt = Integer.parseInt(sptString.substring(0, end));
+        
+        length = dptString.length();
+        for(end = 0; end < length && Character.isDigit(dptString.charAt(end)); end++);
+        dpt = Integer.parseInt(dptString.substring(0, end));
+        
+        length = lenString.length();
+        for(end = 0; end < length && Character.isDigit(lenString.charAt(end)); end++);
+        len = Integer.parseInt(lenString.substring(0, end));
       } catch(Exception e) {
-        Log.e("NetworkLog", "Bad data for spt: [" + sptString + "]", e);
-        spt = -1;
-      }
-
-      try {
-        dpt = Integer.parseInt(dptString.split("[^0-9-]+")[0]);
-      } catch(Exception e) {
-        Log.e("NetworkLog", "Bad data for dpt: [" + dptString + "]", e);
-        dpt = -1;
-      }
-
-      try {
-        len = Integer.parseInt(lenString.split("[^0-9-]+")[0]);
-      } catch(Exception e) {
-        Log.e("NetworkLog", "Bad data for len: [" + lenString + "]", e);
-        len = -1;
+        Log.e("NetworkLog", "Bad data for: [" + result + "]", e);
       }
 
       String srcDstMapKey = src + ":" + spt + " -> " + dst + ":" + dpt;
       String dstSrcMapKey = dst + ":" + dpt + " -> " + src + ":" + spt;
 
-      MyLog.d("Checking entry for " + uid + " " + srcDstMapKey + " and " + dstSrcMapKey);
+      if(MyLog.enabled) {
+        MyLog.d("Checking entry for " + uid + " " + srcDstMapKey + " and " + dstSrcMapKey);
+      }
       Integer srcDstMapUid = logEntriesMap.get(srcDstMapKey);
       Integer dstSrcMapUid = logEntriesMap.get(dstSrcMapKey);
 
       if(uid < 0) {
         // Unknown uid, retrieve from entries map
-        MyLog.d("Unknown uid");
+        if(MyLog.enabled) {
+          MyLog.d("Unknown uid");
+        }
 
         if(srcDstMapUid == null || dstSrcMapUid == null) {
           // refresh netstat and try again
-          MyLog.d("Refreshing netstat ...");
+          if(MyLog.enabled) {
+            MyLog.d("Refreshing netstat ...");
+          }
           initEntriesMap();
           srcDstMapUid = logEntriesMap.get(srcDstMapKey);
           dstSrcMapUid = logEntriesMap.get(dstSrcMapKey);
         }
 
         if(srcDstMapUid == null) {
-          MyLog.d("[src-dst] No entry uid for " + uid + " [" + srcDstMapKey + "]");
+          if(MyLog.enabled) {
+            MyLog.d("[src-dst] No entry uid for " + uid + " [" + srcDstMapKey + "]");
+          }
 
           if(uid == -1) {
             if(dstSrcMapUid != null) {
-              MyLog.d("[dst-src] Reassigning kernel packet -1 to " + dstSrcMapUid);
+              if(MyLog.enabled) {
+                MyLog.d("[dst-src] Reassigning kernel packet -1 to " + dstSrcMapUid);
+              }
               uid = dstSrcMapUid;
             } else {
-              MyLog.d("[src-dst] New kernel entry -1 for [" + srcDstMapKey + "]");
+              if(MyLog.enabled) {
+                MyLog.d("[src-dst] New kernel entry -1 for [" + srcDstMapKey + "]");
+              }
               srcDstMapUid = uid;
               logEntriesMap.put(srcDstMapKey, srcDstMapUid);
             }
           } else {
-            MyLog.d("[src-dst] New entry " + uid + " for [" + srcDstMapKey + "]");
+            if(MyLog.enabled) {
+              MyLog.d("[src-dst] New entry " + uid + " for [" + srcDstMapKey + "]");
+            }
             srcDstMapUid = uid;
             logEntriesMap.put(srcDstMapKey, srcDstMapUid);
           }
         } else {
-          MyLog.d("[src-dst] Found entry uid " + srcDstMapUid + " for " + uid + " [" + srcDstMapKey + "]");
+          if(MyLog.enabled) {
+            MyLog.d("[src-dst] Found entry uid " + srcDstMapUid + " for " + uid + " [" + srcDstMapKey + "]");
+          }
           uid = srcDstMapUid;
         }
 
         if(dstSrcMapUid == null) {
-          MyLog.d("[dst-src] No entry uid for " + uid + " [" + dstSrcMapKey + "]");
+          if(MyLog.enabled) {
+            MyLog.d("[dst-src] No entry uid for " + uid + " [" + dstSrcMapKey + "]");
+          }
 
           if(uid == -1) {
             if(srcDstMapUid != null) {
-              MyLog.d("[src-dst] Reassigning kernel packet -1 to " + srcDstMapUid);
+              if(MyLog.enabled) {
+                MyLog.d("[src-dst] Reassigning kernel packet -1 to " + srcDstMapUid);
+              }
               uid = srcDstMapUid;
             } else {
-              MyLog.d("[dst-src] New kernel entry -1 for [" + dstSrcMapKey + "]");
+              if(MyLog.enabled) {
+                MyLog.d("[dst-src] New kernel entry -1 for [" + dstSrcMapKey + "]");
+              }
               dstSrcMapUid = uid;
               logEntriesMap.put(dstSrcMapKey, dstSrcMapUid);
             }
           } else {
-            MyLog.d("[dst-src] New entry " + uid + " for [" + dstSrcMapKey + "]");
+            if(MyLog.enabled) {
+              MyLog.d("[dst-src] New entry " + uid + " for [" + dstSrcMapKey + "]");
+            }
             dstSrcMapUid = uid;
             logEntriesMap.put(dstSrcMapKey, dstSrcMapUid);
           }
         } else {
-          MyLog.d("[dst-src] Found entry uid " + dstSrcMapUid + " for " + uid + " [" + dstSrcMapKey + "]");
+          if(MyLog.enabled) {
+            MyLog.d("[dst-src] Found entry uid " + dstSrcMapUid + " for " + uid + " [" + dstSrcMapKey + "]");
+          }
           uid = dstSrcMapUid;
         }
       } else {
-        MyLog.d("Known uid");
+        if(MyLog.enabled) {
+          MyLog.d("Known uid");
+        }
 
         if(srcDstMapUid == null || dstSrcMapUid == null) {
-          MyLog.d("Adding missing uid " + uid + " to netstat map for " + srcDstMapKey + " and " + dstSrcMapKey);
+          if(MyLog.enabled) {
+            MyLog.d("Adding missing uid " + uid + " to netstat map for " + srcDstMapKey + " and " + dstSrcMapKey);
+          }
           logEntriesMap.put(srcDstMapKey, uid);
           logEntriesMap.put(dstSrcMapKey, uid);
         }
@@ -545,11 +582,15 @@ public class NetworkLogService extends Service {
     // log entry to logfile
     logWriter.println(entry.timestamp + "," + entry.in + "," + entry.out + "," + entry.uid + "," + entry.src + "," + entry.spt + "," + entry.dst + "," + entry.dpt + "," + entry.len);
 
-    MyLog.d("[service] notifyNewEntry: clients: " + clients.size());
+    if(MyLog.enabled) {
+      MyLog.d("[service] notifyNewEntry: clients: " + clients.size());
+    }
 
     for(int i = clients.size() - 1; i >= 0; i--) {
       try {
-        MyLog.d("[service] Sending entry to " + clients.get(i));
+        if(MyLog.enabled) {
+          MyLog.d("[service] Sending entry to " + clients.get(i));
+        }
         clients.get(i).send(Message.obtain(null, MSG_BROADCAST_LOG_ENTRY, entry));
       } catch(RemoteException e) {
         // client dead
@@ -729,8 +770,6 @@ public class NetworkLogService extends Service {
       running = true;
 
       while(running && command.checkForExit() == false) {
-        MyLog.d("NetworkLogger " + this + " checking stdout");
-
         if(command.stdoutAvailable()) {
           result = command.readStdout();
         } else {
@@ -754,7 +793,6 @@ public class NetworkLogService extends Service {
           return;
         }
 
-        MyLog.d("result == [" + result + "]");
         parseResult(result);
       }
 

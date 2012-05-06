@@ -51,6 +51,8 @@ public class AppView extends Activity {
   public GroupItem cachedSearchItem;
   private ListViewUpdater updater;
   public TextView statusText;
+  // remember last index return by getItemByAppUid to optimize-out call to binarySearch
+  int lastGetItemByAppUidIndex = -1;
 
   public class GroupItem {
     protected ApplicationsTracker.AppEntry app;
@@ -233,8 +235,6 @@ public class AppView extends Activity {
     int index = listView.getFirstVisiblePosition();
     View v = listView.getChildAt(0);
     int top = (v == null) ? 0 : v.getTop();
-
-    MyLog.d("listview index: " + index + "; top: " + top);
 
     adapter.notifyDataSetChanged();
 
@@ -427,18 +427,19 @@ public class AppView extends Activity {
   }
 
   public int getItemByAppUid(int uid) {
-    cachedSearchItem.app.uid = uid;
-
-    int index;
-
     synchronized(groupDataBuffer) {
-      index = Collections.binarySearch(groupDataBuffer, cachedSearchItem, comparator);
+      // check to see if we need to search for index
+      // (more often than not, the last index is still the active index being requested)
+      if(lastGetItemByAppUidIndex < 0 || groupDataBuffer.get(lastGetItemByAppUidIndex).app.uid != uid) {
+        cachedSearchItem.app.uid = uid;
+        lastGetItemByAppUidIndex = Collections.binarySearch(groupDataBuffer, cachedSearchItem, comparator);
+      }
 
       // binarySearch isn't guaranteed to return the first item of items with the same uid
       // so find the first item
-      while(index > 0) {
-        if(groupDataBuffer.get(index - 1).app.uid == uid) {
-          index--;
+      while(lastGetItemByAppUidIndex > 0) {
+        if(groupDataBuffer.get(lastGetItemByAppUidIndex - 1).app.uid == uid) {
+          lastGetItemByAppUidIndex--;
         }
         else {
           break;
@@ -446,8 +447,7 @@ public class AppView extends Activity {
       }
     }
 
-    MyLog.d("Search done, first: " + index);
-    return index;
+    return lastGetItemByAppUidIndex;
   }
 
   public void onNewLogEntry(final LogEntry entry) {
@@ -468,7 +468,6 @@ public class AppView extends Activity {
 
       // generally this will iterate once, but some apps may be grouped under the same uid
       while(true) {
-        MyLog.d("finding first index: " + index);
         GroupItem item = groupDataBuffer.get(index);
 
         if(item.app.uid != entry.uid) {
@@ -502,7 +501,9 @@ public class AppView extends Activity {
             childData.receivedBytes += entry.len;
             childData.receivedTimestamp = entry.timestamp;
 
-            MyLog.d("Added received packet in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + childData.receivedPackets + "; bytes: " + childData.receivedBytes);
+            if(MyLog.enabled) {
+              MyLog.d("Added received packet index=" + index + " in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + childData.receivedPackets + "; bytes: " + childData.receivedBytes);
+            }
 
             childData.receivedPort = entry.spt;
             childData.receivedAddress = entry.src;
@@ -511,7 +512,6 @@ public class AppView extends Activity {
             childData.sentAddress = entry.dst;
 
             childData.packetGraphBuffer.add(graphItem);
-//            MyLog.d("graph receivedbytes " + childData.receivedBytes + " " + childData + " added " + graphItem);
 
             item.childrenData.put(src, childData);
             item.childrenDataNeedsSort = true;
@@ -533,7 +533,9 @@ public class AppView extends Activity {
             childData.sentBytes += entry.len;
             childData.sentTimestamp = entry.timestamp;
 
-            MyLog.d("Added sent packet in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + childData.sentPackets + "; bytes: " + childData.sentBytes);
+            if(MyLog.enabled) {
+              MyLog.d("Added sent packet index=" + index + " in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + childData.sentPackets + "; bytes: " + childData.sentBytes);
+            }
 
             childData.sentPort = entry.dpt;
             childData.sentAddress = entry.dst;
@@ -542,7 +544,6 @@ public class AppView extends Activity {
             childData.receivedAddress = entry.src;
 
             childData.packetGraphBuffer.add(graphItem);
-//            MyLog.d("graph sentbytes " + childData.sentBytes + " " + childData + " added " + graphItem);
 
             item.childrenData.put(dst, childData);
             item.childrenDataNeedsSort = true;

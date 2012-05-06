@@ -92,7 +92,9 @@ public class ShellCommand {
 
   public boolean stdoutAvailable() {
     try {
-      MyLog.d("stdoutAvailable [" + tag + "]: " + stdout.ready());
+      if(MyLog.enabled) {
+        MyLog.d("stdoutAvailable [" + tag + "]: " + stdout.ready());
+      }
       return stdout.ready();
     } catch(java.io.IOException e) {
       Log.e("NetworkLog", "stdoutAvailable error", e);
@@ -101,7 +103,9 @@ public class ShellCommand {
   }
 
   public String readStdoutBlocking() {
-    MyLog.d("readStdoutBlocking [" + tag + "]");
+    if(MyLog.enabled) {
+      MyLog.d("readStdoutBlocking [" + tag + "]");
+    }
     String line;
 
     if(stdout == null) {
@@ -128,7 +132,9 @@ public class ShellCommand {
   }
 
   public String readStdout() {
-    MyLog.d("readStdout [" + tag + "]");
+    if(MyLog.enabled) {
+      MyLog.d("readStdout [" + tag + "]");
+    }
 
     if(stdout == null) {
       return null;
@@ -137,7 +143,9 @@ public class ShellCommand {
     try {
       if(stdout.ready()) {
         String line = stdout.readLine();
-        MyLog.d("read line: [" + line + "]");
+        if(MyLog.enabled) {
+          MyLog.d("read line: [" + line + "]");
+        }
 
         if(line == null) {
           return null;
