@@ -232,7 +232,9 @@ public class NetworkLog extends TabActivity
 
       setContentView(R.layout.main);
 
-      settings = new Settings(this);
+      if(settings == null) {
+        settings = new Settings(this);
+      }
 
       MyLog.enabled = settings.getLogcatDebug();
 

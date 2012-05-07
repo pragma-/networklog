@@ -195,7 +195,7 @@ public class LogView extends Activity
     item.timestamp = entry.timestamp;
 
     if(MyLog.enabled) {
-      MyLog.d("LogView: Add item: in=" + item.in + " out=" + item.out + " " + item.srcAddr + " " + item.srcPort + " " + item.dstAddr + " " + item.dstPort + " " + item.len);
+      MyLog.d("LogView: NewLogEntry: [" + item.mUidString + "] in=" + item.in + " out=" + item.out + " " + item.srcAddr + ":" + item.srcPort + " --> " + item.dstAddr + ":" + item.dstPort + " [" + item.len + "]");
     }
 
     synchronized(listDataBuffer) {
@@ -291,7 +291,7 @@ public class LogView extends Activity
 
     public void run() {
       running = true;
-      MyLog.d("Starting LogView updater " + this);
+      MyLog.d("Starting LogViewUpdater " + this);
 
       while(running) {
         if(listDataBuffer.size() > 0) {

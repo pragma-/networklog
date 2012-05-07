@@ -145,6 +145,10 @@ public class NetworkLogService extends Service {
       // reuse entry object
       entry = new LogEntry();
 
+      if(NetworkLog.settings == null) {
+        NetworkLog.settings = new Settings(this);
+      }
+
       this.startForeground(notification);
     }
 
@@ -770,6 +774,8 @@ public class NetworkLogService extends Service {
       running = true;
 
       while(running && command.checkForExit() == false) {
+        MyLog.d("NetworkLogger checking stdout");
+
         if(command.stdoutAvailable()) {
           result = command.readStdout();
         } else {

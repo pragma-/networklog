@@ -3,8 +3,7 @@ package com.googlecode.networklog;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StringPool {
-  final public static ConcurrentHashMap<String, String> pool =
-    new ConcurrentHashMap<String, String>(1024);
+  final public static ConcurrentHashMap<String, String> pool = new ConcurrentHashMap<String, String>(1024);
 
   public static String get(String string) {
     if (pool.size() > NetworkLog.settings.getMaxLogEntries()) {

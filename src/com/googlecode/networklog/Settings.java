@@ -7,12 +7,10 @@ import android.content.Context;
 
 public class Settings implements OnSharedPreferenceChangeListener {
   private SharedPreferences prefs;
-  private Context context;
 
   private Settings() {}
 
   public Settings(Context context) {
-    this.context = context;
     PreferenceManager.setDefaultValues(context, R.xml.preferences, false);
     prefs = PreferenceManager.getDefaultSharedPreferences(context);
     prefs.registerOnSharedPreferenceChangeListener(this);
