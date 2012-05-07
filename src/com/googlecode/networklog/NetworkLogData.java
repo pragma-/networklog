@@ -61,14 +61,14 @@ public class NetworkLogData {
   }
 
   /* NetworkLog */
-  NetworkLog.State iptablesLogState;
-  NetworkResolver iptablesLogResolver;
-  boolean iptablesLogOutputPaused;
+  NetworkLog.State networkLogState;
+  NetworkResolver networkLogResolver;
+  boolean networkLogOutputPaused;
 
   public void gatherNetworkLogData() {
-    iptablesLogState = NetworkLog.state;
-    iptablesLogResolver = NetworkLog.resolver;
-    iptablesLogOutputPaused = NetworkLog.outputPaused;
+    networkLogState = NetworkLog.state;
+    networkLogResolver = NetworkLog.resolver;
+    networkLogOutputPaused = NetworkLog.outputPaused;
   }
 
   /* gather data */

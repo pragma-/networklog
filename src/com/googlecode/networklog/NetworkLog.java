@@ -272,8 +272,8 @@ public class NetworkLog extends TabActivity
       if(data != null) {
         MyLog.d("Restored run");
         ApplicationsTracker.restoreData(data);
-        resolver = data.iptablesLogResolver;
-        outputPaused = data.iptablesLogOutputPaused;
+        resolver = data.networkLogResolver;
+        outputPaused = data.networkLogOutputPaused;
 
         // restore history loading progress dialog
         history.dialog_showing = data.historyDialogShowing;
@@ -327,7 +327,7 @@ public class NetworkLog extends TabActivity
         initRunner = new InitRunner(this);
         new Thread(initRunner, "Initialization " + initRunner).start();
       } else {
-        state = data.iptablesLogState;
+        state = data.networkLogState;
 
         if(state != NetworkLog.State.RUNNING) {
           initRunner = new InitRunner(this);

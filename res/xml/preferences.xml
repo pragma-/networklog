@@ -22,11 +22,11 @@
   <PreferenceCategory
     android:title="Log Service">
     <EditTextPreference
-      android:defaultValue="/sdcard/iptableslog.txt"
+      android:defaultValue="/sdcard/networklog.txt"
       android:singleLine="true"
       android:key="logfile"
       android:title="Log file location"
-      android:summary="Set path and filename of the log file (defaults to /sdcard/iptableslog.txt)" />
+      android:summary="Set path and filename of the log file (defaults to /sdcard/networklog.txt)" />
     <ListPreference
       android:defaultValue="3600000"
       android:key="history_size"
@@ -53,12 +53,12 @@
     <CheckBoxPreference
       android:defaultValue="false"
       android:key="startServiceAtStart"
-      android:title="Start at app-start"
+      android:title="Start log at app-start"
       android:summary="Start logging when this app starts-up" />
      <CheckBoxPreference
       android:defaultValue="false"
       android:key="stopServiceAtExit"
-      android:title="Stop at app-exit"
+      android:title="Stop log at app-exit"
       android:summary="Stop logging when this app exits" />
   </PreferenceCategory>
 
