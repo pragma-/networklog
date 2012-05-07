@@ -211,7 +211,11 @@ public class NetworkLog extends TabActivity
       logView.startUpdater();
 
       if(startServiceAtStart && !isServiceRunning(context, "com.googlecode.networklog.NetworkLogService")) {
-        startService();
+        handler.post(new Runnable() {
+          public void run() {
+            startService();
+          }
+        });
       }
 
       history.loadEntriesFromFile(context, settings.getHistorySize());
