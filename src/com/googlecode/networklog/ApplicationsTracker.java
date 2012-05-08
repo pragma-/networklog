@@ -170,12 +170,12 @@ public class ApplicationsTracker {
 
         AppEntry entry = new AppEntry();
 
-        entry.name = pm.getApplicationLabel(app).toString();
-        entry.nameLowerCase = entry.name.toLowerCase();
+        entry.name = StringPool.get(pm.getApplicationLabel(app).toString());
+        entry.nameLowerCase = StringPool.get(entry.name.toLowerCase());
         entry.icon = null;
         entry.uid = uid;
-        entry.uidString = String.valueOf(uid);
-        entry.packageName = new String(app.packageName);
+        entry.uidString = StringPool.get(String.valueOf(uid));
+        entry.packageName = StringPool.get(app.packageName);
 
         installedApps.add(entry);
 
@@ -187,12 +187,12 @@ public class ApplicationsTracker {
       }
 
       AppEntry entry = new AppEntry();
-      entry.name = "Kernel";
-      entry.nameLowerCase = "kernel";
+      entry.name = StringPool.get("Kernel");
+      entry.nameLowerCase = StringPool.get("kernel");
       entry.icon = context.getResources().getDrawable(R.drawable.linux_icon);
-      entry.packageName = entry.nameLowerCase;
+      entry.packageName = StringPool.get(entry.nameLowerCase);
       entry.uid = -1;
-      entry.uidString = "-1";
+      entry.uidString = StringPool.get("-1");
 
       installedApps.add(entry);
       installedAppsHash.put("-1", entry);
@@ -201,12 +201,12 @@ public class ApplicationsTracker {
 
       if(entryHash == null) {
         entry = new AppEntry();
-        entry.name = "Root";
-        entry.nameLowerCase = "root";
+        entry.name = StringPool.get("Root");
+        entry.nameLowerCase = StringPool.get("root");
         entry.icon = context.getResources().getDrawable(R.drawable.root_icon);
-        entry.packageName = entry.nameLowerCase;
+        entry.packageName = StringPool.get(entry.nameLowerCase);
         entry.uid = 0;
-        entry.uidString = "0";
+        entry.uidString = StringPool.get("0");
 
         installedApps.add(entry);
         installedAppsHash.put("0", entry);

@@ -58,9 +58,9 @@ public class LogView extends Activity
     ListItem(Drawable icon, int uid, String name) {
       mIcon = icon;
       mUid = uid;
-      mUidString = String.valueOf(uid);
+      mUidString = StringPool.get(String.valueOf(uid));
       mName = name;
-      mNameLowerCase = name.toLowerCase();
+      mNameLowerCase = StringPool.get(name.toLowerCase());
     }
 
     @Override
