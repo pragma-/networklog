@@ -4,20 +4,42 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class StringPool {
   final public static ConcurrentHashMap<String, String> pool = new ConcurrentHashMap<String, String>(1024);
+  final public static ConcurrentHashMap<String, String> lowercasePool = new ConcurrentHashMap<String, String>(1024);
+  static long size = 0;
 
   public static String get(String string) {
-    if (pool.size() > NetworkLog.settings.getMaxLogEntries()) {
-      // clear pool to free memory and allow pool to rebuild
-      MyLog.d("[StringPool] Clearing pool");
-      pool.clear();
-    }
-
     String result = pool.get(string);
 
     if(result == null) {
       String newString = new String(string); // decouple string from substring(), etc
+      
       pool.put(newString, newString);
-      MyLog.d("[StringPool] new addition [" + newString + "]; pool size: " + pool.size());
+      size++;
+
+      if(MyLog.enabled) {
+        MyLog.d("[StringPool] new addition [" + newString + "]; pool size: " + size);
+      }
+
+      if (size > NetworkLog.settings.getMaxLogEntries()) {
+        // clear pool to free memory and allow pool to rebuild
+        MyLog.d("[StringPool] Clearing pool");
+        pool.clear();
+        size = 0;
+      }
+
+      return newString;
+    } else {
+      return result;
+    }
+  }
+
+  public static String getLowerCase(String string) {
+    String result = lowercasePool.get(string);
+
+    if(result == null) {
+      String newString = new String(string.toLowerCase());
+
+      lowercasePool.put(string, newString);
       return newString;
     } else {
       return result;

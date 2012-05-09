@@ -23,6 +23,7 @@ import android.widget.Toast;
 import android.util.TypedValue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,7 +36,6 @@ public class LogView extends Activity
   protected ArrayList<ListItem> listDataBuffer;
   // holds all entries, used for filtering
   protected ArrayList<ListItem> listDataUnfiltered;
-  protected long maxLogEntries;
   private CustomAdapter adapter;
   private ListViewUpdater updater;
   public TextView statusText;
@@ -58,9 +58,9 @@ public class LogView extends Activity
     ListItem(Drawable icon, int uid, String name) {
       mIcon = icon;
       mUid = uid;
-      mUidString = StringPool.get(String.valueOf(uid));
+      mUidString = null;
       mName = name;
-      mNameLowerCase = StringPool.get(name.toLowerCase());
+      mNameLowerCase = null;
     }
 
     @Override
@@ -124,8 +124,6 @@ public class LogView extends Activity
 
       setContentView(layout);
 
-      maxLogEntries = NetworkLog.settings.getMaxLogEntries();
-
       if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0) {
         // trigger filtering
         setFilter("");
@@ -137,6 +135,11 @@ public class LogView extends Activity
     @Override
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         ListItem item = listData.get(position);
+
+        if(item.mUidString == null) {
+          item.mUidString = String.valueOf(item.mUid);
+        }
+
         startActivity(new Intent(getApplicationContext(), AppTimelineGraph.class)
             .putExtra("app_uid", item.mUidString)
             .putExtra("src_addr", item.srcAddr)
@@ -195,19 +198,24 @@ public class LogView extends Activity
     item.timestamp = entry.timestamp;
 
     if(MyLog.enabled) {
+      if(item.mUidString == null) {
+        item.mUidString = String.valueOf(item.mUid);
+      }
       MyLog.d("LogView: NewLogEntry: [" + item.mUidString + "] in=" + item.in + " out=" + item.out + " " + item.srcAddr + ":" + item.srcPort + " --> " + item.dstAddr + ":" + item.dstPort + " [" + item.len + "]");
     }
 
     synchronized(listDataBuffer) {
       listDataBuffer.add(item);
 
-      while(listDataBuffer.size() > maxLogEntries) {
+      while(listDataBuffer.size() > NetworkLog.settings.getMaxLogEntries()) {
         listDataBuffer.remove(0);
       }
     }
   }
 
   public void pruneLogEntries() {
+    long maxLogEntries = NetworkLog.settings.getMaxLogEntries();
+
     synchronized(listDataBuffer) {
       while(listDataBuffer.size() > maxLogEntries) {
         listDataBuffer.remove(0);
@@ -244,6 +252,7 @@ public class LogView extends Activity
       public void run() {
         MyLog.d("LogViewUpdater enter");
         int i = 0;
+        long maxLogEntries = NetworkLog.settings.getMaxLogEntries();
 
         synchronized(listDataBuffer) {
           synchronized(listData) {
@@ -387,15 +396,23 @@ public class LogView extends Activity
                   dstPortResolved = "";
                 }
 
+                if(item.mUidString == null) {
+                  item.mUidString = String.valueOf(item.mUid);
+                }
+
+                if(item.mNameLowerCase == null) {
+                  item.mNameLowerCase = StringPool.getLowerCase(item.mName);
+                }
+
                 for(String c : NetworkLog.filterTextIncludeList) {
                   if((NetworkLog.filterNameInclude && item.mNameLowerCase.contains(c))
                       || (NetworkLog.filterUidInclude && item.mUidString.equals(c))
                       || (NetworkLog.filterAddressInclude && 
-                        ((item.srcAddr.contains(c) || srcAddrResolved.toLowerCase().contains(c)) 
-                         || (item.dstAddr.contains(c) || dstAddrResolved.toLowerCase().contains(c))))
+                        ((item.srcAddr.contains(c) || StringPool.getLowerCase(srcAddrResolved).contains(c)) 
+                         || (item.dstAddr.contains(c) || StringPool.getLowerCase(dstAddrResolved).contains(c))))
                       || (NetworkLog.filterPortInclude && 
-                        ((String.valueOf(item.srcPort).toLowerCase().equals(c) || srcPortResolved.toLowerCase().equals(c))
-                         || (String.valueOf(item.dstPort).toLowerCase().equals(c) || dstPortResolved.toLowerCase().equals(c)))))
+                        ((StringPool.getLowerCase(String.valueOf(item.srcPort)).equals(c) || StringPool.getLowerCase(srcPortResolved).equals(c))
+                         || (StringPool.getLowerCase(String.valueOf(item.dstPort)).equals(c) || StringPool.getLowerCase(dstPortResolved).equals(c)))))
                   {
                     matched = true;
                   }
@@ -447,11 +464,19 @@ public class LogView extends Activity
                   dstPortResolved = "";
                 }
 
+                if(item.mUidString == null) {
+                  item.mUidString = String.valueOf(item.mUid);
+                }
+
+                if(item.mNameLowerCase == null) {
+                  item.mNameLowerCase = StringPool.getLowerCase(item.mName);
+                }
+
                 for(String c : NetworkLog.filterTextExcludeList) {
                   if((NetworkLog.filterNameExclude && item.mNameLowerCase.contains(c))
                       || (NetworkLog.filterUidExclude && item.mUidString.contains(c))
-                      || (NetworkLog.filterAddressExclude && ((item.srcAddr.contains(c) || srcAddrResolved.toLowerCase().contains(c)) || (item.dstAddr.contains(c) || dstAddrResolved.toLowerCase().contains(c))))
-                      || (NetworkLog.filterPortExclude && ((String.valueOf(item.srcPort).equals(c) || srcPortResolved.toLowerCase().equals(c)) || (String.valueOf(item.dstPort).equals(c) || dstPortResolved.toLowerCase().equals(c)))))
+                      || (NetworkLog.filterAddressExclude && ((item.srcAddr.contains(c) || StringPool.getLowerCase(srcAddrResolved).contains(c)) || (item.dstAddr.contains(c) || StringPool.getLowerCase(dstAddrResolved).contains(c))))
+                      || (NetworkLog.filterPortExclude && ((String.valueOf(item.srcPort).equals(c) || StringPool.getLowerCase(srcPortResolved).equals(c)) || (String.valueOf(item.dstPort).equals(c) || StringPool.getLowerCase(dstPortResolved).equals(c)))))
                   {
                     matched = true;
                   }
@@ -527,6 +552,9 @@ public class LogView extends Activity
         icon = holder.getIcon();
 
         if(item.mIcon == null) {
+          if(item.mUidString == null) {
+            item.mUidString = String.valueOf(item.mUid);
+          }
           item.mIcon = ApplicationsTracker.loadIcon(getApplicationContext(), ApplicationsTracker.installedAppsHash.get(item.mUidString).packageName);
         }
 

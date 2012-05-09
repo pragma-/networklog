@@ -171,7 +171,7 @@ public class ApplicationsTracker {
         AppEntry entry = new AppEntry();
 
         entry.name = StringPool.get(pm.getApplicationLabel(app).toString());
-        entry.nameLowerCase = StringPool.get(entry.name.toLowerCase());
+        entry.nameLowerCase = StringPool.get(StringPool.getLowerCase(entry.name));
         entry.icon = null;
         entry.uid = uid;
         entry.uidString = StringPool.get(String.valueOf(uid));
@@ -188,7 +188,7 @@ public class ApplicationsTracker {
 
       AppEntry entry = new AppEntry();
       entry.name = StringPool.get("Kernel");
-      entry.nameLowerCase = StringPool.get("kernel");
+      entry.nameLowerCase = StringPool.getLowerCase("Kernel");
       entry.icon = context.getResources().getDrawable(R.drawable.linux_icon);
       entry.packageName = StringPool.get(entry.nameLowerCase);
       entry.uid = -1;
@@ -202,7 +202,7 @@ public class ApplicationsTracker {
       if(entryHash == null) {
         entry = new AppEntry();
         entry.name = StringPool.get("Root");
-        entry.nameLowerCase = StringPool.get("root");
+        entry.nameLowerCase = StringPool.getLowerCase("Root");
         entry.icon = context.getResources().getDrawable(R.drawable.root_icon);
         entry.packageName = StringPool.get(entry.nameLowerCase);
         entry.uid = 0;

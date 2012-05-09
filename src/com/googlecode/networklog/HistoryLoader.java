@@ -121,7 +121,7 @@ public class HistoryLoader {
       final Context context_final = context;
       new Thread(new Runnable() {
         public void run() {
-          int buffer_size = 1024 * 8;
+          int buffer_size = 1024 * 32;
           MyLog.d("Using " + buffer_size + " byte buffer to read history");
 
           byte[] buffer = new byte[buffer_size]; // read a nice sized chunk of data
@@ -156,6 +156,9 @@ public class HistoryLoader {
           int token, pos, delim, i;
           String string;
           boolean done;
+
+          // android.os.Debug.startMethodTracing("networklog", 16 * 1024 * 1024);
+          // long start = System.currentTimeMillis();
 
           try {
             while(!canceled) {
@@ -302,6 +305,10 @@ public class HistoryLoader {
           } catch(Exception e) {
             Log.w("NetworkLog", "loadEntriesFromFile", e);
           } finally {
+            // long elapsed = System.currentTimeMillis() - start;
+            // android.util.Log.d("[IptablesLog]", "Load history elapsed: " + elapsed);
+            // android.os.Debug.stopMethodTracing();
+
             if(dialog_showing) {
               dialog_showing = false;
 

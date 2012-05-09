@@ -766,10 +766,10 @@ public class AppView extends Activity {
                           }
 
                           for(String c : NetworkLog.filterTextIncludeList) {
-                            if((NetworkLog.filterAddressInclude && ((childData.sentPackets > 0 && (childData.sentAddress.contains(c) || sentAddressResolved.toLowerCase().contains(c)))
-                                    || (childData.receivedPackets > 0 && (childData.receivedAddress.contains(c) || receivedAddressResolved.toLowerCase().contains(c)))))
-                                || (NetworkLog.filterPortInclude && ((childData.sentPackets > 0 && (String.valueOf(childData.sentPort).equals(c) || sentPortResolved.toLowerCase().equals(c)))
-                                    || (childData.receivedPackets > 0 && (String.valueOf(childData.receivedPort).equals(c) || receivedPortResolved.toLowerCase().equals(c)))))) {
+                            if((NetworkLog.filterAddressInclude && ((childData.sentPackets > 0 && (childData.sentAddress.contains(c) || StringPool.getLowerCase(sentAddressResolved).contains(c)))
+                                    || (childData.receivedPackets > 0 && (childData.receivedAddress.contains(c) || StringPool.getLowerCase(receivedAddressResolved).contains(c)))))
+                                || (NetworkLog.filterPortInclude && ((childData.sentPackets > 0 && (String.valueOf(childData.sentPort).equals(c) || StringPool.getLowerCase(sentPortResolved).equals(c)))
+                                    || (childData.receivedPackets > 0 && (String.valueOf(childData.receivedPort).equals(c) || StringPool.getLowerCase(receivedPortResolved).equals(c)))))) {
                               matched = true;
                                     }
                           }
@@ -877,10 +877,10 @@ public class AppView extends Activity {
                   }
 
                   for(String c : NetworkLog.filterTextExcludeList) {
-                    if((NetworkLog.filterAddressExclude && ((childData.sentPackets > 0 && (childData.sentAddress.contains(c) || sentAddressResolved.toLowerCase().contains(c)))
-                            || (childData.receivedPackets > 0 && (childData.receivedAddress.contains(c) || receivedAddressResolved.toLowerCase().contains(c)))))
-                        || (NetworkLog.filterPortExclude && ((childData.sentPackets > 0 && (String.valueOf(childData.sentPort).equals(c) || sentPortResolved.toLowerCase().equals(c)))
-                            || (childData.receivedPackets > 0 && (String.valueOf(childData.receivedPort).equals(c) || receivedPortResolved.toLowerCase().equals(c)))))) {
+                    if((NetworkLog.filterAddressExclude && ((childData.sentPackets > 0 && (childData.sentAddress.contains(c) || StringPool.getLowerCase(sentAddressResolved).contains(c)))
+                            || (childData.receivedPackets > 0 && (childData.receivedAddress.contains(c) || StringPool.getLowerCase(receivedAddressResolved).contains(c)))))
+                        || (NetworkLog.filterPortExclude && ((childData.sentPackets > 0 && (String.valueOf(childData.sentPort).equals(c) || StringPool.getLowerCase(sentPortResolved).equals(c)))
+                            || (childData.receivedPackets > 0 && (String.valueOf(childData.receivedPort).equals(c) || StringPool.getLowerCase(receivedPortResolved).equals(c)))))) {
                       matched = true;
                             }
                   }
