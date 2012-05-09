@@ -313,11 +313,9 @@ public class NetworkLog extends TabActivity
       tabHost.setCurrentTab(0);
       logView = (LogView) getLocalActivityManager().getCurrentActivity();
       // force loading of AppView activity
+      // and display AppView tab by default
       tabHost.setCurrentTab(1);
       appView = (AppView) getLocalActivityManager().getCurrentActivity();
-
-      // display LogView tab by default
-      tabHost.setCurrentTab(0);
 
       if(isServiceRunning(this, "com.googlecode.networklog.NetworkLogService")) {
         doBindService();
