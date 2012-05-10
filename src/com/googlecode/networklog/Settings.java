@@ -18,6 +18,8 @@ public class Settings implements OnSharedPreferenceChangeListener {
     PreferenceManager.setDefaultValues(context, R.xml.preferences, false);
     prefs = PreferenceManager.getDefaultSharedPreferences(context);
     prefs.registerOnSharedPreferenceChangeListener(this);
+
+    MyLog.enabled = getLogcatDebug();
   }
 
   public String getHistorySize() {

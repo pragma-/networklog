@@ -23,7 +23,6 @@ import android.widget.Toast;
 import android.util.TypedValue;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
@@ -38,7 +37,6 @@ public class LogView extends Activity
   protected ArrayList<ListItem> listDataUnfiltered;
   private CustomAdapter adapter;
   private ListViewUpdater updater;
-  public TextView statusText;
 
   protected class ListItem {
     protected Drawable mIcon;
@@ -96,9 +94,6 @@ public class LogView extends Activity
 
       LinearLayout layout = new LinearLayout(this);
       layout.setOrientation(LinearLayout.VERTICAL);
-
-      statusText = new TextView(this);
-      layout.addView(statusText);
 
       if(NetworkLog.data == null) {
         listData = new ArrayList<ListItem>();
@@ -234,9 +229,7 @@ public class LogView extends Activity
       }
     }
 
-    if(!NetworkLog.outputPaused) {
-      adapter.notifyDataSetChanged();
-    }
+    adapter.notifyDataSetChanged();
   }
 
   public void stopUpdater() {
@@ -286,9 +279,7 @@ public class LogView extends Activity
           setFilter("");
         }
 
-        if(!NetworkLog.outputPaused) {
-          adapter.notifyDataSetChanged();
-        }
+        adapter.notifyDataSetChanged();
 
         MyLog.d("LogViewUpdater exit: added " + i + " items");
       }
@@ -510,9 +501,7 @@ public class LogView extends Activity
               add(localItems.get(i));
             }
 
-            if(!NetworkLog.outputPaused) {
-              notifyDataSetChanged();
-            }
+            notifyDataSetChanged();
           }
         }
     }

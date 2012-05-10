@@ -121,7 +121,7 @@ public class HistoryLoader {
       final Context context_final = context;
       new Thread(new Runnable() {
         public void run() {
-          int buffer_size = 1024 * 32;
+          int buffer_size = 1024 * 16;
           MyLog.d("Using " + buffer_size + " byte buffer to read history");
 
           byte[] buffer = new byte[buffer_size]; // read a nice sized chunk of data

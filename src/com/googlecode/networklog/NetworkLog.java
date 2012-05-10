@@ -43,6 +43,8 @@ public class NetworkLog extends TabActivity
   public static LogView logView;
   public static AppView appView;
 
+  public static TextView statusText;
+
   public static Settings settings;
 
   public static Handler handler;
@@ -69,8 +71,6 @@ public class NetworkLog extends TabActivity
 
   public static boolean startServiceAtStart;
   public static boolean stopServiceAtExit;
-
-  public static boolean outputPaused;
 
   public static HistoryLoader history;
 
@@ -225,6 +225,35 @@ public class NetworkLog extends TabActivity
     }
   }
 
+  public void loadSettings() {
+    if(settings == null) {
+      settings = new Settings(this);
+    }
+
+    filterTextInclude = settings.getFilterTextInclude();
+    FilterUtils.buildList(filterTextInclude, filterTextIncludeList);
+    filterUidInclude = settings.getFilterUidInclude();
+    filterNameInclude = settings.getFilterNameInclude();
+    filterAddressInclude = settings.getFilterAddressInclude();
+    filterPortInclude = settings.getFilterPortInclude();
+
+    filterTextExclude = settings.getFilterTextExclude();
+    FilterUtils.buildList(filterTextExclude, filterTextExcludeList);
+    filterUidExclude = settings.getFilterUidExclude();
+    filterNameExclude = settings.getFilterNameExclude();
+    filterAddressExclude = settings.getFilterAddressExclude();
+    filterPortExclude = settings.getFilterPortExclude();
+
+    startServiceAtStart = settings.getStartServiceAtStart();
+    stopServiceAtExit = settings.getStopServiceAtExit();
+
+    resolveHosts = settings.getResolveHosts();
+    resolvePorts = settings.getResolvePorts();
+
+    startServiceAtStart = settings.getStartServiceAtStart();
+    stopServiceAtExit = settings.getStopServiceAtExit();
+  }
+
   /** Called when the activity is first created. */
   @Override
     public void onCreate(Bundle savedInstanceState)
@@ -236,35 +265,7 @@ public class NetworkLog extends TabActivity
 
       setContentView(R.layout.main);
 
-      if(settings == null) {
-        settings = new Settings(this);
-      }
-
-      MyLog.enabled = settings.getLogcatDebug();
-
-      filterTextInclude = settings.getFilterTextInclude();
-      FilterUtils.buildList(filterTextInclude, filterTextIncludeList);
-      filterUidInclude = settings.getFilterUidInclude();
-      filterNameInclude = settings.getFilterNameInclude();
-      filterAddressInclude = settings.getFilterAddressInclude();
-      filterPortInclude = settings.getFilterPortInclude();
-
-      filterTextExclude = settings.getFilterTextExclude();
-      FilterUtils.buildList(filterTextExclude, filterTextExcludeList);
-      filterUidExclude = settings.getFilterUidExclude();
-      filterNameExclude = settings.getFilterNameExclude();
-      filterAddressExclude = settings.getFilterAddressExclude();
-      filterPortExclude = settings.getFilterPortExclude();
-
-      startServiceAtStart = settings.getStartServiceAtStart();
-      stopServiceAtExit = settings.getStopServiceAtExit();
-
-      resolveHosts = settings.getResolveHosts();
-      resolvePorts = settings.getResolvePorts();
-
-      startServiceAtStart = settings.getStartServiceAtStart();
-      stopServiceAtExit = settings.getStopServiceAtExit();
-
+      loadSettings();
       getLocalIpAddresses();
 
       data = (NetworkLogData) getLastNonConfigurationInstance();
@@ -273,7 +274,6 @@ public class NetworkLog extends TabActivity
         MyLog.d("Restored run");
         ApplicationsTracker.restoreData(data);
         resolver = data.networkLogResolver;
-        outputPaused = data.networkLogOutputPaused;
 
         // restore history loading progress dialog
         history.dialog_showing = data.historyDialogShowing;
@@ -287,8 +287,9 @@ public class NetworkLog extends TabActivity
         MyLog.d("Fresh run");
 
         resolver = new NetworkResolver();
-        outputPaused = false;
       }
+
+      statusText = (TextView) this.findViewById(R.id.statusText);
 
       Resources res = getResources();
       TabHost tabHost = getTabHost();
@@ -474,38 +475,17 @@ public class NetworkLog extends TabActivity
         item.setTitle("Start logging");
       }
 
-      /*
-         item = menu.findItem(R.id.pause);
-
-         if(outputPaused)
-         item.setTitle("Resume Output");
-         else
-         item.setTitle("Pause Output");
-         */
-
       return true;
     }
 
   @Override
     public boolean onOptionsItemSelected(MenuItem item) {
       switch(item.getItemId()) {
+
         case R.id.filter:
           showFilterDialog();
           break;
 
-          /*
-             case R.id.pause:
-             outputPaused = !outputPaused;
-
-             if(outputPaused)
-             item.setTitle("Resume Output");
-             else {
-             item.setTitle("Pause Output");
-             logView.refreshAdapter();
-             appView.refreshAdapter();
-             }
-             break;
-             */
         case R.id.service_toggle:
           if(!isServiceRunning(this, "com.googlecode.networklog.NetworkLogService")) {
             startService();
@@ -751,8 +731,7 @@ public class NetworkLog extends TabActivity
       sb.append(" Bad logfile.");
     }
 
-    appView.statusText.setText(Html.fromHtml("<small>" + sb + "</small>"));
-    logView.statusText.setText(Html.fromHtml("<small>" + sb + "</small>"));
+    statusText.setText(Html.fromHtml("<small>" + sb + "</small>"));
   }
 
   class StatusUpdater implements Runnable {

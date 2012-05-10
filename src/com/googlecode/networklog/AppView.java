@@ -50,7 +50,6 @@ public class AppView extends Activity {
   public Sort sortBy;
   public GroupItem cachedSearchItem;
   private ListViewUpdater updater;
-  public TextView statusText;
   // remember last index return by getItemByAppUid to optimize-out call to binarySearch
   int lastGetItemByAppUidIndex = -1;
 
@@ -305,9 +304,6 @@ public class AppView extends Activity {
 
       LinearLayout layout = new LinearLayout(this);
       layout.setOrientation(LinearLayout.VERTICAL);
-
-      statusText = new TextView(this);
-      layout.addView(statusText);
 
       TextView tv = new TextView(this);
       tv.setText("Press for connections, long-press for graph");

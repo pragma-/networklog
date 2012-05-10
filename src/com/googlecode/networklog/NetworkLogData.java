@@ -63,12 +63,10 @@ public class NetworkLogData {
   /* NetworkLog */
   NetworkLog.State networkLogState;
   NetworkResolver networkLogResolver;
-  boolean networkLogOutputPaused;
 
   public void gatherNetworkLogData() {
     networkLogState = NetworkLog.state;
     networkLogResolver = NetworkLog.resolver;
-    networkLogOutputPaused = NetworkLog.outputPaused;
   }
 
   /* gather data */

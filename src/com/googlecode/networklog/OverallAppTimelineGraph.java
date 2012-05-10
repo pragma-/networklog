@@ -384,7 +384,7 @@ public class OverallAppTimelineGraph extends Activity
             double frameLen = 1; // len for this time frame
 
             for(PacketGraphItem data : item.packetGraphBuffer) {
-              MyLog.d("processing: " + data + "; nextTimeFrame: " + nextTimeFrame + "; frameLen: " + frameLen);
+              // MyLog.d("processing: " + data + "; nextTimeFrame: " + nextTimeFrame + "; frameLen: " + frameLen);
 
               if(nextTimeFrame == 0) {
                 // first  plot
@@ -401,7 +401,7 @@ public class OverallAppTimelineGraph extends Activity
               if(data.timestamp <= nextTimeFrame) {
                 // data within current time frame, add to frame len
                 frameLen += data.len;
-                MyLog.d("Adding " + data.len + "; frameLen: " + frameLen);
+                // MyLog.d("Adding " + data.len + "; frameLen: " + frameLen);
 
                 // get next data
                 continue;
@@ -409,7 +409,7 @@ public class OverallAppTimelineGraph extends Activity
                 // data outside current time frame
                 // signifies end of frame
                 // plot frame len
-                MyLog.d("first plot: (" + nextTimeFrame + ", " + frameLen + ")");
+                // MyLog.d("first plot: (" + nextTimeFrame + ", " + frameLen + ")");
                 graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
 
                 // set up next time frame
@@ -419,18 +419,18 @@ public class OverallAppTimelineGraph extends Activity
                 // test for gap
                 if(data.timestamp > nextTimeFrame) {
                   // data is past this time frame, plot zero here
-                  MyLog.d("post zero plot: (" + nextTimeFrame + ", " + frameLen + ")");
+                  // MyLog.d("post zero plot: (" + nextTimeFrame + ", " + frameLen + ")");
                   graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
 
                   if((data.timestamp - timeFrameSize) > nextTimeFrame) {
-                    MyLog.d("post pre zero plot: (" + nextTimeFrame + ", " + frameLen + ")");
+                    // MyLog.d("post pre zero plot: (" + nextTimeFrame + ", " + frameLen + ")");
                     graphData.add(new PacketGraphItem(data.timestamp - timeFrameSize, 1));
                   }
 
                   nextTimeFrame = data.timestamp;
                   frameLen = data.len;
 
-                  MyLog.d("- plotting: (" + nextTimeFrame + ", " + frameLen + ")");
+                  // MyLog.d("- plotting: (" + nextTimeFrame + ", " + frameLen + ")");
                   graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
 
                   nextTimeFrame += timeFrameSize;
@@ -443,13 +443,13 @@ public class OverallAppTimelineGraph extends Activity
               }
             }
 
-            MyLog.d("post plotting: (" + nextTimeFrame + ", " + frameLen + ")");
+            // MyLog.d("post plotting: (" + nextTimeFrame + ", " + frameLen + ")");
             graphData.add(new PacketGraphItem(nextTimeFrame, frameLen));
 
-            MyLog.d("post zero plotting: (" + (nextTimeFrame + timeFrameSize) +  ", " + 1 + ")");
+            // MyLog.d("post zero plotting: (" + (nextTimeFrame + timeFrameSize) +  ", " + 1 + ")");
             graphData.add(new PacketGraphItem(nextTimeFrame + timeFrameSize, 1.0f));
 
-            MyLog.d("Adding series " + item.app);
+            // MyLog.d("Adding series " + item.app);
 
             GraphViewData[] seriesData = new GraphViewData[graphData.size()];
 
