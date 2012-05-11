@@ -238,6 +238,7 @@ public class AppFragment extends Fragment {
     int top = (v == null) ? 0 : v.getTop();
 
     adapter.notifyDataSetChanged();
+    MyLog.d("Refreshed AppFragment adapter");
 
     listView.setSelectionFromTop(index, top);
 
@@ -275,15 +276,19 @@ public class AppFragment extends Fragment {
           }
         }
 
-        getActivity().runOnUiThread(new Runnable() {
-          public void run() {
-            preSortData();
+        Activity activity = getActivity();
 
-            setFilter("");
+        if(activity != null) {
+          activity.runOnUiThread(new Runnable() {
+            public void run() {
+              preSortData();
 
-            refreshAdapter();
-          }
-        });
+              setFilter("");
+
+              refreshAdapter();
+            }
+          });
+        }
 
         // groupDataBuffer must always be sorted by UID for binary search
         Collections.sort(groupDataBuffer, new SortAppsByUid());
@@ -617,7 +622,10 @@ public class AppFragment extends Fragment {
 
       while(running) {
         if(groupDataBufferIsDirty == true) {
-          getActivity().runOnUiThread(runner);
+          Activity activity = getActivity();
+          if(activity != null) {
+            activity.runOnUiThread(runner);
+          }
           groupDataBufferIsDirty = false;
         }
 

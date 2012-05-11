@@ -303,7 +303,10 @@ public class LogFragment extends Fragment {
 
       while(running) {
         if(listDataBuffer.size() > 0) {
-          getActivity().runOnUiThread(runner);
+          Activity activity = getActivity();
+          if(activity != null) {
+            activity.runOnUiThread(runner);
+          }
         }
 
         try {

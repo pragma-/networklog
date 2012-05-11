@@ -33,6 +33,10 @@ public class HistoryLoader {
     dialog_showing = true;
     NetworkLog.handler.post(new Runnable() {
       public void run() {
+        if(dialog == null) {
+          MyLog.d("Dialog is null, wtf?");
+          return;
+        }
         dialog.show();
         dialog.setProgress(dialog_progress);
       }

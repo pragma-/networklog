@@ -40,6 +40,11 @@ import java.io.File;
 public class NetworkLog extends FragmentActivity {
   public static NetworkLogData data = null;
 
+  public static ViewPager viewPager;
+  public final static int PAGE_LOG = 0;
+  public final static int PAGE_APP = 1;
+  public final static int PAGES    = 2;
+
   public static LogFragment logFragment;
   public static AppFragment appFragment;
 
@@ -267,13 +272,13 @@ public class NetworkLog extends FragmentActivity {
         Fragment fragment = null;
 
         switch(index) {
-          case 0:
+          case PAGE_LOG:
             if(logFragment == null) {
               logFragment = (LogFragment) Fragment.instantiate(context, LogFragment.class.getName());
             }
             fragment = logFragment;
             break;
-          case 1:
+          case PAGE_APP:
             if(appFragment == null) {
               appFragment = (AppFragment) Fragment.instantiate(context, AppFragment.class.getName());
             }
@@ -286,7 +291,7 @@ public class NetworkLog extends FragmentActivity {
 
     @Override
       public int getCount() {
-        return 2;
+        return PAGES;
       }
   }
 
@@ -327,7 +332,7 @@ public class NetworkLog extends FragmentActivity {
 
       statusText = (TextView) findViewById(R.id.statusText);
 
-      ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+      viewPager = (ViewPager) findViewById(R.id.viewpager);
       MyFragmentPagerAdapter pagerAdapter = new MyFragmentPagerAdapter(this, getSupportFragmentManager());
 
       viewPager.setAdapter(pagerAdapter);
@@ -395,7 +400,7 @@ public class NetworkLog extends FragmentActivity {
 
       }
 
-      if(history.dialog_showing == true) {
+      if(history.dialog_showing == true && history.dialog != null) {
         history.dialog.dismiss();
         history.dialog = null;
       }
@@ -448,7 +453,7 @@ public class NetworkLog extends FragmentActivity {
 
       item = menu.findItem(R.id.sort);
 
-      if(getLocalActivityManager().getCurrentActivity() instanceof AppFragment) {
+      if(viewPager.getCurrentItem() == PAGE_APP) {
         item.setVisible(true);
 
         switch(appFragment.sortBy) {
@@ -580,7 +585,7 @@ public class NetworkLog extends FragmentActivity {
   }
 
   public void confirmExit() {
-    Context context = getApplicationContext();
+    Context context = this;
 
     StringBuilder message = new StringBuilder("Are you sure you want to exit?");
     boolean serviceRunning = isServiceRunning(context, "com.googlecode.networklog.NetworkLogService");
@@ -600,26 +605,6 @@ public class NetworkLog extends FragmentActivity {
       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
           finish();
-        }
-      })
-    .setNegativeButton("No", new DialogInterface.OnClickListener() {
-      public void onClick(DialogInterface dialog, int id) {
-        dialog.cancel();
-      }
-    });
-    AlertDialog alert = builder.create();
-    alert.show();
-  }
-
-  public void confirmReset(Context context) {
-    AlertDialog.Builder builder = new AlertDialog.Builder(context);
-    builder.setTitle("Confirm data reset")
-      .setMessage("Are you sure you want to reset data?")
-      .setCancelable(true)
-      .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int id) {
-          appFragment.clear();
-          logFragment.clear();
         }
       })
     .setNegativeButton("No", new DialogInterface.OnClickListener() {

@@ -150,6 +150,7 @@ public class ApplicationsTracker {
               public void run() {
                 NetworkLog.logFragment.refreshAdapter();
                 NetworkLog.appFragment.refreshAdapter();
+                MyLog.d("Icon loaded, adapters refreshed");
               }
             });
           } catch(Exception e) {

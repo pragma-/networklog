@@ -3,19 +3,19 @@
   <item android:id="@+id/filter"
     android:title="Filter" />
   <item android:id="@+id/sort"
-    android:title="Sort By">
+    android:title="Sort">
     <menu>
       <group android:checkableBehavior="single">
         <item android:id="@+id/sort_by_uid"
-          android:title="App ID" />
+          android:title="By App ID" />
         <item android:id="@+id/sort_by_name"
-          android:title="Name" />
+          android:title="By Name" />
         <item android:id="@+id/sort_by_packets"
-          android:title="Packets" />
+          android:title="By Packets" />
         <item android:id="@+id/sort_by_bytes"
-          android:title="Bytes" />
+          android:title="By Bytes" />
         <item android:id="@+id/sort_by_timestamp"
-          android:title="Timestamp" />
+          android:title="By Timestamp" />
       </group>
     </menu>
   </item>
