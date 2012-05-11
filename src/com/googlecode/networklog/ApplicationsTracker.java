@@ -6,7 +6,13 @@ import android.content.pm.ApplicationInfo;
 import android.graphics.drawable.Drawable;
 import android.app.ProgressDialog;
 import android.os.Handler;
+import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +21,6 @@ public class ApplicationsTracker {
   public static ArrayList<AppEntry> installedApps;
   public static HashMap<String, AppEntry> installedAppsHash;
   public static HashMap<String, Object> loadingIcon = new HashMap<String, Object>();
-  public static HashMap<String, Object> loadingLabel = new HashMap<String, Object>();
   public static ProgressDialog dialog;
   public static int appCount;
   public static Object dialogLock = new Object();
@@ -32,6 +37,60 @@ public class ApplicationsTracker {
 
     public String toString() {
       return "(" + uidString + ") " + name;
+    }
+  }
+
+  public static class AppCache {
+    public HashMap<String, String> labelCache;
+    private Context context;
+    private boolean isDirty = false;
+
+    private AppCache() {}
+
+    public AppCache(Context context) {
+      this.context = context;
+      loadCache();
+    }
+
+    public String getLabel(PackageManager pm, ApplicationInfo app) {
+      String label = labelCache.get(app.packageName);
+
+      if(label == null) {
+        label = StringPool.get(pm.getApplicationLabel(app).toString());
+        labelCache.put(app.packageName, label);
+        isDirty = true;
+      }
+
+      return label;
+    }
+
+    public void loadCache() {
+      try {
+        File file = new File(context.getDir("data", Context.MODE_PRIVATE), "applabels.cache");    
+        ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
+        labelCache = (HashMap<String, String>) inputStream.readObject();
+        isDirty = false;
+        inputStream.close();
+      } catch (Exception e) {
+        Log.d("[NetworkLog]", "Exception loading app cache", e);
+        labelCache = new HashMap<String, String>();
+      }
+    }
+
+    public void saveCache() {
+      if(isDirty == false) {
+        return;
+      }
+
+      try {
+        File file = new File(context.getDir("data", Context.MODE_PRIVATE), "applabels.cache");    
+        ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+        outputStream.writeObject(labelCache);
+        outputStream.flush();
+        outputStream.close();
+      } catch (Exception e) {
+        Log.d("[NetworkLog]", "Exception saving app cache" , e);
+      }
     }
   }
 
@@ -89,8 +148,8 @@ public class ApplicationsTracker {
 
             NetworkLog.handler.post(new Runnable() {
               public void run() {
-                NetworkLog.logView.refreshAdapter();
-                NetworkLog.appView.refreshAdapter();
+                NetworkLog.logFragment.refreshAdapter();
+                NetworkLog.appFragment.refreshAdapter();
               }
             });
           } catch(Exception e) {
@@ -144,6 +203,8 @@ public class ApplicationsTracker {
 
       int count = 0;
 
+      AppCache appCache = new AppCache(context);
+
       for(final ApplicationInfo app : apps) {
         MyLog.d("Processing app " + app);
 
@@ -170,7 +231,7 @@ public class ApplicationsTracker {
 
         AppEntry entry = new AppEntry();
 
-        entry.name = StringPool.get(pm.getApplicationLabel(app).toString());
+        entry.name = appCache.getLabel(pm, app);
         entry.nameLowerCase = StringPool.get(StringPool.getLowerCase(entry.name));
         entry.icon = null;
         entry.uid = uid;
@@ -185,6 +246,8 @@ public class ApplicationsTracker {
           installedAppsHash.put(sUid, entry);
         }
       }
+
+      appCache.saveCache();
 
       AppEntry entry = new AppEntry();
       entry.name = StringPool.get("Kernel");

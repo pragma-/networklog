@@ -50,7 +50,7 @@ public class AppTimelineGraph extends Activity
         finish();
       }
 
-      int index = NetworkLog.appView.getItemByAppUid(Integer.parseInt(app_uid));
+      int index = NetworkLog.appFragment.getItemByAppUid(Integer.parseInt(app_uid));
 
       if(index < 0)
       {
@@ -58,7 +58,7 @@ public class AppTimelineGraph extends Activity
         finish();
       }
 
-      AppView.GroupItem item = NetworkLog.appView.groupDataBuffer.get(index);
+      AppFragment.GroupItem item = NetworkLog.appFragment.groupDataBuffer.get(index);
 
       // always give data sorted by x values
       graphView = new LineGraphView(this, item.toString() + " Timeline")
@@ -395,7 +395,7 @@ public class AppTimelineGraph extends Activity
   public void buildSeries(double timeFrameSize, double viewSize) {
     graphView.graphSeries.clear();
 
-    int index = NetworkLog.appView.getItemByAppUid(Integer.parseInt(app_uid));
+    int index = NetworkLog.appFragment.getItemByAppUid(Integer.parseInt(app_uid));
 
     if(index < 0)
     {
@@ -403,7 +403,7 @@ public class AppTimelineGraph extends Activity
       finish();
     }
 
-    AppView.GroupItem item = NetworkLog.appView.groupDataBuffer.get(index);
+    AppFragment.GroupItem item = NetworkLog.appFragment.groupDataBuffer.get(index);
 
     MyLog.d("Starting graph for " + item);
 
@@ -417,7 +417,7 @@ public class AppTimelineGraph extends Activity
       {
         String host = itr.next();
         MyLog.d("Graphing " + host);
-        AppView.ChildItem info = item.childrenData.get(host);
+        AppFragment.ChildItem info = item.childrenData.get(host);
 
         if(info.packetGraphBuffer.size() > 0)
         {

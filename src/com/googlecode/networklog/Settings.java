@@ -338,8 +338,8 @@ public class Settings implements OnSharedPreferenceChangeListener {
         boolean value = prefs.getBoolean(key, false);
         MyLog.d("New " + key + " value [" + value + "]");
         NetworkLog.resolveHosts = value;
-        NetworkLog.logView.refreshAdapter();
-        NetworkLog.appView.refreshAdapter();
+        NetworkLog.logFragment.refreshAdapter();
+        NetworkLog.appFragment.refreshAdapter();
         return;
       }
 
@@ -347,8 +347,8 @@ public class Settings implements OnSharedPreferenceChangeListener {
         boolean value = prefs.getBoolean(key, false);
         MyLog.d("New " + key + " value [" + value + "]");
         NetworkLog.resolvePorts = value;
-        NetworkLog.logView.refreshAdapter();
-        NetworkLog.appView.refreshAdapter();
+        NetworkLog.logFragment.refreshAdapter();
+        NetworkLog.appFragment.refreshAdapter();
         return;
       }
 
@@ -356,7 +356,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
         String value = prefs.getString(key, "150000");
         MyLog.d("New " + key + " value [" + value + "]");
         maxLogEntries = Long.parseLong(value);
-        NetworkLog.logView.pruneLogEntries();
+        NetworkLog.logFragment.pruneLogEntries();
         return;
       }
 
@@ -370,18 +370,18 @@ public class Settings implements OnSharedPreferenceChangeListener {
       if(key.equals("presort_by")) {
         String value = prefs.getString(key, "BYTES");
         MyLog.d("New " + key + " value [" + value + "]");
-        NetworkLog.appView.preSortBy = Sort.forValue(value);
-        NetworkLog.appView.preSortData();
-        NetworkLog.appView.sortData();
+        NetworkLog.appFragment.preSortBy = Sort.forValue(value);
+        NetworkLog.appFragment.preSortData();
+        NetworkLog.appFragment.sortData();
         return;
       }
 
       if(key.equals("sort_by")) {
         String value = prefs.getString(key, "BYTES");
         MyLog.d("New " + key + " value [" + value + "]");
-        NetworkLog.appView.sortBy = Sort.forValue(value);
-        NetworkLog.appView.preSortData();
-        NetworkLog.appView.sortData();
+        NetworkLog.appFragment.sortBy = Sort.forValue(value);
+        NetworkLog.appFragment.preSortData();
+        NetworkLog.appFragment.sortData();
         return;
       }
     }

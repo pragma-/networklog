@@ -17,35 +17,35 @@ public class NetworkLogData {
     applicationsTrackerAppCount = ApplicationsTracker.appCount;
   }
 
-  /* LogView */
-  ArrayList<LogView.ListItem> logViewListData;
-  ArrayList<LogView.ListItem> logViewListDataBuffer;
-  ArrayList<LogView.ListItem> logViewListDataUnfiltered;
+  /* LogFragment */
+  ArrayList<LogFragment.ListItem> logFragmentListData;
+  ArrayList<LogFragment.ListItem> logFragmentListDataBuffer;
+  ArrayList<LogFragment.ListItem> logFragmentListDataUnfiltered;
 
-  public void gatherLogViewData() {
-    if(NetworkLog.logView != null) {
-      logViewListData = NetworkLog.logView.listData;
-      logViewListDataBuffer = NetworkLog.logView.listDataBuffer;
-      logViewListDataUnfiltered = NetworkLog.logView.listDataUnfiltered;
+  public void gatherLogFragmentData() {
+    if(NetworkLog.logFragment != null) {
+      logFragmentListData = NetworkLog.logFragment.listData;
+      logFragmentListDataBuffer = NetworkLog.logFragment.listDataBuffer;
+      logFragmentListDataUnfiltered = NetworkLog.logFragment.listDataUnfiltered;
     }
   }
 
-  /* AppView */
-  ArrayList<AppView.GroupItem> appViewGroupData;
-  ArrayList<AppView.GroupItem> appViewGroupDataBuffer;
-  boolean appViewGroupDataBufferIsDirty;
-  Sort appViewSortBy;
-  Sort appViewPreSortBy;
-  AppView.GroupItem appViewCachedSearchItem;
+  /* AppFragment */
+  ArrayList<AppFragment.GroupItem> appFragmentGroupData;
+  ArrayList<AppFragment.GroupItem> appFragmentGroupDataBuffer;
+  boolean appFragmentGroupDataBufferIsDirty;
+  Sort appFragmentSortBy;
+  Sort appFragmentPreSortBy;
+  AppFragment.GroupItem appFragmentCachedSearchItem;
 
-  public void gatherAppViewData() {
-    if(NetworkLog.appView != null) {
-      appViewGroupData = NetworkLog.appView.groupData;
-      appViewGroupDataBuffer = NetworkLog.appView.groupDataBuffer;
-      appViewGroupDataBufferIsDirty = NetworkLog.appView.groupDataBufferIsDirty;
-      appViewSortBy = NetworkLog.appView.sortBy;
-      appViewPreSortBy = NetworkLog.appView.preSortBy;
-      appViewCachedSearchItem = NetworkLog.appView.cachedSearchItem;
+  public void gatherAppFragmentData() {
+    if(NetworkLog.appFragment != null) {
+      appFragmentGroupData = NetworkLog.appFragment.groupData;
+      appFragmentGroupDataBuffer = NetworkLog.appFragment.groupDataBuffer;
+      appFragmentGroupDataBufferIsDirty = NetworkLog.appFragment.groupDataBufferIsDirty;
+      appFragmentSortBy = NetworkLog.appFragment.sortBy;
+      appFragmentPreSortBy = NetworkLog.appFragment.preSortBy;
+      appFragmentCachedSearchItem = NetworkLog.appFragment.cachedSearchItem;
     }
   }
 
@@ -72,8 +72,8 @@ public class NetworkLogData {
   /* gather data */
   public NetworkLogData() {
     gatherApplicationsTrackerData();
-    gatherLogViewData();
-    gatherAppViewData();
+    gatherLogFragmentData();
+    gatherAppFragmentData();
     gatherNetworkLogData();
     gatherHistoryLoaderData();
   }

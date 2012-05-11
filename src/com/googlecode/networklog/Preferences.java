@@ -107,8 +107,8 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
           }
 
           if(preference.getKey().equals("history_size")) {
-            NetworkLog.appView.clear();
-            NetworkLog.logView.clear();
+            NetworkLog.appFragment.clear();
+            NetworkLog.logFragment.clear();
             NetworkLog.history.loadEntriesFromFile(context, (String)newValue);
             return true;
           }

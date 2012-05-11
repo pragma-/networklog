@@ -115,8 +115,8 @@ public class HistoryLoader {
 
       final long starting_pos = result;
 
-      NetworkLog.logView.stopUpdater();
-      NetworkLog.appView.stopUpdater();
+      NetworkLog.logFragment.stopUpdater();
+      NetworkLog.appFragment.stopUpdater();
 
       final Context context_final = context;
       new Thread(new Runnable() {
@@ -283,8 +283,8 @@ public class HistoryLoader {
                     continue;
                   }
 
-                  NetworkLog.logView.onNewLogEntry(entry);
-                  NetworkLog.appView.onNewLogEntry(entry);
+                  NetworkLog.logFragment.onNewLogEntry(entry);
+                  NetworkLog.appFragment.onNewLogEntry(entry);
 
                   // reset line
                   line_length = 0;
@@ -318,8 +318,8 @@ public class HistoryLoader {
               }
             }
 
-            NetworkLog.logView.startUpdater();
-            NetworkLog.appView.startUpdater();
+            NetworkLog.logFragment.startUpdater();
+            NetworkLog.appFragment.startUpdater();
           }
         }
       }, "LoadHistory").start();

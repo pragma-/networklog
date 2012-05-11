@@ -22,13 +22,14 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Toast;
 import android.util.TypedValue;
 
+import android.support.v4.app.Fragment;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
 
-public class LogView extends Activity
-{
+public class LogFragment extends Fragment {
   // bound to adapter
   protected ArrayList<ListItem> listData;
   // buffers incoming log entries
@@ -84,16 +85,21 @@ public class LogView extends Activity
     adapter.notifyDataSetChanged();
   }
 
+  @Override
+    public void onSaveInstanceState(Bundle outState) {
+      super.onSaveInstanceState(outState);
+      setUserVisibleHint(true);
+    }
+
   /** Called when the activity is first created. */
   @Override
     public void onCreate(Bundle savedInstanceState)
     {
       super.onCreate(savedInstanceState);
+      setUserVisibleHint(true);
 
-      MyLog.d("LogView created");
 
-      LinearLayout layout = new LinearLayout(this);
-      layout.setOrientation(LinearLayout.VERTICAL);
+      MyLog.d("LogFragment created");
 
       if(NetworkLog.data == null) {
         listData = new ArrayList<ListItem>();
@@ -103,28 +109,36 @@ public class LogView extends Activity
         restoreData(NetworkLog.data);
       }
 
-      adapter = new CustomAdapter(this, R.layout.logitem, listData);
-
-      ListView listView = new ListView(this);
-      listView.setAdapter(adapter);
-      listView.setTextFilterEnabled(true);
-      listView.setFastScrollEnabled(true);
-      listView.setSmoothScrollbarEnabled(false);
-      listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
-      listView.setStackFromBottom(true);
-
-      listView.setOnItemClickListener(new CustomOnItemClickListener());
-
-      layout.addView(listView);
-
-      setContentView(layout);
-
-      if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0) {
-        // trigger filtering
-        setFilter("");
-        adapter.notifyDataSetChanged();
-      }
+      adapter = new CustomAdapter(getActivity().getApplicationContext(), R.layout.logitem, listData);
     }
+
+  @Override
+  public View onCreateView(LayoutInflater inflater, ViewGroup container, 
+      Bundle savedInstanceState) {
+    LinearLayout layout = new LinearLayout(getActivity().getApplicationContext());
+    layout.setOrientation(LinearLayout.VERTICAL);
+
+    ListView listView = new ListView(getActivity().getApplicationContext());
+    listView.setAdapter(adapter);
+    listView.setTextFilterEnabled(true);
+    listView.setFastScrollEnabled(true);
+    listView.setSmoothScrollbarEnabled(false);
+    listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
+    listView.setStackFromBottom(true);
+
+    listView.setOnItemClickListener(new CustomOnItemClickListener());
+
+    layout.addView(listView);
+
+    // setContentView(layout);
+
+    if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0) {
+      // trigger filtering
+      setFilter("");
+      adapter.notifyDataSetChanged();
+    }
+    return layout;
+  }
 
   private class CustomOnItemClickListener implements OnItemClickListener {
     @Override
@@ -135,7 +149,7 @@ public class LogView extends Activity
           item.mUidString = String.valueOf(item.mUid);
         }
 
-        startActivity(new Intent(getApplicationContext(), AppTimelineGraph.class)
+        startActivity(new Intent(getActivity().getApplicationContext(), AppTimelineGraph.class)
             .putExtra("app_uid", item.mUidString)
             .putExtra("src_addr", item.srcAddr)
             .putExtra("src_port", item.srcPort)
@@ -146,26 +160,20 @@ public class LogView extends Activity
 
   public void startUpdater() {
     updater = new ListViewUpdater();
-    new Thread(updater, "LogViewUpdater").start();
+    new Thread(updater, "LogFragmentUpdater").start();
   }
 
   public void restoreData(NetworkLogData data) {
-    listData = data.logViewListData;
-    listDataBuffer = data.logViewListDataBuffer;
-    listDataUnfiltered = data.logViewListDataUnfiltered;
+    listData = data.logFragmentListData;
+    listDataBuffer = data.logFragmentListDataBuffer;
+    listDataUnfiltered = data.logFragmentListDataUnfiltered;
   }
-
-  @Override
-    public void onBackPressed() {
-      NetworkLog parent = (NetworkLog) getParent();
-      parent.confirmExit(this);
-    }
 
   public void onNewLogEntry(final LogEntry entry) {
     ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.installedAppsHash.get(String.valueOf(entry.uid));
 
     if(appEntry == null) {
-      MyLog.d("LogView: No appEntry for uid " + entry.uid);
+      MyLog.d("LogFragment: No appEntry for uid " + entry.uid);
       return;
     }
 
@@ -196,7 +204,7 @@ public class LogView extends Activity
       if(item.mUidString == null) {
         item.mUidString = String.valueOf(item.mUid);
       }
-      MyLog.d("LogView: NewLogEntry: [" + item.mUidString + "] in=" + item.in + " out=" + item.out + " " + item.srcAddr + ":" + item.srcPort + " --> " + item.dstAddr + ":" + item.dstPort + " [" + item.len + "]");
+      MyLog.d("LogFragment: NewLogEntry: [" + item.mUidString + "] in=" + item.in + " out=" + item.out + " " + item.srcAddr + ":" + item.srcPort + " --> " + item.dstAddr + ":" + item.dstPort + " [" + item.len + "]");
     }
 
     synchronized(listDataBuffer) {
@@ -238,12 +246,12 @@ public class LogView extends Activity
     }
   }
 
-  // todo: this is largely duplicated in AppView -- move to its own file
+  // todo: this is largely duplicated in AppFragment -- move to its own file
   private class ListViewUpdater implements Runnable {
     boolean running = false;
     Runnable runner = new Runnable() {
       public void run() {
-        MyLog.d("LogViewUpdater enter");
+        MyLog.d("LogFragmentUpdater enter");
         int i = 0;
         long maxLogEntries = NetworkLog.settings.getMaxLogEntries();
 
@@ -281,7 +289,7 @@ public class LogView extends Activity
 
         adapter.notifyDataSetChanged();
 
-        MyLog.d("LogViewUpdater exit: added " + i + " items");
+        MyLog.d("LogFragmentUpdater exit: added " + i + " items");
       }
     };
 
@@ -291,32 +299,32 @@ public class LogView extends Activity
 
     public void run() {
       running = true;
-      MyLog.d("Starting LogViewUpdater " + this);
+      MyLog.d("Starting LogFragmentUpdater " + this);
 
       while(running) {
         if(listDataBuffer.size() > 0) {
-          runOnUiThread(runner);
+          getActivity().runOnUiThread(runner);
         }
 
         try {
           Thread.sleep(1000);
         }
         catch(Exception e) {
-          Log.d("NetworkLog", "LogViewListUpdater", e);
+          Log.d("NetworkLog", "LogFragmentListUpdater", e);
         }
       }
 
-      MyLog.d("Stopped LogView updater " + this);
+      MyLog.d("Stopped LogFragment updater " + this);
     }
   }
 
   public void setFilter(CharSequence s) {
-    // MyLog.d("[LogView] setFilter(" + s + ")");
+    // MyLog.d("[LogFragment] setFilter(" + s + ")");
     adapter.getFilter().filter(s);
   }
 
   private class CustomAdapter extends ArrayAdapter<ListItem> implements Filterable {
-    LayoutInflater mInflater = (LayoutInflater) getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+    LayoutInflater mInflater = (LayoutInflater) getActivity().getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
     CustomFilter filter;
     ArrayList<ListItem> originalItems = new ArrayList<ListItem>();
 
@@ -337,7 +345,7 @@ public class LogView extends Activity
           }
 
           if(NetworkLog.filterTextInclude.length() == 0 && NetworkLog.filterTextExclude.length() == 0) {
-            // MyLog.d("[LogView] no constraint item count: " + originalItems.size());
+            // MyLog.d("[LogFragment] no constraint item count: " + originalItems.size());
             results.values = originalItems;
             results.count = originalItems.size();
           } else {
@@ -346,14 +354,14 @@ public class LogView extends Activity
             localItems.addAll(originalItems);
             int count = localItems.size();
 
-            MyLog.d("[LogView] item count: " + count);
+            MyLog.d("[LogFragment] item count: " + count);
 
             if(NetworkLog.filterTextIncludeList.size() == 0) {
               filteredItems.addAll(localItems);
             } else {
               for(int i = 0; i < count; i++) {
                 ListItem item = localItems.get(i);
-                // MyLog.d("[LogView] testing filtered item " + item + "; includes: [" + NetworkLog.filterTextInclude + "]");
+                // MyLog.d("[LogFragment] testing filtered item " + item + "; includes: [" + NetworkLog.filterTextInclude + "]");
 
                 boolean matched = false;
 
@@ -410,7 +418,7 @@ public class LogView extends Activity
                 }
 
                 if(matched) {
-                  // MyLog.d("[LogView] adding filtered item " + item);
+                  // MyLog.d("[LogFragment] adding filtered item " + item);
                   filteredItems.add(item);
                 }
               }
@@ -421,7 +429,7 @@ public class LogView extends Activity
 
               for(int i = count - 1; i >= 0; i--) {
                 ListItem item = filteredItems.get(i);
-                // MyLog.d("[LogView] testing filtered item " + item + "; excludes: [" + NetworkLog.filterTextExclude + "]");
+                // MyLog.d("[LogFragment] testing filtered item " + item + "; excludes: [" + NetworkLog.filterTextExclude + "]");
 
                 boolean matched = false;
 
@@ -474,7 +482,7 @@ public class LogView extends Activity
                 }
 
                 if(matched) {
-                  // MyLog.d("[LogView] removing filtered item " + item);
+                  // MyLog.d("[LogFragment] removing filtered item " + item);
                   filteredItems.remove(i);
                 }
               }
@@ -544,7 +552,7 @@ public class LogView extends Activity
           if(item.mUidString == null) {
             item.mUidString = String.valueOf(item.mUid);
           }
-          item.mIcon = ApplicationsTracker.loadIcon(getApplicationContext(), ApplicationsTracker.installedAppsHash.get(item.mUidString).packageName);
+          item.mIcon = ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), ApplicationsTracker.installedAppsHash.get(item.mUidString).packageName);
         }
 
         icon.setImageDrawable(item.mIcon);

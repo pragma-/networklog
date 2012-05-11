@@ -30,6 +30,8 @@ import android.widget.TextView.BufferType;
 import android.util.TypedValue;
 import android.os.Parcelable;
 
+import android.support.v4.app.Fragment;
+
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +40,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
-public class AppView extends Activity {
+public class AppFragment extends Fragment {
   // groupData bound to adapter, and filtered
   public ArrayList<GroupItem> groupData;
   // groupDataBuffer used to buffer incoming log entries and to hold original list data for filtering
@@ -258,7 +260,7 @@ public class AppView extends Activity {
         synchronized(ApplicationsTracker.installedAppsLock) {
           for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps) {
             if(NetworkLog.state != NetworkLog.State.RUNNING && NetworkLog.initRunner.running == false) {
-              MyLog.d("[AppView] Initialization aborted");
+              MyLog.d("[AppFragment] Initialization aborted");
               return;
             }
 
@@ -273,7 +275,7 @@ public class AppView extends Activity {
           }
         }
 
-        runOnUiThread(new Runnable() {
+        getActivity().runOnUiThread(new Runnable() {
           public void run() {
             preSortData();
 
@@ -289,25 +291,24 @@ public class AppView extends Activity {
     }
   }
 
+  @Override
+    public void onSaveInstanceState(Bundle outState) {
+      super.onSaveInstanceState(outState);
+      setUserVisibleHint(true);
+    }
+
   /** Called when the activity is first created. */
   @Override
     public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
 
-      MyLog.d("AppView created");
+      MyLog.d("AppFragment created");
 
       sortBy = NetworkLog.settings.getSortBy();
       MyLog.d("Sort-by loaded from settings: " + sortBy);
 
       preSortBy = NetworkLog.settings.getPreSortBy();
       MyLog.d("Pre-sort-by loaded from settings: " + preSortBy);
-
-      LinearLayout layout = new LinearLayout(this);
-      layout.setOrientation(LinearLayout.VERTICAL);
-
-      TextView tv = new TextView(this);
-      tv.setText("Press for connections, long-press for graph");
-      layout.addView(tv);
 
       if(NetworkLog.data == null) {
         groupData = new ArrayList<GroupItem>();
@@ -319,8 +320,22 @@ public class AppView extends Activity {
       }
 
       adapter = new CustomAdapter();
+    }
 
-      listView = new ExpandableListView(this);
+  @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+        Bundle savedInstanceState) {
+      Context context = getActivity().getApplicationContext();
+
+      LinearLayout layout = new LinearLayout(context);
+      layout.setOrientation(LinearLayout.VERTICAL);
+
+      TextView tv = new TextView(context);
+      tv.setText("Press for connections, long-press for graph");
+      layout.addView(tv);
+
+
+      listView = new ExpandableListView(context);
       listView.setAdapter(adapter);
       listView.setTextFilterEnabled(true);
       listView.setFastScrollEnabled(true);
@@ -352,7 +367,7 @@ public class AppView extends Activity {
         {
           GroupItem group = (GroupItem) adapter.getGroup(ExpandableListView.getPackedPositionGroup(id));
 
-          startActivity(new Intent(getApplicationContext(), AppTimelineGraph.class)
+          getActivity().startActivity(new Intent(getActivity().getApplicationContext(), AppTimelineGraph.class)
             .putExtra("app_uid", group.app.uidString));
 
           return true;
@@ -367,7 +382,7 @@ public class AppView extends Activity {
           GroupItem group = (GroupItem) adapter.getGroup(groupPosition);
           ChildItem child = (ChildItem) adapter.getChild(groupPosition, childPosition);
 
-          startActivity(new Intent(getApplicationContext(), AppTimelineGraph.class)
+          getActivity().startActivity(new Intent(getActivity().getApplicationContext(), AppTimelineGraph.class)
             .putExtra("app_uid", group.app.uidString)
             .putExtra("src_addr", child.receivedAddress)
             .putExtra("src_port", child.receivedPort)
@@ -378,22 +393,17 @@ public class AppView extends Activity {
         }
       });
 
-      setContentView(layout);
-    }
-
-  @Override
-    public void onBackPressed() {
-      NetworkLog parent = (NetworkLog) getParent();
-      parent.confirmExit(this);
+      // setContentView(layout);
+      return layout;
     }
 
   public void restoreData(NetworkLogData data) {
-    groupData = data.appViewGroupData;
-    groupDataBuffer = data.appViewGroupDataBuffer;
-    groupDataBufferIsDirty = data.appViewGroupDataBufferIsDirty;
-    sortBy = data.appViewSortBy;
-    preSortBy = data.appViewPreSortBy;
-    cachedSearchItem = data.appViewCachedSearchItem;
+    groupData = data.appFragmentGroupData;
+    groupDataBuffer = data.appFragmentGroupDataBuffer;
+    groupDataBufferIsDirty = data.appFragmentGroupDataBufferIsDirty;
+    sortBy = data.appFragmentSortBy;
+    preSortBy = data.appFragmentPreSortBy;
+    cachedSearchItem = data.appFragmentCachedSearchItem;
 
     if(groupData == null) {
       groupData = new ArrayList<GroupItem>();
@@ -448,7 +458,7 @@ public class AppView extends Activity {
 
   public void onNewLogEntry(final LogEntry entry) {
     if(MyLog.enabled) {
-      MyLog.d("AppView: NewLogEntry: [" + entry.uid + "] in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
+      MyLog.d("AppFragment: NewLogEntry: [" + entry.uid + "] in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
     }
 
     int index = getItemByAppUid(entry.uid);
@@ -557,7 +567,7 @@ public class AppView extends Activity {
 
   public void startUpdater() {
     updater = new ListViewUpdater();
-    new Thread(updater, "AppViewUpdater").start();
+    new Thread(updater, "AppFragmentUpdater").start();
   }
 
   public void stopUpdater() {
@@ -566,13 +576,13 @@ public class AppView extends Activity {
     }
   }
 
-  // todo: this is largely duplicated in LogView -- move to its own file
+  // todo: this is largely duplicated in LogFragment -- move to its own file
   private class ListViewUpdater implements Runnable {
     boolean running = false;
     Runnable runner = new Runnable() {
       public void run() {
         synchronized(groupData) {
-          MyLog.d("AppViewListUpdater enter");
+          MyLog.d("AppFragmentListUpdater enter");
 
           synchronized(groupDataBuffer) {
             // todo: find a way so that we don't have to go through every entry
@@ -593,7 +603,7 @@ public class AppView extends Activity {
           refreshAdapter();
         }
 
-        MyLog.d("AppViewListUpdater exit");
+        MyLog.d("AppFragmentListUpdater exit");
       }
     };
 
@@ -603,32 +613,32 @@ public class AppView extends Activity {
 
     public void run() {
       running = true;
-      MyLog.d("Starting AppViewUpdater " + this);
+      MyLog.d("Starting AppFragmentUpdater " + this);
 
       while(running) {
         if(groupDataBufferIsDirty == true) {
-          runOnUiThread(runner);
+          getActivity().runOnUiThread(runner);
           groupDataBufferIsDirty = false;
         }
 
         try {
           Thread.sleep(1000);
         } catch(Exception e) {
-          Log.d("NetworkLog", "AppViewListUpdater", e);
+          Log.d("NetworkLog", "AppFragmentListUpdater", e);
         }
       }
 
-      MyLog.d("Stopped AppView updater " + this);
+      MyLog.d("Stopped AppFragment updater " + this);
     }
   }
 
   public void setFilter(CharSequence s) {
-    MyLog.d("[AppView] setFilter(" + s + ")");
+    MyLog.d("[AppFragment] setFilter(" + s + ")");
     adapter.getFilter().filter(s);
   }
 
   private class CustomAdapter extends BaseExpandableListAdapter implements Filterable {
-    LayoutInflater mInflater = (LayoutInflater) getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+    LayoutInflater mInflater = (LayoutInflater) getActivity().getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
 
     CustomFilter filter;
 
@@ -640,7 +650,7 @@ public class AppView extends Activity {
 
       @Override
         protected FilterResults performFiltering(CharSequence constraint) {
-          MyLog.d("[AppView] performFiltering");
+          MyLog.d("[AppFragment] performFiltering");
 
           synchronized(groupDataBuffer) {
             originalItems.clear();
@@ -648,7 +658,7 @@ public class AppView extends Activity {
           }
 
           if(NetworkLog.filterTextInclude.length() == 0 && NetworkLog.filterTextExclude.length() == 0) {
-            MyLog.d("[AppView] no constraint item count: " + originalItems.size());
+            MyLog.d("[AppFragment] no constraint item count: " + originalItems.size());
 
             // undo uniqueHosts filtering
             for(GroupItem item : originalItems) {
@@ -666,10 +676,10 @@ public class AppView extends Activity {
             localItems.addAll(originalItems);
             int count = localItems.size();
 
-            MyLog.d("[AppView] item count: " + count);
+            MyLog.d("[AppFragment] item count: " + count);
 
             if(NetworkLog.filterTextIncludeList.size() == 0) {
-              MyLog.d("[AppView] no include filter, adding all items");
+              MyLog.d("[AppFragment] no include filter, adding all items");
 
               for(GroupItem item : localItems) {
                 filteredItems.add(item);
@@ -685,7 +695,7 @@ public class AppView extends Activity {
                   while(itr.hasNext()) {
                     String host = itr.next();
                     ChildItem childData = item.childrenData.get(host);
-                    MyLog.d("[AppView] adding filtered host " + childData);
+                    MyLog.d("[AppFragment] adding filtered host " + childData);
                     item.filteredChildItems.put(host, childData);
                     item.childrenAreFiltered = true;
                   }
@@ -699,7 +709,7 @@ public class AppView extends Activity {
               {
                 for(int i = 0; i < count; i++) {
                   GroupItem item = localItems.get(i);
-                  MyLog.d("[AppView] testing filtered item " + item + "; includes: [" + NetworkLog.filterTextInclude + "]");
+                  MyLog.d("[AppFragment] testing filtered item " + item + "; includes: [" + NetworkLog.filterTextInclude + "]");
 
                   boolean item_added = false;
                   boolean matched = true;
@@ -725,7 +735,7 @@ public class AppView extends Activity {
 
                         while(itr.hasNext()) {
                           String host = itr.next();
-                          MyLog.d("[AppView] testing " + host);
+                          MyLog.d("[AppFragment] testing " + host);
 
                           ChildItem childData = item.childrenData.get(host);
 
@@ -772,12 +782,12 @@ public class AppView extends Activity {
 
                           if(matched) {
                             if(!item_added) {
-                              MyLog.d("[AppView] adding filtered item " + item);
+                              MyLog.d("[AppFragment] adding filtered item " + item);
                               filteredItems.add(item);
                               item_added = true;
                             }
 
-                            MyLog.d("[AppView] adding filtered host " + childData);
+                            MyLog.d("[AppFragment] adding filtered host " + childData);
                             item.filteredChildItems.put(host, childData);
                             item.childrenAreFiltered = true;
                           }
@@ -785,7 +795,7 @@ public class AppView extends Activity {
                       }
                     } else {
                       // no filtering for host/port, matches everything
-                      MyLog.d("[AppView] no filter for host/port; adding filtered item " + item);
+                      MyLog.d("[AppFragment] no filter for host/port; adding filtered item " + item);
                       filteredItems.add(item);
 
                       synchronized(item.childrenData) {
@@ -799,7 +809,7 @@ public class AppView extends Activity {
                         while(itr.hasNext()) {
                           String host = itr.next();
                           ChildItem childData = item.childrenData.get(host);
-                          MyLog.d("[AppView] adding filtered host " + childData);
+                          MyLog.d("[AppFragment] adding filtered host " + childData);
                           item.filteredChildItems.put(host, childData);
                           item.childrenAreFiltered = true;
                         }
@@ -815,7 +825,7 @@ public class AppView extends Activity {
 
               for(int i = count - 1; i >= 0; i--) {
                 GroupItem item = filteredItems.get(i);
-                MyLog.d("[AppView] testing filtered item: " + i + " " + item + "; excludes: [" + NetworkLog.filterTextExclude + "]");
+                MyLog.d("[AppFragment] testing filtered item: " + i + " " + item + "; excludes: [" + NetworkLog.filterTextExclude + "]");
 
                 boolean matched = false;
 
@@ -828,7 +838,7 @@ public class AppView extends Activity {
                 }
 
                 if(matched) {
-                  MyLog.d("[AppView] removing filtered item: " + item);
+                  MyLog.d("[AppFragment] removing filtered item: " + item);
                   filteredItems.remove(i);
                   continue;
                 }
@@ -882,13 +892,13 @@ public class AppView extends Activity {
                   }
 
                   if(matched) {
-                    MyLog.d("[AppView] removing filtered host " + childData);
+                    MyLog.d("[AppFragment] removing filtered host " + childData);
                     item.filteredChildItems.remove(host);
                   }
                 }
 
                 if(item.filteredChildItems.size() == 0) {
-                  MyLog.d("[AppView] removed all hosts, removing item from filter results");
+                  MyLog.d("[AppFragment] removed all hosts, removing item from filter results");
                   filteredItems.remove(i);
                 }
               }
@@ -910,7 +920,7 @@ public class AppView extends Activity {
           final ArrayList<GroupItem> localItems = (ArrayList<GroupItem>) results.values;
 
           if(localItems == null) {
-            MyLog.d("[AppView] local items null, wtf");
+            MyLog.d("[AppFragment] local items null, wtf");
             return;
           }
 
@@ -1034,7 +1044,7 @@ public class AppView extends Activity {
         icon = holder.getIcon();
 
         if(item.app.icon == null) {
-          item.app.icon = ApplicationsTracker.loadIcon(getApplicationContext(), item.app.packageName);
+          item.app.icon = ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), item.app.packageName);
         }
 
         icon.setImageDrawable(item.app.icon);

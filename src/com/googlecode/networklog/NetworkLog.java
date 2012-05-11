@@ -1,11 +1,7 @@
 package com.googlecode.networklog;
 
-import android.app.TabActivity;
 import android.os.Bundle;
 import android.content.Intent;
-import android.widget.TabWidget;
-import android.widget.TabHost;
-import android.content.res.Resources;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
@@ -18,7 +14,6 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.os.IBinder;
 import android.text.Html;
-
 import android.content.Context;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -29,6 +24,12 @@ import android.util.Log;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+
 import java.util.Enumeration;
 import java.net.NetworkInterface;
 import java.net.InetAddress;
@@ -36,12 +37,11 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.io.File;
 
-public class NetworkLog extends TabActivity
-{
+public class NetworkLog extends FragmentActivity {
   public static NetworkLogData data = null;
 
-  public static LogView logView;
-  public static AppView appView;
+  public static LogFragment logFragment;
+  public static AppFragment appFragment;
 
   public static TextView statusText;
 
@@ -116,8 +116,8 @@ public class NetworkLog extends TabActivity
           case NetworkLogService.MSG_BROADCAST_LOG_ENTRY:
             LogEntry entry = (LogEntry) msg.obj;
             MyLog.d("Received entry: " + entry);
-            logView.onNewLogEntry(entry);
-            appView.onNewLogEntry(entry);
+            logFragment.onNewLogEntry(entry);
+            appFragment.onNewLogEntry(entry);
             break;
 
           default:
@@ -201,14 +201,14 @@ public class NetworkLog extends TabActivity
       }
 
       state = NetworkLog.State.LOAD_LIST;
-      appView.getInstalledApps();
+      appFragment.getInstalledApps();
 
       if(running == false) {
         return;
       }
 
-      appView.startUpdater();
-      logView.startUpdater();
+      appFragment.startUpdater();
+      logFragment.startUpdater();
 
       if(startServiceAtStart && !isServiceRunning(context, "com.googlecode.networklog.NetworkLogService")) {
         handler.post(new Runnable() {
@@ -254,6 +254,42 @@ public class NetworkLog extends TabActivity
     stopServiceAtExit = settings.getStopServiceAtExit();
   }
 
+  private static class MyFragmentPagerAdapter extends FragmentPagerAdapter {
+    Context context;
+
+    public MyFragmentPagerAdapter(Context context, FragmentManager fm) {
+      super(fm);
+      this.context = context;
+    }
+
+    @Override
+      public Fragment getItem(int index) {
+        Fragment fragment = null;
+
+        switch(index) {
+          case 0:
+            if(logFragment == null) {
+              logFragment = (LogFragment) Fragment.instantiate(context, LogFragment.class.getName());
+            }
+            fragment = logFragment;
+            break;
+          case 1:
+            if(appFragment == null) {
+              appFragment = (AppFragment) Fragment.instantiate(context, AppFragment.class.getName());
+            }
+            fragment = appFragment;
+            break;
+        }
+
+        return fragment;
+      }
+
+    @Override
+      public int getCount() {
+        return 2;
+      }
+  }
+
   /** Called when the activity is first created. */
   @Override
     public void onCreate(Bundle savedInstanceState)
@@ -268,7 +304,7 @@ public class NetworkLog extends TabActivity
       loadSettings();
       getLocalIpAddresses();
 
-      data = (NetworkLogData) getLastNonConfigurationInstance();
+      data = (NetworkLogData) getLastCustomNonConfigurationInstance();
 
       if(data != null) {
         MyLog.d("Restored run");
@@ -289,34 +325,14 @@ public class NetworkLog extends TabActivity
         resolver = new NetworkResolver();
       }
 
-      statusText = (TextView) this.findViewById(R.id.statusText);
+      statusText = (TextView) findViewById(R.id.statusText);
 
-      Resources res = getResources();
-      TabHost tabHost = getTabHost();
-      TabHost.TabSpec spec;
-      Intent intent;
+      ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+      MyFragmentPagerAdapter pagerAdapter = new MyFragmentPagerAdapter(this, getSupportFragmentManager());
 
-      tabHost.getTabWidget().setDividerDrawable(R.drawable.tab_divider);
-
-      View tab = LayoutInflater.from(this).inflate(R.layout.tabview, null);
-      ((TextView)tab.findViewById(R.id.tabtext)).setText("Log");
-      intent = new Intent().setClass(this, LogView.class);
-      spec = tabHost.newTabSpec("log").setIndicator(tab).setContent(intent);
-      tabHost.addTab(spec);
-
-      tab = LayoutInflater.from(this).inflate(R.layout.tabview, null);
-      ((TextView)tab.findViewById(R.id.tabtext)).setText("Apps");
-      intent = new Intent().setClass(this, AppView.class);
-      spec = tabHost.newTabSpec("apps").setIndicator(tab).setContent(intent);
-      tabHost.addTab(spec);
-
-      // force loading of LogView activity
-      tabHost.setCurrentTab(0);
-      logView = (LogView) getLocalActivityManager().getCurrentActivity();
-      // force loading of AppView activity
-      // and display AppView tab by default
-      tabHost.setCurrentTab(1);
-      appView = (AppView) getLocalActivityManager().getCurrentActivity();
+      viewPager.setAdapter(pagerAdapter);
+      viewPager.setCurrentItem(0);
+      viewPager.setCurrentItem(1);
 
       if(isServiceRunning(this, "com.googlecode.networklog.NetworkLogService")) {
         doBindService();
@@ -332,8 +348,8 @@ public class NetworkLog extends TabActivity
           initRunner = new InitRunner(this);
           new Thread(initRunner, "Initialization " + initRunner).start();
         } else {
-          appView.startUpdater();
-          logView.startUpdater();
+          appFragment.startUpdater();
+          logFragment.startUpdater();
         }
 
         // all data should be restored at this point, release the object
@@ -388,12 +404,12 @@ public class NetworkLog extends TabActivity
         initRunner.stop();
       }
 
-      if(logView != null) {
-        logView.stopUpdater();
+      if(logFragment != null) {
+        logFragment.stopUpdater();
       }
 
-      if(appView != null) {
-        appView.stopUpdater();
+      if(appFragment != null) {
+        appFragment.stopUpdater();
       }
 
       if(statusUpdater != null) {
@@ -413,7 +429,7 @@ public class NetworkLog extends TabActivity
     }
 
   @Override
-    public Object onRetainNonConfigurationInstance() {
+    public Object onRetainCustomNonConfigurationInstance() {
       MyLog.d("Saving run");
       data = new NetworkLogData();
       return data;
@@ -432,10 +448,10 @@ public class NetworkLog extends TabActivity
 
       item = menu.findItem(R.id.sort);
 
-      if(getLocalActivityManager().getCurrentActivity() instanceof AppView) {
+      if(getLocalActivityManager().getCurrentActivity() instanceof AppFragment) {
         item.setVisible(true);
 
-        switch(appView.sortBy) {
+        switch(appFragment.sortBy) {
           case UID:
             item = menu.findItem(R.id.sort_by_uid);
             break;
@@ -458,7 +474,7 @@ public class NetworkLog extends TabActivity
 
           default:
             NetworkLog.settings.setSortBy(Sort.BYTES);
-            appView.sortBy = Sort.BYTES;
+            appFragment.sortBy = Sort.BYTES;
             item = menu.findItem(R.id.sort_by_bytes);
         }
 
@@ -501,7 +517,6 @@ public class NetworkLog extends TabActivity
 
         case R.id.exit:
           finish();
-          // confirmExit(this);
           break;
 
         case R.id.settings:
@@ -509,43 +524,43 @@ public class NetworkLog extends TabActivity
           break;
 
         case R.id.sort_by_uid:
-          appView.sortBy = Sort.UID;
-          appView.sortData();
-          appView.refreshAdapter();
+          appFragment.sortBy = Sort.UID;
+          appFragment.sortData();
+          appFragment.refreshAdapter();
 
-          NetworkLog.settings.setSortBy(appView.sortBy);
+          NetworkLog.settings.setSortBy(appFragment.sortBy);
           break;
 
         case R.id.sort_by_name:
-          appView.sortBy = Sort.NAME;
-          appView.sortData();
-          appView.refreshAdapter();
+          appFragment.sortBy = Sort.NAME;
+          appFragment.sortData();
+          appFragment.refreshAdapter();
 
-          NetworkLog.settings.setSortBy(appView.sortBy);
+          NetworkLog.settings.setSortBy(appFragment.sortBy);
           break;
 
         case R.id.sort_by_packets:
-          appView.sortBy = Sort.PACKETS;
-          appView.sortData();
-          appView.refreshAdapter();
+          appFragment.sortBy = Sort.PACKETS;
+          appFragment.sortData();
+          appFragment.refreshAdapter();
 
-          NetworkLog.settings.setSortBy(appView.sortBy);
+          NetworkLog.settings.setSortBy(appFragment.sortBy);
           break;
 
         case R.id.sort_by_bytes:
-          appView.sortBy = Sort.BYTES;
-          appView.sortData();
-          appView.refreshAdapter();
+          appFragment.sortBy = Sort.BYTES;
+          appFragment.sortData();
+          appFragment.refreshAdapter();
 
-          NetworkLog.settings.setSortBy(appView.sortBy);
+          NetworkLog.settings.setSortBy(appFragment.sortBy);
           break;
 
         case R.id.sort_by_timestamp:
-          appView.sortBy = Sort.TIMESTAMP;
-          appView.sortData();
-          appView.refreshAdapter();
+          appFragment.sortBy = Sort.TIMESTAMP;
+          appFragment.sortData();
+          appFragment.refreshAdapter();
 
-          NetworkLog.settings.setSortBy(appView.sortBy);
+          NetworkLog.settings.setSortBy(appFragment.sortBy);
           break;
 
         default:
@@ -557,16 +572,16 @@ public class NetworkLog extends TabActivity
 
   @Override
     public void onBackPressed() {
-      finish();
-      //confirmExit(this);
+      confirmExit();
     }
 
   public void showFilterDialog() {
-    Context context = getLocalActivityManager().getCurrentActivity();
-    new FilterDialog(context);
+    new FilterDialog(this);
   }
 
-  public void confirmExit(Context context) {
+  public void confirmExit() {
+    Context context = getApplicationContext();
+
     StringBuilder message = new StringBuilder("Are you sure you want to exit?");
     boolean serviceRunning = isServiceRunning(context, "com.googlecode.networklog.NetworkLogService");
 
@@ -584,7 +599,7 @@ public class NetworkLog extends TabActivity
       .setCancelable(true)
       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
-          NetworkLog.this.finish();
+          finish();
         }
       })
     .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -603,8 +618,8 @@ public class NetworkLog extends TabActivity
       .setCancelable(true)
       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
-          appView.clear();
-          logView.clear();
+          appFragment.clear();
+          logFragment.clear();
         }
       })
     .setNegativeButton("No", new DialogInterface.OnClickListener() {
