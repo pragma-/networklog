@@ -314,14 +314,18 @@ public class NetworkLog extends FragmentActivity {
     public void onCreate(Bundle savedInstanceState)
     {
       super.onCreate(savedInstanceState);
-      MyLog.d("NetworkLog started");
-      history = new HistoryLoader();
+      
       handler = new Handler();
-
       setContentView(R.layout.main);
+
+      MyLog.d("NetworkLog started");
 
       loadSettings();
       getLocalIpAddresses();
+
+      if(history == null) {
+        history = new HistoryLoader();
+      }
 
       data = (NetworkLogData) getLastCustomNonConfigurationInstance();
 

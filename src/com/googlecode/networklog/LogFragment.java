@@ -96,8 +96,7 @@ public class LogFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState)
     {
       super.onCreate(savedInstanceState);
-      setUserVisibleHint(true);
-
+      setRetainInstance(true);
 
       MyLog.d("LogFragment created");
 
@@ -115,6 +114,8 @@ public class LogFragment extends Fragment {
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, 
       Bundle savedInstanceState) {
+    MyLog.d("[LogFragment] onCreateView");
+
     LinearLayout layout = new LinearLayout(getActivity().getApplicationContext());
     layout.setOrientation(LinearLayout.VERTICAL);
 

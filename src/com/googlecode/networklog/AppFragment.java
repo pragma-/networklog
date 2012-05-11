@@ -309,6 +309,8 @@ public class AppFragment extends Fragment {
 
       MyLog.d("AppFragment created");
 
+      setRetainInstance(true);
+
       sortBy = NetworkLog.settings.getSortBy();
       MyLog.d("Sort-by loaded from settings: " + sortBy);
 
@@ -331,6 +333,8 @@ public class AppFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
         Bundle savedInstanceState) {
       Context context = getActivity().getApplicationContext();
+
+      MyLog.d("[AppFragment] onCreateView");
 
       LinearLayout layout = new LinearLayout(context);
       layout.setOrientation(LinearLayout.VERTICAL);
