@@ -30,6 +30,9 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 
+import com.viewpagerindicator.TitlePageIndicator;
+import com.viewpagerindicator.TitleProvider;
+
 import java.util.Enumeration;
 import java.net.NetworkInterface;
 import java.net.InetAddress;
@@ -259,13 +262,24 @@ public class NetworkLog extends FragmentActivity {
     stopServiceAtExit = settings.getStopServiceAtExit();
   }
 
-  private static class MyFragmentPagerAdapter extends FragmentPagerAdapter {
+  private static class MyFragmentPagerAdapter extends FragmentPagerAdapter implements TitleProvider {
     Context context;
 
     public MyFragmentPagerAdapter(Context context, FragmentManager fm) {
       super(fm);
       this.context = context;
     }
+
+    @Override
+      public String getTitle(int index) {
+        switch(index) {
+          case PAGE_LOG:
+            return "Log";
+          case PAGE_APP:
+            return "Apps";
+        }
+        return "Unnamed";
+      }
 
     @Override
       public Fragment getItem(int index) {
@@ -336,6 +350,10 @@ public class NetworkLog extends FragmentActivity {
       MyFragmentPagerAdapter pagerAdapter = new MyFragmentPagerAdapter(this, getSupportFragmentManager());
 
       viewPager.setAdapter(pagerAdapter);
+
+      TitlePageIndicator titleIndicator = (TitlePageIndicator) findViewById(R.id.titles);
+      titleIndicator.setViewPager(viewPager);
+
       viewPager.setCurrentItem(0);
       viewPager.setCurrentItem(1);
 

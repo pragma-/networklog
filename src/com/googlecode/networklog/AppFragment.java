@@ -398,7 +398,6 @@ public class AppFragment extends Fragment {
         }
       });
 
-      // setContentView(layout);
       return layout;
     }
 

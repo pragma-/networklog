@@ -130,8 +130,6 @@ public class LogFragment extends Fragment {
 
     layout.addView(listView);
 
-    // setContentView(layout);
-
     if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0) {
       // trigger filtering
       setFilter("");
