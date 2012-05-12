@@ -75,14 +75,15 @@ public class LogFragment extends Fragment {
           listData.clear();
           listDataBuffer.clear();
           listDataUnfiltered.clear();
+          adapter.notifyDataSetChanged();
         }
       }
     }
-    adapter.notifyDataSetChanged();
   }
 
   public void refreshAdapter() {
     adapter.notifyDataSetChanged();
+    MyLog.d("Refreshed LogFragment adapter");
   }
 
   @Override
@@ -234,9 +235,8 @@ public class LogFragment extends Fragment {
       while(listData.size() > maxLogEntries) {
         listData.remove(0);
       }
+      adapter.notifyDataSetChanged();
     }
-
-    adapter.notifyDataSetChanged();
   }
 
   public void stopUpdater() {
@@ -341,6 +341,8 @@ public class LogFragment extends Fragment {
 
       @Override
         protected FilterResults performFiltering(CharSequence constraint) {
+          MyLog.d("[LogFragment] performFiltering");
+
           synchronized(listDataUnfiltered) {
             originalItems.clear();
             originalItems.addAll(listDataUnfiltered);
@@ -356,7 +358,7 @@ public class LogFragment extends Fragment {
             localItems.addAll(originalItems);
             int count = localItems.size();
 
-            MyLog.d("[LogFragment] item count: " + count);
+            // MyLog.d("[LogFragment] item count: " + count);
 
             if(NetworkLog.filterTextIncludeList.size() == 0) {
               filteredItems.addAll(localItems);
@@ -420,7 +422,7 @@ public class LogFragment extends Fragment {
                 }
 
                 if(matched) {
-                  // MyLog.d("[LogFragment] adding filtered item " + item);
+                   // MyLog.d("[LogFragment] adding filtered item " + item);
                   filteredItems.add(item);
                 }
               }
@@ -494,24 +496,20 @@ public class LogFragment extends Fragment {
             results.count = filteredItems.size();
           }
 
+          MyLog.d("[LogFragment] filter returning " + results.count + " items");
           return results;
         }
 
       @SuppressWarnings("unchecked")
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-          final ArrayList<ListItem> localItems = (ArrayList<ListItem>) results.values;
+          MyLog.d("[LogFragment] Publishing filter results");
 
           synchronized(listData) {
-            clear();
-
-            int count = localItems.size();
-
-            for(int i = 0; i < count; i++) {
-              add(localItems.get(i));
-            }
-
-            notifyDataSetChanged();
+            listData.clear();
+            listData.addAll((ArrayList<ListItem>) results.values);
+            MyLog.d("[LogFilter] listdata size after filter: " + listData.size());
+            refreshAdapter();
           }
         }
     }

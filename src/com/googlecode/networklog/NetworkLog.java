@@ -703,19 +703,19 @@ public class NetworkLog extends FragmentActivity {
   public static void updateStatusText(Context context) {
     StringBuilder sb = new StringBuilder();
 
-    if(isServiceRunning(context, "com.googlecode.networklog.NetworkLogService")) {
-      if(filterTextInclude.length() > 0 || filterTextExclude.length() > 0) {
-        sb.append("Filter: ");
+    if(filterTextInclude.length() > 0 || filterTextExclude.length() > 0) {
+      sb.append("Filter: ");
 
-        if(filterTextInclude.length() > 0) {
-          sb.append("+[" + filterTextInclude + "] ");
-        }
-
-        if(filterTextExclude.length() > 0) {
-          sb.append("-[" + filterTextExclude + "]");
-        }
+      if(filterTextInclude.length() > 0) {
+        sb.append("+[" + filterTextInclude + "] ");
       }
-    } else {
+
+      if(filterTextExclude.length() > 0) {
+        sb.append("-[" + filterTextExclude + "] ");
+      }
+    }
+
+    if(!isServiceRunning(context, "com.googlecode.networklog.NetworkLogService")) {
       sb.append("Logging not active.");
     }
 

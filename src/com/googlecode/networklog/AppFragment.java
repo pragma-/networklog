@@ -720,7 +720,7 @@ public class AppFragment extends Fragment {
               {
                 for(int i = 0; i < count; i++) {
                   GroupItem item = localItems.get(i);
-                  MyLog.d("[AppFragment] testing filtered item " + item + "; includes: [" + NetworkLog.filterTextInclude + "]");
+                  // MyLog.d("[AppFragment] testing filtered item " + item + "; includes: [" + NetworkLog.filterTextInclude + "]");
 
                   boolean item_added = false;
                   boolean matched = true;
@@ -746,7 +746,7 @@ public class AppFragment extends Fragment {
 
                         while(itr.hasNext()) {
                           String host = itr.next();
-                          MyLog.d("[AppFragment] testing " + host);
+                          // MyLog.d("[AppFragment] testing " + host);
 
                           ChildItem childData = item.childrenData.get(host);
 
@@ -793,12 +793,12 @@ public class AppFragment extends Fragment {
 
                           if(matched) {
                             if(!item_added) {
-                              MyLog.d("[AppFragment] adding filtered item " + item);
+                              // MyLog.d("[AppFragment] adding filtered item " + item);
                               filteredItems.add(item);
                               item_added = true;
                             }
 
-                            MyLog.d("[AppFragment] adding filtered host " + childData);
+                            // MyLog.d("[AppFragment] adding filtered host " + childData);
                             item.filteredChildItems.put(host, childData);
                             item.childrenAreFiltered = true;
                           }
@@ -806,7 +806,7 @@ public class AppFragment extends Fragment {
                       }
                     } else {
                       // no filtering for host/port, matches everything
-                      MyLog.d("[AppFragment] no filter for host/port; adding filtered item " + item);
+                      // MyLog.d("[AppFragment] no filter for host/port; adding filtered item " + item);
                       filteredItems.add(item);
 
                       synchronized(item.childrenData) {
@@ -820,7 +820,7 @@ public class AppFragment extends Fragment {
                         while(itr.hasNext()) {
                           String host = itr.next();
                           ChildItem childData = item.childrenData.get(host);
-                          MyLog.d("[AppFragment] adding filtered host " + childData);
+                          // MyLog.d("[AppFragment] adding filtered host " + childData);
                           item.filteredChildItems.put(host, childData);
                           item.childrenAreFiltered = true;
                         }
@@ -836,7 +836,7 @@ public class AppFragment extends Fragment {
 
               for(int i = count - 1; i >= 0; i--) {
                 GroupItem item = filteredItems.get(i);
-                MyLog.d("[AppFragment] testing filtered item: " + i + " " + item + "; excludes: [" + NetworkLog.filterTextExclude + "]");
+                // MyLog.d("[AppFragment] testing filtered item: " + i + " " + item + "; excludes: [" + NetworkLog.filterTextExclude + "]");
 
                 boolean matched = false;
 
@@ -849,7 +849,7 @@ public class AppFragment extends Fragment {
                 }
 
                 if(matched) {
-                  MyLog.d("[AppFragment] removing filtered item: " + item);
+                  // MyLog.d("[AppFragment] removing filtered item: " + item);
                   filteredItems.remove(i);
                   continue;
                 }
@@ -903,13 +903,13 @@ public class AppFragment extends Fragment {
                   }
 
                   if(matched) {
-                    MyLog.d("[AppFragment] removing filtered host " + childData);
+                    // MyLog.d("[AppFragment] removing filtered host " + childData);
                     item.filteredChildItems.remove(host);
                   }
                 }
 
                 if(item.filteredChildItems.size() == 0) {
-                  MyLog.d("[AppFragment] removed all hosts, removing item from filter results");
+                  // MyLog.d("[AppFragment] removed all hosts, removing item from filter results");
                   filteredItems.remove(i);
                 }
               }
@@ -919,14 +919,14 @@ public class AppFragment extends Fragment {
             results.count = filteredItems.size();
           }
 
-          MyLog.d("returning " + results.count + " results");
+          MyLog.d("[AppFragment] filter returning " + results.count + " results");
           return results;
         }
 
       @SuppressWarnings("unchecked")
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-          MyLog.d("Publishing filter results");
+          MyLog.d("[AppFragment] Publishing filter results");
           
           final ArrayList<GroupItem> localItems = (ArrayList<GroupItem>) results.values;
 
@@ -936,23 +936,14 @@ public class AppFragment extends Fragment {
           }
 
           synchronized(groupData) {
-            int count = localItems.size();
+            groupData.clear();
+            groupData.addAll(localItems);
 
-            for(int i = count - 1; i >= 0; i--) {
-              groupData.add(localItems.get(i));
-            }
+            preSortData();
+            sortData();
 
-            int group_count = groupData.size();
-
-            for(int i = group_count - count - 1; i >= 0; i--) {
-              groupData.remove(i);
-            }
+            refreshAdapter();
           }
-
-          preSortData();
-          sortData();
-
-          refreshAdapter();
         }
     }
 
