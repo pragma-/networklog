@@ -13,8 +13,14 @@ import android.graphics.RectF;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.util.AttributeSet;
+import android.util.Log;
 
 import com.jjoe64.graphview.compatible.ScaleGestureDetector;
+
+import com.googlecode.networklog.R;
 
 /**
  * GraphView is a Android View for creating zoomable and scrollable graphs.
@@ -22,6 +28,7 @@ import com.jjoe64.graphview.compatible.ScaleGestureDetector;
  * Use {@link LineGraphView} for creating a line chart.
  *
  * @author jjoe64 - jonas gehring - http://www.jjoe64.com
+ * @author pragma78 - pragmatic software - pragma78@gmail.com
  *
  * Copyright (C) 2011 Jonas Gehring
  * Licensed under the GNU Lesser General Public License (LGPL)
@@ -31,7 +38,7 @@ abstract public class GraphView extends LinearLayout {
   static final private class GraphViewConfig {
     static final float BORDER = 20;
     static final float VERTICAL_LABEL_WIDTH = 100;
-    static final float HORIZONTAL_LABEL_HEIGHT = 80;
+    static final float HORIZONTAL_LABEL_HEIGHT = 20;
   }
 
   private class GraphViewContentView extends View {
@@ -43,7 +50,6 @@ abstract public class GraphView extends LinearLayout {
      */
     public GraphViewContentView(Context context) {
       super(context);
-      setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
     }
 
     /**
@@ -76,9 +82,9 @@ abstract public class GraphView extends LinearLayout {
 
         // vertical lines
         paint.setTextAlign(Align.LEFT);
+        paint.setColor(Color.DKGRAY);
         int vers = verlabels.length - 1;
         for (int i = 0; i < verlabels.length; i++) {
-          paint.setColor(Color.DKGRAY);
           float y = ((graphheight / vers) * i) + border;
           canvas.drawLine(horstart, y, width, y, paint);
         }
@@ -86,14 +92,17 @@ abstract public class GraphView extends LinearLayout {
         // horizontal labels + lines
         int hors = horlabels.length - 1;
         for (int i = 0; i < horlabels.length; i++) {
-          paint.setColor(Color.DKGRAY);
           float x = ((graphwidth / hors) * i) + horstart;
+          paint.setColor(Color.DKGRAY);
           canvas.drawLine(x, height - border, x, border, paint);
-          paint.setTextAlign(Align.CENTER);
+
           if (i==horlabels.length-1)
             paint.setTextAlign(Align.RIGHT);
-          if (i==0)
+          else if (i==0)
             paint.setTextAlign(Align.LEFT);
+          else
+            paint.setTextAlign(Align.CENTER);
+          
           paint.setColor(Color.WHITE);
           canvas.drawText(horlabels[i], x, height - 4, paint);
         }
@@ -133,6 +142,17 @@ abstract public class GraphView extends LinearLayout {
         horlabels = null;
         verlabels = null;
         viewVerLabels.invalidate();
+
+        /*
+        double max = maxX - viewportSize;
+        double range = max - minX;
+        double start = viewportStart - minX;
+        double percentage = (start / range) * 100;
+        */
+
+        double percentage = ((viewportStart - minX) / ((maxX - viewportSize) - minX)) * 100;
+
+        seekbar.setProgress((int)percentage);
       }
       invalidate();
     }
@@ -219,7 +239,6 @@ abstract public class GraphView extends LinearLayout {
      */
     public VerLabelsView(Context context) {
       super(context);
-      setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 10));
     }
 
     /**
@@ -240,10 +259,10 @@ abstract public class GraphView extends LinearLayout {
 
         // vertical labels
         paint.setTextAlign(Align.LEFT);
+        paint.setColor(Color.WHITE);
         int vers = verlabels.length - 1;
         for (int i = 0; i < verlabels.length; i++) {
           float y = ((graphheight / vers) * i) + border;
-          paint.setColor(Color.WHITE);
           canvas.drawText(verlabels[i], 0, y, paint);
         }
       }
@@ -258,7 +277,7 @@ abstract public class GraphView extends LinearLayout {
   protected final Paint paint;
   private String[] horlabels;
   private String[] verlabels;
-  private String title;
+  private String title = "";
   private boolean scrollable;
   private double viewportStart;
   private double viewportSize;
@@ -273,6 +292,44 @@ abstract public class GraphView extends LinearLayout {
   private boolean manualYAxis;
   private double manualMaxYValue;
   private double manualMinYValue;
+  private Context context;
+  private SeekBar seekbar;
+
+  public GraphView(Context context, AttributeSet attrs) {
+    super(context, attrs);
+
+    paint = new Paint();
+    graphSeries = new ArrayList<GraphViewSeries>();
+
+    setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+    setOrientation(LinearLayout.VERTICAL);
+
+    LinearLayout layout = new LinearLayout(context);
+    addView(layout, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
+
+    viewVerLabels = new VerLabelsView(context);
+    layout.addView(viewVerLabels, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 7));
+    
+    layout.addView(new GraphViewContentView(context), new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
+
+    layout = new LinearLayout(context);
+    addView(layout, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 0));
+
+    View view = new View(context);
+    layout.addView(view, new LayoutParams(LayoutParams.FILL_PARENT, 0, 7));
+
+    seekbar = new SeekBar(context);
+    seekbar.setProgress(100);
+    seekbar.setMax(100);
+    seekbar.setThumb(context.getResources().getDrawable(R.drawable.thumb_drawable));
+    seekbar.setProgressDrawable(context.getResources().getDrawable(R.drawable.progress_drawable));
+    float density = getResources().getDisplayMetrics().density;
+    seekbar.setPadding((int)(6 * density + 0.5f), 0, (int)(6 * density + 0.5f), 0);
+
+    seekbar.setOnSeekBarChangeListener(new MyOnSeekBarChangeListener());
+
+    layout.addView(seekbar, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
+  }
 
   /**
    *
@@ -280,20 +337,10 @@ abstract public class GraphView extends LinearLayout {
    * @param title [optional]
    */
   public GraphView(Context context, String title) {
-    super(context);
-    setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+    this(context, (AttributeSet)null);
 
-    if (title == null)
-      title = "";
-    else
+    if (title != null)
       this.title = title;
-
-    paint = new Paint();
-    graphSeries = new ArrayList<GraphViewSeries>();
-
-    viewVerLabels = new VerLabelsView(context);
-    addView(viewVerLabels);
-    addView(new GraphViewContentView(context), new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
   }
 
   private GraphViewData[] _values(int idxSeries) {
@@ -406,6 +453,8 @@ abstract public class GraphView extends LinearLayout {
 
   private String[] generateHorlabels(float graphwidth) {
     int numLabels = (int) (graphwidth/GraphViewConfig.VERTICAL_LABEL_WIDTH);
+    if(numLabels <= 0)
+      return new String[0];
     String[] labels = new String[numLabels+1];
     double min = getMinX(false);
     double max = getMaxX(false);
@@ -417,12 +466,30 @@ abstract public class GraphView extends LinearLayout {
 
   synchronized private String[] generateVerlabels(float graphheight) {
     int numLabels = (int) (graphheight/GraphViewConfig.HORIZONTAL_LABEL_HEIGHT);
+    if(numLabels <= 0)
+      return new String[0];
     String[] labels = new String[numLabels+1];
     double min = getMinY();
     double max = getMaxY();
+
+    /*
+    float maxWidth = 0;
+    float width = 0;
+    */
+
     for (int i=0; i<=numLabels; i++) {
       labels[numLabels-i] = formatLabel(min + ((max-min)*i/numLabels), false);
+    
+      /*
+      width = paint.measureText(labels[numLabels-i]);
+      Log.d("[IptablesLog]", "width for [" + labels[numLabels-i] + "] = " + width); 
+      if(width > maxWidth)
+        maxWidth = width;
+        */
     }
+    
+    //Log.d("[IptablesLog]", "max width: " + (int)maxWidth);
+    //viewVerLabels.setLayoutParams(new LayoutParams((int)maxWidth, LayoutParams.FILL_PARENT, 10));
     return labels;
   }
 
@@ -627,5 +694,41 @@ abstract public class GraphView extends LinearLayout {
   public void setViewPort(double start, double size) {
     viewportStart = start;
     viewportSize = size;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  public class MyOnSeekBarChangeListener implements OnSeekBarChangeListener {
+    @Override
+      public void onProgressChanged(SeekBar seekBar, int percentage, boolean fromUser) {
+        if(!fromUser) {
+          return;
+        }
+
+        if (viewportSize != 0) {
+          // minimal and maximal view limit
+          double minX = getMinX(true);
+          double maxX = getMaxX(true);
+          // labels have to be regenerated
+          horlabels = null;
+          verlabels = null;
+          viewVerLabels.invalidate();
+
+          viewportStart = ((percentage / 100.0) * ((maxX - viewportSize) - minX)) + minX;
+        }
+        invalidate();
+      }
+
+    @Override
+      public void onStartTrackingTouch(SeekBar seekBar) {
+        // do nothing
+      }
+
+    @Override
+      public void onStopTrackingTouch(SeekBar seekBar) {
+        // do nothing
+      }
   }
 }

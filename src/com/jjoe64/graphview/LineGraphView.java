@@ -3,6 +3,7 @@ package com.jjoe64.graphview;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.AttributeSet;
 
 /**
  * Line Graph View. This draws a line chart.
@@ -15,6 +16,14 @@ import android.graphics.Paint;
 public class LineGraphView extends GraphView {
   private final Paint paintBackground;
   private boolean drawBackground;
+
+  public LineGraphView(Context context, AttributeSet attrs) {
+    super(context, attrs);
+
+    paintBackground = new Paint();
+    paintBackground.setARGB(255, 20, 40, 60);
+    paintBackground.setStrokeWidth(4);
+  }
 
   public LineGraphView(Context context, String title) {
     super(context, title);

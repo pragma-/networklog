@@ -58,45 +58,8 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
       findPreference("notifications_toast").setOnPreferenceClickListener(this);
       findPreference("notifications_toast_apps_dialog").setOnPreferenceClickListener(this);
 
-      CharSequence entries[] = {
-        "1 ms",
-        "100 ms",
-        "500 ms",
-        "1 second",
-        "30 seconds",
-        "1 minute",
-        "5 minutes",
-        "10 minutes",
-        "15 minutes",
-        "30 minutes",
-        "1 hour",
-        "2 hours",
-        "4 hours",
-        "8 hours",
-        "16 hours",
-        "24 hours",
-        "48 hours"
-      };
-
-      CharSequence values[] = {
-        "1",
-        "100",
-        "500",
-        "1000",
-        "30000",
-        "60000",
-        "300000",
-        "600000",
-        "900000",
-        "1800000",
-        "3600000",
-        "7200000",
-        "14400000",
-        "28800000",
-        "57600000",
-        "115200000",
-        "230400000",
-      };
+      String entries[] = getResources().getStringArray(R.array.interval_entries);
+      String values[] = getResources().getStringArray(R.array.interval_values);
 
       final Context context = this;
       OnPreferenceChangeListener changeListener = new OnPreferenceChangeListener() {

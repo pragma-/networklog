@@ -94,7 +94,7 @@ public class ApplicationsTracker {
     }
   }
 
-  public static void restoreData(NetworkLogData data) {
+  public static void restoreData(RetainInstanceData data) {
     synchronized(installedAppsLock) {
       installedApps = data.applicationsTrackerInstalledApps;
     }
@@ -154,6 +154,7 @@ public class ApplicationsTracker {
               }
             });
           } catch(Exception e) {
+            // ignored
           }
         }
       }, "LoadIcon:" + packageName).start();

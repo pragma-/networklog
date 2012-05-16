@@ -15,30 +15,28 @@ public class HistoryLoader {
   static int dialog_progress = 0;
   static ProgressDialog dialog = null;
 
-  public void createProgressDialog(Context context) {
-    dialog = new ProgressDialog(context);
-    dialog.setIndeterminate(false);
-    dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-    dialog.setMax(dialog_max);
-    dialog.setCancelable(false);
-    dialog.setTitle("");
-    dialog.setMessage("Loading history");
-
-    dialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Cancel", new DialogInterface.OnClickListener() {
-      public void onClick(DialogInterface dialog, int which) {
-        canceled = true;
-      }
-    });
-
-    dialog_showing = true;
+  public void createProgressDialog(final Context context) {
     NetworkLog.handler.post(new Runnable() {
       public void run() {
-        if(dialog == null) {
-          MyLog.d("Dialog is null, wtf?");
-          return;
+        synchronized(this) {
+          dialog = new ProgressDialog(context);
+          dialog.setIndeterminate(false);
+          dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+          dialog.setMax(dialog_max);
+          dialog.setCancelable(false);
+          dialog.setTitle("");
+          dialog.setMessage("Loading history");
+
+          dialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+              canceled = true;
+            }
+          });
+
+          dialog.show();
+          dialog.setProgress(dialog_progress);
+          dialog_showing = true;
         }
-        dialog.show();
-        dialog.setProgress(dialog_progress);
       }
     });
   }
@@ -144,13 +142,9 @@ public class HistoryLoader {
           StringBuilder sb = new StringBuilder(128);
           char[] chars = new char[128];
 
-          NetworkLog.handler.post(new Runnable() {
-            public void run() {
-              dialog_max = (int)(length - starting_pos);
-              dialog_progress = 0;
-              createProgressDialog(context_final);
-            }
-          });
+          dialog_max = (int)(length - starting_pos);
+          dialog_progress = 0;
+          createProgressDialog(context_final);
 
           long progress_increment_size = (long)((length - starting_pos) * 0.01);
           next_progress_increment = progress_increment_size;
@@ -169,7 +163,9 @@ public class HistoryLoader {
               buffer_length = logfile.read(buffer);
               buffer_pos = 0;
 
-              read_so_far += buffer_length;
+              if(buffer_length != -1) {
+                read_so_far += buffer_length;
+              }
 
               if(MyLog.enabled) {
                 MyLog.d("[history] read " + buffer_length + "; so far: " + read_so_far + " out of " + length);
@@ -177,6 +173,7 @@ public class HistoryLoader {
 
               if(buffer_length == -1) {
                 // end of file
+                MyLog.d("[history] Reached end of file");
                 break;
               }
 
@@ -207,7 +204,9 @@ public class HistoryLoader {
                     next_progress_increment += progress_increment_size;
                     dialog_progress = (int)processed_so_far;
                     if(dialog_showing && dialog != null) {
-                      dialog.setProgress(dialog_progress);
+                      synchronized(this) {
+                        dialog.setProgress(dialog_progress);
+                      }
                     }
                   }
 
@@ -313,14 +312,22 @@ public class HistoryLoader {
             // android.util.Log.d("[IptablesLog]", "Load history elapsed: " + elapsed);
             // android.os.Debug.stopMethodTracing();
 
-            if(dialog_showing) {
-              dialog_showing = false;
+            MyLog.d("[history] Dismissing progress dialog");
+            NetworkLog.handler.post(new Runnable() {
+              public void run() {
+                synchronized(this) {
+                  if(dialog_showing) {
+                    dialog_showing = false;
 
-              if(dialog != null) {
-                dialog.dismiss();
-                dialog = null;
+                    if(dialog != null) {
+                      MyLog.d("[history] Dismissed progress dialog");
+                      dialog.dismiss();
+                      dialog = null;
+                    }
+                  }
+                }
               }
-            }
+            });
 
             NetworkLog.logFragment.startUpdater();
             NetworkLog.appFragment.startUpdater();

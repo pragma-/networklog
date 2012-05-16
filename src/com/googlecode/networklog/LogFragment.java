@@ -163,7 +163,7 @@ public class LogFragment extends Fragment {
     new Thread(updater, "LogFragmentUpdater").start();
   }
 
-  public void restoreData(NetworkLogData data) {
+  public void restoreData(RetainInstanceData data) {
     listData = data.logFragmentListData;
     listDataBuffer = data.logFragmentListDataBuffer;
     listDataUnfiltered = data.logFragmentListDataUnfiltered;

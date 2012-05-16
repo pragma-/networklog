@@ -5,13 +5,13 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class NetworkLogData {
+public class RetainInstanceData {
   /* ApplicationsTracker */
   ArrayList<ApplicationsTracker.AppEntry> applicationsTrackerInstalledApps;
   HashMap<String, ApplicationsTracker.AppEntry> applicationsTrackerInstalledAppsHash;
   int applicationsTrackerAppCount;
 
-  public void gatherApplicationsTrackerData() {
+  public void retainApplicationsTrackerData() {
     applicationsTrackerInstalledApps = ApplicationsTracker.installedApps;
     applicationsTrackerInstalledAppsHash = ApplicationsTracker.installedAppsHash;
     applicationsTrackerAppCount = ApplicationsTracker.appCount;
@@ -22,7 +22,7 @@ public class NetworkLogData {
   ArrayList<LogFragment.ListItem> logFragmentListDataBuffer;
   ArrayList<LogFragment.ListItem> logFragmentListDataUnfiltered;
 
-  public void gatherLogFragmentData() {
+  public void retainLogFragmentData() {
     if(NetworkLog.logFragment != null) {
       logFragmentListData = NetworkLog.logFragment.listData;
       logFragmentListDataBuffer = NetworkLog.logFragment.listDataBuffer;
@@ -38,7 +38,7 @@ public class NetworkLogData {
   Sort appFragmentPreSortBy;
   AppFragment.GroupItem appFragmentCachedSearchItem;
 
-  public void gatherAppFragmentData() {
+  public void retainAppFragmentData() {
     if(NetworkLog.appFragment != null) {
       appFragmentGroupData = NetworkLog.appFragment.groupData;
       appFragmentGroupDataBuffer = NetworkLog.appFragment.groupDataBuffer;
@@ -54,7 +54,7 @@ public class NetworkLogData {
   int historyDialogMax;
   int historyDialogProgress;
 
-  public void gatherHistoryLoaderData() {
+  public void retainHistoryLoaderData() {
     historyDialogShowing = NetworkLog.history.dialog_showing;
     historyDialogMax = NetworkLog.history.dialog_max;
     historyDialogProgress = NetworkLog.history.dialog_progress;
@@ -64,17 +64,17 @@ public class NetworkLogData {
   NetworkLog.State networkLogState;
   NetworkResolver networkLogResolver;
 
-  public void gatherNetworkLogData() {
+  public void retainRetainInstanceData() {
     networkLogState = NetworkLog.state;
     networkLogResolver = NetworkLog.resolver;
   }
 
-  /* gather data */
-  public NetworkLogData() {
-    gatherApplicationsTrackerData();
-    gatherLogFragmentData();
-    gatherAppFragmentData();
-    gatherNetworkLogData();
-    gatherHistoryLoaderData();
+  /* retain data */
+  public RetainInstanceData() {
+    retainApplicationsTrackerData();
+    retainLogFragmentData();
+    retainAppFragmentData();
+    retainRetainInstanceData();
+    retainHistoryLoaderData();
   }
 }

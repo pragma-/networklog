@@ -1,11 +1,32 @@
 package com.googlecode.networklog;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.graphics.Color;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
+import android.widget.TextView;
+import android.widget.CheckedTextView;
+import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.graphics.drawable.Drawable;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.LayoutInflater;
+import android.util.Log;
+import android.util.AttributeSet;
+import android.graphics.drawable.shapes.Shape;
+import android.graphics.drawable.shapes.RectShape;
+import android.graphics.drawable.ShapeDrawable;
 
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -13,353 +34,142 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Hashtable;
+import java.util.List;
 
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.LineGraphView;
 import com.jjoe64.graphview.GraphView.*;
 
 public class OverallAppTimelineGraph extends Activity
 {
-  protected GraphView graphView;
-  protected double interval = NetworkLog.settings.getGraphInterval();
-  protected double viewsize = NetworkLog.settings.getGraphViewsize();
+  private MyGraphView graphView;
+  private CustomAdapter adapter;
+  private double interval = NetworkLog.settings.getGraphInterval();
+  private double viewsize = NetworkLog.settings.getGraphViewsize();
+  private ArrayList<ListItem> listData = new ArrayList<ListItem>();
+  private Spinner intervalSpinner;
+  private Spinner viewsizeSpinner;
+  private String[] intervalValues;
+
+  private class ListItem {
+    Drawable mIcon;
+    int mUid;
+    String mName;
+    boolean mEnabled;
+  }
 
   @Override
     protected void onCreate(Bundle savedInstanceState)
     {
       super.onCreate(savedInstanceState);
+      setContentView(R.layout.graph_main);
 
-      // always give data sorted by x values
-      graphView = new LineGraphView(this, "Apps Timeline")
-      {
-        private SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
-        @Override
-          protected String formatLabel(double value, boolean isValueX)
-          {
-            if(isValueX)
+      intervalValues = getResources().getStringArray(R.array.interval_values);
+      
+      graphView = (MyGraphView) findViewById(R.id.graph);
+      graphView.setTitle("Apps Timeline");
+
+      ListView listView = (ListView) findViewById(R.id.graph_legend);
+      adapter = new CustomAdapter(this, R.layout.graph_legend_item, listData);
+      listView.setAdapter(adapter);
+      listView.setFastScrollEnabled(true);
+
+      MyOnItemSelectedListener listener = new MyOnItemSelectedListener();
+
+      intervalSpinner = (Spinner) findViewById(R.id.intervalSpinner);
+      intervalSpinner.setOnItemSelectedListener(listener);
+      ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+          this, R.array.interval_entries, android.R.layout.simple_spinner_item);
+      adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+      intervalSpinner.setAdapter(adapter);
+
+      viewsizeSpinner = (Spinner) findViewById(R.id.viewsizeSpinner);
+      viewsizeSpinner.setOnItemSelectedListener(listener);
+      adapter = ArrayAdapter.createFromResource(
+          this, R.array.interval_entries, android.R.layout.simple_spinner_item);
+      adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+      viewsizeSpinner.setAdapter(adapter);
+
+      int length = intervalValues.length;
+      String intervalString = String.valueOf((int)interval);
+      String viewsizeString = String.valueOf((int)viewsize);
+
+      for(int i = 0; i < length; i++) {
+        if(intervalString.equals(intervalValues[i])) {
+          intervalSpinner.setSelection(i);
+        }
+      }
+
+      for(int i = 0; i < length; i++) {
+        if(viewsizeString.equals(intervalValues[i])) {
+          viewsizeSpinner.setSelection(i);
+        }
+      }
+
+      buildLegend(this);
+      buildSeries(interval, viewsize);
+    }
+
+  public class MyOnItemSelectedListener implements OnItemSelectedListener {
+    @Override
+      public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+        if(parent == intervalSpinner) {
+          interval = Double.parseDouble(intervalValues[pos]);
+          MyLog.d("Setting interval " + pos + ", " + interval);
+          NetworkLog.settings.setGraphInterval((long)interval);
+        } else {
+          viewsize = Double.parseDouble(intervalValues[pos]);
+          MyLog.d("Setting viewsize " + pos + ", " + viewsize);
+          NetworkLog.settings.setGraphViewsize((long)viewsize);
+        }
+        buildSeries(interval, viewsize);
+      }
+
+    @Override
+      public void onNothingSelected(AdapterView parent) {
+        // do nothing
+      }
+  }
+
+  public void buildLegend(Context context) {
+    synchronized(NetworkLog.appFragment.groupDataBuffer) {
+      int color = 0;
+
+      Hashtable<String, Boolean> appPlotted = new Hashtable<String, Boolean>();
+      float density = context.getResources().getDisplayMetrics().density;
+      Shape rect = new RectShape();
+
+      for(AppFragment.GroupItem item : NetworkLog.appFragment.groupDataBuffer) {
+        // don't plot duplicate uids
+        if(appPlotted.get(item.app.uidString) == null) {
+          appPlotted.put(item.app.uidString, new Boolean(true));
+
+          if(item.packetGraphBuffer.size() > 0) {
+            MyLog.d("Building legend for " + item);
+
+            ShapeDrawable shape = new ShapeDrawable(rect);
+            shape.getPaint().setColor(Color.parseColor(getResources().getString(Colors.distinctColor[color])));
+            shape.setIntrinsicWidth((int)(18 * (density + 0.5)));
+            shape.setIntrinsicHeight((int)(18 * (density + 0.5)));
+
+            ListItem legend = new ListItem();
+
+            legend.mIcon = shape;
+            legend.mUid = item.app.uid;
+            legend.mName = item.app.name;
+            legend.mEnabled = true;
+
+            listData.add(legend);
+
+            color++;
+
+            if(color >= Colors.distinctColor.length)
             {
-              // convert from unix timestamp to human time format
-              String result = formatter.format(new Date((long) value));
-              //MyLog.d("x axis label: " + result);
-              return result;
-            }
-            else
-            {
-              // y-axis, use default formatter
-              String result = String.format("%.2f", value / 1000.0f) + "K";
-              //MyLog.d("y axis label: " + result);
-              return result;
+              color = 0;
             }
           }
-      };
-
-      buildSeries(interval, viewsize);
-
-      setContentView(graphView);
+        }
+      }
     }
-
-  @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-      MenuInflater inflater = getMenuInflater();
-      inflater.inflate(R.layout.graph_menu, menu);
-      return true;
-    }
-
-  @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-      MenuItem item = null;
-
-      switch((int)interval) {
-        case 1:
-          item = menu.findItem(R.id.interval_1);
-          break;
-
-        case 100:
-          item = menu.findItem(R.id.interval_100);
-          break;
-
-        case 500:
-          item = menu.findItem(R.id.interval_500);
-          break;
-
-        case 1000:
-          item = menu.findItem(R.id.interval_1000);
-          break;
-
-        case 30000:
-          item = menu.findItem(R.id.interval_30000);
-          break;
-
-        case 60000:
-          item = menu.findItem(R.id.interval_60000);
-          break;
-
-        case 300000:
-          item = menu.findItem(R.id.interval_300000);
-          break;
-
-        case 600000:
-          item = menu.findItem(R.id.interval_600000);
-          break;
-
-        case 900000:
-          item = menu.findItem(R.id.interval_900000);
-          break;
-
-        case 1800000:
-          item = menu.findItem(R.id.interval_1800000);
-          break;
-
-        case 3600000:
-          item = menu.findItem(R.id.interval_3600000);
-          break;
-
-        case 7200000:
-          item = menu.findItem(R.id.interval_7200000);
-          break;
-
-        case 14400000:
-          item = menu.findItem(R.id.interval_14400000);
-          break;
-
-        case 28800000:
-          item = menu.findItem(R.id.interval_28800000);
-          break;
-
-        case 57600000:
-          item = menu.findItem(R.id.interval_57600000);
-          break;
-
-        case 115200000:
-          item = menu.findItem(R.id.interval_115200000);
-          break;
-
-        case 230400000:
-          item = menu.findItem(R.id.interval_230400000);
-          break;
-      }
-
-      if(item != null) {
-        item.setChecked(true);
-      }
-
-      switch((int)viewsize) {
-        case 100:
-          item = menu.findItem(R.id.viewsize_100);
-          break;
-
-        case 500:
-          item = menu.findItem(R.id.viewsize_500);
-          break;
-
-        case 1000:
-          item = menu.findItem(R.id.viewsize_1000);
-          break;
-
-        case 30000:
-          item = menu.findItem(R.id.viewsize_30000);
-          break;
-
-        case 60000:
-          item = menu.findItem(R.id.viewsize_60000);
-          break;
-
-        case 300000:
-          item = menu.findItem(R.id.viewsize_300000);
-          break;
-
-        case 600000:
-          item = menu.findItem(R.id.viewsize_600000);
-          break;
-
-        case 900000:
-          item = menu.findItem(R.id.viewsize_900000);
-          break;
-
-        case 1800000:
-          item = menu.findItem(R.id.viewsize_1800000);
-          break;
-
-        case 3600000:
-          item = menu.findItem(R.id.viewsize_3600000);
-          break;
-
-        case 7200000:
-          item = menu.findItem(R.id.viewsize_7200000);
-          break;
-
-        case 14400000:
-          item = menu.findItem(R.id.viewsize_14400000);
-          break;
-
-        case 28800000:
-          item = menu.findItem(R.id.viewsize_28800000);
-          break;
-
-        case 57600000:
-          item = menu.findItem(R.id.viewsize_57600000);
-          break;
-
-        case 115200000:
-          item = menu.findItem(R.id.viewsize_115200000);
-          break;
-
-        case 230400000:
-          item = menu.findItem(R.id.viewsize_230400000);
-          break;
-      }
-
-      if(item != null) {
-        item.setChecked(true);
-      }
-
-      return true;
-    }
-
-  @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-      switch(item.getItemId()) {
-        case R.id.interval_1:
-          interval = 1;
-          break;
-
-        case R.id.interval_100:
-          interval = 100;
-          break;
-
-        case R.id.interval_500:
-          interval = 500;
-          break;
-
-        case R.id.interval_1000:
-          interval = 1000;
-          break;
-
-        case R.id.interval_30000:
-          interval = 30000;
-          break;
-
-        case R.id.interval_60000:
-          interval = 60000;
-          break;
-
-        case R.id.interval_300000:
-          interval = 300000;
-          break;
-
-        case R.id.interval_600000:
-          interval = 600000;
-          break;
-
-        case R.id.interval_900000:
-          interval = 900000;
-          break;
-
-        case R.id.interval_1800000:
-          interval = 1800000;
-          break;
-
-        case R.id.interval_3600000:
-          interval = 3600000;
-          break;
-
-        case R.id.interval_7200000:
-          interval = 7200000;
-          break;
-
-        case R.id.interval_14400000:
-          interval = 14400000;
-          break;
-
-        case R.id.interval_28800000:
-          interval = 28800000;
-          break;
-
-        case R.id.interval_57600000:
-          interval = 57600000;
-          break;
-
-        case R.id.interval_115200000:
-          interval = 115200000;
-          break;
-
-        case R.id.interval_230400000:
-          interval = 230400000;
-          break;
-
-        case R.id.viewsize_100:
-          viewsize = 100;
-          break;
-
-        case R.id.viewsize_500:
-          viewsize = 500;
-          break;
-
-        case R.id.viewsize_1000:
-          viewsize = 1000;
-          break;
-
-        case R.id.viewsize_30000:
-          viewsize = 30000;
-          break;
-
-        case R.id.viewsize_60000:
-          viewsize = 60000;
-          break;
-
-        case R.id.viewsize_300000:
-          viewsize = 300000;
-          break;
-
-        case R.id.viewsize_600000:
-          viewsize = 600000;
-          break;
-
-        case R.id.viewsize_900000:
-          viewsize = 900000;
-          break;
-
-        case R.id.viewsize_1800000:
-          viewsize = 1800000;
-          break;
-
-        case R.id.viewsize_3600000:
-          viewsize = 3600000;
-          break;
-
-        case R.id.viewsize_7200000:
-          viewsize = 7200000;
-          break;
-
-        case R.id.viewsize_14400000:
-          viewsize = 14400000;
-          break;
-
-        case R.id.viewsize_28800000:
-          viewsize = 28800000;
-          break;
-
-        case R.id.viewsize_57600000:
-          viewsize = 57600000;
-          break;
-
-        case R.id.viewsize_115200000:
-          viewsize = 115200000;
-          break;
-
-        case R.id.viewsize_230400000:
-          viewsize = 230400000;
-          break;
-
-        default:
-          return super.onOptionsItemSelected(item);
-      }
-
-      NetworkLog.settings.setGraphInterval((long)interval);
-      NetworkLog.settings.setGraphViewsize((long)viewsize);
-      buildSeries(interval, viewsize);
-      return true;
-    }
+  }
 
   public void buildSeries(double timeFrameSize, double viewSize) {
     graphView.graphSeries.clear();
@@ -491,10 +301,69 @@ public class OverallAppTimelineGraph extends Activity
     graphView.setViewPort(viewStart, viewSize);
     graphView.setScrollable(true);
     graphView.setScalable(true);
-    graphView.setShowLegend(true);
-    graphView.setLegendAlign(LegendAlign.BOTTOM);
+    graphView.setShowLegend(false);
     graphView.invalidateLabels();
     graphView.invalidate();
   }
 
+  private class CustomAdapter extends ArrayAdapter<ListItem> {
+    LayoutInflater mInflater = (LayoutInflater) getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+
+    public CustomAdapter(Context context, int resource, List<ListItem> objects) {
+      super(context, resource, objects);
+    }
+
+    @Override
+      public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder holder = null;
+
+        ImageView icon;
+        CheckedTextView name;
+
+        ListItem item = getItem(position);
+
+        if(convertView == null) {
+          convertView = mInflater.inflate(R.layout.graph_legend_item, null);
+          holder = new ViewHolder(convertView);
+          convertView.setTag(holder);
+        } else {
+          holder = (ViewHolder) convertView.getTag();
+        }
+
+        icon = holder.getIcon();
+        icon.setImageDrawable(item.mIcon);
+
+        name = holder.getName();
+        name.setText("(" + item.mUid + ") " + item.mName);
+        name.setChecked(item.mEnabled);
+
+        return convertView;
+      }
+  }
+
+  private class ViewHolder {
+    private View mView;
+    private ImageView mIcon;
+    private CheckedTextView mName;
+
+    public ViewHolder(View view) {
+      mView = view;
+    }
+
+    public ImageView getIcon() {
+      if(mIcon == null) {
+        mIcon = (ImageView) mView.findViewById(R.id.legendIcon);
+      }
+
+      return mIcon;
+    }
+
+    public CheckedTextView getName() {
+      if(mName == null) {
+        mName = (CheckedTextView) mView.findViewById(R.id.legendName);
+      }
+
+      return mName;
+    }
+  }
 }

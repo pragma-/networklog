@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.io.File;
 
 public class NetworkLog extends FragmentActivity {
-  public static NetworkLogData data = null;
+  public static RetainInstanceData data = null;
 
   public static ViewPager viewPager;
   public final static int PAGE_LOG = 0;
@@ -327,7 +327,7 @@ public class NetworkLog extends FragmentActivity {
         history = new HistoryLoader();
       }
 
-      data = (NetworkLogData) getLastCustomNonConfigurationInstance();
+      data = (RetainInstanceData) getLastCustomNonConfigurationInstance();
 
       if(data != null) {
         MyLog.d("Restored run");
@@ -458,7 +458,7 @@ public class NetworkLog extends FragmentActivity {
   @Override
     public Object onRetainCustomNonConfigurationInstance() {
       MyLog.d("Saving run");
-      data = new NetworkLogData();
+      data = new RetainInstanceData();
       return data;
     }
 

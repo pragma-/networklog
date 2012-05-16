@@ -405,7 +405,7 @@ public class AppFragment extends Fragment {
       return layout;
     }
 
-  public void restoreData(NetworkLogData data) {
+  public void restoreData(RetainInstanceData data) {
     groupData = data.appFragmentGroupData;
     groupDataBuffer = data.appFragmentGroupDataBuffer;
     groupDataBufferIsDirty = data.appFragmentGroupDataBufferIsDirty;
