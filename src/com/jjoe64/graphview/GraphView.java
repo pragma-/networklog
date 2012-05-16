@@ -116,8 +116,10 @@ abstract public class GraphView extends LinearLayout {
           paint.setStrokeWidth(2);
 
           for (int i=0; i<graphSeries.size(); i++) {
-            paint.setColor(graphSeries.get(i).color);
-            drawSeries(canvas, _values(i), graphwidth, graphheight, border, minX, minY, diffX, diffY, horstart);
+            if(graphSeries.get(i).enabled) {
+              paint.setColor(graphSeries.get(i).color);
+              drawSeries(canvas, _values(i), graphwidth, graphheight, border, minX, minY, diffX, diffY, horstart);
+            }
           }
 
           if (showLegend) drawLegend(canvas, height, width);
@@ -143,15 +145,7 @@ abstract public class GraphView extends LinearLayout {
         verlabels = null;
         viewVerLabels.invalidate();
 
-        /*
-        double max = maxX - viewportSize;
-        double range = max - minX;
-        double start = viewportStart - minX;
-        double percentage = (start / range) * 100;
-        */
-
         double percentage = ((viewportStart - minX) / ((maxX - viewportSize) - minX)) * 100;
-
         seekbar.setProgress((int)percentage);
       }
       invalidate();
@@ -213,11 +207,21 @@ abstract public class GraphView extends LinearLayout {
     final String description;
     final int color;
     final GraphViewData[] values;
+    int id = -1;
+    boolean enabled = true;
+
     public GraphViewSeries(GraphViewData[] values) {
       description = null;
       color = 0xff0077cc; // blue version
       this.values = values;
     }
+
+    public GraphViewSeries(int id, String description, Integer color, GraphViewData[] values) {
+      this(description, color, values);
+      this.id = id;
+      this.enabled = true;
+    }
+    
     public GraphViewSeries(String description, Integer color, GraphViewData[] values) {
       super();
       this.description = description;
@@ -370,6 +374,16 @@ abstract public class GraphView extends LinearLayout {
     }
   }
 
+  public boolean setSeriesEnabled(int id, boolean value) {
+    for(GraphViewSeries series : graphSeries) {
+      if(series.id == id) {
+        series.enabled = value;
+        return true;
+      }
+    }
+    return false;
+  }
+
   public void addSeries(GraphViewSeries series) {
     graphSeries.add(series);
   }
@@ -512,8 +526,11 @@ abstract public class GraphView extends LinearLayout {
       if (graphSeries.size() > 0)
       {
         GraphViewData[] values = graphSeries.get(0).values;
-        highest = values[values.length-1].valueX;
+        if(graphSeries.get(0).enabled)
+          highest = values[values.length-1].valueX;
         for (int i=1; i<graphSeries.size(); i++) {
+          if(!graphSeries.get(i).enabled)
+            continue;
           values = graphSeries.get(i).values;
           highest = Math.max(highest, values[values.length-1].valueX);
         }
@@ -529,6 +546,8 @@ abstract public class GraphView extends LinearLayout {
     } else {
       largest = Integer.MIN_VALUE;
       for (int i=0; i<graphSeries.size(); i++) {
+        if(!graphSeries.get(i).enabled)
+          continue;
         GraphViewData[] values = _values(i);
         for (int ii=0; ii<values.length; ii++)
           if (values[ii].valueY > largest)
@@ -551,6 +570,8 @@ abstract public class GraphView extends LinearLayout {
         GraphViewData[] values = graphSeries.get(0).values;
         lowest = values[0].valueX;
         for (int i=1; i<graphSeries.size(); i++) {
+          if(!graphSeries.get(i).enabled)
+            continue;
           values = graphSeries.get(i).values;
           lowest = Math.min(lowest, values[0].valueX);
         }
@@ -566,6 +587,8 @@ abstract public class GraphView extends LinearLayout {
     } else {
       smallest = Integer.MAX_VALUE;
       for (int i=0; i<graphSeries.size(); i++) {
+        if(!graphSeries.get(i).enabled)
+          continue;
         GraphViewData[] values = _values(i);
         for (int ii=0; ii<values.length; ii++)
           if (values[ii].valueY < smallest)

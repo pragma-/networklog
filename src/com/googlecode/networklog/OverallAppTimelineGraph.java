@@ -18,6 +18,7 @@ import android.widget.Spinner;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView.OnItemClickListener;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,6 +71,7 @@ public class OverallAppTimelineGraph extends Activity
       ListView listView = (ListView) findViewById(R.id.graph_legend);
       adapter = new CustomAdapter(this, R.layout.graph_legend_item, listData);
       listView.setAdapter(adapter);
+      listView.setOnItemClickListener(new CustomOnItemClickListener());
       listView.setFastScrollEnabled(true);
 
       MyOnItemSelectedListener listener = new MyOnItemSelectedListener();
@@ -127,6 +129,15 @@ public class OverallAppTimelineGraph extends Activity
       public void onNothingSelected(AdapterView parent) {
         // do nothing
       }
+  }
+
+  public boolean seriesEnabled(int uid) {
+    for(ListItem item : listData) {
+      if(item.mUid == uid) {
+        return item.mEnabled;
+      }
+    }
+    return true;
   }
 
   public void buildLegend(Context context) {
@@ -271,7 +282,17 @@ public class OverallAppTimelineGraph extends Activity
               i++;
             }
 
-            graphView.addSeries(new GraphViewSeries(item.app.toString(), Color.parseColor(getResources().getString(Colors.distinctColor[color])), seriesData));
+            graphView.addSeries(new GraphViewSeries(item.app.uid, item.app.toString(), Color.parseColor(getResources().getString(Colors.distinctColor[color])), seriesData));
+
+            boolean enabled = true;
+            for(ListItem legend : listData) {
+              if(legend.mUid == item.app.uid) {
+                enabled = legend.mEnabled;
+                break;
+              }
+            }
+            graphView.setSeriesEnabled(item.app.uid, enabled);
+
             color++;
 
             if(color >= Colors.distinctColor.length)
@@ -304,6 +325,21 @@ public class OverallAppTimelineGraph extends Activity
     graphView.setShowLegend(false);
     graphView.invalidateLabels();
     graphView.invalidate();
+  }
+
+  private class CustomOnItemClickListener implements OnItemClickListener {
+    @Override
+      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        ListItem item = listData.get(position);
+        item.mEnabled = !item.mEnabled;
+
+        CheckedTextView ctv = (CheckedTextView) view.findViewById(R.id.legendName);
+        ctv.setChecked(item.mEnabled);
+
+        graphView.setSeriesEnabled(item.mUid, item.mEnabled);
+        graphView.invalidateLabels();
+        graphView.invalidate();
+      }
   }
 
   private class CustomAdapter extends ArrayAdapter<ListItem> {
