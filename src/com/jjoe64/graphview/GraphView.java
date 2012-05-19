@@ -1,5 +1,6 @@
 package com.jjoe64.graphview;
 
+import java.lang.Runnable;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -118,10 +119,13 @@ abstract public class GraphView extends LinearLayout {
           for (int i=0; i<graphSeries.size(); i++) {
             if(graphSeries.get(i).enabled) {
               paint.setColor(graphSeries.get(i).color);
-              drawSeries(canvas, _values(i), graphwidth, graphheight, border, minX, minY, diffX, diffY, horstart);
+              graphSeries.get(i).size = drawSeries(canvas, _values(i), graphwidth, graphheight, border, minX, minY, diffX, diffY, horstart);
+            } else {
+              graphSeries.get(i).size = 0;
             }
           }
 
+          if (legendSorter != null) legendSorter.run();
           if (showLegend) drawLegend(canvas, height, width);
         }
       }
@@ -207,8 +211,9 @@ abstract public class GraphView extends LinearLayout {
     final String description;
     final int color;
     final GraphViewData[] values;
-    int id = -1;
-    boolean enabled = true;
+    public int id = -1;
+    public boolean enabled = true;
+    public double size;
 
     public GraphViewSeries(GraphViewData[] values) {
       description = null;
@@ -298,6 +303,7 @@ abstract public class GraphView extends LinearLayout {
   private double manualMinYValue;
   private Context context;
   private SeekBar seekbar;
+  private Runnable legendSorter;
 
   public GraphView(Context context, AttributeSet attrs) {
     super(context, attrs);
@@ -436,7 +442,7 @@ abstract public class GraphView extends LinearLayout {
     }
   }
 
-  abstract public void drawSeries(Canvas canvas, GraphViewData[] values, float graphwidth, float graphheight, float border, double minX, double minY, double diffX, double diffY, float horstart);
+  abstract public double drawSeries(Canvas canvas, GraphViewData[] values, float graphwidth, float graphheight, float border, double minX, double minY, double diffX, double diffY, float horstart);
 
   /**
    * formats the label
@@ -721,6 +727,10 @@ abstract public class GraphView extends LinearLayout {
 
   public void setTitle(String title) {
     this.title = title;
+  }
+
+  public void setLegendSorter(Runnable sorter) {
+    legendSorter = sorter;
   }
 
   public class MyOnSeekBarChangeListener implements OnSeekBarChangeListener {

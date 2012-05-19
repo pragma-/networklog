@@ -29,11 +29,14 @@ import android.graphics.drawable.shapes.Shape;
 import android.graphics.drawable.shapes.RectShape;
 import android.graphics.drawable.ShapeDrawable;
 
-import java.util.Date;
+import java.lang.Runnable;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -55,6 +58,7 @@ public class OverallAppTimelineGraph extends Activity
     int mUid;
     String mName;
     boolean mEnabled;
+    double size;
   }
 
   @Override
@@ -64,9 +68,14 @@ public class OverallAppTimelineGraph extends Activity
       setContentView(R.layout.graph_main);
 
       intervalValues = getResources().getStringArray(R.array.interval_values);
-      
+
       graphView = (MyGraphView) findViewById(R.id.graph);
       graphView.setTitle("Apps Timeline");
+      graphView.setLegendSorter(new Runnable() {
+        public void run() {
+          sortLegend();
+        }
+      });
 
       ListView listView = (ListView) findViewById(R.id.graph_legend);
       adapter = new CustomAdapter(this, R.layout.graph_legend_item, listData);
@@ -179,6 +188,28 @@ public class OverallAppTimelineGraph extends Activity
           }
         }
       }
+    }
+  }
+
+  public void sortLegend() {
+    HashMap<Integer, Double> map = new HashMap<Integer, Double>();
+
+    for(GraphViewSeries series : graphView.graphSeries) {
+      map.put(series.id, series.size);
+    }
+
+    synchronized(listData) {
+      for(ListItem item : listData) {
+        item.size = map.get(item.mUid);
+      }
+
+      Collections.sort(listData, new Comparator<ListItem>() {
+        public int compare(ListItem o1, ListItem o2) {
+          return o1.size > o2.size ? -1 : (o1.size == o2.size) ? 0 : 1;
+        }
+      });
+
+      adapter.notifyDataSetChanged();
     }
   }
 
