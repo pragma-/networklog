@@ -153,14 +153,14 @@ public class OverallAppTimelineGraph extends Activity
     synchronized(NetworkLog.appFragment.groupDataBuffer) {
       int color = 0;
 
-      Hashtable<String, Boolean> appPlotted = new Hashtable<String, Boolean>();
+      Hashtable<String, String> appPlotted = new Hashtable<String, String>();
       float density = context.getResources().getDisplayMetrics().density;
       Shape rect = new RectShape();
 
       for(AppFragment.GroupItem item : NetworkLog.appFragment.groupDataBuffer) {
         // don't plot duplicate uids
         if(appPlotted.get(item.app.uidString) == null) {
-          appPlotted.put(item.app.uidString, new Boolean(true));
+          appPlotted.put(item.app.uidString, item.app.uidString);
 
           if(item.packetGraphBuffer.size() > 0) {
             MyLog.d("Building legend for " + item);
@@ -191,23 +191,25 @@ public class OverallAppTimelineGraph extends Activity
     }
   }
 
-  public void sortLegend() {
-    HashMap<Integer, Double> map = new HashMap<Integer, Double>();
+  private Comparator<ListItem> legendSorter = new Comparator<ListItem>() {
+    public int compare(ListItem o1, ListItem o2) {
+      return o1.size > o2.size ? -1 : (o1.size == o2.size) ? 0 : 1;
+    }
+  };
 
+  private HashMap<Integer, Double> legendMap = new HashMap<Integer, Double>();
+  
+  public void sortLegend() {
     for(GraphViewSeries series : graphView.graphSeries) {
-      map.put(series.id, series.size);
+      legendMap.put(series.id, series.size);
     }
 
     synchronized(listData) {
       for(ListItem item : listData) {
-        item.size = map.get(item.mUid);
+        item.size = legendMap.get(item.mUid);
       }
 
-      Collections.sort(listData, new Comparator<ListItem>() {
-        public int compare(ListItem o1, ListItem o2) {
-          return o1.size > o2.size ? -1 : (o1.size == o2.size) ? 0 : 1;
-        }
-      });
+      Collections.sort(listData, legendSorter);
 
       adapter.notifyDataSetChanged();
     }
@@ -219,12 +221,12 @@ public class OverallAppTimelineGraph extends Activity
     synchronized(NetworkLog.appFragment.groupDataBuffer) {
       int color = 0;
 
-      Hashtable<String, Boolean> appPlotted = new Hashtable<String, Boolean>();
+      Hashtable<String, String> appPlotted = new Hashtable<String, String>();
 
       for(AppFragment.GroupItem item : NetworkLog.appFragment.groupDataBuffer) {
         // don't plot duplicate uids
         if(appPlotted.get(item.app.uidString) == null) {
-          appPlotted.put(item.app.uidString, new Boolean(true));
+          appPlotted.put(item.app.uidString, item.app.uidString);
 
           if(item.packetGraphBuffer.size() > 0) {
             MyLog.d("Starting series for " + item);

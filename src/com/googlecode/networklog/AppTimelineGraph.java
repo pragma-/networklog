@@ -283,23 +283,26 @@ public class AppTimelineGraph extends Activity
     }
   }
 
+  private Comparator<ListItem> legendSorter = new Comparator<ListItem>() {
+    public int compare(ListItem o1, ListItem o2) {
+      return o1.size > o2.size ? -1 : (o1.size == o2.size) ? 0 : 1;
+    }
+  };
+
+  HashMap<Integer, Double> legendMap = new HashMap<Integer, Double>();
+
   public void sortLegend() {
-    HashMap<Integer, Double> map = new HashMap<Integer, Double>();
 
     for(GraphViewSeries series : graphView.graphSeries) {
-      map.put(series.id, series.size);
+      legendMap.put(series.id, series.size);
     }
 
     synchronized(listData) {
       for(ListItem item : listData) {
-        item.size = map.get(item.mHashCode);
+        item.size = legendMap.get(item.mHashCode);
       }
 
-      Collections.sort(listData, new Comparator<ListItem>() {
-        public int compare(ListItem o1, ListItem o2) {
-          return o1.size > o2.size ? -1 : (o1.size == o2.size) ? 0 : 1;
-        }
-      });
+      Collections.sort(listData, legendSorter);
 
       adapter.notifyDataSetChanged();
     }
