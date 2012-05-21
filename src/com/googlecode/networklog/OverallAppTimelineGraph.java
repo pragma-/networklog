@@ -22,6 +22,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.LayoutInflater;
 import android.util.Log;
 import android.util.AttributeSet;
@@ -65,12 +66,15 @@ public class OverallAppTimelineGraph extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
       super.onCreate(savedInstanceState);
+
+      requestWindowFeature(Window.FEATURE_NO_TITLE);
       setContentView(R.layout.graph_main);
 
       intervalValues = getResources().getStringArray(R.array.interval_values);
 
       graphView = (MyGraphView) findViewById(R.id.graph);
       graphView.setTitle("Apps Timeline");
+      graphView.setEnableMultiLineXLabel(true);
       graphView.setLegendSorter(new Runnable() {
         public void run() {
           sortLegend();

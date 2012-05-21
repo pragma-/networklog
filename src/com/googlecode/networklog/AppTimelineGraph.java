@@ -22,6 +22,8 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.LayoutInflater;
 import android.util.Log;
 import android.util.AttributeSet;
@@ -67,10 +69,10 @@ public class AppTimelineGraph extends Activity
   }
 
   @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
 
+      requestWindowFeature(Window.FEATURE_NO_TITLE);
       setContentView(R.layout.graph_main);
 
       Bundle extras = getIntent().getExtras();
@@ -101,6 +103,7 @@ public class AppTimelineGraph extends Activity
       
       graphView = (MyGraphView) findViewById(R.id.graph);
       graphView.setTitle(item.toString() + " Timeline");
+      graphView.setEnableMultiLineXLabel(true);
       graphView.setLegendSorter(new Runnable() {
         public void run() {
           sortLegend();
@@ -297,9 +300,12 @@ public class AppTimelineGraph extends Activity
       legendMap.put(series.id, series.size);
     }
 
+    // FIXME: update hashcode when resolving host addr
+    Double size;
     synchronized(listData) {
       for(ListItem item : listData) {
-        item.size = legendMap.get(item.mHashCode);
+        size = legendMap.get(item.mHashCode);
+        item.size = size == null ? 0 : size;
       }
 
       Collections.sort(listData, legendSorter);

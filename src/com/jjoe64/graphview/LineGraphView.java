@@ -34,23 +34,23 @@ public class LineGraphView extends GraphView {
   }
 
   @Override
-    public double drawSeries(Canvas canvas, GraphViewData[] values, float graphwidth, float graphheight, float border, double minX, double minY, double diffX, double diffY, float horstart) {
+    public double drawSeries(Canvas canvas, GraphViewData[] values, float graphwidth, float graphheight, float top_border, float bottom_border, double minX, double minY, double diffX, double diffY, float horstart) {
       // draw background
       double lastEndY = 0;
       double lastEndX = 0;
       if (drawBackground) {
-        float startY = graphheight + border;
+        float startY = graphheight - top_border;
         for (int i = 0; i < values.length; i++) {
           double valY = values[i].valueY - minY;
           double ratY = valY / diffY;
-          double y = graphheight * ratY;
+          double y = (graphheight - top_border) * ratY;
 
           double valX = values[i].valueX - minX;
           double ratX = valX / diffX;
           double x = graphwidth * ratX;
 
           float endX = (float) x + (horstart + 1);
-          float endY = (float) (border - y) + graphheight +2;
+          float endY = (float) (top_border - y) + graphheight +2;
 
           if (i > 0) {
             // fill space between last and current point
@@ -81,7 +81,7 @@ public class LineGraphView extends GraphView {
       for (int i = 0; i < values.length; i++) {
         double valY = values[i].valueY - minY;
         double ratY = valY / diffY;
-        double y = graphheight * ratY;
+        double y = (graphheight - top_border) * ratY;
         size += y;
 
         double valX = values[i].valueX - minX;
@@ -90,9 +90,9 @@ public class LineGraphView extends GraphView {
 
         if (i > 0) {
           float startX = (float) lastEndX + (horstart + 1);
-          float startY = (float) (border - lastEndY) + graphheight;
+          float startY = (float) (top_border - lastEndY + graphheight - top_border);
           float endX = (float) x + (horstart + 1);
-          float endY = (float) (border - y) + graphheight;
+          float endY = (float) (top_border - y + graphheight - top_border);
 
           canvas.drawLine(startX, startY, endX, endY, paint);
         }

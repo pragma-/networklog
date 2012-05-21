@@ -18,6 +18,7 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.graphics.Rect;
 
 import com.jjoe64.graphview.compatible.ScaleGestureDetector;
 
@@ -37,9 +38,10 @@ import com.googlecode.networklog.R;
  */
 abstract public class GraphView extends LinearLayout {
   static final private class GraphViewConfig {
-    static final float BORDER = 20;
-    static final float VERTICAL_LABEL_WIDTH = 100;
-    static final float HORIZONTAL_LABEL_HEIGHT = 20;
+    static final float BORDER = 10;  // FIXME: replace this with text height
+    static final float VERTICAL_LABEL_WIDTH = 115;
+    static final float HORIZONTAL_LABEL_HEIGHT = 16;
+    static final float LABEL_PADDING = 4;
   }
 
   private class GraphViewContentView extends View {
@@ -61,7 +63,13 @@ abstract public class GraphView extends LinearLayout {
         // normal
         paint.setStrokeWidth(0);
 
-        float border = GraphViewConfig.BORDER;
+        float top_border = GraphViewConfig.BORDER + GraphViewConfig.LABEL_PADDING;
+        float bottom_border = GraphViewConfig.BORDER;
+
+        if(enableMultiLineXLabel) {
+          bottom_border *= 2.0f;  // add space for one more line
+        }
+        
         float horstart = 0;
         float height = getHeight();
         float width = getWidth() - 1;
@@ -71,22 +79,24 @@ abstract public class GraphView extends LinearLayout {
         double maxX = getMaxX(false);
         double minX = getMinX(false);
         double diffX = maxX - minX;
-        float graphheight = height - (2 * border);
+        float graphheight = height - top_border - bottom_border;
         graphwidth = width;
 
         if (horlabels == null) {
           horlabels = generateHorlabels(graphwidth);
         }
+
         if (verlabels == null) {
-          verlabels = generateVerlabels(graphheight);
+          verlabels = generateVerlabels(graphheight - top_border);
         }
 
         // vertical lines
         paint.setTextAlign(Align.LEFT);
+        paint.setStrokeWidth(0);
         paint.setColor(Color.DKGRAY);
         int vers = verlabels.length - 1;
         for (int i = 0; i < verlabels.length; i++) {
-          float y = ((graphheight / vers) * i) + border;
+          float y = (((graphheight - top_border) / vers) * i) + top_border;
           canvas.drawLine(horstart, y, width, y, paint);
         }
 
@@ -95,7 +105,7 @@ abstract public class GraphView extends LinearLayout {
         for (int i = 0; i < horlabels.length; i++) {
           float x = ((graphwidth / hors) * i) + horstart;
           paint.setColor(Color.DKGRAY);
-          canvas.drawLine(x, height - border, x, border, paint);
+          canvas.drawLine(x, top_border, x, graphheight, paint);
 
           if (i==horlabels.length-1)
             paint.setTextAlign(Align.RIGHT);
@@ -105,21 +115,35 @@ abstract public class GraphView extends LinearLayout {
             paint.setTextAlign(Align.CENTER);
           
           paint.setColor(Color.WHITE);
-          canvas.drawText(horlabels[i], x, height - 4, paint);
+
+          if(enableMultiLineXLabel) {
+            float offsetY = height - bottom_border + GraphViewConfig.LABEL_PADDING;
+
+            int delim = horlabels[i].indexOf('\n', 0);
+            String str = horlabels[i].substring(0, delim);
+            canvas.drawText(str, x, offsetY, paint);
+
+            paint.getTextBounds(str, 0, str.length(), rect);
+            offsetY += (rect.height() + GraphViewConfig.LABEL_PADDING);
+
+            str = horlabels[i].substring(delim + 1, horlabels[i].length());
+            canvas.drawText(str, x, offsetY, paint);
+          } else {
+            canvas.drawText(horlabels[i], x, height - 4, paint);
+          }
         }
 
         paint.setTextAlign(Align.CENTER);
-        canvas.drawText(title, (graphwidth / 2) + horstart, border - 4, paint);
+        canvas.drawText(title, (graphwidth / 2) + horstart, top_border, paint);
 
         if (maxY != minY) {
           paint.setStrokeCap(Paint.Cap.ROUND);
-          paint.setAntiAlias(true);
           paint.setStrokeWidth(2);
 
           for (int i=0; i<graphSeries.size(); i++) {
             if(graphSeries.get(i).enabled) {
               paint.setColor(graphSeries.get(i).color);
-              graphSeries.get(i).size = drawSeries(canvas, _values(i), graphwidth, graphheight, border, minX, minY, diffX, diffY, horstart);
+              graphSeries.get(i).size = drawSeries(canvas, _values(i), graphwidth, graphheight, top_border, bottom_border, minX, minY, diffX, diffY, horstart);
             } else {
               graphSeries.get(i).size = 0;
             }
@@ -261,12 +285,16 @@ abstract public class GraphView extends LinearLayout {
         // normal
         paint.setStrokeWidth(0);
 
-        float border = GraphViewConfig.BORDER;
+        float top_border = GraphViewConfig.BORDER + GraphViewConfig.LABEL_PADDING;
+        float bottom_border = GraphViewConfig.BORDER;
+        if(enableMultiLineXLabel) {
+          bottom_border *= 2.0f;
+        }
         float height = getHeight();
-        float graphheight = height - (2 * border);
+        float graphheight = height - top_border - bottom_border;
 
         if (verlabels == null) {
-          verlabels = generateVerlabels(graphheight);
+          verlabels = generateVerlabels(graphheight - top_border);
         }
 
         // vertical labels
@@ -274,7 +302,7 @@ abstract public class GraphView extends LinearLayout {
         paint.setColor(Color.WHITE);
         int vers = verlabels.length - 1;
         for (int i = 0; i < verlabels.length; i++) {
-          float y = ((graphheight / vers) * i) + border;
+          float y = (((graphheight - top_border) / vers) * i) + top_border;
           canvas.drawText(verlabels[i], 0, y, paint);
         }
       }
@@ -307,11 +335,17 @@ abstract public class GraphView extends LinearLayout {
   private Context context;
   private SeekBar seekbar;
   private Runnable legendSorter;
+  private Rect rect;
+  private boolean enableMultiLineXLabel;
 
   public GraphView(Context context, AttributeSet attrs) {
     super(context, attrs);
 
+    rect = new Rect();
     paint = new Paint();
+
+    paint.setAntiAlias(true);
+
     graphSeries = new ArrayList<GraphViewSeries>();
 
     setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
@@ -445,7 +479,7 @@ abstract public class GraphView extends LinearLayout {
     }
   }
 
-  abstract public double drawSeries(Canvas canvas, GraphViewData[] values, float graphwidth, float graphheight, float border, double minX, double minY, double diffX, double diffY, float horstart);
+  abstract public double drawSeries(Canvas canvas, GraphViewData[] values, float graphwidth, float graphheight, float top_border, float bottom_border, double minX, double minY, double diffX, double diffY, float horstart);
 
   /**
    * formats the label
@@ -765,5 +799,9 @@ abstract public class GraphView extends LinearLayout {
       public void onStopTrackingTouch(SeekBar seekBar) {
         // do nothing
       }
+  }
+
+  public void setEnableMultiLineXLabel(boolean value) {
+    enableMultiLineXLabel = value;
   }
 }

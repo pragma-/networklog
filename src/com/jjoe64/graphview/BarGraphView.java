@@ -14,9 +14,9 @@ public class BarGraphView extends GraphView {
 
   @Override
     public double drawSeries(Canvas canvas, GraphViewData[] values, float graphwidth, float graphheight,
-        float border, double minX, double minY, double diffX, double diffY,
+        float top_border, float bottom_border, double minX, double minY, double diffX, double diffY,
         float horstart) {
-      float colwidth = (graphwidth - (2 * border)) / values.length;
+      float colwidth = (graphwidth - (2 * bottom_border)) / values.length;
       double size = 0;
 
       // draw data
@@ -25,7 +25,7 @@ public class BarGraphView extends GraphView {
         float ratY = (float) (valY / diffY);
         float y = graphheight * ratY;
         size += y;
-        canvas.drawRect((i * colwidth) + horstart, (border - y) + graphheight, ((i * colwidth) + horstart) + (colwidth - 1), graphheight + border - 1, paint);
+        canvas.drawRect((i * colwidth) + horstart, (bottom_border - y) + graphheight, ((i * colwidth) + horstart) + (colwidth - 1), graphheight + bottom_border - 1, paint);
       }
       return size;
     }
