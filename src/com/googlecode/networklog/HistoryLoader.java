@@ -156,7 +156,7 @@ public class HistoryLoader {
           boolean done;
 
           // android.os.Debug.startMethodTracing("networklog", 16 * 1024 * 1024);
-          // long start = System.currentTimeMillis();
+          long start = System.currentTimeMillis();
 
           try {
             while(!canceled) {
@@ -308,8 +308,8 @@ public class HistoryLoader {
           } catch(Exception e) {
             Log.w("NetworkLog", "loadEntriesFromFile", e);
           } finally {
-            // long elapsed = System.currentTimeMillis() - start;
-            // android.util.Log.d("[IptablesLog]", "Load history elapsed: " + elapsed);
+            long elapsed = System.currentTimeMillis() - start;
+            android.util.Log.d("[NetworkLog]", "Load history elapsed: " + elapsed);
             // android.os.Debug.stopMethodTracing();
 
             MyLog.d("[history] Dismissing progress dialog");

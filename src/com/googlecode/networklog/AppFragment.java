@@ -311,6 +311,14 @@ public class AppFragment extends Fragment {
 
       setRetainInstance(true);
 
+      if(NetworkLog.settings == null) {
+        NetworkLog activity = (NetworkLog) getActivity();
+
+        if(activity != null) {
+          activity.loadSettings();
+        }
+      }
+
       sortBy = NetworkLog.settings.getSortBy();
       MyLog.d("Sort-by loaded from settings: " + sortBy);
 

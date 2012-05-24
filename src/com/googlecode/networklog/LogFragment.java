@@ -99,6 +99,14 @@ public class LogFragment extends Fragment {
       super.onCreate(savedInstanceState);
       setRetainInstance(true);
 
+      if(NetworkLog.settings == null) {
+        NetworkLog activity = (NetworkLog) getActivity();
+
+        if(activity != null) {
+          activity.loadSettings();
+        }
+      }
+
       MyLog.d("LogFragment created");
 
       if(NetworkLog.data == null) {

@@ -262,19 +262,36 @@ public class ApplicationsTracker {
       installedApps.add(entry);
       installedAppsHash.put("-1", entry);
 
-      AppEntry entryHash = installedAppsHash.get("0");
+      String[] systemUids = { "root", "system", "radio", "bluetooth", "nobody", "misc",
+        "graphics", "input", "audio", "camera", "log", "compass", "mount", "wifi", "dhcp",
+        "adb", "install", "media", "nfc", "shell", "cache", "diag", "vpn", "keystore", "usb",
+        "gps", "inet", "net_raw", "net_admin", "net_bt_admin", "net_bt",
+        /* motorola */
+        "mot_accy", "mot_pwric", "mot_usb", "mot_drm", "mot_tcmd", "mot_sec_rtc", "mot_tombstone",
+        "mot_tpapi", "mot_secclkd" };
 
-      if(entryHash == null) {
-        entry = new AppEntry();
-        entry.name = StringPool.get("Root");
-        entry.nameLowerCase = StringPool.getLowerCase("Root");
-        entry.icon = context.getResources().getDrawable(R.drawable.root_icon);
-        entry.packageName = StringPool.get(entry.nameLowerCase);
-        entry.uid = 0;
-        entry.uidString = StringPool.get("0");
+      for (String name : systemUids) {
+        int uid = android.os.Process.getUidForName(name);
 
-        installedApps.add(entry);
-        installedAppsHash.put("0", entry);
+        if(uid == -1) {
+          continue;
+        }
+
+        String uidString = StringPool.get(String.valueOf(uid));
+        AppEntry entryHash = installedAppsHash.get(uidString);
+
+        if(entryHash == null) {
+          entry = new AppEntry();
+          entry.name = StringPool.get(name);
+          entry.nameLowerCase = StringPool.getLowerCase(name);
+          entry.icon = context.getResources().getDrawable(R.drawable.android_icon);
+          entry.packageName = StringPool.get(entry.nameLowerCase);
+          entry.uid = uid;
+          entry.uidString = StringPool.get(uidString);
+
+          installedApps.add(entry);
+          installedAppsHash.put(uidString, entry);
+        }
       }
 
       handler.post(new Runnable() {
