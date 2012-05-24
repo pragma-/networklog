@@ -15,11 +15,11 @@ public class Iptables {
   public static final String SCRIPT = "networklog.sh";
 
   public static final String[] CELL_INTERFACES = {
-    "rmnet+", "ppp+", "pdp+", "pnp+", "rmnet_sdio+"
+    "rmnet+", "ppp+", "pdp+", "pnp+", "rmnet_sdio+", "uwbr+", "wimax+", "vsnet+", "usb+", "ccmni+"
   };
 
   public static final String[] WIFI_INTERFACES = {
-    "eth+", "wlan+", "tiwlan+", "athwlan+"
+    "eth+", "wlan+", "tiwlan+", "athwlan+", "ra+"
   };
 
   public static boolean addRules(Context context) {
