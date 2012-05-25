@@ -22,6 +22,31 @@ public class Iptables {
     "eth+", "wlan+", "tiwlan+", "athwlan+", "ra+"
   };
 
+  public static boolean checkRoot(Context context) {
+    synchronized(NetworkLog.scriptLock) {
+      String scriptFile = new ContextWrapper(context).getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
+
+      try {
+        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
+        script.println("iptables");
+        script.flush();
+        script.close();
+      } catch(java.io.IOException e) {
+        Log.e("NetworkLog", "Check root error", e);
+      }
+
+      String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "checkRoot").start(true);
+
+      if(error != null) {
+        Log.d("[NetworkLog]", "Failed check root: " + error);
+        return false;
+      } else {
+        Log.d("[NetworkLog]", "Check root passed");
+        return true;
+      }
+    }
+  }
+
   public static boolean addRules(Context context) {
     if(checkRules(context) == true) {
       removeRules(context);

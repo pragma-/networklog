@@ -36,6 +36,7 @@ public class NetworkLogService extends Service {
   static final int MSG_BROADCAST_LOG_ENTRY = 4;
   static final int MSG_TOGGLE_FOREGROUND = 5;
   final Messenger messenger = new Messenger(new IncomingHandler(this));
+  boolean has_root = false;
 
   private class IncomingHandler extends Handler {
     Context context;
@@ -96,7 +97,11 @@ public class NetworkLogService extends Service {
   @Override
     public IBinder onBind(Intent intent) {
       MyLog.d("[service] onBind");
-      return messenger.getBinder();
+      if(!has_root) {
+        return null;
+      } else {
+        return messenger.getBinder();
+      }
     }
 
   HashMap<String, Integer> logEntriesMap;
@@ -150,9 +155,22 @@ public class NetworkLogService extends Service {
     return n;
   }
 
+  public boolean hasRoot() {
+    return Iptables.checkRoot(this);
+  }
+
   @Override
     public void onCreate() {
       MyLog.d("[service] onCreate");
+
+      if(!hasRoot()) {
+        Iptables.showError(this, "Network Log Error", "Network Log requires root/superuser access");
+        has_root = false;
+        stopSelf();
+        return;
+      } else {
+        has_root = true;
+      }
 
       nManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
       notification = createNotification();
@@ -174,6 +192,10 @@ public class NetworkLogService extends Service {
   @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
       MyLog.d("[service] onStartCommand");
+
+      if(!has_root) {
+        return Service.START_NOT_STICKY;
+      }
 
       Bundle ext = null;
 
@@ -243,10 +265,13 @@ public class NetworkLogService extends Service {
   @Override
     public void onDestroy() {
       MyLog.d("[service] onDestroy");
-      Iptables.removeRules(this);
-      stopLogging();
       stopForeground();
-      Toast.makeText(this, "Network Log service done", Toast.LENGTH_SHORT).show();
+
+      if(has_root) {
+        Iptables.removeRules(this);
+        stopLogging();
+        Toast.makeText(this, "Network Log service done", Toast.LENGTH_SHORT).show();
+      }
     }
 
   public void initEntriesMap() {
