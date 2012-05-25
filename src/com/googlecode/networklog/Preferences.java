@@ -4,6 +4,7 @@ import android.content.Context;
 import android.preference.PreferenceActivity;
 import android.preference.Preference;
 import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.ListPreference;
@@ -64,6 +65,9 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
       findPreference("notifications_statusbar_apps_dialog").setOnPreferenceClickListener(this);
       findPreference("notifications_toast").setOnPreferenceClickListener(this);
       findPreference("notifications_toast_apps_dialog").setOnPreferenceClickListener(this);
+
+      EditTextPreference logfile = (EditTextPreference) findPreference("logfile");
+      logfile.setText(NetworkLog.settings.getLogFile());
 
       CheckBoxPreference foreground = (CheckBoxPreference) findPreference("start_foreground");
       foreground.setOnPreferenceClickListener(this);

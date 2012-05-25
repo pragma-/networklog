@@ -18,7 +18,7 @@ public class BootCompletedReceiver extends BroadcastReceiver {
           MyLog.d("Starting service at boot");
           Intent i = new Intent(context, NetworkLogService.class);
 
-          i.putExtra("logfile", prefs.getString("logfile", "/sdcard/networklog.txt"));
+          i.putExtra("logfile", prefs.getString("logfile", null));
 
           context.startService(i);
         } else {

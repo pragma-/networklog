@@ -1,9 +1,13 @@
 package com.googlecode.networklog;
 
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.Context;
+import android.util.Log;
+
+import java.io.File;
 
 public class Settings implements OnSharedPreferenceChangeListener {
   private SharedPreferences prefs;
@@ -27,7 +31,14 @@ public class Settings implements OnSharedPreferenceChangeListener {
   }
 
   public String getLogFile() {
-    return prefs.getString("logfile", "/sdcard/networklog.txt");
+    String logfile = prefs.getString("logfile", null);
+
+    if(logfile == null) {
+      logfile = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "networklog.txt";
+      Log.d("NetworkLog", "Set default logfile path: " + logfile);
+    }
+
+    return logfile;
   }
 
   public boolean getStartForeground() {
@@ -290,25 +301,15 @@ public class Settings implements OnSharedPreferenceChangeListener {
       MyLog.d("Shared prefs changed: [" + key + "]");
 
       if(key.equals("logfile")) {
-        String value = prefs.getString(key, "/sdcard/networklog.txt");
+        String value = prefs.getString(key, null);
         MyLog.d("New " + key + " value [" + value + "]");
-
         // update service
-
         return;
       }
 
       if(key.equals("startServiceAtBoot")) {
         boolean value = prefs.getBoolean(key, false);
         MyLog.d("New " + key + " value [" + value + "]");
-
-        if(value == true) {
-          // add boot listeners
-        } else {
-          // remove boot listeners
-        }
-
-        return;
       }
 
       if(key.equals("startServiceAtStart")) {

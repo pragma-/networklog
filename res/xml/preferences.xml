@@ -22,11 +22,10 @@
   <PreferenceCategory
     android:title="Log Service">
     <EditTextPreference
-      android:defaultValue="/sdcard/networklog.txt"
       android:singleLine="true"
       android:key="logfile"
       android:title="Log file location"
-      android:summary="Set path and filename of the log file (defaults to /sdcard/networklog.txt)" />
+      android:summary="Set path and filename of the log file (defaults to networklog.txt at root of external storage)" />
     <ListPreference
       android:defaultValue="3600000"
       android:key="history_size"

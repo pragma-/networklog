@@ -212,11 +212,15 @@ public class NetworkLogService extends Service {
       // run in background thread
       new Thread(new Runnable() {
         public void run() {
-          String logfile_intent = "/sdcard/networklog.txt";
+          String logfile_intent = null;
 
           if(extras != null) {
             logfile_intent = extras.getString("logfile");
             MyLog.d("[service] set logfile: " + logfile_intent);
+          }
+
+          if(logfile_intent == null) {
+            logfile_intent = NetworkLog.settings.getLogFile();
           }
 
           MyLog.d("[service] NetworkLog service starting [" + logfile_intent + "]");;
