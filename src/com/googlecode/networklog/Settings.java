@@ -30,8 +30,8 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return prefs.getString("logfile", "/sdcard/networklog.txt");
   }
 
-  public String getLogFileMaxSize() {
-    return prefs.getString("logfile_maxsize", "12000000");
+  public boolean getStartForeground() {
+    return prefs.getBoolean("start_foreground", true);
   }
 
   public boolean getStartServiceAtBoot() {
@@ -249,6 +249,12 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
+  public void setStartForeground(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("start_foreground", value);
+    editor.commit();
+  }
+
   public void setStartServiceAtBoot(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("startServiceAtBoot", value);
@@ -279,27 +285,12 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
-  public void setLogFileMaxSize(String value) {
-    SharedPreferences.Editor editor = prefs.edit();
-    editor.putString("logfile_maxsize", value);
-    editor.commit();
-  }
-
   @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
       MyLog.d("Shared prefs changed: [" + key + "]");
 
       if(key.equals("logfile")) {
         String value = prefs.getString(key, "/sdcard/networklog.txt");
-        MyLog.d("New " + key + " value [" + value + "]");
-
-        // update service
-
-        return;
-      }
-
-      if(key.equals("logfile_maxsize")) {
-        String value = prefs.getString(key, "12000000");
         MyLog.d("New " + key + " value [" + value + "]");
 
         // update service

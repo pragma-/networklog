@@ -19,7 +19,6 @@ public class BootCompletedReceiver extends BroadcastReceiver {
           Intent i = new Intent(context, NetworkLogService.class);
 
           i.putExtra("logfile", prefs.getString("logfile", "/sdcard/networklog.txt"));
-          i.putExtra("logfile_maxsize", prefs.getString("logfile_maxsize", "12000000"));
 
           context.startService(i);
         } else {

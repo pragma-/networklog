@@ -60,6 +60,12 @@
       android:key="stopServiceAtExit"
       android:title="Stop log at app-exit"
       android:summary="Stop logging when this app exits" />
+    <CheckBoxPreference
+      android:persistent="false"
+      android:defaultValue="true"
+      android:key="start_foreground"
+      android:title="Start foreground"
+      android:summary="Prevent Android from killing service. Disabling this will remove the status bar notification" />
   </PreferenceCategory>
 
   <PreferenceCategory
@@ -142,6 +148,6 @@
       android:defaultValue="false"
       android:key="logcat_debug"
       android:title="Logcat debug output"
-      android:summary="Print verbose debugging output to logcat" />
+      android:summary="Print verbose debugging output to logcat. Warning: may cause performance to degrade if enabled" />
   </PreferenceCategory>
 </PreferenceScreen>

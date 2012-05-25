@@ -34,6 +34,7 @@ public class NetworkLogService extends Service {
   static final int MSG_UNREGISTER_CLIENT = 2;
   static final int MSG_UPDATE_NOTIFICATION = 3;
   static final int MSG_BROADCAST_LOG_ENTRY = 4;
+  static final int MSG_TOGGLE_FOREGROUND = 5;
   final Messenger messenger = new Messenger(new IncomingHandler(this));
 
   private class IncomingHandler extends Handler {
@@ -64,7 +65,21 @@ public class NetworkLogService extends Service {
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pi = PendingIntent.getActivity(context, 0, i, 0);
             notification.setLatestEventInfo(context, "Network Log", "Logging active [" + ((String)msg.obj) + "]", pi);
-            nManager.notify(NOTIFICATION_ID, notification);
+
+            if(start_foreground) {
+              nManager.notify(NOTIFICATION_ID, notification);
+            }
+            break;
+
+          case MSG_TOGGLE_FOREGROUND:
+            MyLog.d("[service] toggling service foreground state: " + ((Boolean)msg.obj));
+            start_foreground = (Boolean)msg.obj;
+
+            if(start_foreground) {
+              startForeground(notification);
+            } else {
+              stopForeground();
+            }
             break;
 
           case MSG_BROADCAST_LOG_ENTRY:
@@ -88,11 +103,11 @@ public class NetworkLogService extends Service {
   ShellCommand command;
   NetworkLogger logger;
   String logfile = null;
-  long logfile_maxsize;
   PrintWriter logWriter = null;
   NotificationManager nManager;
   Notification notification;
   LogEntry entry;
+  Boolean start_foreground = true;
 
   //StringBuilder buffer;
 
@@ -149,7 +164,11 @@ public class NetworkLogService extends Service {
         NetworkLog.settings = new Settings(this);
       }
 
-      this.startForeground(notification);
+      start_foreground = NetworkLog.settings.getStartForeground();
+
+      if(start_foreground) {
+        startForeground(notification);
+      }
     }
 
   @Override
@@ -172,31 +191,20 @@ public class NetworkLogService extends Service {
       new Thread(new Runnable() {
         public void run() {
           String logfile_intent = "/sdcard/networklog.txt";
-          String logfile_maxsize_intent = "12000000";
 
           if(extras != null) {
             logfile_intent = extras.getString("logfile");
-            logfile_maxsize_intent = extras.getString("logfile_maxsize");
             MyLog.d("[service] set logfile: " + logfile_intent);
           }
 
-          MyLog.d("[service] NetworkLog service starting [" + logfile_intent + "; " + logfile_maxsize_intent + "]");;
+          MyLog.d("[service] NetworkLog service starting [" + logfile_intent + "]");;
 
           final String l = logfile_intent;
-          final String m = logfile_maxsize_intent;
 
           if(logfile != null) {
             // service already started and has logfile open
-            // close logfile and rename and open new one
           } else {
             logfile = logfile_intent;
-
-            try {
-              logfile_maxsize = Long.parseLong(logfile_maxsize_intent);
-            } catch(Exception e) {
-              Log.w("[service] Bad log maxsize: [" + logfile_maxsize_intent + "]: " + e.toString(), e);
-              logfile_maxsize = 12000000;
-            }
 
             try {
               logWriter = new PrintWriter(new BufferedWriter(new FileWriter(logfile, true)), true);

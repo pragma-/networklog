@@ -3,6 +3,7 @@ package com.googlecode.networklog;
 import android.content.Context;
 import android.preference.PreferenceActivity;
 import android.preference.Preference;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.ListPreference;
@@ -12,17 +13,19 @@ import android.content.DialogInterface;
 
 public class Preferences extends PreferenceActivity implements OnPreferenceClickListener {
   private PreferenceConfigurationData data = null;
-
+  private AlertDialog warnStartForegroundDialog = null;
 
   private class PreferenceConfigurationData {
     boolean history_dialog_showing;
     int history_dialog_max;
     int history_dialog_progress;
+    boolean start_foreground_dialog_showing;
 
     PreferenceConfigurationData() {
       history_dialog_showing = NetworkLog.history.dialog_showing;
       history_dialog_max = NetworkLog.history.dialog_max;
       history_dialog_progress = NetworkLog.history.dialog_progress;
+      start_foreground_dialog_showing = (warnStartForegroundDialog == null) ? false : true;
     }
   }
 
@@ -30,6 +33,10 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
     public void onDestroy() {
       super.onDestroy();
       MyLog.d("Destroying preferences activity");
+
+      if(warnStartForegroundDialog != null) {
+        warnStartForegroundDialog.dismiss();
+      }
 
       if(NetworkLog.history.dialog_showing) {
         NetworkLog.history.dialog.dismiss();
@@ -58,17 +65,16 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
       findPreference("notifications_toast").setOnPreferenceClickListener(this);
       findPreference("notifications_toast_apps_dialog").setOnPreferenceClickListener(this);
 
+      CheckBoxPreference foreground = (CheckBoxPreference) findPreference("start_foreground");
+      foreground.setOnPreferenceClickListener(this);
+      foreground.setChecked(NetworkLog.settings.getStartForeground());
+
       String entries[] = getResources().getStringArray(R.array.interval_entries);
       String values[] = getResources().getStringArray(R.array.interval_values);
 
       final Context context = this;
       OnPreferenceChangeListener changeListener = new OnPreferenceChangeListener() {
         public boolean onPreferenceChange(Preference preference, Object newValue) {
-          if(preference.getKey().equals("logfile_trim")) {
-
-            return true;
-          }
-
           if(preference.getKey().equals("history_size")) {
             NetworkLog.appFragment.clear();
             NetworkLog.logFragment.clear();
@@ -110,6 +116,10 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
       if(data != null) {
         MyLog.d("Restored preferences run");
 
+        if(data.start_foreground_dialog_showing == true) {
+          warnStartForegroundDialog = toggleWarnStartForeground(this, foreground);
+        }
+
         if(data.history_dialog_showing && NetworkLog.history.dialog == null) {
           NetworkLog.history.createProgressDialog(this);
         }
@@ -123,18 +133,62 @@ public class Preferences extends PreferenceActivity implements OnPreferenceClick
       if(preference.getKey().equals("notifications_statusbar")
           || preference.getKey().equals("notifications_toast")
           || preference.getKey().equals("notifications_statusbar_apps_dialog")
-          || preference.getKey().equals("notifications_toast_apps_dialog")) {
+          || preference.getKey().equals("notifications_toast_apps_dialog")) 
+      {
         new ComingSoonDialog(this);
         return true;
-          }
+      }
 
       if(preference.getKey().equals("filter_dialog")) {
         new FilterDialog(this);
         return true;
       }
 
+      if(preference.getKey().equals("start_foreground")) {
+        warnStartForegroundDialog = toggleWarnStartForeground(this, (CheckBoxPreference) preference);
+        return true;
+      }
+
       return false;
     }
+
+  public AlertDialog toggleWarnStartForeground(final Context context, final CheckBoxPreference preference) {
+    if(NetworkLog.settings.getStartForeground() == false) {
+      // don't warn when enabling
+      preference.setChecked(true);
+      NetworkLog.settings.setStartForeground(true);
+      NetworkLog.toggleServiceForeground(true);
+      return null;
+    } else {
+      preference.setChecked(true);
+
+      AlertDialog.Builder builder = new AlertDialog.Builder(context);
+      builder.setTitle("Warning")
+        .setMessage("Disabling the notification/foreground state will allow Android to kill this service at any time, which may disrupt logging.")
+        .setCancelable(true)
+        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+          public void onClick(DialogInterface dialog, int id) {
+            preference.setChecked(true);
+            NetworkLog.settings.setStartForeground(true);
+            NetworkLog.toggleServiceForeground(true);
+            warnStartForegroundDialog = null;
+            dialog.dismiss();
+          }
+        })
+      .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int id) {
+          preference.setChecked(false);
+          NetworkLog.settings.setStartForeground(false);
+          NetworkLog.toggleServiceForeground(false);
+          warnStartForegroundDialog = null;
+          dialog.dismiss();
+        }
+      });
+      AlertDialog alert = builder.create();
+      alert.show();
+      return alert;
+    }
+  }
 
   public class ComingSoonDialog {
     public ComingSoonDialog(Context context) {

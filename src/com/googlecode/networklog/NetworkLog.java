@@ -668,7 +668,6 @@ public class NetworkLog extends FragmentActivity {
     Intent intent = new Intent(this, NetworkLogService.class);
 
     intent.putExtra("logfile", settings.getLogFile());
-    intent.putExtra("logfile_maxsize", settings.getLogFileMaxSize());
 
     startService(intent);
     doBindService();
@@ -698,6 +697,21 @@ public class NetworkLog extends FragmentActivity {
     }
 
     return false;
+  }
+
+  public static void toggleServiceForeground(Boolean value) {
+    MyLog.d("toggleServiceForeground " + value);
+
+    if(isBound && service != null) {
+      try {
+        Message msg = Message.obtain(null, NetworkLogService.MSG_TOGGLE_FOREGROUND);
+        msg.obj = value;
+        service.send(msg);
+      } catch(RemoteException e) {
+        /* do nothing */
+        Log.d("NetworkLog", "RemoteException toggling foreground", e);
+      }
+    }
   }
 
   public static void updateStatusText(Context context) {
