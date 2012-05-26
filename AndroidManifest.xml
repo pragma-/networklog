@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.googlecode.networklog"
-  android:versionCode="110"
-  android:versionName="2.4">
-  <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="8" />
+  android:versionCode="111"
+  android:versionName="2.4.1">
+  <uses-sdk android:minSdkVersion="5" android:targetSdkVersion="15" />
   <application android:label="@string/app_name" android:icon="@drawable/icon">
     <activity android:name="NetworkLog"
       android:launchMode="singleTask"
@@ -29,4 +29,4 @@
   </application>
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-</manifest> 
+</manifest>
