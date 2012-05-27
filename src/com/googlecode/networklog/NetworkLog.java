@@ -689,7 +689,9 @@ public class NetworkLog extends FragmentActivity {
     ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
 
     for(RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-      MyLog.d("Service: " + service.service.getClassName() + "; " + service.pid + "; " + service.uid + "; " + service.clientCount + "; " + service.foreground + "; " + service.process);
+      if(MyLog.enabled) {
+        MyLog.d("Service: " + service.service.getClassName() + "; " + service.pid + "; " + service.clientCount + "; " + service.foreground + "; " + service.process);
+      }
 
       if(serviceName.equals(service.service.getClassName())) {
         return true;
