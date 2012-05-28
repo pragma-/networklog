@@ -365,6 +365,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
         NetworkLog.appFragment.preSortBy = Sort.forValue(value);
         NetworkLog.appFragment.preSortData();
         NetworkLog.appFragment.sortData();
+        NetworkLog.appFragment.refreshAdapter();
         return;
       }
 
@@ -374,6 +375,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
         NetworkLog.appFragment.sortBy = Sort.forValue(value);
         NetworkLog.appFragment.preSortData();
         NetworkLog.appFragment.sortData();
+        NetworkLog.appFragment.refreshAdapter();
         return;
       }
     }

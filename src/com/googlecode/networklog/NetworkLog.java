@@ -501,7 +501,6 @@ public class NetworkLog extends FragmentActivity {
 
           default:
             NetworkLog.settings.setSortBy(Sort.BYTES);
-            appFragment.sortBy = Sort.BYTES;
             item = menu.findItem(R.id.sort_by_bytes);
         }
 
@@ -551,43 +550,23 @@ public class NetworkLog extends FragmentActivity {
           break;
 
         case R.id.sort_by_uid:
-          appFragment.sortBy = Sort.UID;
-          appFragment.sortData();
-          appFragment.refreshAdapter();
-
-          NetworkLog.settings.setSortBy(appFragment.sortBy);
+          NetworkLog.settings.setSortBy(Sort.UID);
           break;
 
         case R.id.sort_by_name:
-          appFragment.sortBy = Sort.NAME;
-          appFragment.sortData();
-          appFragment.refreshAdapter();
-
-          NetworkLog.settings.setSortBy(appFragment.sortBy);
+          NetworkLog.settings.setSortBy(Sort.NAME);
           break;
 
         case R.id.sort_by_packets:
-          appFragment.sortBy = Sort.PACKETS;
-          appFragment.sortData();
-          appFragment.refreshAdapter();
-
-          NetworkLog.settings.setSortBy(appFragment.sortBy);
+          NetworkLog.settings.setSortBy(Sort.PACKETS);
           break;
 
         case R.id.sort_by_bytes:
-          appFragment.sortBy = Sort.BYTES;
-          appFragment.sortData();
-          appFragment.refreshAdapter();
-
-          NetworkLog.settings.setSortBy(appFragment.sortBy);
+          NetworkLog.settings.setSortBy(Sort.BYTES);
           break;
 
         case R.id.sort_by_timestamp:
-          appFragment.sortBy = Sort.TIMESTAMP;
-          appFragment.sortData();
-          appFragment.refreshAdapter();
-
-          NetworkLog.settings.setSortBy(appFragment.sortBy);
+          NetworkLog.settings.setSortBy(Sort.TIMESTAMP);
           break;
 
         default:
