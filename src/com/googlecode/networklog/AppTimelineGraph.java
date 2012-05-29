@@ -15,8 +15,6 @@ import android.widget.TextView;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.AdapterView.OnItemClickListener;
 import android.graphics.drawable.Drawable;

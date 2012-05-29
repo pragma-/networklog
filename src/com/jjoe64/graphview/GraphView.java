@@ -150,6 +150,11 @@ abstract public class GraphView extends LinearLayout {
             }
           }
 
+          minX = getMinX(true);
+          maxX = getMaxX(true);
+          double percentage = ((viewportStart - minX) / ((maxX - viewportSize) - minX)) * 100;
+          seekbar.setProgress((int)percentage);
+
           if (legendSorter != null) legendSorter.run();
           if (showLegend) drawLegend(canvas, height, width);
         }
@@ -173,11 +178,8 @@ abstract public class GraphView extends LinearLayout {
         horlabels = null;
         verlabels = null;
         viewVerLabels.invalidate();
-
-        double percentage = ((viewportStart - minX) / ((maxX - viewportSize) - minX)) * 100;
-        seekbar.setProgress((int)percentage);
+        invalidate();
       }
-      invalidate();
     }
 
     /**
