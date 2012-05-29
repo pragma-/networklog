@@ -3,7 +3,7 @@
   package="com.googlecode.networklog"
   android:versionCode="112"
   android:versionName="2.4.2">
-  <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="16" />
+  <uses-sdk android:minSdkVersion="5" android:targetSdkVersion="16" />
   <application android:label="@string/app_name" android:icon="@drawable/icon">
     <activity android:name="NetworkLog"
       android:launchMode="singleTask"

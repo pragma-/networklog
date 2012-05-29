@@ -46,6 +46,7 @@ abstract public class GraphView extends LinearLayout {
 
   private class GraphViewContentView extends View {
     private float lastTouchEventX;
+    private int lastTouchEventId;
     private float graphwidth;
 
     /**
@@ -192,9 +193,18 @@ abstract public class GraphView extends LinearLayout {
         // first scale
         if (scalable && scaleDetector != null) {
           scaleDetector.onTouchEvent(event);
-          handled = scaleDetector.isInProgress();
+          if(scaleDetector.isInProgress() == true) {
+            lastTouchEventX = 0;
+            handled = true;
+          }
         }
-        if (!handled) {
+
+        if(event.getPointerCount() > 1) {
+          lastTouchEventX = 0;
+          lastTouchEventId = 0;
+        }
+
+        if (!handled && event.getPointerCount() == 1) {
           // if not scaled, scroll
           if ((event.getAction() & MotionEvent.ACTION_DOWN) == MotionEvent.ACTION_DOWN) {
             handled = true;
@@ -204,10 +214,11 @@ abstract public class GraphView extends LinearLayout {
             handled = true;
           }
           if ((event.getAction() & MotionEvent.ACTION_MOVE) == MotionEvent.ACTION_MOVE) {
-            if (lastTouchEventX != 0) {
+            if (lastTouchEventX != 0 && event.getPointerId(0) == lastTouchEventId) {
               onMoveGesture(event.getX() - lastTouchEventX);
             }
             lastTouchEventX = event.getX();
+            lastTouchEventId = event.getPointerId(0);
             handled = true;
           }
           if(handled) {
