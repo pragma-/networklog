@@ -123,27 +123,11 @@ public class NetworkLogService extends Service {
   }
 
   public void startForeground(Notification n) {
-    try {
-      Method m = Service.class.getMethod("startForeground", new Class[] {int.class, Notification.class});
-      m.invoke(this, NOTIFICATION_ID, n);
-      MyLog.d("[service] Started service in foreground");
-    } catch(Exception e) {
-      MyLog.d("[service] Fallback to setForeground");
-      setForeground(true);
-      nManager.notify(NOTIFICATION_ID, n);
-    }
+    startForeground(NOTIFICATION_ID, n);
   }
 
   public void stopForeground() {
-    try {
-      Method m = Service.class.getMethod("stopForeground", new Class[] {boolean.class});
-      m.invoke(this, true);
-      MyLog.d("[service] Stopped foreground service state");
-    } catch(Exception e) {
-      setForeground(false);
-      nManager.cancel(NOTIFICATION_ID);
-      MyLog.d("[service] Fallback to setForeground(false)");
-    }
+    stopForeground(true);
   }
 
   public Notification createNotification() {
