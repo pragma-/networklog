@@ -326,9 +326,6 @@ public class AppFragment extends Fragment {
 
       setRetainInstance(true);
 
-      sortBy = NetworkLog.settings.getSortBy();
-      preSortBy = NetworkLog.settings.getPreSortBy();
-
       groupData = new ArrayList<GroupItem>();
       groupDataBuffer = new ArrayList<GroupItem>();
       cachedSearchItem = new GroupItem();
@@ -352,13 +349,15 @@ public class AppFragment extends Fragment {
         }
       }
 
+      sortBy = NetworkLog.settings.getSortBy();
+      preSortBy = NetworkLog.settings.getPreSortBy();
+
       LinearLayout layout = new LinearLayout(context);
       layout.setOrientation(LinearLayout.VERTICAL);
 
       TextView tv = new TextView(context);
       tv.setText("Press for connections, long-press for graph");
       layout.addView(tv);
-
 
       listView = new ExpandableListView(context);
       listView.setAdapter(adapter);

@@ -409,6 +409,7 @@ public class NetworkLog extends SherlockFragmentActivity {
     public void onDestroy()
     {
       super.onDestroy();
+      MyLog.d("NetworkLog onDestroy");
 
       if(data == null) {
         // exiting
