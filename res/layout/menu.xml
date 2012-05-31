@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-  <item android:id="@+id/filter"
-    android:title="Filter" />
+  <item android:id="@+id/overallgraph"
+    android:title="Graph"
+    android:showAsAction="ifRoom" />
   <item android:id="@+id/sort"
-    android:title="Sort">
+    android:title="Sort"
+    android:showAsAction="ifRoom">
     <menu>
       <group android:checkableBehavior="single">
         <item android:id="@+id/sort_by_uid"
@@ -19,12 +21,16 @@
       </group>
     </menu>
   </item>
-  <item android:id="@+id/overallgraph"
-    android:title="Apps timeline" />
+  <item android:id="@+id/filter"
+    android:title="Filter"
+    android:showAsAction="ifRoom" />
   <item android:id="@+id/service_toggle"
-    android:title="Start logging" />
+    android:title="Start Logging"
+    android:showAsAction="ifRoom|withText" />
   <item android:id="@+id/settings"
-    android:title="Settings" />
+    android:title="Settings"
+    android:showAsAction="ifRoom|withText" />
   <item android:id="@+id/exit"
-    android:title="Exit" />
+    android:title="Exit"
+    android:showAsAction="ifRoom|withText" />
 </menu>

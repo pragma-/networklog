@@ -1,7 +1,6 @@
 package com.googlecode.networklog;
 
 import android.content.Context;
-import android.preference.PreferenceActivity;
 import android.preference.Preference;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
@@ -12,7 +11,9 @@ import android.os.Bundle;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 
-public class Preferences extends PreferenceActivity implements OnPreferenceClickListener {
+import com.actionbarsherlock.app.SherlockPreferenceActivity;
+
+public class Preferences extends SherlockPreferenceActivity implements OnPreferenceClickListener {
   private PreferenceConfigurationData data = null;
   private AlertDialog warnStartForegroundDialog = null;
 

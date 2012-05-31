@@ -2,9 +2,6 @@ package com.googlecode.networklog;
 
 import android.os.Bundle;
 import android.content.Intent;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuInflater;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -33,6 +30,11 @@ import android.support.v4.view.ViewPager;
 import com.viewpagerindicator.TitlePageIndicator;
 import com.viewpagerindicator.TitleProvider;
 
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.view.MenuInflater;
+
 import java.util.Enumeration;
 import java.net.NetworkInterface;
 import java.net.InetAddress;
@@ -40,7 +42,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.io.File;
 
-public class NetworkLog extends FragmentActivity {
+public class NetworkLog extends SherlockFragmentActivity {
   public static RetainInstanceData data = null;
 
   public static ViewPager viewPager;
@@ -218,7 +220,7 @@ public class NetworkLog extends FragmentActivity {
       appFragment.startUpdater();
       logFragment.startUpdater();
 
-      if(startServiceAtStart && !isServiceRunning(context, "com.googlecode.networklog.NetworkLogService")) {
+      if(startServiceAtStart && !isServiceRunning(context, NetworkLogService.class.getName())) {
         handler.post(new Runnable() {
           public void run() {
             startService();
@@ -287,15 +289,9 @@ public class NetworkLog extends FragmentActivity {
 
         switch(index) {
           case PAGE_LOG:
-            if(logFragment == null) {
-              logFragment = (LogFragment) Fragment.instantiate(context, LogFragment.class.getName());
-            }
             fragment = logFragment;
             break;
           case PAGE_APP:
-            if(appFragment == null) {
-              appFragment = (AppFragment) Fragment.instantiate(context, AppFragment.class.getName());
-            }
             fragment = appFragment;
             break;
         }
@@ -344,9 +340,14 @@ public class NetworkLog extends FragmentActivity {
         }
       } else {
         MyLog.d("Fresh run");
-
         resolver = new NetworkResolver();
+
+        logFragment = (LogFragment) Fragment.instantiate(this, LogFragment.class.getName());
+        appFragment = (AppFragment) Fragment.instantiate(this, AppFragment.class.getName());
       }
+
+      logFragment.setParent(this);
+      appFragment.setParent(this);
 
       statusText = (TextView) findViewById(R.id.statusText);
 
@@ -358,10 +359,9 @@ public class NetworkLog extends FragmentActivity {
       TitlePageIndicator titleIndicator = (TitlePageIndicator) findViewById(R.id.titles);
       titleIndicator.setViewPager(viewPager);
 
-      viewPager.setCurrentItem(0);
       viewPager.setCurrentItem(1);
 
-      if(isServiceRunning(this, "com.googlecode.networklog.NetworkLogService")) {
+      if(isServiceRunning(this, NetworkLogService.class.getName())) {
         doBindService();
       }
 
@@ -409,7 +409,6 @@ public class NetworkLog extends FragmentActivity {
     public void onDestroy()
     {
       super.onDestroy();
-      MyLog.d("onDestroy called");
 
       if(data == null) {
         // exiting
@@ -419,7 +418,6 @@ public class NetworkLog extends FragmentActivity {
         }
       } else {
         // changing configuration
-
       }
 
       if(history.dialog_showing == true && history.dialog != null) {
@@ -464,7 +462,7 @@ public class NetworkLog extends FragmentActivity {
 
   @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-      MenuInflater inflater = getMenuInflater();
+      MenuInflater inflater = getSupportMenuInflater();
       inflater.inflate(R.layout.menu, menu);
       return true;
     }
@@ -511,10 +509,10 @@ public class NetworkLog extends FragmentActivity {
 
       item = menu.findItem(R.id.service_toggle);
 
-      if(isServiceRunning(this, "com.googlecode.networklog.NetworkLogService")) {
-        item.setTitle("Stop logging");
+      if(isServiceRunning(this, NetworkLogService.class.getName())) {
+        item.setTitle("Stop Logging");
       } else {
-        item.setTitle("Start logging");
+        item.setTitle("Start Logging");
       }
 
       return true;
@@ -529,12 +527,13 @@ public class NetworkLog extends FragmentActivity {
           break;
 
         case R.id.service_toggle:
-          if(!isServiceRunning(this, "com.googlecode.networklog.NetworkLogService")) {
+          if(!isServiceRunning(this, NetworkLogService.class.getName())) {
             startService();
+            invalidateOptionsMenu();
           } else {
             stopService();
+            invalidateOptionsMenu();
           }
-
           break;
 
         case R.id.overallgraph:
@@ -551,22 +550,27 @@ public class NetworkLog extends FragmentActivity {
 
         case R.id.sort_by_uid:
           NetworkLog.settings.setSortBy(Sort.UID);
+          item.setChecked(true);
           break;
 
         case R.id.sort_by_name:
           NetworkLog.settings.setSortBy(Sort.NAME);
+          item.setChecked(true);
           break;
 
         case R.id.sort_by_packets:
           NetworkLog.settings.setSortBy(Sort.PACKETS);
+          item.setChecked(true);
           break;
 
         case R.id.sort_by_bytes:
           NetworkLog.settings.setSortBy(Sort.BYTES);
+          item.setChecked(true);
           break;
 
         case R.id.sort_by_timestamp:
           NetworkLog.settings.setSortBy(Sort.TIMESTAMP);
+          item.setChecked(true);
           break;
 
         default:
@@ -589,7 +593,7 @@ public class NetworkLog extends FragmentActivity {
     Context context = this;
 
     StringBuilder message = new StringBuilder("Are you sure you want to exit?");
-    boolean serviceRunning = isServiceRunning(context, "com.googlecode.networklog.NetworkLogService");
+    boolean serviceRunning = isServiceRunning(context, NetworkLogService.class.getName());
 
     if(serviceRunning) {
       if(stopServiceAtExit) {
@@ -650,11 +654,7 @@ public class NetworkLog extends FragmentActivity {
 
     startService(intent);
     doBindService();
-    handler.post(new Runnable() {
-      public void run() {
-        updateStatusText(getApplicationContext());
-      }
-    });
+    updateStatusText(getApplicationContext());
   }
 
   public void stopService() {
@@ -710,7 +710,7 @@ public class NetworkLog extends FragmentActivity {
       }
     }
 
-    if(!isServiceRunning(context, "com.googlecode.networklog.NetworkLogService")) {
+    if(!isServiceRunning(context, NetworkLogService.class.getName())) {
       sb.append("Logging not active.");
     }
 

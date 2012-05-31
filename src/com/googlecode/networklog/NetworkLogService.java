@@ -37,6 +37,7 @@ public class NetworkLogService extends Service {
   static final int MSG_TOGGLE_FOREGROUND = 5;
   final Messenger messenger = new Messenger(new IncomingHandler(this));
   boolean has_root = false;
+  public static NetworkLogService instance = null;
 
   private class IncomingHandler extends Handler {
     Context context;
@@ -156,6 +157,12 @@ public class NetworkLogService extends Service {
         has_root = true;
       }
 
+      if(instance != null) {
+        MyLog.d("[service] Last instance destroyed unexpectedly");
+      }
+
+      instance = this;
+
       nManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
       notification = createNotification();
 
@@ -253,7 +260,10 @@ public class NetworkLogService extends Service {
   @Override
     public void onDestroy() {
       MyLog.d("[service] onDestroy");
+
       stopForeground();
+
+      instance = null;
 
       if(has_root) {
         Iptables.removeRules(this);
@@ -261,6 +271,10 @@ public class NetworkLogService extends Service {
         Toast.makeText(this, "Network Log service done", Toast.LENGTH_SHORT).show();
       }
     }
+
+  public static NetworkLogService getInstance() { 
+    return instance;
+  }
 
   public void initEntriesMap() {
     NetStat netstat = new NetStat();

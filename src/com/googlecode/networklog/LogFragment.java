@@ -38,6 +38,7 @@ public class LogFragment extends Fragment {
   protected ArrayList<ListItem> listDataUnfiltered;
   private CustomAdapter adapter;
   private ListViewUpdater updater;
+  private NetworkLog parent = null;
 
   protected class ListItem {
     protected Drawable mIcon;
@@ -92,6 +93,21 @@ public class LogFragment extends Fragment {
       setUserVisibleHint(true);
     }
 
+  public void setParent(NetworkLog parent) {
+    this.parent = parent;
+  }
+
+  @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+      super.setUserVisibleHint(isVisibleToUser);
+
+      if (this.isVisible() && !isVisibleToUser) {
+        if(parent != null) {
+          parent.invalidateOptionsMenu();
+        }
+      }
+    }
+
   /** Called when the activity is first created. */
   @Override
     public void onCreate(Bundle savedInstanceState)
@@ -99,31 +115,40 @@ public class LogFragment extends Fragment {
       super.onCreate(savedInstanceState);
       setRetainInstance(true);
 
-      if(NetworkLog.settings == null) {
-        NetworkLog activity = (NetworkLog) getActivity();
-
-        if(activity != null) {
-          activity.loadSettings();
-        }
-      }
-
-      MyLog.d("LogFragment created");
-
-      if(NetworkLog.data == null) {
-        listData = new ArrayList<ListItem>();
-        listDataBuffer = new ArrayList<ListItem>();
-        listDataUnfiltered = new ArrayList<ListItem>();
-      } else {
-        restoreData(NetworkLog.data);
-      }
+      listData = new ArrayList<ListItem>();
+      listDataBuffer = new ArrayList<ListItem>();
+      MyLog.d("Created new listDataBuffer " + listDataBuffer.toString());
+      listDataUnfiltered = new ArrayList<ListItem>();
 
       adapter = new CustomAdapter(getActivity().getApplicationContext(), R.layout.logitem, listData);
+
+      MyLog.d("LogFragment onCreate");
+    }
+
+  @Override
+    public void onDestroy() {
+      super.onDestroy();
+      MyLog.d("LogFragment onDestroy");
+    }
+
+  @Override
+    public void onDestroyView() {
+      super.onDestroyView();
+      MyLog.d("LogFragment onDestroyView");
     }
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, 
       Bundle savedInstanceState) {
     MyLog.d("[LogFragment] onCreateView");
+
+    if(NetworkLog.settings == null) {
+      NetworkLog activity = (NetworkLog) getActivity();
+
+      if(activity != null) {
+        activity.loadSettings();
+      }
+    }
 
     LinearLayout layout = new LinearLayout(getActivity().getApplicationContext());
     layout.setOrientation(LinearLayout.VERTICAL);
@@ -169,12 +194,6 @@ public class LogFragment extends Fragment {
   public void startUpdater() {
     updater = new ListViewUpdater();
     new Thread(updater, "LogFragmentUpdater").start();
-  }
-
-  public void restoreData(RetainInstanceData data) {
-    listData = data.logFragmentListData;
-    listDataBuffer = data.logFragmentListDataBuffer;
-    listDataUnfiltered = data.logFragmentListDataUnfiltered;
   }
 
   public void onNewLogEntry(final LogEntry entry) {
@@ -309,10 +328,14 @@ public class LogFragment extends Fragment {
       MyLog.d("Starting LogFragmentUpdater " + this);
 
       while(running) {
-        if(listDataBuffer.size() > 0) {
-          Activity activity = getActivity();
-          if(activity != null) {
-            activity.runOnUiThread(runner);
+        if(listDataBuffer == null) {
+          MyLog.d("listDataBuffer null, wtf");
+        } else {
+          if(listDataBuffer.size() > 0) {
+            Activity activity = getActivity();
+            if(activity != null) {
+              activity.runOnUiThread(runner);
+            }
           }
         }
 

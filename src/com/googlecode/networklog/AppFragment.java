@@ -54,6 +54,7 @@ public class AppFragment extends Fragment {
   private ListViewUpdater updater;
   // remember last index return by getItemByAppUid to optimize-out call to binarySearch
   int lastGetItemByAppUidIndex = -1;
+  private NetworkLog parent = null;
 
   public class GroupItem {
     protected ApplicationsTracker.AppEntry app;
@@ -302,37 +303,36 @@ public class AppFragment extends Fragment {
       setUserVisibleHint(true);
     }
 
+  public void setParent(NetworkLog parent) {
+    this.parent = parent;
+  }
+
+  @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+      super.setUserVisibleHint(isVisibleToUser);
+
+      if (this.isVisible() && !isVisibleToUser) {
+        if(parent != null) {
+          parent.invalidateOptionsMenu();
+        }
+      }
+    }
+
   /** Called when the activity is first created. */
   @Override
     public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-
-      MyLog.d("AppFragment created");
+      MyLog.d("AppFragment onCreate");
 
       setRetainInstance(true);
 
-      if(NetworkLog.settings == null) {
-        NetworkLog activity = (NetworkLog) getActivity();
-
-        if(activity != null) {
-          activity.loadSettings();
-        }
-      }
-
       sortBy = NetworkLog.settings.getSortBy();
-      MyLog.d("Sort-by loaded from settings: " + sortBy);
-
       preSortBy = NetworkLog.settings.getPreSortBy();
-      MyLog.d("Pre-sort-by loaded from settings: " + preSortBy);
 
-      if(NetworkLog.data == null) {
-        groupData = new ArrayList<GroupItem>();
-        groupDataBuffer = new ArrayList<GroupItem>();
-        cachedSearchItem = new GroupItem();
-        cachedSearchItem.app = new ApplicationsTracker.AppEntry();
-      } else {
-        restoreData(NetworkLog.data);
-      }
+      groupData = new ArrayList<GroupItem>();
+      groupDataBuffer = new ArrayList<GroupItem>();
+      cachedSearchItem = new GroupItem();
+      cachedSearchItem.app = new ApplicationsTracker.AppEntry();
 
       adapter = new CustomAdapter();
     }
@@ -343,6 +343,14 @@ public class AppFragment extends Fragment {
       Context context = getActivity().getApplicationContext();
 
       MyLog.d("[AppFragment] onCreateView");
+
+      if(NetworkLog.settings == null) {
+        NetworkLog activity = (NetworkLog) getActivity();
+
+        if(activity != null) {
+          activity.loadSettings();
+        }
+      }
 
       LinearLayout layout = new LinearLayout(context);
       layout.setOrientation(LinearLayout.VERTICAL);
@@ -412,41 +420,6 @@ public class AppFragment extends Fragment {
 
       return layout;
     }
-
-  public void restoreData(RetainInstanceData data) {
-    groupData = data.appFragmentGroupData;
-    groupDataBuffer = data.appFragmentGroupDataBuffer;
-    groupDataBufferIsDirty = data.appFragmentGroupDataBufferIsDirty;
-    sortBy = data.appFragmentSortBy;
-    preSortBy = data.appFragmentPreSortBy;
-    cachedSearchItem = data.appFragmentCachedSearchItem;
-
-    if(groupData == null) {
-      groupData = new ArrayList<GroupItem>();
-    }
-
-    if(groupDataBuffer == null) {
-      groupDataBuffer = new ArrayList<GroupItem>();
-    }
-
-    if(cachedSearchItem == null) {
-      cachedSearchItem = new GroupItem();
-    }
-
-    if(cachedSearchItem.app == null) {
-      cachedSearchItem.app = new ApplicationsTracker.AppEntry();
-    }
-
-    if(sortBy == null) {
-      sortBy = NetworkLog.settings.getSortBy();
-      MyLog.d("[restoreData] Sort-by loaded from settings: " + sortBy);
-    }
-
-    if(preSortBy == null) {
-      preSortBy = NetworkLog.settings.getPreSortBy();
-      MyLog.d("[restoreData] Pre-sort-by loaded from settings: " + preSortBy);
-    }
-  }
 
   public int getItemByAppUid(int uid) {
     synchronized(groupDataBuffer) {

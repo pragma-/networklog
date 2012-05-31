@@ -17,38 +17,6 @@ public class RetainInstanceData {
     applicationsTrackerAppCount = ApplicationsTracker.appCount;
   }
 
-  /* LogFragment */
-  ArrayList<LogFragment.ListItem> logFragmentListData;
-  ArrayList<LogFragment.ListItem> logFragmentListDataBuffer;
-  ArrayList<LogFragment.ListItem> logFragmentListDataUnfiltered;
-
-  public void retainLogFragmentData() {
-    if(NetworkLog.logFragment != null) {
-      logFragmentListData = NetworkLog.logFragment.listData;
-      logFragmentListDataBuffer = NetworkLog.logFragment.listDataBuffer;
-      logFragmentListDataUnfiltered = NetworkLog.logFragment.listDataUnfiltered;
-    }
-  }
-
-  /* AppFragment */
-  ArrayList<AppFragment.GroupItem> appFragmentGroupData;
-  ArrayList<AppFragment.GroupItem> appFragmentGroupDataBuffer;
-  boolean appFragmentGroupDataBufferIsDirty;
-  Sort appFragmentSortBy;
-  Sort appFragmentPreSortBy;
-  AppFragment.GroupItem appFragmentCachedSearchItem;
-
-  public void retainAppFragmentData() {
-    if(NetworkLog.appFragment != null) {
-      appFragmentGroupData = NetworkLog.appFragment.groupData;
-      appFragmentGroupDataBuffer = NetworkLog.appFragment.groupDataBuffer;
-      appFragmentGroupDataBufferIsDirty = NetworkLog.appFragment.groupDataBufferIsDirty;
-      appFragmentSortBy = NetworkLog.appFragment.sortBy;
-      appFragmentPreSortBy = NetworkLog.appFragment.preSortBy;
-      appFragmentCachedSearchItem = NetworkLog.appFragment.cachedSearchItem;
-    }
-  }
-
   /* HistoryLoader */
   boolean historyDialogShowing;
   int historyDialogMax;
@@ -72,8 +40,6 @@ public class RetainInstanceData {
   /* retain data */
   public RetainInstanceData() {
     retainApplicationsTrackerData();
-    retainLogFragmentData();
-    retainAppFragmentData();
     retainRetainInstanceData();
     retainHistoryLoaderData();
   }

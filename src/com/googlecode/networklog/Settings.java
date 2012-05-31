@@ -11,9 +11,7 @@ import java.io.File;
 
 public class Settings implements OnSharedPreferenceChangeListener {
   private SharedPreferences prefs;
-
   public Long maxLogEntries = null;
-
 
   // Force use of context constructor
   private Settings() {}
