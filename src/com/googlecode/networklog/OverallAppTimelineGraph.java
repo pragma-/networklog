@@ -1,152 +1,33 @@
 package com.googlecode.networklog;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.graphics.Color;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ArrayAdapter;
-import android.widget.AdapterView;
-import android.widget.TextView;
-import android.widget.CheckedTextView;
-import android.widget.ImageView;
-import android.widget.Spinner;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.AdapterView.OnItemClickListener;
 import android.graphics.drawable.Drawable;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.LayoutInflater;
-import android.util.Log;
-import android.util.AttributeSet;
 import android.graphics.drawable.shapes.Shape;
 import android.graphics.drawable.shapes.RectShape;
 import android.graphics.drawable.ShapeDrawable;
+import android.util.Log;
 
 import java.lang.Runnable;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.List;
 
-import com.jjoe64.graphview.GraphView.*;
+import com.jjoe64.graphview.GraphView.GraphViewData;
+import com.jjoe64.graphview.GraphView.GraphViewSeries;
 
-public class OverallAppTimelineGraph extends Activity
+public class OverallAppTimelineGraph extends GraphActivity
 {
-  private MyGraphView graphView;
-  private CustomAdapter adapter;
-  private double interval = NetworkLog.settings.getGraphInterval();
-  private double viewsize = NetworkLog.settings.getGraphViewsize();
-  private ArrayList<ListItem> listData = new ArrayList<ListItem>();
-  private Spinner intervalSpinner;
-  private Spinner viewsizeSpinner;
-  private String[] intervalValues;
-
-  private class ListItem {
-    Drawable mIcon;
-    int mUid;
-    String mName;
-    boolean mEnabled;
-    double size;
-  }
-
   @Override
     protected void onCreate(Bundle savedInstanceState)
     {
       super.onCreate(savedInstanceState);
-
-      requestWindowFeature(Window.FEATURE_NO_TITLE);
-      setContentView(R.layout.graph_main);
-
-      intervalValues = getResources().getStringArray(R.array.interval_values);
-
-      graphView = (MyGraphView) findViewById(R.id.graph);
       graphView.setTitle("Apps Timeline");
-      graphView.setEnableMultiLineXLabel(true);
-      graphView.setLegendSorter(new Runnable() {
-        public void run() {
-          sortLegend();
-        }
-      });
-
-      ListView listView = (ListView) findViewById(R.id.graph_legend);
-      adapter = new CustomAdapter(this, R.layout.graph_legend_item, listData);
-      listView.setAdapter(adapter);
-      listView.setOnItemClickListener(new CustomOnItemClickListener());
-      listView.setFastScrollEnabled(true);
-
-      MyOnItemSelectedListener listener = new MyOnItemSelectedListener();
-
-      intervalSpinner = (Spinner) findViewById(R.id.intervalSpinner);
-      intervalSpinner.setOnItemSelectedListener(listener);
-      ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-          this, R.array.interval_entries, android.R.layout.simple_spinner_item);
-      adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-      intervalSpinner.setAdapter(adapter);
-
-      viewsizeSpinner = (Spinner) findViewById(R.id.viewsizeSpinner);
-      viewsizeSpinner.setOnItemSelectedListener(listener);
-      adapter = ArrayAdapter.createFromResource(
-          this, R.array.interval_entries, android.R.layout.simple_spinner_item);
-      adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-      viewsizeSpinner.setAdapter(adapter);
-
-      int length = intervalValues.length;
-      String intervalString = String.valueOf((int)interval);
-      String viewsizeString = String.valueOf((int)viewsize);
-
-      for(int i = 0; i < length; i++) {
-        if(intervalString.equals(intervalValues[i])) {
-          intervalSpinner.setSelection(i);
-        }
+      if(instanceData == null) {
+        buildLegend(this);
       }
-
-      for(int i = 0; i < length; i++) {
-        if(viewsizeString.equals(intervalValues[i])) {
-          viewsizeSpinner.setSelection(i);
-        }
-      }
-
-      buildLegend(this);
       buildSeries(interval, viewsize);
     }
-
-  public class MyOnItemSelectedListener implements OnItemSelectedListener {
-    @Override
-      public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-        if(parent == intervalSpinner) {
-          interval = Double.parseDouble(intervalValues[pos]);
-          MyLog.d("Setting interval " + pos + ", " + interval);
-          NetworkLog.settings.setGraphInterval((long)interval);
-        } else {
-          viewsize = Double.parseDouble(intervalValues[pos]);
-          MyLog.d("Setting viewsize " + pos + ", " + viewsize);
-          NetworkLog.settings.setGraphViewsize((long)viewsize);
-        }
-        buildSeries(interval, viewsize);
-      }
-
-    @Override
-      public void onNothingSelected(AdapterView parent) {
-        // do nothing
-      }
-  }
-
-  public boolean seriesEnabled(int uid) {
-    for(ListItem item : listData) {
-      if(item.mUid == uid) {
-        return item.mEnabled;
-      }
-    }
-    return true;
-  }
 
   public void buildLegend(Context context) {
     synchronized(NetworkLog.appFragment.groupDataBuffer) {
@@ -169,14 +50,14 @@ public class OverallAppTimelineGraph extends Activity
             shape.setIntrinsicWidth((int)(18 * (density + 0.5)));
             shape.setIntrinsicHeight((int)(18 * (density + 0.5)));
 
-            ListItem legend = new ListItem();
+            LegendItem legend = new LegendItem();
 
             legend.mIcon = shape;
-            legend.mUid = item.app.uid;
+            legend.mHashCode = String.valueOf(item.app.uid).hashCode();
             legend.mName = item.app.name;
             legend.mEnabled = true;
 
-            listData.add(legend);
+            legendData.add(legend);
 
             color++;
 
@@ -187,30 +68,6 @@ public class OverallAppTimelineGraph extends Activity
           }
         }
       }
-    }
-  }
-
-  private Comparator<ListItem> legendSorter = new Comparator<ListItem>() {
-    public int compare(ListItem o1, ListItem o2) {
-      return o1.size > o2.size ? -1 : (o1.size == o2.size) ? 0 : 1;
-    }
-  };
-
-  private HashMap<Integer, Double> legendMap = new HashMap<Integer, Double>();
-  
-  public void sortLegend() {
-    for(GraphViewSeries series : graphView.graphSeries) {
-      legendMap.put(series.id, series.size);
-    }
-
-    synchronized(listData) {
-      for(ListItem item : listData) {
-        item.size = legendMap.get(item.mUid);
-      }
-
-      Collections.sort(listData, legendSorter);
-
-      adapter.notifyDataSetChanged();
     }
   }
 
@@ -314,16 +171,19 @@ public class OverallAppTimelineGraph extends Activity
               i++;
             }
 
-            graphView.addSeries(new GraphViewSeries(item.app.uid, item.app.toString(), Color.parseColor(getResources().getString(Colors.distinctColor[color])), seriesData));
+            int hashCode = String.valueOf(item.app.uid).hashCode();
+
+            graphView.addSeries(new GraphViewSeries(hashCode, item.app.toString(), Color.parseColor(getResources().getString(Colors.distinctColor[color])), seriesData));
 
             boolean enabled = true;
-            for(ListItem legend : listData) {
-              if(legend.mUid == item.app.uid) {
+            for(LegendItem legend : legendData) {
+              if(legend.mHashCode == hashCode) {
                 enabled = legend.mEnabled;
                 break;
               }
             }
-            graphView.setSeriesEnabled(item.app.uid, enabled);
+
+            graphView.setSeriesEnabled(hashCode, enabled);
 
             color++;
 
@@ -341,6 +201,11 @@ public class OverallAppTimelineGraph extends Activity
 
     double viewStart = maxX - viewSize;
 
+    if(instanceData != null) {
+      viewStart = instanceData.viewportStart;
+      viewSize = instanceData.viewsize;
+    }
+
     if(viewStart < minX)
     {
       viewStart = minX;
@@ -351,87 +216,9 @@ public class OverallAppTimelineGraph extends Activity
       viewSize = maxX - viewStart;
     }
 
+
     graphView.setViewPort(viewStart, viewSize);
-    graphView.setScrollable(true);
-    graphView.setScalable(true);
-    graphView.setShowLegend(false);
     graphView.invalidateLabels();
     graphView.invalidate();
-  }
-
-  private class CustomOnItemClickListener implements OnItemClickListener {
-    @Override
-      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        ListItem item = listData.get(position);
-        item.mEnabled = !item.mEnabled;
-
-        CheckedTextView ctv = (CheckedTextView) view.findViewById(R.id.legendName);
-        ctv.setChecked(item.mEnabled);
-
-        graphView.setSeriesEnabled(item.mUid, item.mEnabled);
-        graphView.invalidateLabels();
-        graphView.invalidate();
-      }
-  }
-
-  private class CustomAdapter extends ArrayAdapter<ListItem> {
-    LayoutInflater mInflater = (LayoutInflater) getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
-
-    public CustomAdapter(Context context, int resource, List<ListItem> objects) {
-      super(context, resource, objects);
-    }
-
-    @Override
-      public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder = null;
-
-        ImageView icon;
-        CheckedTextView name;
-
-        ListItem item = getItem(position);
-
-        if(convertView == null) {
-          convertView = mInflater.inflate(R.layout.graph_legend_item, null);
-          holder = new ViewHolder(convertView);
-          convertView.setTag(holder);
-        } else {
-          holder = (ViewHolder) convertView.getTag();
-        }
-
-        icon = holder.getIcon();
-        icon.setImageDrawable(item.mIcon);
-
-        name = holder.getName();
-        name.setText("(" + item.mUid + ") " + item.mName);
-        name.setChecked(item.mEnabled);
-
-        return convertView;
-      }
-  }
-
-  private class ViewHolder {
-    private View mView;
-    private ImageView mIcon;
-    private CheckedTextView mName;
-
-    public ViewHolder(View view) {
-      mView = view;
-    }
-
-    public ImageView getIcon() {
-      if(mIcon == null) {
-        mIcon = (ImageView) mView.findViewById(R.id.legendIcon);
-      }
-
-      return mIcon;
-    }
-
-    public CheckedTextView getName() {
-      if(mName == null) {
-        mName = (CheckedTextView) mView.findViewById(R.id.legendName);
-      }
-
-      return mName;
-    }
   }
 }

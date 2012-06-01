@@ -70,7 +70,7 @@ abstract public class GraphView extends LinearLayout {
         if(enableMultiLineXLabel) {
           bottom_border *= 2.0f;  // add space for one more line
         }
-        
+
         float horstart = 0;
         float height = getHeight();
         float width = getWidth() - 1;
@@ -114,7 +114,7 @@ abstract public class GraphView extends LinearLayout {
             paint.setTextAlign(Align.LEFT);
           else
             paint.setTextAlign(Align.CENTER);
-          
+
           paint.setColor(Color.WHITE);
 
           if(enableMultiLineXLabel) {
@@ -179,6 +179,10 @@ abstract public class GraphView extends LinearLayout {
         verlabels = null;
         viewVerLabels.invalidate();
         invalidate();
+
+        if(onScrollChangeListener != null) {
+          onScrollChangeListener.scrollChanged(viewportStart);
+        }
       }
     }
 
@@ -266,7 +270,7 @@ abstract public class GraphView extends LinearLayout {
       this.id = id;
       this.enabled = true;
     }
-    
+
     public GraphViewSeries(String description, Integer color, GraphViewData[] values) {
       super();
       this.description = description;
@@ -332,7 +336,7 @@ abstract public class GraphView extends LinearLayout {
   private String[] verlabels;
   private String title = "";
   private boolean scrollable;
-  private double viewportStart;
+  public double viewportStart;
   private double viewportSize;
   private final View viewVerLabels;
   private ScaleGestureDetector scaleDetector;
@@ -369,7 +373,7 @@ abstract public class GraphView extends LinearLayout {
 
     viewVerLabels = new VerLabelsView(context);
     layout.addView(viewVerLabels, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 7));
-    
+
     layout.addView(new GraphViewContentView(context), new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
 
     layout = new LinearLayout(context);
@@ -543,21 +547,21 @@ abstract public class GraphView extends LinearLayout {
     double max = getMaxY();
 
     /*
-    float maxWidth = 0;
-    float width = 0;
-    */
+       float maxWidth = 0;
+       float width = 0;
+       */
 
     for (int i=0; i<=numLabels; i++) {
       labels[numLabels-i] = formatLabel(min + ((max-min)*i/numLabels), false);
-    
+
       /*
-      width = paint.measureText(labels[numLabels-i]);
-      Log.d("[IptablesLog]", "width for [" + labels[numLabels-i] + "] = " + width); 
-      if(width > maxWidth)
-        maxWidth = width;
-        */
+         width = paint.measureText(labels[numLabels-i]);
+         Log.d("[IptablesLog]", "width for [" + labels[numLabels-i] + "] = " + width); 
+         if(width > maxWidth)
+         maxWidth = width;
+         */
     }
-    
+
     //Log.d("[IptablesLog]", "max width: " + (int)maxWidth);
     //viewVerLabels.setLayoutParams(new LayoutParams((int)maxWidth, LayoutParams.FILL_PARENT, 10));
     return labels;
@@ -698,6 +702,26 @@ abstract public class GraphView extends LinearLayout {
     manualYAxis = true;
   }
 
+  public static abstract class OnScaleChangeListener {
+    public abstract void scaleChanged(double newViewportSize);
+  }
+
+  public OnScaleChangeListener onScaleChangeListener = null;
+
+  public void setOnScaleChangeListener(OnScaleChangeListener listener) {
+    onScaleChangeListener = listener;
+  }
+
+  public static abstract class OnScrollChangeListener {
+    public abstract void scrollChanged(double newViewportStart);
+  }
+
+  public OnScrollChangeListener onScrollChangeListener = null;
+
+  public void setOnScrollChangeListener(OnScrollChangeListener listener) {
+    onScrollChangeListener = listener;
+  }
+
   /**
    * this forces scrollable = true
    * @param scalable
@@ -738,6 +762,11 @@ abstract public class GraphView extends LinearLayout {
           numberformatter = null;
           invalidate();
           viewVerLabels.invalidate();
+
+          if(onScaleChangeListener != null) {
+            onScaleChangeListener.scaleChanged(viewportSize);
+          }
+
           return true;
         }
       });
