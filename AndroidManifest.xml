@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.googlecode.networklog"
   android:versionCode="20500"
-  android:versionName="2.5-rc1">
+  android:versionName="2.5-rc2">
   <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="15" />
   <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
   <application

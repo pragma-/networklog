@@ -1,13 +1,14 @@
 package com.googlecode.networklog;
 
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.util.Log;
 import android.content.Intent;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.FileWriter;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.BufferedWriter;
 
 
@@ -24,11 +25,11 @@ public class Iptables {
 
   public static boolean checkRoot(Context context) {
     synchronized(NetworkLog.scriptLock) {
-      String scriptFile = new ContextWrapper(context).getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
+      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        script.println("iptables");
+        script.println("exit 0");
         script.flush();
         script.close();
       } catch(java.io.IOException e) {
@@ -47,27 +48,75 @@ public class Iptables {
     }
   }
 
+  public static void installBinaries(Context context) {
+    String iptablesPath = context.getFilesDir().getAbsolutePath() + File.separator + "iptables_armv5";
+    String busyboxPath  = context.getFilesDir().getAbsolutePath() + File.separator + "busybox_g1";
+
+    if(!new File(iptablesPath).isFile()) {
+      try {
+        MyLog.d("iptables_armv5 not found: installing to " + iptablesPath);
+
+        final FileOutputStream out = new FileOutputStream(iptablesPath);
+        final InputStream in = context.getResources().openRawResource(R.raw.iptables_armv5);
+        byte buf[] = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+          out.write(buf, 0, len);
+        }
+        out.close();
+        in.close();
+        Runtime.getRuntime().exec("chmod 755 " + iptablesPath).waitFor();
+      } catch (Exception e) {
+        showError(context, "Network Log", "Install iptables error: " + e.getMessage());
+      }
+    } else {
+      MyLog.d("iptables_armv5 found at " + iptablesPath);
+    }
+
+    if(!new File(busyboxPath).isFile()) {
+      MyLog.d("busybox_g1 not found: installing to " + busyboxPath);
+
+      try {
+        final FileOutputStream out = new FileOutputStream(busyboxPath);
+        final InputStream in = context.getResources().openRawResource(R.raw.busybox_g1);
+        byte buf[] = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+          out.write(buf, 0, len);
+        }
+        out.close();
+        in.close();
+        Runtime.getRuntime().exec("chmod 755 " + busyboxPath).waitFor();
+      } catch (Exception e) {
+        showError(context, "Network Log", "Install busybox error: " + e.getMessage());
+      }
+    } else {
+      MyLog.d("busybox_g1 found at " + busyboxPath);
+    }
+  }
+
   public static boolean addRules(Context context) {
     if(checkRules(context) == true) {
       removeRules(context);
     }
 
     synchronized(NetworkLog.scriptLock) {
-      String scriptFile = new ContextWrapper(context).getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
+      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
+      String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + "iptables_armv5";
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
 
         for(String iface : CELL_INTERFACES) {
-          script.println("iptables -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+          script.println(iptables + " -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
 
-          script.println("iptables -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+          script.println(iptables + " -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
         }
 
         for(String iface : WIFI_INTERFACES) {
-          script.println("iptables -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+          script.println(iptables + " -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
 
-          script.println("iptables -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+          script.println(iptables + " -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
         }
 
         script.flush();
@@ -88,25 +137,26 @@ public class Iptables {
   }
 
   public static boolean removeRules(Context context) {
+    String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + "iptables_armv5";
     int tries = 0;
 
     while(checkRules(context) == true) {
       synchronized(NetworkLog.scriptLock) {
-        String scriptFile = new ContextWrapper(context).getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
+        String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
 
         try {
           PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
 
           for(String iface : CELL_INTERFACES) {
-            script.println("iptables -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+            script.println(iptables + " -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
 
-            script.println("iptables -D INPUT -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+            script.println(iptables + " -D INPUT -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
           }
 
           for(String iface : WIFI_INTERFACES) {
-            script.println("iptables -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+            script.println(iptables + " -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
 
-            script.println("iptables -D INPUT -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+            script.println(iptables + " -D INPUT -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
           }
 
           script.flush();
@@ -135,12 +185,13 @@ public class Iptables {
   }
 
   public static boolean checkRules(Context context) {
+    String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + "iptables_armv5";
     synchronized(NetworkLog.scriptLock) {
-      String scriptFile = new ContextWrapper(context).getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
+      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        script.println("iptables -L");
+        script.println(iptables + " -L");
         script.flush();
         script.close();
       } catch(java.io.IOException e) {

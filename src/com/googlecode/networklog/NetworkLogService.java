@@ -157,6 +157,8 @@ public class NetworkLogService extends Service {
         has_root = true;
       }
 
+      Iptables.installBinaries(this);
+
       if(instance != null) {
         MyLog.d("[service] Last instance destroyed unexpectedly");
       }
@@ -647,10 +649,11 @@ public class NetworkLogService extends Service {
 
     synchronized(NetworkLog.scriptLock) {
       String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + Iptables.SCRIPT;
+      String busybox = getFilesDir().getAbsolutePath() + File.separator + "busybox_g1";
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        script.println("grep NetworkLogEntry /proc/kmsg");
+        script.println(busybox + " grep NetworkLogEntry /proc/kmsg");
         script.close();
       } catch(java.io.IOException e) {
         e.printStackTrace();
@@ -704,6 +707,8 @@ public class NetworkLogService extends Service {
       String string, pid_string, ppid_string, cmd = "";
       int pid = 0, ppid = 0, token, pos, space;
       boolean error = false;
+
+      String busybox = getFilesDir().getAbsolutePath() + File.separator + "busybox_g1";
 
       while(true) {
         String line = command.readStdoutBlocking();
@@ -777,7 +782,7 @@ public class NetworkLogService extends Service {
           MyLog.d(cmd + " is our child");
           networklog_pid = pid;
 
-          if(cmd.equals("grep")) {
+          if(cmd.equals(busybox)) {
             MyLog.d("Killing tracker " + pid);
 
             try {
