@@ -1,6 +1,9 @@
 # keystore
 *.keystore
 
+# vim swp files
+*.swp
+
 # logs
 log-*
 
