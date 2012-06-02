@@ -1,6 +1,6 @@
 #Android Network Log Monitor
 
-_Requires rooted devices with iptables and busybox installed._
+_Requires rooted devices._
 
 ###**Wondering when and to where your Android apps are connecting across the Internet? Look no further! Network Log is for you!**
 
@@ -37,7 +37,7 @@ Adjustable interval from 1 ms to 48 hours for summing data:
 
 Adjustable **_pinch-zoomable_** and **_scrollable_** viewsize.
 
-_Requires rooted devices with iptables and busybox installed._
+_Requires rooted devices._
 
 Full source code available at [http://code.google.com/p/iptableslog/source/list](http://code.google.com/p/iptableslog/source/list) and [https://github.com/pragma-/networklog](https://github.com/pragma-/networklog).
 
@@ -45,8 +45,8 @@ Full source code available at [http://code.google.com/p/iptableslog/source/list]
 
 _Note: While the app itself is designed to use minimal CPU/battery, you can further reduce the CPU/battery use by exiting the app after starting the logging service._
 
-![](http://imgbin.org/images/7990.png) &nbsp; ![](http://imgbin.org/images/7991.png)
-![](http://imgbin.org/images/7992.png) &nbsp; ![](http://imgbin.org/images/7993.png)
-![](http://imgbin.org/images/7994.png) &nbsp; ![](http://imgbin.org/images/7995.png)
+![](http://imgbin.org/images/8254.png) &nbsp; ![](http://imgbin.org/images/8251.png)
+![](http://imgbin.org/images/7992.png) &nbsp; ![](http://imgbin.org/images/8252.png)
+![](http://imgbin.org/images/8253.png) &nbsp; ![](http://imgbin.org/images/7995.png)
 ![](http://imgbin.org/images/8053.png) &nbsp; ![](http://imgbin.org/images/8056.png)
 
