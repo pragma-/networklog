@@ -51,35 +51,13 @@ public abstract class GraphActivity extends Activity
   private Spinner viewsizeSpinner;
   private String[] intervalValues;
   private double[] intervalValuesDouble;
-  private int fromUser = 0;
+  private int spinnerInit = 0;
+  private int lastViewsizePos = -1;
   private double viewportStart;
 
-  private class MyOnScaleChangeListener extends OnScaleChangeListener {
-    @Override
-      public void scaleChanged(double newViewportSize) {
-        viewsize = newViewportSize;
-        for(int i = intervalValuesDouble.length - 1; i >= 0; i--) {
-          if(newViewportSize >= intervalValuesDouble[i]) {
-            fromUser++;
-            viewsizeSpinner.setSelection(i);
-            break;
-          }
-        }
-      }
-  }
-
-  /* Unused code commented out and retained for example purposes */
-  /*
-  private class MyOnScrollChangeListener extends OnScrollChangeListener {
-    @Override
-      public void scrollChanged(double newViewportStart) {
-        // unused in this app
-      }
-  }
-  */
-
   protected class InstanceData {
-    int fromUser;
+    int spinnerInit;
+    int lastViewsizePos;
     double interval;
     double viewsize;
     ArrayList<LegendItem> legendData;
@@ -94,7 +72,8 @@ public abstract class GraphActivity extends Activity
     public Object onRetainNonConfigurationInstance() {
       instanceData = new InstanceData();
 
-      instanceData.fromUser = fromUser;
+      instanceData.lastViewsizePos = lastViewsizePos;
+      instanceData.spinnerInit = spinnerInit;
       instanceData.interval = interval;
       instanceData.viewsize = viewsize;
       instanceData.legendData = legendData;
@@ -120,7 +99,8 @@ public abstract class GraphActivity extends Activity
         legendData = instanceData.legendData;
         viewsize = instanceData.viewsize;
         interval = instanceData.interval;
-        fromUser = instanceData.fromUser;
+        spinnerInit = instanceData.spinnerInit;
+        lastViewsizePos = instanceData.lastViewsizePos;
       } else {
         legendData = new ArrayList<LegendItem>();
         interval = NetworkLog.settings.getGraphInterval();
@@ -136,9 +116,28 @@ public abstract class GraphActivity extends Activity
       
       graphView = (MyGraphView) findViewById(R.id.graph);
       graphView.setEnableMultiLineXLabel(true);
-      graphView.setOnScaleChangeListener(new MyOnScaleChangeListener());
+      graphView.setOnScaleChangeListener(new OnScaleChangeListener() {
+        @Override
+        public void scaleChanged(double newViewportSize) {
+          viewsize = newViewportSize;
+          for(int i = intervalValuesDouble.length - 1; i >= 0; i--) {
+            if(newViewportSize >= intervalValuesDouble[i]) {
+              lastViewsizePos = i; // force onItemSelected() listener to ignore programmatical call
+              viewsizeSpinner.setSelection(i);
+              break;
+            }
+          }
+        }
+      });
       /* Unused code commented out and retained for example purposes */
-      // graphView.setOnScrollChangeListener(new MyOnScrollChangeListener());
+      /*
+      graphView.setOnScrollChangeListener(new MyOnScrollChangeListener() {
+        @Override
+        public void scrollChanged(double newViewportStart) {
+          // unused in this app
+        }
+      });
+      */
       graphView.setScrollable(true);
       graphView.setScalable(true);
       graphView.setShowLegend(false);
@@ -176,9 +175,7 @@ public abstract class GraphActivity extends Activity
 
       for(int i = 0; i < length; i++) {
         if(intervalString.equals(intervalValues[i])) {
-          if(instanceData != null) {
-            fromUser++;
-          }
+          spinnerInit++;
           intervalSpinner.setSelection(i);
           break;
         }
@@ -186,9 +183,7 @@ public abstract class GraphActivity extends Activity
 
       for(int i = 0; i < length; i++) {
         if(viewsizeString.equals(intervalValues[i])) {
-          if(instanceData != null) {
-            fromUser++;
-          }
+          spinnerInit++;
           viewsizeSpinner.setSelection(i);
           break;
         }
@@ -198,8 +193,9 @@ public abstract class GraphActivity extends Activity
   public class MyOnItemSelectedListener implements OnItemSelectedListener {
     @Override
       public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-        if(fromUser > 0) {
-          fromUser--;
+        if(spinnerInit > 0) {
+          // Don't process selection event if spinner is initializing
+          spinnerInit--;
           return;
         }
 
@@ -208,9 +204,14 @@ public abstract class GraphActivity extends Activity
           MyLog.d("Setting interval " + pos + ", " + interval);
           NetworkLog.settings.setGraphInterval((long)interval);
         } else {
+          if(lastViewsizePos == pos) {
+            // Skip programmatical call to setSelected()
+            return;
+          }
           viewsize = Double.parseDouble(intervalValues[pos]);
           MyLog.d("Setting viewsize " + pos + ", " + viewsize);
           NetworkLog.settings.setGraphViewsize((long)viewsize);
+          lastViewsizePos = pos;
         }
         buildSeries(interval, viewsize);
       }
