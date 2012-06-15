@@ -43,4 +43,4 @@ alias lc=logcat
 alias mi=meminfo
 alias procrank=procrank_sample
 alias v=check_status
-alias jdb=jdb_debug
+alias j=jdb_debug
