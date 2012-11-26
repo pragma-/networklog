@@ -220,6 +220,7 @@ public abstract class GraphActivity extends Activity
           lastViewsizePos = pos;
         }
         buildSeries(interval, viewsize);
+        graphView.invalidateContent();
       }
 
     @Override
@@ -266,7 +267,7 @@ public abstract class GraphActivity extends Activity
 
         graphView.setSeriesEnabled(item.mHashCode, item.mEnabled);
         graphView.invalidateLabels();
-        graphView.invalidate();
+        graphView.invalidateContent();
       }
   }
 

@@ -33,6 +33,7 @@ function push()
   git push github master
   git push bb master
   git push gc master
+  git push gitorious master
 }
 
 alias b=clean_build_install_and_logcat

@@ -179,6 +179,7 @@ abstract public class GraphView extends LinearLayout {
         verlabels = null;
         viewVerLabels.invalidate();
         invalidate();
+        graphContent.invalidate();
 
         if(onScrollChangeListener != null) {
           onScrollChangeListener.scrollChanged(viewportStart);
@@ -229,6 +230,7 @@ abstract public class GraphView extends LinearLayout {
           }
           if(handled) {
             invalidate();
+            graphContent.invalidate();
           }
         }
         return handled;
@@ -354,6 +356,11 @@ abstract public class GraphView extends LinearLayout {
   private Runnable legendSorter;
   private Rect rect;
   private boolean enableMultiLineXLabel;
+  private GraphViewContentView graphContent;
+
+  public void invalidateContent() {
+    graphContent.invalidate();
+  }
 
   public GraphView(Context context, AttributeSet attrs) {
     super(context, attrs);
@@ -374,7 +381,8 @@ abstract public class GraphView extends LinearLayout {
     viewVerLabels = new VerLabelsView(context);
     layout.addView(viewVerLabels, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 7));
 
-    layout.addView(new GraphViewContentView(context), new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
+    graphContent = new GraphViewContentView(context);
+    layout.addView(graphContent, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
 
     layout = new LinearLayout(context);
     addView(layout, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 0));
@@ -761,6 +769,7 @@ abstract public class GraphView extends LinearLayout {
           horlabels = null;
           numberformatter = null;
           invalidate();
+          graphContent.invalidate();
           viewVerLabels.invalidate();
 
           if(onScaleChangeListener != null) {
@@ -830,6 +839,7 @@ abstract public class GraphView extends LinearLayout {
           viewportStart = ((percentage / 100.0) * ((maxX - viewportSize) - minX)) + minX;
         }
         invalidate();
+        graphContent.invalidate();
       }
 
     @Override
