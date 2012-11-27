@@ -2,10 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
   <item android:id="@+id/overallgraph"
     android:title="Graph"
-    android:showAsAction="ifRoom" />
+    android:showAsAction="ifRoom|withText" />
   <item android:id="@+id/sort"
     android:title="Sort"
-    android:showAsAction="ifRoom">
+    android:showAsAction="ifRoom|withText">
     <menu>
       <group android:checkableBehavior="single">
         <item android:id="@+id/sort_by_uid"
@@ -23,7 +23,7 @@
   </item>
   <item android:id="@+id/filter"
     android:title="Filter"
-    android:showAsAction="ifRoom" />
+    android:showAsAction="ifRoom|withText" />
   <item android:id="@+id/service_toggle"
     android:title="Start Logging"
     android:showAsAction="ifRoom|withText" />

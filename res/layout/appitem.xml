@@ -11,7 +11,7 @@
   <ImageView 
     android:layout_width="72dp"
     android:layout_height="72dp"
-    android:id="@+id/appIcon" 
+    android:id="@+id/appIconx" 
     android:scaleType="centerInside"
     android:adjustViewBounds="false" 
     android:layout_below="@id/appDivider" />
@@ -19,7 +19,7 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:id="@+id/appName" 
-    android:layout_toRightOf="@id/appIcon" />
+    android:layout_toRightOf="@id/appIconx" />
   <TextView
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"

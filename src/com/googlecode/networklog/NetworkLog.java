@@ -21,6 +21,7 @@ import android.content.Context;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 import android.view.View;
 import android.view.LayoutInflater;
 import android.util.Log;
@@ -40,6 +41,7 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.app.ActionBar;
 
 import java.util.Enumeration;
 import java.net.NetworkInterface;
@@ -325,6 +327,10 @@ public class NetworkLog extends SherlockFragmentActivity {
 
       setContentView(R.layout.main);
 
+      ActionBar actionBar = getSupportActionBar();
+      actionBar.setCustomView(R.layout.actionbar_top);
+      actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_CUSTOM);
+
       if(history == null) {
         history = new HistoryLoader();
       }
@@ -515,20 +521,36 @@ public class NetworkLog extends SherlockFragmentActivity {
       }
 
       item = menu.findItem(R.id.service_toggle);
+      ToggleButton button = (ToggleButton) findViewById(R.id.actionbar_service_toggle);
 
       if(isServiceRunning(this, NetworkLogService.class.getName())) {
         item.setTitle("Stop Logging");
+        button.setChecked(true);
       } else {
         item.setTitle("Start Logging");
+        button.setChecked(false);
       }
 
       return true;
     }
 
+  public void serviceToggle(View view) {
+    ToggleButton button = (ToggleButton)view;
+
+    if(!isServiceRunning(this, NetworkLogService.class.getName())) {
+      startService();
+      button.setChecked(true);
+    } else {
+      stopService();
+      button.setChecked(false);
+    }
+
+    invalidateOptionsMenu();
+  }
+
   @Override
     public boolean onOptionsItemSelected(MenuItem item) {
       switch(item.getItemId()) {
-
         case R.id.filter:
           showFilterDialog();
           break;

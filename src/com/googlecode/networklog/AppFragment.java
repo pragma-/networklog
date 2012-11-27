@@ -1226,7 +1226,7 @@ public class AppFragment extends Fragment {
 
     public ImageView getIcon() {
       if(mIcon == null) {
-        mIcon = (ImageView) mView.findViewById(R.id.appIcon);
+        mIcon = (ImageView) mView.findViewById(R.id.appIconx);
       }
 
       return mIcon;
