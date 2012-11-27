@@ -27,6 +27,13 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Toast;
 import android.util.TypedValue;
+import android.view.MenuItem;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.MenuInflater;
+import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.content.ClipboardManager;
+import android.content.ClipData;
 
 import android.support.v4.app.Fragment;
 
@@ -171,6 +178,8 @@ public class LogFragment extends Fragment {
 
     layout.addView(listView);
 
+    registerForContextMenu(listView);
+
     if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0) {
       // trigger filtering
       setFilter("");
@@ -179,21 +188,63 @@ public class LogFragment extends Fragment {
     return layout;
   }
 
+  @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+      super.onCreateContextMenu(menu, v, menuInfo);
+      MenuInflater inflater = getActivity().getMenuInflater();
+      inflater.inflate(R.layout.log_context_menu, menu);
+    }
+
+  @Override
+    public boolean onContextItemSelected(MenuItem item) {
+      AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+
+      ListItem listItem = listData.get(info.position);
+
+      switch(item.getItemId()) {
+        case R.id.log_copy_src_ip:
+          copySourceIp(listItem);
+          return true;
+        case R.id.log_copy_dst_ip:
+          copyDestIp(listItem);
+          return true;
+        case R.id.log_graph:
+          showGraph(listItem);
+          return true;
+        default:
+          return super.onContextItemSelected(item);
+      }
+    }
+
+  public void copySourceIp(ListItem item) {
+    ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+    ClipData clip = ClipData.newPlainText("NetworkLog Source IP", item.srcAddr + ":" + item.srcPort);
+    clipboard.setPrimaryClip(clip);
+  }
+
+  public void copyDestIp(ListItem item) {
+    ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+    ClipData clip = ClipData.newPlainText("NetworkLog Dest IP", item.dstAddr + ":" + item.dstPort);
+    clipboard.setPrimaryClip(clip);
+  }
+
+  public void showGraph(ListItem item) {
+    if(item.mUidString == null) {
+      item.mUidString = String.valueOf(item.mUid);
+    }
+
+    startActivity(new Intent(getActivity().getApplicationContext(), AppTimelineGraph.class)
+        .putExtra("app_uid", item.mUidString)
+        .putExtra("src_addr", item.srcAddr)
+        .putExtra("src_port", item.srcPort)
+        .putExtra("dst_addr", item.dstAddr)
+        .putExtra("dst_port", item.dstPort));
+  }
+
   private class CustomOnItemClickListener implements OnItemClickListener {
     @Override
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        ListItem item = listData.get(position);
-
-        if(item.mUidString == null) {
-          item.mUidString = String.valueOf(item.mUid);
-        }
-
-        startActivity(new Intent(getActivity().getApplicationContext(), AppTimelineGraph.class)
-            .putExtra("app_uid", item.mUidString)
-            .putExtra("src_addr", item.srcAddr)
-            .putExtra("src_port", item.srcPort)
-            .putExtra("dst_addr", item.dstAddr)
-            .putExtra("dst_port", item.dstPort));
+        showGraph(listData.get(position));
       }
   }
 

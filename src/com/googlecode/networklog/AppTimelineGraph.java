@@ -26,9 +26,9 @@ public class AppTimelineGraph extends GraphActivity
 {
   private String app_uid = null;
   private String src_addr;
-  private String src_port;
+  private int src_port;
   private String dst_addr;
-  private String dst_port;
+  private int dst_port;
 
   @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,9 +39,9 @@ public class AppTimelineGraph extends GraphActivity
       if(extras != null) {
         app_uid = extras.getString("app_uid");
         src_addr = extras.getString("src_addr");
-        src_port = extras.getString("src_port");
+        src_port = extras.getInt("src_port");
         dst_addr = extras.getString("dst_addr");
-        dst_port = extras.getString("dst_port");
+        dst_port = extras.getInt("dst_port");
       }
 
       if(app_uid == null) {
