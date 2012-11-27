@@ -130,6 +130,7 @@ public abstract class GraphActivity extends Activity
             if(newViewportSize >= intervalValuesDouble[i]) {
               lastViewsizePos = i; // force onItemSelected() listener to ignore programmatical call
               viewsizeSpinner.setSelection(i);
+              NetworkLog.settings.setGraphViewsize((long) intervalValuesDouble[i]);
               break;
             }
           }

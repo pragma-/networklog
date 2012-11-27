@@ -31,7 +31,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
   }
 
   public String getHistorySize() {
-    return prefs.getString("history_size", "3600000");
+    return prefs.getString("history_size", "14400000");
   }
 
   public String getLogFile() {
@@ -137,11 +137,11 @@ public class Settings implements OnSharedPreferenceChangeListener {
   }
 
   public long getGraphInterval() {
-    return prefs.getLong("interval", 1000);
+    return prefs.getLong("interval", 300000);
   }
 
   public long getGraphViewsize() {
-    return prefs.getLong("viewsize", 1000 * 60 * 15);
+    return prefs.getLong("viewsize", 1000 * 60 * 60 * 4);
   }
 
   public void setResolveHosts(boolean value) {
