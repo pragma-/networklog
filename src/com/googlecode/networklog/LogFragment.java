@@ -225,7 +225,7 @@ public class LogFragment extends Fragment {
     String srcAddr;
     String srcPort;
 
-    if(NetworkLog.resolveHosts) {
+    if(NetworkLog.resolveHosts && NetworkLog.resolveCopies) {
       String resolved = NetworkLog.resolver.resolveAddress(item.srcAddr);
 
       if(resolved != null) {
@@ -237,7 +237,7 @@ public class LogFragment extends Fragment {
       srcAddr = item.srcAddr;
     }
 
-    if(NetworkLog.resolvePorts) {
+    if(NetworkLog.resolvePorts && NetworkLog.resolveCopies) {
       srcPort = NetworkLog.resolver.resolveService(String.valueOf(item.srcPort));
     } else {
       srcPort = String.valueOf(item.srcPort);
@@ -252,7 +252,7 @@ public class LogFragment extends Fragment {
     String dstAddr;
     String dstPort;
 
-    if(NetworkLog.resolveHosts) {
+    if(NetworkLog.resolveHosts && NetworkLog.resolveCopies) {
       String resolved = NetworkLog.resolver.resolveAddress(item.dstAddr);
 
       if(resolved != null) {
@@ -264,7 +264,7 @@ public class LogFragment extends Fragment {
       dstAddr = item.dstAddr;
     }
 
-    if(NetworkLog.resolvePorts) {
+    if(NetworkLog.resolvePorts && NetworkLog.resolveCopies) {
       dstPort = NetworkLog.resolver.resolveService(String.valueOf(item.dstPort));
     } else {
       dstPort = String.valueOf(item.dstPort);

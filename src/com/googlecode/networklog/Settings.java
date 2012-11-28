@@ -66,7 +66,11 @@ public class Settings implements OnSharedPreferenceChangeListener {
   }
 
   public boolean getResolvePorts() {
-    return prefs.getBoolean("resolve_ports", false);
+    return prefs.getBoolean("resolve_ports", true);
+  }
+
+  public boolean getResolveCopies() {
+    return !prefs.getBoolean("copy_original_addrs", false);
   }
 
   public String getFilterTextInclude() {
@@ -153,6 +157,12 @@ public class Settings implements OnSharedPreferenceChangeListener {
   public void setResolvePorts(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("resolve_ports", value);
+    editor.commit();
+  }
+
+  public void setResolveCopies(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("copy_original_addrs", value);
     editor.commit();
   }
 
@@ -345,6 +355,13 @@ public class Settings implements OnSharedPreferenceChangeListener {
         NetworkLog.resolvePorts = value;
         NetworkLog.logFragment.refreshAdapter();
         NetworkLog.appFragment.refreshAdapter();
+        return;
+      }
+
+      if(key.equals("copy_original_addrs")) {
+        boolean value = prefs.getBoolean(key, false);
+        MyLog.d("New " + key + " value [" + value + "]");
+        NetworkLog.resolveCopies = !value;
         return;
       }
 

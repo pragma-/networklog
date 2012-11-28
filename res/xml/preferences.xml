@@ -13,6 +13,11 @@
         android:key="resolve_ports"
         android:title="Resolve ports"
         android:summary="Resolve known port numbers to service names (Note: Uses internal list; no network queries made)" />
+      <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="copy_original_addrs"
+        android:title="Copy unresolved addresses"
+        android:summary="When copying to clipboard, use original address/port instead of resolved addresses" />
       <Preference
         android:persistent="false"
         android:key="filter_dialog"

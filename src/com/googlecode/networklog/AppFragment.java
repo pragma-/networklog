@@ -490,7 +490,7 @@ public class AppFragment extends Fragment {
       String sentAddressString;
       String sentPortString;
 
-      if(NetworkLog.resolveHosts) {
+      if(NetworkLog.resolveHosts && NetworkLog.resolveCopies) {
         sentAddressString = NetworkLog.resolver.resolveAddress(childItem.sentAddress);
 
         if(sentAddressString == null) {
@@ -501,7 +501,7 @@ public class AppFragment extends Fragment {
         sentAddressString = childItem.sentAddress;
       }
 
-      if(NetworkLog.resolvePorts) {
+      if(NetworkLog.resolvePorts && NetworkLog.resolveCopies) {
         sentPortString = NetworkLog.resolver.resolveService(String.valueOf(childItem.sentPort));
       } else {
         sentPortString = String.valueOf(childItem.sentPort);
@@ -513,7 +513,7 @@ public class AppFragment extends Fragment {
       String receivedAddressString;
       String receivedPortString;
 
-      if(NetworkLog.resolveHosts) {
+      if(NetworkLog.resolveHosts && NetworkLog.resolveCopies) {
         receivedAddressString = NetworkLog.resolver.resolveAddress(childItem.receivedAddress);
 
         if(receivedAddressString == null) {
@@ -524,7 +524,7 @@ public class AppFragment extends Fragment {
         receivedAddressString = childItem.receivedAddress;
       }
 
-      if(NetworkLog.resolvePorts) {
+      if(NetworkLog.resolvePorts && NetworkLog.resolveCopies) {
         receivedPortString = NetworkLog.resolver.resolveService(String.valueOf(childItem.receivedPort));
       } else {
         receivedPortString = String.valueOf(childItem.receivedPort);

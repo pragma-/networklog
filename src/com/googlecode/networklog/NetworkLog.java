@@ -86,6 +86,7 @@ public class NetworkLog extends SherlockFragmentActivity {
   public static NetworkResolver resolver;
   public static boolean resolveHosts;
   public static boolean resolvePorts;
+  public static boolean resolveCopies;
 
   public static boolean startServiceAtStart;
   public static boolean stopServiceAtExit;
@@ -267,6 +268,7 @@ public class NetworkLog extends SherlockFragmentActivity {
 
     resolveHosts = settings.getResolveHosts();
     resolvePorts = settings.getResolvePorts();
+    resolveCopies = settings.getResolveCopies();
 
     startServiceAtStart = settings.getStartServiceAtStart();
     stopServiceAtExit = settings.getStopServiceAtExit();
