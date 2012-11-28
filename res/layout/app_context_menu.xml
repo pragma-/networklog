@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:id="@+id/app_copy_ip"
+    android:title="Copy IP Address"/>
+  <item android:id="@+id/app_graph"
+    android:title="Show Graph"/>
+</menu>

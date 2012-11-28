@@ -35,6 +35,13 @@ import android.text.Spanned;
 import android.widget.TextView.BufferType;
 import android.util.TypedValue;
 import android.os.Parcelable;
+import android.view.MenuItem;
+import android.view.MenuInflater;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
+import android.content.ClipboardManager;
+import android.content.ClipData;
 
 import android.support.v4.app.Fragment;
 
@@ -395,12 +402,14 @@ public class AppFragment extends Fragment {
         public boolean onItemLongClick(AdapterView parent, View v, 
           int position, long id) 
         {
-          GroupItem group = (GroupItem) adapter.getGroup(ExpandableListView.getPackedPositionGroup(id));
-
-          getActivity().startActivity(new Intent(getActivity().getApplicationContext(), AppTimelineGraph.class)
-            .putExtra("app_uid", group.app.uidString));
-
-          return true;
+          /* Don't handle long clicks for child elements (will use context menu instead) */
+          if (ExpandableListView.getPackedPositionType(id) != ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+            GroupItem group = (GroupItem) adapter.getGroup(ExpandableListView.getPackedPositionGroup(id));
+            showGraph(group.app.uidString);
+            return true;
+          } else {
+            return false;
+          }
         }
       });
 
@@ -423,8 +432,116 @@ public class AppFragment extends Fragment {
         }
       });
 
+      registerForContextMenu(listView);
+
       return layout;
     }
+
+  @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+      super.onCreateContextMenu(menu, v, menuInfo);
+
+      ExpandableListView.ExpandableListContextMenuInfo info =
+        (ExpandableListView.ExpandableListContextMenuInfo) menuInfo;
+
+      int type = ExpandableListView.getPackedPositionType(info.packedPosition);
+      int group = ExpandableListView.getPackedPositionGroup(info.packedPosition);
+      int child = ExpandableListView.getPackedPositionChild(info.packedPosition);
+
+      // Only create a context menu for child items
+      if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+        MenuInflater inflater = getActivity().getMenuInflater();
+        inflater.inflate(R.layout.app_context_menu, menu);
+      }
+    }
+
+  @Override
+    public boolean onContextItemSelected(MenuItem item) {
+      ExpandableListContextMenuInfo info;
+      int groupPos;
+      int childPos;
+
+      switch(item.getItemId()) {
+        case R.id.app_copy_ip:
+          info = (ExpandableListContextMenuInfo) item.getMenuInfo();
+          groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
+          childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
+
+          ChildItem childItem = (ChildItem) adapter.getChild(groupPos, childPos);
+          copyIpAddress(childItem);
+          return true;
+        case R.id.app_graph:
+          info = (ExpandableListContextMenuInfo) item.getMenuInfo();
+          groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
+          childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
+
+          GroupItem groupItem = (GroupItem) adapter.getGroup(groupPos);
+          showGraph(groupItem.app.uidString);
+          return true;
+        default:
+          return super.onContextItemSelected(item);
+      }
+    }
+
+  void copyIpAddress(ChildItem childItem) {
+    String hostString = "";
+
+    if(childItem.sentPackets > 0 && childItem.out != null) {
+      String sentAddressString;
+      String sentPortString;
+
+      if(NetworkLog.resolveHosts) {
+        sentAddressString = NetworkLog.resolver.resolveAddress(childItem.sentAddress);
+
+        if(sentAddressString == null) {
+          sentAddressString = childItem.sentAddress;
+        }
+
+      } else {
+        sentAddressString = childItem.sentAddress;
+      }
+
+      if(NetworkLog.resolvePorts) {
+        sentPortString = NetworkLog.resolver.resolveService(String.valueOf(childItem.sentPort));
+      } else {
+        sentPortString = String.valueOf(childItem.sentPort);
+      }
+
+      hostString = sentAddressString + ":" + sentPortString;
+    }
+    else if(childItem.receivedPackets > 0 && childItem.in != null) {
+      String receivedAddressString;
+      String receivedPortString;
+
+      if(NetworkLog.resolveHosts) {
+        receivedAddressString = NetworkLog.resolver.resolveAddress(childItem.receivedAddress);
+
+        if(receivedAddressString == null) {
+          receivedAddressString = childItem.receivedAddress;
+        }
+
+      } else {
+        receivedAddressString = childItem.receivedAddress;
+      }
+
+      if(NetworkLog.resolvePorts) {
+        receivedPortString = NetworkLog.resolver.resolveService(String.valueOf(childItem.receivedPort));
+      } else {
+        receivedPortString = String.valueOf(childItem.receivedPort);
+      }
+
+      hostString = receivedAddressString + ":" + receivedPortString;
+    }
+
+    ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+    ClipData clip = ClipData.newPlainText("NetworkLog IP Address", hostString);
+    clipboard.setPrimaryClip(clip);
+  }
+
+  void showGraph(String appuid) {
+    getActivity().startActivity(new Intent(getActivity().getApplicationContext(), AppTimelineGraph.class)
+        .putExtra("app_uid", appuid));
+  }
 
   public int getItemByAppUid(int uid) {
     synchronized(groupDataBuffer) {

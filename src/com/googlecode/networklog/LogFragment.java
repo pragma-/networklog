@@ -197,34 +197,81 @@ public class LogFragment extends Fragment {
 
   @Override
     public boolean onContextItemSelected(MenuItem item) {
-      AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-
-      ListItem listItem = listData.get(info.position);
+      AdapterContextMenuInfo info;
+      ListItem listItem;
 
       switch(item.getItemId()) {
         case R.id.log_copy_src_ip:
+          info = (AdapterContextMenuInfo) item.getMenuInfo();
+          listItem = listData.get(info.position);
           copySourceIp(listItem);
           return true;
         case R.id.log_copy_dst_ip:
+          info = (AdapterContextMenuInfo) item.getMenuInfo();
+          listItem = listData.get(info.position);
           copyDestIp(listItem);
           return true;
         case R.id.log_graph:
+          info = (AdapterContextMenuInfo) item.getMenuInfo();
+          listItem = listData.get(info.position);
           showGraph(listItem);
           return true;
         default:
           return super.onContextItemSelected(item);
       }
-    }
+    } 
 
   public void copySourceIp(ListItem item) {
+    String srcAddr;
+    String srcPort;
+
+    if(NetworkLog.resolveHosts) {
+      String resolved = NetworkLog.resolver.resolveAddress(item.srcAddr);
+
+      if(resolved != null) {
+        srcAddr = resolved;
+      } else {
+        srcAddr = item.srcAddr;
+      }
+    } else {
+      srcAddr = item.srcAddr;
+    }
+
+    if(NetworkLog.resolvePorts) {
+      srcPort = NetworkLog.resolver.resolveService(String.valueOf(item.srcPort));
+    } else {
+      srcPort = String.valueOf(item.srcPort);
+    }
+
     ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-    ClipData clip = ClipData.newPlainText("NetworkLog Source IP", item.srcAddr + ":" + item.srcPort);
+    ClipData clip = ClipData.newPlainText("NetworkLog Source IP", srcAddr + ":" + srcPort);
     clipboard.setPrimaryClip(clip);
   }
 
   public void copyDestIp(ListItem item) {
+    String dstAddr;
+    String dstPort;
+
+    if(NetworkLog.resolveHosts) {
+      String resolved = NetworkLog.resolver.resolveAddress(item.dstAddr);
+
+      if(resolved != null) {
+        dstAddr = resolved;
+      } else {
+        dstAddr = item.dstAddr;
+      }
+    } else {
+      dstAddr = item.dstAddr;
+    }
+
+    if(NetworkLog.resolvePorts) {
+      dstPort = NetworkLog.resolver.resolveService(String.valueOf(item.dstPort));
+    } else {
+      dstPort = String.valueOf(item.dstPort);
+    }
+
     ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-    ClipData clip = ClipData.newPlainText("NetworkLog Dest IP", item.dstAddr + ":" + item.dstPort);
+    ClipData clip = ClipData.newPlainText("NetworkLog Dest IP", dstAddr + ":" + dstPort);
     clipboard.setPrimaryClip(clip);
   }
 
