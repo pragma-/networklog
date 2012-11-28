@@ -190,7 +190,7 @@ public class NetworkLog extends SherlockFragmentActivity {
   }
 
   public static State state;
-  public enum State { LOAD_APPS, LOAD_LIST, RUNNING, EXITING  };
+  public enum State { LOAD_APPS, RUNNING, EXITING  };
 
   public static InitRunner initRunner;
   public class InitRunner implements Runnable
@@ -214,13 +214,6 @@ public class NetworkLog extends SherlockFragmentActivity {
 
       state = NetworkLog.State.LOAD_APPS;
       ApplicationsTracker.getInstalledApps(context, handler);
-
-      if(running == false) {
-        return;
-      }
-
-      state = NetworkLog.State.LOAD_LIST;
-      appFragment.getInstalledApps();
 
       if(running == false) {
         return;

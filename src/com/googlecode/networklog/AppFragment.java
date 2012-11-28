@@ -296,9 +296,7 @@ public class AppFragment extends Fragment {
           activity.runOnUiThread(new Runnable() {
             public void run() {
               preSortData();
-
               setFilter("");
-
               refreshAdapter();
             }
           });
@@ -433,6 +431,8 @@ public class AppFragment extends Fragment {
       });
 
       registerForContextMenu(listView);
+
+      getInstalledApps();
 
       return layout;
     }
