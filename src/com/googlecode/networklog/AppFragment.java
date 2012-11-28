@@ -826,13 +826,12 @@ public class AppFragment extends Fragment {
                   // MyLog.d("[AppFragment] testing filtered item " + item + "; includes: [" + NetworkLog.filterTextInclude + "]");
 
                   boolean item_added = false;
-                  boolean matched = true;
+                  boolean matched = false;
 
                   for(String c : NetworkLog.filterTextIncludeList) {
-                    if((NetworkLog.filterNameInclude && !item.app.nameLowerCase.contains(c))
-                        || (NetworkLog.filterUidInclude && !item.app.uidString.equals(c))) {
-                      matched = false;
-                      break;
+                    if((NetworkLog.filterNameInclude && item.app.nameLowerCase.contains(c))
+                        || (NetworkLog.filterUidInclude && item.app.uidString.equals(c))) {
+                      matched = true;
                         }
                   }
 
