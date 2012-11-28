@@ -32,8 +32,14 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuInflater;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+
+/* newer API 11 clipboard unsupported on older APIs
 import android.content.ClipboardManager;
 import android.content.ClipData;
+*/
+
+@SuppressWarnings("deprecation")
+import android.text.ClipboardManager;
 
 import android.support.v4.app.Fragment;
 
@@ -221,6 +227,7 @@ public class LogFragment extends Fragment {
       }
     } 
 
+  @SuppressWarnings("deprecation")
   public void copySourceIp(ListItem item) {
     String srcAddr;
     String srcPort;
@@ -244,10 +251,17 @@ public class LogFragment extends Fragment {
     }
 
     ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+
+    /* newer API 11 clipboard unsupported on older devices
     ClipData clip = ClipData.newPlainText("NetworkLog Source IP", srcAddr + ":" + srcPort);
     clipboard.setPrimaryClip(clip);
+    */
+
+    /* use older deprecated ClipboardManager to support older devices */
+    clipboard.setText(srcAddr + ":" + srcPort);
   }
 
+  @SuppressWarnings("deprecation")
   public void copyDestIp(ListItem item) {
     String dstAddr;
     String dstPort;
@@ -271,8 +285,14 @@ public class LogFragment extends Fragment {
     }
 
     ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+
+    /* newer API 11 clipboard unsupported on older devices 
     ClipData clip = ClipData.newPlainText("NetworkLog Dest IP", dstAddr + ":" + dstPort);
     clipboard.setPrimaryClip(clip);
+    */
+
+    /* use older deprecated ClipboardManager to support older devices */
+    clipboard.setText(dstAddr + ":" + dstPort);
   }
 
   public void showGraph(ListItem item) {

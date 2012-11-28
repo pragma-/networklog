@@ -40,8 +40,15 @@ import android.view.MenuInflater;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
+
+/* newer API 11 clipboard unsupported on older APIs
 import android.content.ClipboardManager;
 import android.content.ClipData;
+*/
+
+/* use older clipboard API to support older devices */
+@SuppressWarnings("deprecation")
+import android.text.ClipboardManager;
 
 import android.support.v4.app.Fragment;
 
@@ -483,6 +490,7 @@ public class AppFragment extends Fragment {
       }
     }
 
+  @SuppressWarnings("deprecation")
   void copyIpAddress(ChildItem childItem) {
     String hostString = "";
 
@@ -534,8 +542,14 @@ public class AppFragment extends Fragment {
     }
 
     ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+
+    /* newer API 11 clipboard unsupported on older devices
     ClipData clip = ClipData.newPlainText("NetworkLog IP Address", hostString);
     clipboard.setPrimaryClip(clip);
+    */
+
+    /* use older deprecated ClipboardManager to support older devices */
+    clipboard.setText(hostString);
   }
 
   void showGraph(String appuid) {
