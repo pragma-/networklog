@@ -515,14 +515,11 @@ public class NetworkLog extends SherlockFragmentActivity {
         item.setVisible(false);
       }
 
-      item = menu.findItem(R.id.service_toggle);
       ToggleButton button = (ToggleButton) findViewById(R.id.actionbar_service_toggle);
 
       if(isServiceRunning(this, NetworkLogService.class.getName())) {
-        item.setTitle("Stop Logging");
         button.setChecked(true);
       } else {
-        item.setTitle("Start Logging");
         button.setChecked(false);
       }
 
@@ -539,8 +536,6 @@ public class NetworkLog extends SherlockFragmentActivity {
       stopService();
       button.setChecked(false);
     }
-
-    invalidateOptionsMenu();
   }
 
   @Override
@@ -548,16 +543,6 @@ public class NetworkLog extends SherlockFragmentActivity {
       switch(item.getItemId()) {
         case R.id.filter:
           showFilterDialog();
-          break;
-
-        case R.id.service_toggle:
-          if(!isServiceRunning(this, NetworkLogService.class.getName())) {
-            startService();
-            invalidateOptionsMenu();
-          } else {
-            stopService();
-            invalidateOptionsMenu();
-          }
           break;
 
         case R.id.overallgraph:

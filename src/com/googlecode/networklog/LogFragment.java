@@ -38,7 +38,7 @@ import android.content.ClipboardManager;
 import android.content.ClipData;
 */
 
-@SuppressWarnings("deprecation")
+/* use older clipboard API to support older devices */
 import android.text.ClipboardManager;
 
 import android.support.v4.app.Fragment;
