@@ -74,6 +74,7 @@ public class AppFragment extends Fragment {
   // remember last index return by getItemByAppUid to optimize-out call to binarySearch
   int lastGetItemByAppUidIndex = -1;
   private NetworkLog parent = null;
+  private boolean gotInstalledApps = false;
 
   public class GroupItem {
     protected ApplicationsTracker.AppEntry app;
@@ -438,7 +439,10 @@ public class AppFragment extends Fragment {
 
       registerForContextMenu(listView);
 
-      getInstalledApps();
+      if(gotInstalledApps == false) {
+        getInstalledApps();
+        gotInstalledApps = true;
+      }
 
       return layout;
     }
