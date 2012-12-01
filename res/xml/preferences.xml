@@ -31,6 +31,11 @@
         android:entries="@array/timerange_entries"
         android:entryValues="@array/timerange_values"
         android:dialogTitle="Load history" />
+      <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="confirm_exit"
+        android:title="Confirm exit"
+        android:summary="Display dialog to confirm exit when using back button to exit" />
     </PreferenceCategory>
 
     <PreferenceCategory

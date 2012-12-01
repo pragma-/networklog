@@ -22,6 +22,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+import android.widget.CheckBox;
 import android.view.View;
 import android.view.LayoutInflater;
 import android.util.Log;
@@ -601,6 +602,11 @@ public class NetworkLog extends SherlockFragmentActivity {
   public void confirmExit() {
     Context context = this;
 
+    if(settings.getConfirmExit() == false) {
+      finish();
+      return;
+    }
+
     StringBuilder message = new StringBuilder("Are you sure you want to exit?");
     boolean serviceRunning = isServiceRunning(context, NetworkLogService.class.getName());
 
@@ -612,12 +618,18 @@ public class NetworkLog extends SherlockFragmentActivity {
       }
     }
 
+    View checkBoxView = View.inflate(this, R.layout.confirm_exit_checkbox, null);
+    final CheckBox checkBox = (CheckBox) checkBoxView.findViewById(R.id.confirm_exit_checkbox);
+    checkBox.setChecked(false);
+
     AlertDialog.Builder builder = new AlertDialog.Builder(context);
     builder.setTitle("Confirm exit")
       .setMessage(message.toString())
       .setCancelable(true)
+      .setView(checkBoxView)
       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
+          settings.setConfirmExit(!checkBox.isChecked());
           finish();
         }
       })
