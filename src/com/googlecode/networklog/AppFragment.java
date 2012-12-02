@@ -350,8 +350,6 @@ public class AppFragment extends Fragment {
       cachedSearchItem.app = new ApplicationsTracker.AppEntry();
 
       adapter = new CustomAdapter();
-
-      startUpdater();
     }
 
   @Override
@@ -445,6 +443,8 @@ public class AppFragment extends Fragment {
         getInstalledApps();
         gotInstalledApps = true;
       }
+
+      startUpdater();
 
       return layout;
     }

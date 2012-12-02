@@ -141,8 +141,6 @@ public class LogFragment extends Fragment {
 
       adapter = new CustomAdapter(getActivity().getApplicationContext(), R.layout.logitem, listData);
 
-      startUpdater();
-
       MyLog.d("LogFragment onCreate");
     }
 
@@ -193,6 +191,9 @@ public class LogFragment extends Fragment {
       setFilter("");
       adapter.notifyDataSetChanged();
     }
+    
+    startUpdater();
+
     return layout;
   }
 
