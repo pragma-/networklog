@@ -141,6 +141,8 @@ public class LogFragment extends Fragment {
 
       adapter = new CustomAdapter(getActivity().getApplicationContext(), R.layout.logitem, listData);
 
+      startUpdater();
+
       MyLog.d("LogFragment onCreate");
     }
 
@@ -452,7 +454,7 @@ public class LogFragment extends Fragment {
       MyLog.d("Starting LogFragmentUpdater " + this);
 
       while(running) {
-        if(listDataBuffer.size() > 0) {
+        if(listDataBuffer != null && listDataBuffer.size() > 0) {
           Activity activity = getActivity();
           if(activity != null) {
             activity.runOnUiThread(runner);

@@ -220,8 +220,7 @@ public class NetworkLog extends SherlockFragmentActivity {
         return;
       }
 
-      appFragment.startUpdater();
-      logFragment.startUpdater();
+      history.loadEntriesFromFile(context, settings.getHistorySize());
 
       if(startServiceAtStart && !isServiceRunning(context, NetworkLogService.class.getName())) {
         handler.post(new Runnable() {
@@ -230,8 +229,6 @@ public class NetworkLog extends SherlockFragmentActivity {
           }
         });
       }
-
-      history.loadEntriesFromFile(context, settings.getHistorySize());
 
       state = NetworkLog.State.RUNNING;
       MyLog.d("Init done");
@@ -382,9 +379,6 @@ public class NetworkLog extends SherlockFragmentActivity {
         if(state != NetworkLog.State.RUNNING) {
           initRunner = new InitRunner(this);
           new Thread(initRunner, "Initialization " + initRunner).start();
-        } else {
-          appFragment.startUpdater();
-          logFragment.startUpdater();
         }
 
         // all data should be restored at this point, release the object
