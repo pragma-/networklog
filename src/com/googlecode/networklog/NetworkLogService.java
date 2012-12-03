@@ -22,6 +22,8 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.os.RemoteException;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
 
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -44,9 +46,10 @@ public class NetworkLogService extends Service {
   final Messenger messenger = new Messenger(new IncomingHandler(this));
   boolean has_root = false;
   public static NetworkLogService instance = null;
+  private Context context;
 
   private class IncomingHandler extends Handler {
-    Context context;
+    private Context context;
 
     public IncomingHandler(Context context) {
       this.context = context;
@@ -205,44 +208,31 @@ public class NetworkLogService extends Service {
       }
 
       final Bundle extras = ext;
-      final Context context = this;
       final Handler handler = new Handler(Looper.getMainLooper());
+      context = this;
 
       // run in background thread
       new Thread(new Runnable() {
         public void run() {
-          String logfile_intent = null;
+          String logfile_from_intent = null;
 
           if(extras != null) {
-            logfile_intent = extras.getString("logfile");
-            MyLog.d("[service] set logfile: " + logfile_intent);
+            logfile_from_intent = extras.getString("logfile");
+            MyLog.d("[service] set logfile: " + logfile_from_intent);
           }
 
-          if(logfile_intent == null) {
-            logfile_intent = NetworkLog.settings.getLogFile();
+          if(logfile_from_intent == null) {
+            logfile_from_intent = NetworkLog.settings.getLogFile();
           }
 
-          MyLog.d("[service] NetworkLog service starting [" + logfile_intent + "]");;
+          MyLog.d("[service] NetworkLog service starting [" + logfile_from_intent + "]");;
 
-          final String l = logfile_intent;
+          final String l = logfile_from_intent;
 
           if(logfile != null) {
             // service already started and has logfile open
           } else {
-            logfile = logfile_intent;
-
-            try {
-              logWriter = new PrintWriter(new BufferedWriter(new FileWriter(logfile, true)), true);
-            } catch(final Exception e) {
-              Log.e("NetworkLog", "Exception opening logfile [" + logfile +"]", e);
-              handler.post(new Runnable() {
-                public void run() {
-                  Iptables.showError(context, "Network Log Error", "Failed to start Network Log service: " + e.getMessage());
-                  stopSelf();
-                }
-              });
-              return;
-            }
+            logfile = logfile_from_intent;
 
             // service starting up fresh
             logEntriesMap = new HashMap<String, Integer>();
@@ -626,8 +616,31 @@ public class NetworkLogService extends Service {
   }
 
   public void notifyNewEntry(LogEntry entry) {
+    // check if logfile needs to be opened and that external storage is available
+    if(logWriter == null) {
+      if(android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {
+        try {
+          logWriter = new PrintWriter(new BufferedWriter(new FileWriter(logfile, true)), true);
+          MyLog.d("Opened " + logfile + " for logging");
+        } catch(final Exception e) {
+          Log.e("NetworkLog", "Exception opening logfile [" + logfile +"]", e);
+          Handler handler = new Handler(Looper.getMainLooper());
+          handler.post(new Runnable() {
+            public void run() {
+              Iptables.showError(context, "Network Log Error", "Failed to open logfile: " + e.getMessage());
+            }
+          });
+          return;
+        }
+      } else {
+        MyLog.d("External storage " + logfile + " not available");
+      }
+    }
+
     // log entry to logfile
-    logWriter.println(entry.timestamp + "," + entry.in + "," + entry.out + "," + entry.uid + "," + entry.src + "," + entry.spt + "," + entry.dst + "," + entry.dpt + "," + entry.len);
+    if(logWriter != null) {
+      logWriter.println(entry.timestamp + "," + entry.in + "," + entry.out + "," + entry.uid + "," + entry.src + "," + entry.spt + "," + entry.dst + "," + entry.dpt + "," + entry.len);
+    }
 
     if(MyLog.enabled) {
       MyLog.d("[service] notifyNewEntry: clients: " + clients.size());
@@ -679,16 +692,21 @@ public class NetworkLogService extends Service {
     logger = new NetworkLogger();
     new Thread(logger, "NetworkLogger").start();
 
+    startWatchingExternalStorage();
+
     return true;
   }
 
   public void stopLogging() {
+    stopWatchingExternalStorage();
+
     if(logger != null) {
       logger.stop();
     }
 
     if(logWriter != null) {
       logWriter.close();
+      logWriter = null;
     }
 
     killLogger();
@@ -850,5 +868,40 @@ public class NetworkLogService extends Service {
 
       MyLog.d("NetworkLogger " + this + " exiting [end of loop]");
     }
+  }
+
+  BroadcastReceiver mExternalStorageReceiver = null;
+
+  void updateExternalStorageState() {
+    if(!android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {
+      // internal storage not mounted
+      if(logWriter != null) {
+        MyLog.d("Stopping logfile logging");
+        logWriter.close();
+        logWriter = null;
+      }
+    }
+  }
+
+  void startWatchingExternalStorage() {
+    if(mExternalStorageReceiver == null) {
+      mExternalStorageReceiver = new BroadcastReceiver() {
+        @Override
+          public void onReceive(Context context, Intent intent) {
+            Log.i("NetworkLog", "External storage: " + intent.getData());
+            updateExternalStorageState();
+          }
+      };
+    }
+
+    IntentFilter filter = new IntentFilter();
+    filter.addAction(Intent.ACTION_MEDIA_MOUNTED);
+    filter.addAction(Intent.ACTION_MEDIA_REMOVED);
+    registerReceiver(mExternalStorageReceiver, filter);
+    updateExternalStorageState();
+  }
+
+  void stopWatchingExternalStorage() {
+    unregisterReceiver(mExternalStorageReceiver);
   }
 }

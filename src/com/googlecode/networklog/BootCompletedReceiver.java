@@ -17,7 +17,7 @@ public class BootCompletedReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
       MyLog.d("Received broadcast: " + intent.getAction());
 
-      if ("android.intent.action.EXTERNAL_APPLICATIONS_AVAILABLE".equals(intent.getAction())) {
+      if ("android.intent.action.BOOT_COMPLETED".equals(intent.getAction())) {
         SharedPreferences prefs = context.getSharedPreferences("com.googlecode.networklog_preferences", Context.MODE_PRIVATE);
 
         if(prefs.getBoolean("startServiceAtBoot", false) == true) {
