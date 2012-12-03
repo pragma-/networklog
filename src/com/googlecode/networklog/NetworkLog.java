@@ -316,18 +316,6 @@ public class NetworkLog extends SherlockFragmentActivity {
       loadSettings();
       getLocalIpAddresses();
 
-      handler = new Handler();
-
-      setContentView(R.layout.main);
-
-      ActionBar actionBar = getSupportActionBar();
-      actionBar.setCustomView(R.layout.actionbar_top);
-      actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_CUSTOM);
-
-      if(history == null) {
-        history = new HistoryLoader();
-      }
-
       data = (RetainInstanceData) getLastCustomNonConfigurationInstance();
 
       if(data != null) {
@@ -353,6 +341,18 @@ public class NetworkLog extends SherlockFragmentActivity {
 
       logFragment.setParent(this);
       appFragment.setParent(this);
+
+      handler = new Handler();
+
+      setContentView(R.layout.main);
+
+      ActionBar actionBar = getSupportActionBar();
+      actionBar.setCustomView(R.layout.actionbar_top);
+      actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_CUSTOM);
+
+      if(history == null) {
+        history = new HistoryLoader();
+      }
 
       statusText = (TextView) findViewById(R.id.statusText);
 

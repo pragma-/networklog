@@ -344,6 +344,9 @@ public class AppFragment extends Fragment {
 
       setRetainInstance(true);
 
+      sortBy = NetworkLog.settings.getSortBy();
+      preSortBy = NetworkLog.settings.getPreSortBy();
+
       groupData = new ArrayList<GroupItem>();
       groupDataBuffer = new ArrayList<GroupItem>();
       cachedSearchItem = new GroupItem();
@@ -366,9 +369,6 @@ public class AppFragment extends Fragment {
           activity.loadSettings();
         }
       }
-
-      sortBy = NetworkLog.settings.getSortBy();
-      preSortBy = NetworkLog.settings.getPreSortBy();
 
       LinearLayout layout = new LinearLayout(context);
       layout.setOrientation(LinearLayout.VERTICAL);
