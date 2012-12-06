@@ -34,6 +34,10 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return prefs.getString("history_size", "14400000");
   }
 
+  public String getClearLogTimerange() {
+    return prefs.getString("clearlog_timerange", "0");
+  }
+
   public String getLogFile() {
     String logfile = prefs.getString("logfile", null);
 
@@ -311,6 +315,12 @@ public class Settings implements OnSharedPreferenceChangeListener {
   public void setHistorySize(String value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putString("history_size", value);
+    editor.commit();
+   }
+
+  public void setClearLogTimerange(String value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putString("clearlog_timerange", value);
     editor.commit();
    }
 

@@ -24,6 +24,9 @@
   <item android:id="@+id/filter"
     android:title="Filter"
     android:showAsAction="ifRoom|withText" />
+  <item android:id="@+id/clearlog"
+    android:title="Clear"
+    android:showAsAction="ifRoom|withText" />
   <item android:id="@+id/settings"
     android:title="Settings"
     android:showAsAction="ifRoom|withText" />

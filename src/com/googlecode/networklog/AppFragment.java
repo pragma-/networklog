@@ -155,6 +155,7 @@ public class AppFragment extends Fragment {
     }
 
     getInstalledApps();
+    lastGetItemByAppUidIndex = -1;
   }
 
   protected static class SortAppsByBytes implements Comparator<GroupItem> {
@@ -584,6 +585,31 @@ public class AppFragment extends Fragment {
     }
 
     return lastGetItemByAppUidIndex;
+  }
+
+  public void rebuildLogEntries() {
+    synchronized(groupDataBuffer) {
+      clear();
+
+      Iterator<LogFragment.ListItem> iterator = NetworkLog.logFragment.listDataUnfiltered.iterator();
+      while(iterator.hasNext()) {
+        LogFragment.ListItem item = iterator.next();
+        LogEntry entry = new LogEntry();
+
+        entry.uid = item.mUid;
+        entry.in = item.in;
+        entry.out = item.out;
+        entry.src = item.srcAddr;
+        entry.dst = item.dstAddr;
+        entry.len = item.len;
+        entry.spt = item.srcPort;
+        entry.dpt = item.dstPort;
+        entry.timestamp = item.timestamp;
+
+        onNewLogEntry(entry);
+      }
+      groupDataBufferIsDirty = true;
+    }
   }
 
   public void onNewLogEntry(final LogEntry entry) {

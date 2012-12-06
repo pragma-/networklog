@@ -28,9 +28,14 @@
         android:key="history_size"
         android:title="Load logfile history"
         android:summary="Select how much history to load, effective immediately and at app start (default: 4 hours)"
-        android:entries="@array/timerange_entries"
-        android:entryValues="@array/timerange_values"
+        android:entries="@array/history_timerange_entries"
+        android:entryValues="@array/history_timerange_values"
         android:dialogTitle="Load history" />
+      <Preference
+        android:persistent="false"
+        android:key="clear_log"
+        android:title="Clear log"
+        android:summary="Select time range to delete from log, effective immediately" />
       <CheckBoxPreference
         android:defaultValue="true"
         android:key="confirm_exit"
@@ -77,16 +82,6 @@
         android:key="logfile"
         android:title="Log file location"
         android:summary="Set path and filename of the log file (defaults to networklog.txt at root of external storage)" />
-<!--
-    <ListPreference
-      android:defaultValue="2419200000"
-      android:key="logfile_trim"
-      android:title="Trim logfile"
-      android:summary="Select time range to delete from logfile, effective immediately (default: older than 1 month)"
-      android:entries="@array/timerange_entries"
-      android:entryValues="@array/timerange_values"
-      android:dialogTitle="Delete older than" />
--->
     <CheckBoxPreference
       android:defaultValue="false"
       android:key="startServiceAtBoot"

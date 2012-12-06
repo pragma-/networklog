@@ -94,6 +94,8 @@ public class NetworkLog extends SherlockFragmentActivity {
 
   public static HistoryLoader history;
 
+  public static ClearLog clearLog;
+
   public static StatusUpdater statusUpdater;
 
   public static ArrayList<String> localIpAddrs;
@@ -328,8 +330,12 @@ public class NetworkLog extends SherlockFragmentActivity {
         history.dialog_max = data.historyDialogMax;
         history.dialog_progress = data.historyDialogProgress;
 
-        if(history.dialog_showing && history.dialog == null) {
+        if(history.dialog_showing) {
           history.createProgressDialog(this);
+        }
+
+        if(data.clearLogDialogShowing) {
+          clearLog.showDialog(this);
         }
       } else {
         MyLog.d("Fresh run");
@@ -352,6 +358,10 @@ public class NetworkLog extends SherlockFragmentActivity {
 
       if(history == null) {
         history = new HistoryLoader();
+      }
+
+      if(clearLog == null) {
+        clearLog = new ClearLog();
       }
 
       statusText = (TextView) findViewById(R.id.statusText);
@@ -426,6 +436,11 @@ public class NetworkLog extends SherlockFragmentActivity {
       if(history.dialog_showing == true && history.dialog != null) {
         history.dialog.dismiss();
         history.dialog = null;
+      }
+
+      if(clearLog.dialog != null && clearLog.dialog.isShowing()) {
+        clearLog.dialog.dismiss();
+        clearLog.dialog = null;
       }
 
       if(initRunner != null) {
@@ -546,6 +561,10 @@ public class NetworkLog extends SherlockFragmentActivity {
 
         case R.id.exit:
           finish();
+          break;
+
+        case R.id.clearlog:
+          clearLog.showDialog(this);
           break;
 
         case R.id.settings:

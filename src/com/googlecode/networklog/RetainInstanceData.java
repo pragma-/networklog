@@ -34,6 +34,13 @@ public class RetainInstanceData {
     historyDialogProgress = NetworkLog.history.dialog_progress;
   }
 
+  /* ClearLog */
+  boolean clearLogDialogShowing;
+
+  public void retainClearLogData() {
+    clearLogDialogShowing = NetworkLog.clearLog.dialog != null && NetworkLog.clearLog.dialog.isShowing();
+  }
+
   /* NetworkLog */
   NetworkLog.State networkLogState;
   NetworkResolver networkLogResolver;
@@ -48,5 +55,6 @@ public class RetainInstanceData {
     retainApplicationsTrackerData();
     retainRetainInstanceData();
     retainHistoryLoaderData();
+    retainClearLogData();
   }
 }

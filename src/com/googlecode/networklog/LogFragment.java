@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 
 public class LogFragment extends Fragment {
   // bound to adapter
@@ -191,7 +192,7 @@ public class LogFragment extends Fragment {
       setFilter("");
       adapter.notifyDataSetChanged();
     }
-    
+
     startUpdater();
 
     return layout;
@@ -368,6 +369,45 @@ public class LogFragment extends Fragment {
         listDataBuffer.remove(0);
       }
     }
+  }
+
+  public void clearLogEntriesOlderThan(long timerange) {
+    MyLog.d("Clearing logFragment entries older than " + timerange);
+
+    // Add any items in listDataBuffer to listDataUnfiltered
+    synchronized(listDataBuffer) {
+      synchronized(listDataUnfiltered) {
+        for(ListItem item : listDataBuffer) {
+          MyLog.d("Adding buffer item " + item);
+          listDataUnfiltered.add(item);
+        }
+
+        listDataBuffer.clear();
+      }
+    }
+
+    long timestamp = System.currentTimeMillis() - timerange;
+
+    MyLog.d("Setting timestamp " + timestamp);
+
+    // Remove items older than timerange
+    synchronized(listDataUnfiltered) {
+      Iterator<ListItem> iterator = listDataUnfiltered.iterator();
+      while(iterator.hasNext()) {
+        ListItem item = iterator.next();
+
+        MyLog.d("Checking item " + item.mUid + " " + item.mName + " " + item.timestamp);
+
+        if(item.timestamp < timestamp) {
+          MyLog.d("Removing item");
+          iterator.remove();
+        }
+      }
+    }
+
+    // trigger filtering (updates logData)
+    setFilter("");
+    refreshAdapter();
   }
 
   public void pruneLogEntries() {

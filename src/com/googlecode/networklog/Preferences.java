@@ -28,18 +28,19 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
     int history_dialog_max;
     int history_dialog_progress;
     boolean start_foreground_dialog_showing;
+    boolean clearlog_dialog_showing;
 
     PreferenceConfigurationData() {
       history_dialog_showing = NetworkLog.history.dialog_showing;
       history_dialog_max = NetworkLog.history.dialog_max;
       history_dialog_progress = NetworkLog.history.dialog_progress;
       start_foreground_dialog_showing = (warnStartForegroundDialog == null) ? false : true;
+      clearlog_dialog_showing = NetworkLog.clearLog.dialog != null && NetworkLog.clearLog.dialog.isShowing();
     }
   }
 
   @Override
     public void onDestroy() {
-      super.onDestroy();
       MyLog.d("Destroying preferences activity");
 
       if(warnStartForegroundDialog != null) {
@@ -50,6 +51,13 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
         NetworkLog.history.dialog.dismiss();
         NetworkLog.history.dialog = null;
       }
+
+      if(NetworkLog.clearLog.dialog != null && NetworkLog.clearLog.dialog.isShowing()) {
+        NetworkLog.clearLog.dialog.dismiss();
+        NetworkLog.clearLog.dialog = null;
+      }
+
+      super.onDestroy();
     }
 
   @Override
@@ -72,6 +80,7 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
       findPreference("notifications_statusbar_apps_dialog").setOnPreferenceClickListener(this);
       findPreference("notifications_toast").setOnPreferenceClickListener(this);
       findPreference("notifications_toast_apps_dialog").setOnPreferenceClickListener(this);
+      findPreference("clear_log").setOnPreferenceClickListener(this);
 
       EditTextPreference logfile = (EditTextPreference) findPreference("logfile");
       logfile.setText(NetworkLog.settings.getLogFile());
@@ -125,15 +134,21 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
       data = (PreferenceConfigurationData) getLastNonConfigurationInstance();
 
       if(data != null) {
-        MyLog.d("Restored preferences run");
+        MyLog.d("Restoring preferences run");
 
         if(data.start_foreground_dialog_showing == true) {
           warnStartForegroundDialog = toggleWarnStartForeground(this, foreground);
         }
 
-        if(data.history_dialog_showing && NetworkLog.history.dialog == null) {
+        if(data.history_dialog_showing) {
           NetworkLog.history.createProgressDialog(this);
         }
+
+        if(data.clearlog_dialog_showing) {
+          NetworkLog.clearLog.showDialog(this);
+        }
+
+        MyLog.d("Restored preferences run");
       }
     }
 
@@ -157,6 +172,11 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
 
       if(preference.getKey().equals("start_foreground")) {
         warnStartForegroundDialog = toggleWarnStartForeground(this, (CheckBoxPreference) preference);
+        return true;
+      }
+
+      if(preference.getKey().equals("clear_log")) {
+        NetworkLog.clearLog.showDialog(this);
         return true;
       }
 
