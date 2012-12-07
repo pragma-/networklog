@@ -592,9 +592,9 @@ public class AppFragment extends Fragment {
       clear();
 
       Iterator<LogFragment.ListItem> iterator = NetworkLog.logFragment.listDataUnfiltered.iterator();
+      LogEntry entry = new LogEntry();
       while(iterator.hasNext()) {
         LogFragment.ListItem item = iterator.next();
-        LogEntry entry = new LogEntry();
 
         entry.uid = item.mUid;
         entry.in = item.in;

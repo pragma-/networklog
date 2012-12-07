@@ -401,6 +401,9 @@ public class LogFragment extends Fragment {
         if(item.timestamp < timestamp) {
           MyLog.d("Removing item");
           iterator.remove();
+        } else {
+          // remaining entries should be >= timestamp
+          break;
         }
       }
     }
