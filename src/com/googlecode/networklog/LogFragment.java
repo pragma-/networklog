@@ -59,6 +59,8 @@ public class LogFragment extends Fragment {
   private CustomAdapter adapter;
   private ListViewUpdater updater;
   private NetworkLog parent = null;
+  public long maxLogEntries;
+  private boolean doNotRefresh = false;
 
   protected class ListItem {
     protected Drawable mIcon;
@@ -102,7 +104,15 @@ public class LogFragment extends Fragment {
     }
   }
 
+  public void setDoNotRefresh(boolean value) {
+    doNotRefresh = value;
+  }
+
   public void refreshAdapter() {
+    if(doNotRefresh) {
+      return;
+    }
+
     adapter.notifyDataSetChanged();
     MyLog.d("Refreshed LogFragment adapter");
   }
@@ -141,6 +151,8 @@ public class LogFragment extends Fragment {
       listDataUnfiltered = new ArrayList<ListItem>();
 
       adapter = new CustomAdapter(getActivity().getApplicationContext(), R.layout.logitem, listData);
+
+      maxLogEntries = NetworkLog.settings.getMaxLogEntries();
 
       MyLog.d("LogFragment onCreate");
     }
@@ -334,17 +346,8 @@ public class LogFragment extends Fragment {
 
     final ListItem item = new ListItem(appEntry.icon, appEntry.uid, appEntry.name);
 
-    if(entry.in != null) {
-      item.in = entry.in;
-    } else {
-      item.in = null;
-    }
-
-    if(entry.out != null) {
-      item.out = entry.out;
-    } else {
-      item.out = null;
-    }
+    item.in = entry.in;
+    item.out = entry.out;
 
     item.srcAddr = entry.src;
     item.srcPort = entry.spt;
@@ -365,7 +368,7 @@ public class LogFragment extends Fragment {
     synchronized(listDataBuffer) {
       listDataBuffer.add(item);
 
-      while(listDataBuffer.size() > NetworkLog.settings.getMaxLogEntries()) {
+      while(listDataBuffer.size() > maxLogEntries) {
         listDataBuffer.remove(0);
       }
     }
@@ -409,13 +412,15 @@ public class LogFragment extends Fragment {
     }
 
     // trigger filtering (updates logData)
-    setFilter("");
-    refreshAdapter();
+    getActivity().runOnUiThread(new Runnable() {
+      public void run() {
+        setFilter("");
+        refreshAdapter();
+      }
+    });
   }
 
   public void pruneLogEntries() {
-    long maxLogEntries = NetworkLog.settings.getMaxLogEntries();
-
     synchronized(listDataBuffer) {
       while(listDataBuffer.size() > maxLogEntries) {
         listDataBuffer.remove(0);
@@ -449,7 +454,6 @@ public class LogFragment extends Fragment {
       public void run() {
         MyLog.d("LogFragmentUpdater enter");
         int i = 0;
-        long maxLogEntries = NetworkLog.settings.getMaxLogEntries();
 
         synchronized(listDataBuffer) {
           synchronized(listData) {

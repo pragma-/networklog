@@ -104,6 +104,8 @@ public class NetworkLog extends SherlockFragmentActivity {
   public static Messenger messenger = null;
   public static boolean isBound = false;
 
+  public static Context networklogContext;
+
   public static ServiceConnection connection = new ServiceConnection() {
     public void onServiceConnected(ComponentName className, IBinder serv) {
       service = new Messenger(serv);
@@ -315,6 +317,8 @@ public class NetworkLog extends SherlockFragmentActivity {
       super.onCreate(savedInstanceState);
       MyLog.d("NetworkLog started");
 
+      networklogContext = this;
+
       loadSettings();
       getLocalIpAddresses();
 
@@ -335,7 +339,14 @@ public class NetworkLog extends SherlockFragmentActivity {
         }
 
         if(data.clearLogDialogShowing) {
-          clearLog.showDialog(this);
+          clearLog.showClearLogDialog(this);
+        }
+
+        clearLog.progress = data.clearLogProgress;
+        clearLog.progress_max = data.clearLogProgressMax;
+
+        if(data.clearLogProgressDialogShowing) {
+          clearLog.showProgressDialog(this);
         }
       } else {
         MyLog.d("Fresh run");
@@ -441,6 +452,11 @@ public class NetworkLog extends SherlockFragmentActivity {
       if(clearLog.dialog != null && clearLog.dialog.isShowing()) {
         clearLog.dialog.dismiss();
         clearLog.dialog = null;
+      }
+
+      if(clearLog.progressDialog != null && clearLog.progressDialog.isShowing()) {
+        clearLog.progressDialog.dismiss();
+        clearLog.progressDialog = null;
       }
 
       if(initRunner != null) {
@@ -564,7 +580,7 @@ public class NetworkLog extends SherlockFragmentActivity {
           break;
 
         case R.id.clearlog:
-          clearLog.showDialog(this);
+          clearLog.showClearLogDialog(this);
           break;
 
         case R.id.settings:
@@ -688,14 +704,14 @@ public class NetworkLog extends SherlockFragmentActivity {
 
     startService(intent);
     doBindService();
-    updateStatusText(getApplicationContext());
+    updateStatusText();
   }
 
   public void stopService() {
     MyLog.d("Stopping service...");
     doUnbindService();
     stopService(new Intent(this, NetworkLogService.class));
-    updateStatusText(this);
+    updateStatusText();
   }
 
   public static boolean isServiceRunning(Context context, String serviceName) {
@@ -729,7 +745,7 @@ public class NetworkLog extends SherlockFragmentActivity {
     }
   }
 
-  public static void updateStatusText(Context context) {
+  public static void updateStatusText() {
     StringBuilder sb = new StringBuilder();
 
     if(filterTextInclude.length() > 0 || filterTextExclude.length() > 0) {
@@ -744,7 +760,7 @@ public class NetworkLog extends SherlockFragmentActivity {
       }
     }
 
-    if(!isServiceRunning(context, NetworkLogService.class.getName())) {
+    if(!isServiceRunning(networklogContext, NetworkLogService.class.getName())) {
       sb.append("Logging not active.");
     }
 
@@ -790,7 +806,7 @@ public class NetworkLog extends SherlockFragmentActivity {
     Runnable runner = new Runnable() {
       public void run() {
         MyLog.d("Updating statusText");
-        updateStatusText(getApplicationContext());
+        updateStatusText();
       }
     };
 

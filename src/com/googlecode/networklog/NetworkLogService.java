@@ -38,11 +38,11 @@ import java.lang.reflect.Method;
 public class NetworkLogService extends Service {
   ArrayList<Messenger> clients = new ArrayList<Messenger>();
   static final int NOTIFICATION_ID = 42;
-  static final int MSG_REGISTER_CLIENT = 1;
-  static final int MSG_UNREGISTER_CLIENT = 2;
+  static final int MSG_REGISTER_CLIENT     = 1;
+  static final int MSG_UNREGISTER_CLIENT   = 2;
   static final int MSG_UPDATE_NOTIFICATION = 3;
   static final int MSG_BROADCAST_LOG_ENTRY = 4;
-  static final int MSG_TOGGLE_FOREGROUND = 5;
+  static final int MSG_TOGGLE_FOREGROUND   = 5;
   final Messenger messenger = new Messenger(new IncomingHandler(this));
   boolean has_root = false;
   public static NetworkLogService instance = null;
@@ -126,12 +126,6 @@ public class NetworkLogService extends Service {
 
   //StringBuilder buffer;
 
-  public void renameLogFile(String newLogFile) {
-  }
-
-  public void clearLogFile() {
-  }
-
   public void startForeground(Notification n) {
     startForeground(NOTIFICATION_ID, n);
   }
@@ -169,7 +163,7 @@ public class NetworkLogService extends Service {
       Iptables.installBinaries(this);
 
       if(instance != null) {
-        MyLog.d("[service] Last instance destroyed unexpectedly");
+        Log.w("NetworkLog", "[service] Last instance destroyed unexpectedly");
       }
 
       instance = this;
@@ -264,7 +258,6 @@ public class NetworkLogService extends Service {
       instance = null;
 
       if(has_root) {
-        Iptables.removeRules(this);
         stopLogging();
         Toast.makeText(this, "Network Log service done", Toast.LENGTH_SHORT).show();
       }
@@ -660,56 +653,17 @@ public class NetworkLogService extends Service {
     }
   }
 
-  public boolean startLogging() {
-    MyLog.d("adding logging rules");
-    if(!Iptables.addRules(this)) {
-      return false;
-    }
-
-    synchronized(NetworkLog.scriptLock) {
-      String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + Iptables.SCRIPT;
-      String busybox = getFilesDir().getAbsolutePath() + File.separator + "busybox_g1";
-
-      try {
-        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        script.println(busybox + " grep NetworkLogEntry /proc/kmsg");
-        script.close();
-      } catch(java.io.IOException e) {
-        e.printStackTrace();
-      }
-
-      MyLog.d("Starting iptables log tracker");
-
-      command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "NetworkLogger");
-      final String error = command.start(false);
-
-      if(error != null) {
-        Iptables.showError(this, "Network Log Error", error);
-        return false;
-      }
-    }
-
-    logger = new NetworkLogger();
-    new Thread(logger, "NetworkLogger").start();
-
-    startWatchingExternalStorage();
-
-    return true;
-  }
-
-  public void stopLogging() {
-    stopWatchingExternalStorage();
-
+  public void stopLogger() {
     if(logger != null) {
       logger.stop();
     }
+  }
 
+  public void closeLogfile() {
     if(logWriter != null) {
       logWriter.close();
       logWriter = null;
     }
-
-    killLogger();
   }
 
   public void killLogger() {
@@ -823,6 +777,51 @@ public class NetworkLogService extends Service {
         }
       }
     }
+  }
+
+  public boolean startLogging() {
+    MyLog.d("adding logging rules");
+    if(!Iptables.addRules(this)) {
+      return false;
+    }
+
+    synchronized(NetworkLog.scriptLock) {
+      String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + Iptables.SCRIPT;
+      String busybox = getFilesDir().getAbsolutePath() + File.separator + "busybox_g1";
+
+      try {
+        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
+        script.println(busybox + " grep NetworkLogEntry /proc/kmsg");
+        script.close();
+      } catch(java.io.IOException e) {
+        e.printStackTrace();
+      }
+
+      MyLog.d("Starting iptables log tracker");
+
+      command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "NetworkLogger");
+      final String error = command.start(false);
+
+      if(error != null) {
+        Iptables.showError(this, "Network Log Error", error);
+        return false;
+      }
+    }
+
+    logger = new NetworkLogger();
+    new Thread(logger, "NetworkLogger").start();
+
+    startWatchingExternalStorage();
+
+    return true;
+  }
+
+  public void stopLogging() {
+    Iptables.removeRules(this);
+    stopWatchingExternalStorage();
+    stopLogger();
+    closeLogfile();
+    killLogger();
   }
 
   public class NetworkLogger implements Runnable {

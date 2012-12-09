@@ -51,6 +51,7 @@ import android.text.ClipboardManager;
 
 import android.support.v4.app.Fragment;
 
+import java.lang.StringBuilder;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,6 +76,7 @@ public class AppFragment extends Fragment {
   int lastGetItemByAppUidIndex = -1;
   private NetworkLog parent = null;
   private boolean gotInstalledApps = false;
+  private boolean doNotRefresh = false;
 
   public class GroupItem {
     protected ApplicationsTracker.AppEntry app;
@@ -120,12 +122,6 @@ public class AppFragment extends Fragment {
       return sentAddress + ":" + sentPort + " -> " + receivedAddress + ":" + receivedPort;
     }
   }
-
-  Comparator comparator = new Comparator<GroupItem>() {
-    public int compare(GroupItem o1, GroupItem o2) {
-      return o1.app.uid < o2.app.uid ? -1 : (o1.app.uid == o2.app.uid) ? 0 : 1;
-    }
-  };
 
   public void clear() {
     synchronized(groupData) {
@@ -254,7 +250,15 @@ public class AppFragment extends Fragment {
     }
   }
 
+  public void setDoNotRefresh(boolean value) {
+    doNotRefresh = value;
+  }
+
   public void refreshAdapter() {
+    if(doNotRefresh) {
+      return;
+    }
+
     int index = listView.getFirstVisiblePosition();
     View v = listView.getChildAt(0);
     int top = (v == null) ? 0 : v.getTop();
@@ -563,6 +567,12 @@ public class AppFragment extends Fragment {
         .putExtra("app_uid", appuid));
   }
 
+  Comparator comparator = new Comparator<GroupItem>() {
+    public int compare(GroupItem o1, GroupItem o2) {
+      return o1.app.uid < o2.app.uid ? -1 : (o1.app.uid == o2.app.uid) ? 0 : 1;
+    }
+  };
+
   public int getItemByAppUid(int uid) {
     synchronized(groupDataBuffer) {
       // check to see if we need to search for index
@@ -612,6 +622,9 @@ public class AppFragment extends Fragment {
     }
   }
 
+  private StringBuilder srcSb = new StringBuilder(256);
+  private StringBuilder dstSb = new StringBuilder(256);
+
   public void onNewLogEntry(final LogEntry entry) {
     if(MyLog.enabled) {
       MyLog.d("AppFragment: NewLogEntry: [" + entry.uid + "] in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
@@ -625,8 +638,10 @@ public class AppFragment extends Fragment {
     }
 
     synchronized(groupDataBuffer) {
-      String src = entry.src + ":" + entry.spt;
-      String dst = entry.dst + ":" + entry.dpt;
+      srcSb.setLength(0);
+      String src = srcSb.append(entry.src).append(":").append(entry.spt).toString();
+      dstSb.setLength(0);
+      String dst = dstSb.append(entry.dst).append(":").append(entry.dpt).toString();
 
       // generally this will iterate once, but some apps may be grouped under the same uid
       while(true) {
@@ -745,7 +760,9 @@ public class AppFragment extends Fragment {
             // in groupDataBuffer here (maybe use some sort of reference mapping)
             for(GroupItem item : groupDataBuffer) {
               if(item.childrenDataNeedsSort) {
-                MyLog.d("Updating " + item);
+                if(MyLog.enabled) {
+                  MyLog.d("Updating " + item);
+                }
                 item.childrenDataNeedsSort = false;
 
                 //sortChildrenData(item);

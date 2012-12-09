@@ -187,6 +187,6 @@ public class FilterDialog implements DialogInterface.OnDismissListener
       NetworkLog.appFragment.setFilter("");
       NetworkLog.logFragment.setFilter("");
 
-      NetworkLog.updateStatusText(context);
+      NetworkLog.updateStatusText();
     }
 }

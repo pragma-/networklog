@@ -36,9 +36,15 @@ public class RetainInstanceData {
 
   /* ClearLog */
   boolean clearLogDialogShowing;
+  boolean clearLogProgressDialogShowing;
+  int clearLogProgress;
+  int clearLogProgressMax;
 
   public void retainClearLogData() {
     clearLogDialogShowing = NetworkLog.clearLog.dialog != null && NetworkLog.clearLog.dialog.isShowing();
+    clearLogProgressDialogShowing = NetworkLog.clearLog.progressDialog != null && NetworkLog.clearLog.progressDialog.isShowing();
+    clearLogProgress = NetworkLog.clearLog.progress;
+    clearLogProgressMax = NetworkLog.clearLog.progress_max;
   }
 
   /* NetworkLog */

@@ -17,7 +17,6 @@ import java.io.File;
 
 public class Settings implements OnSharedPreferenceChangeListener {
   private SharedPreferences prefs;
-  public Long maxLogEntries = null;
 
   // Force use of context constructor
   private Settings() {}
@@ -122,10 +121,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
   }
 
   public long getMaxLogEntries() {
-    if(maxLogEntries == null) {
-      maxLogEntries = Long.parseLong(prefs.getString("max_log_entries", "150000"));
-    }
-    return maxLogEntries;
+    return Long.parseLong(prefs.getString("max_log_entries", "150000"));
   }
 
   public Sort getPreSortBy() {
@@ -388,7 +384,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
       if(key.equals("max_log_entries")) {
         String value = prefs.getString(key, "150000");
         MyLog.d("New " + key + " value [" + value + "]");
-        maxLogEntries = Long.parseLong(value);
+        NetworkLog.logFragment.maxLogEntries = Long.parseLong(value);
         NetworkLog.logFragment.pruneLogEntries();
         return;
       }

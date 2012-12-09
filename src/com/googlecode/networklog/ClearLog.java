@@ -8,6 +8,7 @@ package com.googlecode.networklog;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -21,24 +22,163 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.lang.Thread;
+import java.lang.Runnable;
+import java.io.BufferedWriter;
+import java.io.PrintWriter;
+import java.io.File;
+import java.io.FileWriter;
+
 public class ClearLog
 {
   FixedSpinnerAlertDialog dialog = null;
   int spinnerInit = 0;
+  ProgressDialog progressDialog = null;
+  int progress = 0;
+  int progress_max = 0;
 
-  public void clearLogEntriesOlderThan(long timerange, boolean clearLogfile) {
-    Log.d("NetworkLog", "Clearing entries older than " + timerange + "; logfile: " + clearLogfile);
+  public void showProgressDialog(final Context context) {
+    NetworkLog.handler.post(new Runnable() {
+      public void run() {
+        progressDialog = new ProgressDialog(context);
 
-    NetworkLog.logFragment.clearLogEntriesOlderThan(timerange);
-    NetworkLog.appFragment.rebuildLogEntries();
+        if(progress_max == 0) {
+          progressDialog.setIndeterminate(true);
+        } else {
+          progressDialog.setIndeterminate(false);
+        }
 
-    if(clearLogfile) {
-      // TODO stop service and updaters
-      // TODO clear logfile entries
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setCancelable(false);
+        progressDialog.setTitle("");
+        progressDialog.setMessage("Clearing log");
+        progressDialog.setMax(progress_max);
+        progressDialog.setProgress(progress);
+        progressDialog.show();
+      }
+    });
+  }
+
+  public void clearLogFileEntriesOlderThan(final Context context, final long timerange) {
+    LogfileLoader loader = new LogfileLoader();
+    LogEntry entry;
+    long start = System.currentTimeMillis();
+
+    try {
+      loader.openLogfile(NetworkLog.settings.getLogFile());
+      long length = loader.getLength();
+      long starting_pos = loader.seekToTimestampPosition(System.currentTimeMillis() - timerange);
+
+      File logfile = new File(NetworkLog.settings.getLogFile());
+      File file = new File(logfile.getParent(), logfile.getName() + ".clear");
+
+      Log.d("NetworkLog", "Opened " + logfile + " and " + file + " for clearing");
+      Log.d("NetworkLog", "starting pos: " + starting_pos);
+
+      PrintWriter fileWriter = new PrintWriter(new BufferedWriter(new FileWriter(file)), true);
+
+      if(starting_pos != -1) {
+        progress_max = (int)(length - starting_pos);
+        progress = 0;
+        progressDialog.setIndeterminate(false);
+        progressDialog.setMax(progress_max);
+
+        long processed_so_far = 0;
+        long progress_increment_size = (long)((length - starting_pos) * 0.01);
+        long next_progress_increment = progress_increment_size;
+
+        while(true) {
+          entry = loader.readEntry();
+
+          if(entry == null) {
+            // end of file
+            MyLog.d("[clearlogfile] Reached end of file");
+            break;
+          }
+
+          processed_so_far = loader.getProcessedSoFar();
+
+          if(processed_so_far >= next_progress_increment) {
+            next_progress_increment += progress_increment_size;
+            progress = (int)processed_so_far;
+            if(progressDialog != null && progressDialog.isShowing()) {
+              progressDialog.setProgress(progress);
+            }
+          }
+
+          fileWriter.println(entry.timestamp + "," + entry.in + "," + entry.out + "," + entry.uid + "," + entry.src + "," + entry.spt + "," + entry.dst + "," + entry.dpt + "," + entry.len);
+        }
+
+        loader.closeLogfile();
+      }
+
+      fileWriter.close();
+
+      if(logfile.delete()) {
+        if(!file.renameTo(logfile)) {
+          Log.w("NetworkLog", "Failed to rename " + file + " to " + logfile);
+        }
+      } else {
+        Log.w("NetworkLog", "Failed to delete " + logfile);
+      }
+    } catch (Exception e) {
+      Log.w("NetworkLog", "clearLogFileEntriesOlderThan", e);
+    } finally {
+      long elapsed = System.currentTimeMillis() - start;
+      Log.d("NetworkLog", "Clear logfile history elapsed: " + elapsed);
+
+      NetworkLog.handler.post(new Runnable() {
+        public void run() {
+          NetworkLog.updateStatusText();
+        }
+      });
     }
   }
 
-  public void showDialog(Context context) {
+  public void clearLogEntriesOlderThan(final Context context, final long timerange, final boolean clearLogfile) {
+    new Thread(new Runnable() {
+      public void run() {
+        Log.d("NetworkLog", "Clearing entries older than " + timerange + "; logfile: " + clearLogfile);
+
+        progress_max = 0;
+        progress = 0;
+        showProgressDialog(context);
+
+        NetworkLog.logFragment.clearLogEntriesOlderThan(timerange);
+        NetworkLog.appFragment.rebuildLogEntries();
+
+        if(clearLogfile) {
+          boolean serviceRunning = false;
+          if(NetworkLog.isServiceRunning(context, NetworkLogService.class.getName())) {
+            serviceRunning = true;
+            Log.d("NetworkLog", "Stopping logging to clear log");
+            NetworkLogService.instance.stopLogging();
+          }
+
+          Log.d("NetworkLog", "Clearing logfile...");
+          clearLogFileEntriesOlderThan(context, timerange);
+
+          if(serviceRunning) {
+            Log.d("NetworkLog", "Resuming logging");
+            NetworkLogService.instance.startLogging();
+          }
+        }
+
+        NetworkLog.handler.post(new Runnable() {
+          public void run() {
+            if(progressDialog != null) {
+              progressDialog.dismiss();
+              progressDialog = null;
+            }
+          }
+        });
+
+        Log.d("NetworkLog", "Done clearing log entries.");
+      }
+    }).start();
+  }
+
+  public void showClearLogDialog(final Context context) {
     LinearLayout view = new LinearLayout(context);
     view.setOrientation(LinearLayout.VERTICAL);
 
@@ -104,7 +244,7 @@ public class ClearLog
     dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Clear log", new DialogInterface.OnClickListener() {
       public void onClick(DialogInterface dialog, int whichButton) {
         dialog.dismiss();
-        clearLogEntriesOlderThan(Long.parseLong(timerangeValues[spinner.getSelectedItemPosition()]), checkbox.isChecked());
+        clearLogEntriesOlderThan(context, Long.parseLong(timerangeValues[spinner.getSelectedItemPosition()]), checkbox.isChecked());
       }
     });
     dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {

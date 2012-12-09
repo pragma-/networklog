@@ -25,17 +25,15 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
 
   private class PreferenceConfigurationData {
     boolean history_dialog_showing;
-    int history_dialog_max;
-    int history_dialog_progress;
     boolean start_foreground_dialog_showing;
     boolean clearlog_dialog_showing;
+    boolean clearlog_progress_dialog_showing;
 
     PreferenceConfigurationData() {
       history_dialog_showing = NetworkLog.history.dialog_showing;
-      history_dialog_max = NetworkLog.history.dialog_max;
-      history_dialog_progress = NetworkLog.history.dialog_progress;
       start_foreground_dialog_showing = (warnStartForegroundDialog == null) ? false : true;
       clearlog_dialog_showing = NetworkLog.clearLog.dialog != null && NetworkLog.clearLog.dialog.isShowing();
+      clearlog_progress_dialog_showing = NetworkLog.clearLog.progressDialog != null && NetworkLog.clearLog.progressDialog.isShowing();
     }
   }
 
@@ -55,6 +53,11 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
       if(NetworkLog.clearLog.dialog != null && NetworkLog.clearLog.dialog.isShowing()) {
         NetworkLog.clearLog.dialog.dismiss();
         NetworkLog.clearLog.dialog = null;
+      }
+
+      if(NetworkLog.clearLog.progressDialog != null && NetworkLog.clearLog.progressDialog.isShowing()) {
+        NetworkLog.clearLog.progressDialog.dismiss();
+        NetworkLog.clearLog.progressDialog = null;
       }
 
       super.onDestroy();
@@ -145,7 +148,11 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
         }
 
         if(data.clearlog_dialog_showing) {
-          NetworkLog.clearLog.showDialog(this);
+          NetworkLog.clearLog.showClearLogDialog(this);
+        }
+
+        if(data.clearlog_progress_dialog_showing) {
+          NetworkLog.clearLog.showProgressDialog(this);
         }
 
         MyLog.d("Restored preferences run");
@@ -176,7 +183,7 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
       }
 
       if(preference.getKey().equals("clear_log")) {
-        NetworkLog.clearLog.showDialog(this);
+        NetworkLog.clearLog.showClearLogDialog(this);
         return true;
       }
 
