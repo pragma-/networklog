@@ -1072,7 +1072,7 @@ public class AppFragment extends Fragment {
                   }
                 }
 
-                if(item.filteredChildItems.size() == 0) {
+                if(item.filteredChildItems.size() == 0 && matched) {
                   // MyLog.d("[AppFragment] removed all hosts, removing item from filter results");
                   filteredItems.remove(i);
                 }

@@ -678,7 +678,7 @@ public class LogFragment extends Fragment {
 
                 for(String c : NetworkLog.filterTextExcludeList) {
                   if((NetworkLog.filterNameExclude && item.mNameLowerCase.contains(c))
-                      || (NetworkLog.filterUidExclude && item.mUidString.contains(c))
+                      || (NetworkLog.filterUidExclude && item.mUidString.equals(c))
                       || (NetworkLog.filterAddressExclude && ((item.srcAddr.contains(c) || StringPool.getLowerCase(srcAddrResolved).contains(c)) || (item.dstAddr.contains(c) || StringPool.getLowerCase(dstAddrResolved).contains(c))))
                       || (NetworkLog.filterPortExclude && ((String.valueOf(item.srcPort).equals(c) || StringPool.getLowerCase(srcPortResolved).equals(c)) || (String.valueOf(item.dstPort).equals(c) || StringPool.getLowerCase(dstPortResolved).equals(c)))))
                   {
