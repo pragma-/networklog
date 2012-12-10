@@ -24,10 +24,9 @@ import android.widget.TextView;
 
 import java.lang.Thread;
 import java.lang.Runnable;
-import java.io.BufferedWriter;
-import java.io.PrintWriter;
+import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 
 public class ClearLog
 {
@@ -61,7 +60,6 @@ public class ClearLog
 
   public void clearLogFileEntriesOlderThan(final Context context, final long timerange) {
     LogfileLoader loader = new LogfileLoader();
-    LogEntry entry;
     long start = System.currentTimeMillis();
 
     try {
@@ -75,7 +73,7 @@ public class ClearLog
       Log.d("NetworkLog", "Opened " + logfile + " and " + file + " for clearing");
       Log.d("NetworkLog", "starting pos: " + starting_pos);
 
-      PrintWriter fileWriter = new PrintWriter(new BufferedWriter(new FileWriter(file)), true);
+      BufferedOutputStream fileWriter = new BufferedOutputStream(new FileOutputStream(file));
 
       if(starting_pos != -1) {
         progress_max = (int)(length - starting_pos);
@@ -88,15 +86,13 @@ public class ClearLog
         long next_progress_increment = progress_increment_size;
 
         while(true) {
-          entry = loader.readEntry();
-
-          if(entry == null) {
+          if(loader.readChunk() == false) {
             // end of file
             MyLog.d("[clearlogfile] Reached end of file");
             break;
           }
 
-          processed_so_far = loader.getProcessedSoFar();
+          processed_so_far = loader.getReadSoFar();
 
           if(processed_so_far >= next_progress_increment) {
             next_progress_increment += progress_increment_size;
@@ -106,7 +102,7 @@ public class ClearLog
             }
           }
 
-          fileWriter.println(entry.timestamp + "," + entry.in + "," + entry.out + "," + entry.uid + "," + entry.src + "," + entry.spt + "," + entry.dst + "," + entry.dpt + "," + entry.len);
+          fileWriter.write(loader.getBuffer(), 0, loader.getBufferLength());
         }
 
         loader.closeLogfile();

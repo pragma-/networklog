@@ -20,7 +20,7 @@ public class LogfileLoader {
   byte[] buffer = new byte[buffer_size]; // read a nice sized chunk of data
   byte[] partial_buffer = new byte[128]; // for holding partial lines from end of buffer
   byte[] line = new byte[128]; // a single line in the log file
-  long buffer_length = 0;
+  int buffer_length = 0;
   int buffer_pos = 0;
   short partial_buffer_length = 0;
   short line_length = 0;
@@ -111,6 +111,18 @@ public class LogfileLoader {
 
     logfile.seek(result);
     return result;
+  }
+
+  public byte[] getBuffer() {
+    return buffer;
+  }
+
+  public int getBufferLength() {
+    return buffer_length;
+  }
+
+  public long getReadSoFar() {
+    return read_so_far;
   }
 
   public boolean readChunk() throws IOException {
