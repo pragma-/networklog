@@ -332,6 +332,10 @@ public class LogFragment extends Fragment {
   }
 
   public void startUpdater() {
+    if(updater != null) {
+      updater.stop();
+    }
+
     updater = new ListViewUpdater();
     new Thread(updater, "LogFragmentUpdater").start();
   }

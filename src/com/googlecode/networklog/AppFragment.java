@@ -737,6 +737,10 @@ public class AppFragment extends Fragment {
   }
 
   public void startUpdater() {
+    if(updater != null) {
+      updater.stop();
+    }
+
     updater = new ListViewUpdater();
     new Thread(updater, "AppFragmentUpdater").start();
   }
