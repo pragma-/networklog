@@ -35,7 +35,7 @@ Adjustable interval from 1 ms to 48 hours for summing data:
   * for Kbps, set to 1 second
   * for Kb-per-hour, set to 1 hour; etc
 
-Adjustable **_pinch-zoomable_** and **_scrollable_** viewsize.
+Adjustable **_pinch-zoomable_** and **_scrollable_** graphs.
 
 _Requires rooted devices._
 
