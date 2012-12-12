@@ -9,6 +9,7 @@ package com.googlecode.networklog;
 import java.lang.RuntimeException;
 
 // Inspired by Hugh Perkins's jfastparser
+// https://github.com/hughperkins/jfastparser/blob/1434212efac5ed422724d75dbb3359b72dd7c614/src/jfastparser/Parser.java
 
 public class FastParser {
   char[] line;
@@ -140,7 +141,7 @@ public class FastParser {
         afterpoint = true;
       } else {
         int thisdigit = thischar - '0';
-        value = value * 10 + thisdigit; 
+        value = value * 10 + thisdigit;
         if(afterpoint) {
           divider *= 10;
         }
