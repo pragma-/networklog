@@ -75,7 +75,9 @@ public class LogfileLoader {
 
       long mid = (max + min) / 2;
 
-      MyLog.d("[LogfileLoader] testing position " + mid);
+      if(MyLog.enabled) {
+        MyLog.d("[LogfileLoader] testing position " + mid);
+      }
 
       logfile.seek(mid);
 
@@ -89,11 +91,15 @@ public class LogfileLoader {
         return -1;
       }
 
-      MyLog.d("[LogfileLoader] Testing line [" + line + "]");
+      if(MyLog.enabled) {
+        MyLog.d("[LogfileLoader] Testing line [" + line + "]");
+      }
 
       long timestamp = Long.parseLong(line.split("[^0-9-]+", 2)[0]);
 
-      MyLog.d("[LogfileLoader] comparing timestamp " + timestamp + " <=> " + target);
+      if(MyLog.enabled) {
+        MyLog.d("[LogfileLoader] comparing timestamp " + timestamp + " <=> " + target);
+      }
 
       if(timestamp < target) {
         min = mid + 1;

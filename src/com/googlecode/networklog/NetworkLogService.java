@@ -614,7 +614,7 @@ public class NetworkLogService extends Service {
       if(android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {
         try {
           logWriter = new PrintWriter(new BufferedWriter(new FileWriter(logfile, true)), true);
-          MyLog.d("Opened " + logfile + " for logging");
+          Log.d("NetworkLog", "Opened " + logfile + " for logging");
         } catch(final Exception e) {
           Log.e("NetworkLog", "Exception opening logfile [" + logfile +"]", e);
           Handler handler = new Handler(Looper.getMainLooper());
@@ -626,7 +626,7 @@ public class NetworkLogService extends Service {
           return;
         }
       } else {
-        MyLog.d("External storage " + logfile + " not available");
+        Log.w("NetworkLog", "External storage " + logfile + " not available");
       }
     }
 

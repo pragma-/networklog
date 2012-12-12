@@ -57,7 +57,9 @@ public class ShellCommand {
   public void waitForExit() {
     while(checkForExit() == false) {
       if(stdoutAvailable()) {
-        MyLog.d("ShellCommand waitForExit [" + tag + "] discarding read: " + readStdout());
+        if(MyLog.enabled) {
+          MyLog.d("ShellCommand waitForExit [" + tag + "] discarding read: " + readStdout());
+        }
       }
       else
         try {

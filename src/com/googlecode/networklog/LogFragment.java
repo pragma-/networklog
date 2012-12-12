@@ -114,7 +114,9 @@ public class LogFragment extends Fragment {
     }
 
     adapter.notifyDataSetChanged();
-    MyLog.d("Refreshed LogFragment adapter");
+    if(MyLog.enabled) {
+      MyLog.d("Refreshed LogFragment adapter");
+    }
   }
 
   @Override
@@ -344,7 +346,9 @@ public class LogFragment extends Fragment {
     ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.installedAppsHash.get(String.valueOf(entry.uid));
 
     if(appEntry == null) {
-      MyLog.d("LogFragment: No appEntry for uid " + entry.uid);
+      if(MyLog.enabled) {
+        MyLog.d("LogFragment: No appEntry for uid " + entry.uid);
+      }
       return;
     }
 
@@ -385,7 +389,9 @@ public class LogFragment extends Fragment {
     synchronized(listDataBuffer) {
       synchronized(listDataUnfiltered) {
         for(ListItem item : listDataBuffer) {
-          MyLog.d("Adding buffer item " + item);
+          if(MyLog.enabled) {
+            MyLog.d("Adding buffer item " + item);
+          }
           listDataUnfiltered.add(item);
         }
 
@@ -403,10 +409,14 @@ public class LogFragment extends Fragment {
       while(iterator.hasNext()) {
         ListItem item = iterator.next();
 
-        MyLog.d("Checking item " + item.mUid + " " + item.mName + " " + item.timestamp);
+        if(MyLog.enabled) {
+          MyLog.d("Checking item " + item.mUid + " " + item.mName + " " + item.timestamp);
+        }
 
         if(item.timestamp < timestamp) {
-          MyLog.d("Removing item");
+          if(MyLog.enabled) {
+            MyLog.d("Removing item");
+          }
           iterator.remove();
         } else {
           // remaining entries should be >= timestamp
@@ -456,7 +466,9 @@ public class LogFragment extends Fragment {
     boolean running = false;
     Runnable runner = new Runnable() {
       public void run() {
-        MyLog.d("LogFragmentUpdater enter");
+        if(MyLog.enabled) {
+          MyLog.d("LogFragmentUpdater enter");
+        }
         int i = 0;
 
         synchronized(listDataBuffer) {
@@ -493,7 +505,9 @@ public class LogFragment extends Fragment {
 
         adapter.notifyDataSetChanged();
 
-        MyLog.d("LogFragmentUpdater exit: added " + i + " items");
+        if(MyLog.enabled) {
+          MyLog.d("LogFragmentUpdater exit: added " + i + " items");
+        }
       }
     };
 
@@ -521,7 +535,9 @@ public class LogFragment extends Fragment {
         }
       }
 
-      MyLog.d("Stopped LogFragment updater " + this);
+      if(MyLog.enabled) {
+        MyLog.d("Stopped LogFragment updater " + this);
+      }
     }
   }
 
@@ -546,7 +562,9 @@ public class LogFragment extends Fragment {
 
       @Override
         protected FilterResults performFiltering(CharSequence constraint) {
-          MyLog.d("[LogFragment] performFiltering");
+          if(MyLog.enabled) {
+            MyLog.d("[LogFragment] performFiltering");
+          }
 
           synchronized(listDataUnfiltered) {
             originalItems.clear();
@@ -701,19 +719,25 @@ public class LogFragment extends Fragment {
             results.count = filteredItems.size();
           }
 
-          MyLog.d("[LogFragment] filter returning " + results.count + " items");
+          if(MyLog.enabled) {
+            MyLog.d("[LogFragment] filter returning " + results.count + " items");
+          }
           return results;
         }
 
       @SuppressWarnings("unchecked")
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-          MyLog.d("[LogFragment] Publishing filter results");
+          if(MyLog.enabled) {
+            MyLog.d("[LogFragment] Publishing filter results");
+          }
 
           synchronized(listData) {
             listData.clear();
             listData.addAll((ArrayList<ListItem>) results.values);
-            MyLog.d("[LogFilter] listdata size after filter: " + listData.size());
+            if(MyLog.enabled) {
+              MyLog.d("[LogFilter] listdata size after filter: " + listData.size());
+            }
             refreshAdapter();
           }
         }

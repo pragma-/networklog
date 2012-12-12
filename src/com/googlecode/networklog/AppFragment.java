@@ -264,7 +264,9 @@ public class AppFragment extends Fragment {
     int top = (v == null) ? 0 : v.getTop();
 
     adapter.notifyDataSetChanged();
-    MyLog.d("Refreshed AppFragment adapter");
+    if(MyLog.enabled) {
+      MyLog.d("Refreshed AppFragment adapter");
+    }
 
     listView.setSelectionFromTop(index, top);
 
@@ -757,7 +759,9 @@ public class AppFragment extends Fragment {
     Runnable runner = new Runnable() {
       public void run() {
         synchronized(groupData) {
-          MyLog.d("AppFragmentListUpdater enter");
+          if(MyLog.enabled) {
+            MyLog.d("AppFragmentListUpdater enter");
+          }
 
           synchronized(groupDataBuffer) {
             // todo: find a way so that we don't have to go through every entry
@@ -780,7 +784,9 @@ public class AppFragment extends Fragment {
           refreshAdapter();
         }
 
-        MyLog.d("AppFragmentListUpdater exit");
+        if(MyLog.enabled) {
+          MyLog.d("AppFragmentListUpdater exit");
+        }
       }
     };
 
@@ -813,7 +819,9 @@ public class AppFragment extends Fragment {
   }
 
   public void setFilter(CharSequence s) {
-    MyLog.d("[AppFragment] setFilter(" + s + ")");
+    if(MyLog.enabled) {
+      MyLog.d("[AppFragment] setFilter(" + s + ")");
+    }
     adapter.getFilter().filter(s);
   }
 
@@ -830,7 +838,9 @@ public class AppFragment extends Fragment {
 
       @Override
         protected FilterResults performFiltering(CharSequence constraint) {
-          MyLog.d("[AppFragment] performFiltering");
+          if(MyLog.enabled) {
+            MyLog.d("[AppFragment] performFiltering");
+          }
 
           synchronized(groupDataBuffer) {
             originalItems.clear();
@@ -838,7 +848,9 @@ public class AppFragment extends Fragment {
           }
 
           if(NetworkLog.filterTextInclude.length() == 0 && NetworkLog.filterTextExclude.length() == 0) {
-            MyLog.d("[AppFragment] no constraint item count: " + originalItems.size());
+            if(MyLog.enabled) {
+              MyLog.d("[AppFragment] no constraint item count: " + originalItems.size());
+            }
 
             // undo uniqueHosts filtering
             for(GroupItem item : originalItems) {
@@ -856,10 +868,14 @@ public class AppFragment extends Fragment {
             localItems.addAll(originalItems);
             int count = localItems.size();
 
-            MyLog.d("[AppFragment] item count: " + count);
+            if(MyLog.enabled) {
+              MyLog.d("[AppFragment] item count: " + count);
+            }
 
             if(NetworkLog.filterTextIncludeList.size() == 0) {
-              MyLog.d("[AppFragment] no include filter, adding all items");
+              if(MyLog.enabled) {
+                MyLog.d("[AppFragment] no include filter, adding all items");
+              }
 
               for(GroupItem item : localItems) {
                 filteredItems.add(item);
@@ -875,7 +891,9 @@ public class AppFragment extends Fragment {
                   while(itr.hasNext()) {
                     String host = itr.next();
                     ChildItem childData = item.childrenData.get(host);
-                    MyLog.d("[AppFragment] adding filtered host " + childData);
+                    if(MyLog.enabled) {
+                      MyLog.d("[AppFragment] adding filtered host " + childData);
+                    }
                     item.filteredChildItems.put(host, childData);
                     item.childrenAreFiltered = true;
                   }
@@ -1087,14 +1105,18 @@ public class AppFragment extends Fragment {
             results.count = filteredItems.size();
           }
 
-          MyLog.d("[AppFragment] filter returning " + results.count + " results");
+          if(MyLog.enabled) {
+            MyLog.d("[AppFragment] filter returning " + results.count + " results");
+          }
           return results;
         }
 
       @SuppressWarnings("unchecked")
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-          MyLog.d("[AppFragment] Publishing filter results");
+          if(MyLog.enabled) {
+            MyLog.d("[AppFragment] Publishing filter results");
+          }
           
           final ArrayList<GroupItem> localItems = (ArrayList<GroupItem>) results.values;
 
@@ -1264,7 +1286,9 @@ public class AppFragment extends Fragment {
         }
 
         if(item == null) {
-          MyLog.d("child (" + groupPosition + "," + childPosition + ") not found");
+          if(MyLog.enabled) {
+            MyLog.d("child (" + groupPosition + "," + childPosition + ") not found");
+          }
           return null;
         }
 
