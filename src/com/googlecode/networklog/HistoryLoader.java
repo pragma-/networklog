@@ -92,8 +92,8 @@ public class HistoryLoader {
 
           MyLog.d("[history] increment size: " + progress_increment_size);
 
-          //android.os.Debug.startMethodTracing("networklog", 16 * 1024 * 1024);
           long start = System.currentTimeMillis();
+          // android.os.Debug.startMethodTracing("networklog", 32 * 1024 * 1024);
 
           try {
             while(!canceled) {
@@ -123,9 +123,9 @@ public class HistoryLoader {
           } catch(Exception e) {
             Log.w("NetworkLog", "loadEntriesFromFile", e);
           } finally {
+            // android.os.Debug.stopMethodTracing();
             long elapsed = System.currentTimeMillis() - start;
             Log.d("NetworkLog", "Load history elapsed: " + elapsed);
-            //android.os.Debug.stopMethodTracing();
 
             MyLog.d("[history] Dismissing progress dialog");
             NetworkLog.handler.post(new Runnable() {

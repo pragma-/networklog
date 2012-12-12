@@ -16,6 +16,7 @@ import java.io.IOException;
 public class LogfileLoader {
   RandomAccessFile logfile = null;
   LogEntry entry = new LogEntry();
+  FastParser parser = new FastParser(',');
   int buffer_size = 1024 * 16;
   byte[] buffer = new byte[buffer_size]; // read a nice sized chunk of data
   byte[] partial_buffer = new byte[128]; // for holding partial lines from end of buffer
@@ -162,8 +163,7 @@ public class LogfileLoader {
   }
 
   public LogEntry readEntry() throws IOException {
-    int token, pos, delim, i;
-    boolean done;
+    int i;
 
     while(true) {
       if(buffer_pos >= buffer_length) {
@@ -175,11 +175,26 @@ public class LogfileLoader {
 
       // extract and parse lines
       while(buffer_pos < buffer_length) {
+        if(line_length >= line.length - 1) {
+          Log.w("NetworkLog", "Skipping too long entry: [" + new String(line, 0, line.length - 1) + "]");
+          line_length = 0;
+
+          // read remainder of long line
+          while(buffer_pos < buffer_length && buffer[buffer_pos] != '\n') {
+            buffer_pos++;
+          }
+          continue;
+        }
+
         if(buffer[buffer_pos] != '\n') {
           line[line_length++] = buffer[buffer_pos++];
         } else {
           // got line
           buffer_pos++;
+
+          if(line_length == 0) {
+            continue;
+          }
 
           processed_so_far += line_length;
 
@@ -187,73 +202,34 @@ public class LogfileLoader {
             chars[i] = (char)line[i];
           }
 
-          sb.setLength(0);
-          sb.append(chars, 0, line_length);
+          String value;
+          parser.setLine(chars, line_length);
 
-          token = 0;
-          pos = 0;
-          delim = 0;
-          done = false;
+          try {
+            entry.timestamp = parser.getLong();
 
-          if(sb.length() == 0) {
-            line_length = 0;
-            continue;
-          }
-
-          while(!done) {
-            delim = sb.indexOf(",", pos);
-
-            if(delim == -1) {
-              delim = sb.length();
-              done = true;
+            value = parser.getString();
+            if(value == null) {
+              entry.in = null;
+            } else {
+              entry.in = StringPool.get(value);
             }
 
-            // MyLog.d("Got token " + token + " (" + pos + "," + delim + ") [" + sb.substring(pos, delim) + "]"); 
-
-            switch(token) {
-              case 0:
-                entry.timestamp = Long.parseLong(sb.substring(pos, delim));
-                break;
-              case 1:
-                if((delim - pos) != 0) {
-                  entry.in = StringPool.get(sb.substring(pos, delim));
-                } else {
-                  entry.in = null;
-                }
-                break;
-              case 2:
-                if((delim - pos) != 0) {
-                  entry.out = StringPool.get(sb.substring(pos, delim));
-                } else {
-                  entry.out = null;
-                }
-                break;
-              case 3:
-                entry.uid = Integer.parseInt(sb.substring(pos, delim));
-                break;
-              case 4:
-                entry.src = StringPool.get(sb.substring(pos, delim));
-                break;
-              case 5:
-                entry.spt = Integer.parseInt(sb.substring(pos, delim));
-                break;
-              case 6:
-                entry.dst = StringPool.get(sb.substring(pos, delim));
-                break;
-              case 7:
-                entry.dpt = Integer.parseInt(sb.substring(pos, delim));
-                break;
-              case 8:
-                entry.len = Integer.parseInt(sb.substring(pos, delim));
-                break;
+            value = parser.getString();
+            if(value == null) {
+              entry.out = null;
+            } else {
+              entry.out = StringPool.get(value);
             }
 
-            token++;
-            pos = delim + 1;
-          }
-
-          if(token != 9) {
-            MyLog.d("Skipping malformed entry");
+            entry.uid = parser.getInt(); 
+            entry.src = StringPool.get(parser.getString());
+            entry.spt = parser.getInt();
+            entry.dst = StringPool.get(parser.getString());
+            entry.dpt = parser.getInt();
+            entry.len = parser.getInt();
+          } catch (Exception e) {
+            Log.w("NetworkLog", "Skipping malformed entry", e);
             line_length = 0;
             continue;
           }

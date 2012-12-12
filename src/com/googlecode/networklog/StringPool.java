@@ -14,6 +14,10 @@ public class StringPool {
   static long size = 0;
 
   public static String get(String string) {
+    if(string == null) {
+      return "";
+    }
+
     String result = pool.get(string);
 
     if(result == null) {
@@ -40,6 +44,10 @@ public class StringPool {
   }
 
   public static String getLowerCase(String string) {
+    if(string == null) {
+      return "";
+    }
+
     String result = lowercasePool.get(string);
 
     if(result == null) {
