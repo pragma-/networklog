@@ -65,6 +65,8 @@ public class LogfileLoader {
     long result = 0;
     long min = 0;
     long max = getLength();
+    long mid;
+    long timestamp;
 
     // nearest match binary search to find timestamp within logfile
     while(max >= min) {
@@ -73,7 +75,7 @@ public class LogfileLoader {
         return -1;
       }
 
-      long mid = (max + min) / 2;
+      mid = (max + min) / 2;
 
       if(MyLog.enabled) {
         MyLog.d("[LogfileLoader] testing position " + mid);
@@ -95,7 +97,7 @@ public class LogfileLoader {
         MyLog.d("[LogfileLoader] Testing line [" + line + "]");
       }
 
-      long timestamp = Long.parseLong(line.split("[^0-9-]+", 2)[0]);
+      timestamp = Long.parseLong(line.split("[^0-9-]+", 2)[0]);
 
       if(MyLog.enabled) {
         MyLog.d("[LogfileLoader] comparing timestamp " + timestamp + " <=> " + target);
@@ -218,20 +220,20 @@ public class LogfileLoader {
             if(value == null) {
               entry.in = null;
             } else {
-              entry.in = StringPool.get(value);
+              entry.in = value;
             }
 
             value = parser.getString();
             if(value == null) {
               entry.out = null;
             } else {
-              entry.out = StringPool.get(value);
+              entry.out = value;
             }
 
             entry.uid = parser.getInt(); 
-            entry.src = StringPool.get(parser.getString());
+            entry.src = parser.getString();
             entry.spt = parser.getInt();
-            entry.dst = StringPool.get(parser.getString());
+            entry.dst = parser.getString();
             entry.dpt = parser.getInt();
             entry.len = parser.getInt();
           } catch (Exception e) {
