@@ -11,10 +11,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class StringPool {
-  final public static ConcurrentHashMap<String, String> pool = new ConcurrentHashMap<String, String>(1024);
-  final public static ConcurrentHashMap<String, String> lowercasePool = new ConcurrentHashMap<String, String>(1024);
-  final public static ArrayList<String> charPool = new ArrayList<String>(1024);
-  static long size = 0;
+  final static int maxPoolSize = 1024;
+  final public static ConcurrentHashMap<String, String> pool = new ConcurrentHashMap<String, String>(maxPoolSize);
+  final public static ConcurrentHashMap<String, String> lowercasePool = new ConcurrentHashMap<String, String>(maxPoolSize);
+  final public static ArrayList<String> charPool = new ArrayList<String>(maxPoolSize);
+  static int poolSize = 0;
+  static int lowercasePoolSize = 0;
+  static int charPoolSize = 0;
+
+  public static void clearCharPool() {
+    charPool.clear();
+    charPoolSize = 0;
+  }
 
   public static String get(char[] chars, int pos, int length) {
     int min = 0;
@@ -52,26 +60,45 @@ public class StringPool {
         }
 
         if(found == true) {
-          return get(string);
+          // may have found match
+          if(length != stringLength) {
+            // lengths do not match, so strings cannot match
+            if(length > stringLength) {
+              min = mid + 1;
+            } else {
+              max = mid - 1;
+            }
+            continue;
+          }
+          // found match
+          return string;
         }
       }
     }
 
     // no match found
     string = new String(chars, pos, length);
+
     if(MyLog.enabled) {
       MyLog.d("charPool creating new string: [" + string + "]");
     }
+
     charPool.add(string);
     Collections.sort(charPool);
-    String result = pool.get(string);
-    if(result == null) {
-      pool.put(string, string);
-      size++;
-      return string;
-    } else {
-      return result;
+    charPoolSize++;
+
+    if(MyLog.enabled) {
+      MyLog.d("[StringPool] new charPool addition [" + string + "]; pool size: " + charPoolSize);
     }
+
+    if (charPoolSize >= maxPoolSize) {
+      // clear pool to free memory and allow pool to rebuild
+      MyLog.d("[StringPool] Clearing charPool");
+      charPool.clear();
+      charPoolSize = 0;
+    }
+
+    return string;
   }
 
   public static String get(String string) {
@@ -85,17 +112,17 @@ public class StringPool {
       String newString = new String(string); // decouple string from substring(), etc
       
       pool.put(newString, newString);
-      size++;
+      poolSize++;
 
       if(MyLog.enabled) {
-        MyLog.d("[StringPool] new addition [" + newString + "]; pool size: " + size);
+        MyLog.d("[StringPool] new addition [" + newString + "]; pool size: " + poolSize);
       }
 
-      if (size > NetworkLog.settings.getMaxLogEntries()) {
+      if (poolSize >= maxPoolSize) {
         // clear pool to free memory and allow pool to rebuild
         MyLog.d("[StringPool] Clearing pool");
         pool.clear();
-        size = 0;
+        poolSize = 0;
       }
 
       return newString;
@@ -115,6 +142,19 @@ public class StringPool {
       String newString = new String(string.toLowerCase());
 
       lowercasePool.put(string, newString);
+      lowercasePoolSize++;
+
+      if(MyLog.enabled) {
+        MyLog.d("[StringPool] new lowercase addition [" + newString + "]; pool size: " + lowercasePoolSize);
+      }
+
+      if (lowercasePoolSize >= maxPoolSize) {
+        // clear pool to free memory and allow pool to rebuild
+        MyLog.d("[StringPool] Clearing lowercase pool");
+        lowercasePool.clear();
+        lowercasePoolSize = 0;
+      }
+
       return newString;
     } else {
       return result;
