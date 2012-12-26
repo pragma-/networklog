@@ -1,3 +1,9 @@
+/* (C) 2012 Pragmatic Software
+   This Source Code Form is subject to the terms of the Mozilla Public
+   License, v. 2.0. If a copy of the MPL was not distributed with this
+   file, You can obtain one at http://mozilla.org/MPL/2.0/
+ */
+
 /**
  * Implements an AA-tree.
  * @author Based upon implemention by Mark Allen Weiss
@@ -58,7 +64,7 @@ public class CharArrayStringAATree
   /**
    * Find an item in the tree.
    * @param x the item to search for.
-   * @return the matching item of null if not found.
+   * @return the matching item or null if not found.
    */
   public String find( String x )
   {
@@ -267,5 +273,5 @@ public class CharArrayStringAATree
 
   private AANode deletedNode;
   private AANode lastNode;
-  public String result;
+  private String result;
 }
