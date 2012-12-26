@@ -21,6 +21,10 @@ public class StringPool {
     charPool.clear();
   }
 
+  public static String get(CharArray chars) {
+    return get(chars.getData(), 0, chars.getPos());
+  }
+
   public static String get(char[] chars, int pos, int length) {
     charBuffer.reset();
     charBuffer.append(chars, pos, length);
