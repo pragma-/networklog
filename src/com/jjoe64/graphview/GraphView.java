@@ -344,7 +344,7 @@ abstract public class GraphView extends LinearLayout {
   private ScaleGestureDetector scaleDetector;
   private boolean scalable;
   private NumberFormat numberformatter;
-  public final List<GraphViewSeries> graphSeries;
+  public List<GraphViewSeries> graphSeries;
   private boolean showLegend = false;
   private float legendWidth = 120;
   private LegendAlign legendAlign = LegendAlign.MIDDLE;

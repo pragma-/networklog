@@ -41,7 +41,6 @@ public abstract class GraphActivity extends Activity
   public double interval;
   public double viewsize;
 
-  public abstract void buildLegend(Context context);
   public abstract void buildSeries(double timeFrameSize, double viewSize);
 
   public class LegendItem {
@@ -70,6 +69,7 @@ public abstract class GraphActivity extends Activity
     String[] intervalValues;
     double[] intervalValuesDouble;
     double viewportStart;
+    List<GraphViewSeries> graphSeries;
   }
 
   public InstanceData instanceData = null;
@@ -86,6 +86,7 @@ public abstract class GraphActivity extends Activity
       instanceData.intervalValues = intervalValues;
       instanceData.intervalValuesDouble = intervalValuesDouble;
       instanceData.viewportStart = graphView.viewportStart;
+      instanceData.graphSeries = graphView.graphSeries;
 
       return instanceData;
     }
