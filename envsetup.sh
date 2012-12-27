@@ -10,7 +10,7 @@ function debug_build() { ant debug; }
 function release_build() { ant release; }
 function install_device() { adb -d install -r bin/$APP; }
 function install_emulator() { adb -e install -r bin/$APP; }
-function logcat() { adb logcat -c && adb logcat -v time | tee log-`date +%Y%m%d-%H:%M.%N`; }
+function logcat() { adb logcat -c && adb logcat -v time | tee log-`date +%Y%m%d-%H:%M.%N` | grep -v GoogleAnalyticsTracker; }
 function meminfo() { adb shell dumpsys meminfo; }
 function procrank_sample() { adb shell procrank | grep networklog | tee procrank-`date +%Y%m%d-%H:%M.%N`; }
 function clean_build_install_and_logcat() { clean && release_build && install_device && logcat; }
