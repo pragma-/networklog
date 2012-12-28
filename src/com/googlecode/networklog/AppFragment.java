@@ -91,7 +91,6 @@ public class AppFragment extends Fragment {
     protected boolean childrenDataNeedsSort = false;
     protected boolean childrenAreFiltered = false;
     protected boolean childrenAreDirty = false;
-    protected ArrayList<PacketGraphItem> packetGraphBuffer;
     protected boolean isExpanded = false;
 
     @Override
@@ -115,8 +114,6 @@ public class AppFragment extends Fragment {
     protected String receivedAddress;
     protected String in; // interface (rmnet, wifi, etc)
 
-    protected ArrayList<PacketGraphItem> packetGraphBuffer;
-
     public String toString() {
       // todo: resolver here
       return sentAddress + ":" + sentPort + " -> " + receivedAddress + ":" + receivedPort;
@@ -134,13 +131,11 @@ public class AppFragment extends Fragment {
             while(itr.hasNext()) {
               String host = itr.next();
               ChildItem childData = item.childrenData.get(host);
-              childData.packetGraphBuffer.clear();
             }
 
             item.childrenData.clear();
             item.filteredChildItems.clear();
             item.childrenAreFiltered = false;
-            item.packetGraphBuffer.clear();
           }
         }
 
@@ -150,7 +145,7 @@ public class AppFragment extends Fragment {
       }
     }
 
-    getInstalledApps();
+    getInstalledApps(false);
     lastGetItemByAppUidIndex = -1;
   }
 
@@ -186,28 +181,22 @@ public class AppFragment extends Fragment {
 
   protected void preSortData() {
     Comparator<GroupItem> sortMethod;
-
     switch(preSortBy) {
       case UID:
         sortMethod = new SortAppsByUid();
         break;
-
       case NAME:
         sortMethod = new SortAppsByName();
         break;
-
       case PACKETS:
         sortMethod = new SortAppsByPackets();
         break;
-
       case BYTES:
         sortMethod = new SortAppsByBytes();
         break;
-
       case TIMESTAMP:
         sortMethod = new SortAppsByTimestamp();
         break;
-
       default:
         return;
     }
@@ -219,28 +208,22 @@ public class AppFragment extends Fragment {
 
   protected void sortData() {
     Comparator<GroupItem> sortMethod;
-
     switch(sortBy) {
       case UID:
         sortMethod = new SortAppsByUid();
         break;
-
       case NAME:
         sortMethod = new SortAppsByName();
         break;
-
       case PACKETS:
         sortMethod = new SortAppsByPackets();
         break;
-
       case BYTES:
         sortMethod = new SortAppsByBytes();
         break;
-
       case TIMESTAMP:
         sortMethod = new SortAppsByTimestamp();
         break;
-
       default:
         return;
     }
@@ -256,6 +239,10 @@ public class AppFragment extends Fragment {
 
   public void refreshAdapter() {
     if(doNotRefresh) {
+      return;
+    }
+
+    if(listView == null) {
       return;
     }
 
@@ -280,7 +267,7 @@ public class AppFragment extends Fragment {
     }
   }
 
-  protected void getInstalledApps() {
+  protected void getInstalledApps(final boolean refresh) {
     synchronized(groupDataBuffer) {
       synchronized(groupData) {
         groupData.clear();
@@ -298,22 +285,23 @@ public class AppFragment extends Fragment {
             item.lastTimestamp = 0;
             item.childrenData = new HashMap<String, ChildItem>();
             item.filteredChildItems = new HashMap<String, ChildItem>();
-            item.packetGraphBuffer = new ArrayList<PacketGraphItem>();
             groupData.add(item);
             groupDataBuffer.add(item);
           }
         }
 
-        Activity activity = getActivity();
+        if(refresh == true) {
+          Activity activity = getActivity();
 
-        if(activity != null) {
-          activity.runOnUiThread(new Runnable() {
-            public void run() {
-              preSortData();
-              setFilter("");
-              refreshAdapter();
-            }
-          });
+          if(activity != null) {
+            activity.runOnUiThread(new Runnable() {
+              public void run() {
+                preSortData();
+                setFilter("");
+                refreshAdapter();
+              }
+            });
+          }
         }
 
         // groupDataBuffer must always be sorted by UID for binary search
@@ -417,7 +405,7 @@ public class AppFragment extends Fragment {
           /* Don't handle long clicks for child elements (will use context menu instead) */
           if (ExpandableListView.getPackedPositionType(id) != ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
             GroupItem group = (GroupItem) adapter.getGroup(ExpandableListView.getPackedPositionGroup(id));
-            showGraph(group.app.uidString);
+            showGraph(group.app.uid);
             return true;
           } else {
             return false;
@@ -434,7 +422,7 @@ public class AppFragment extends Fragment {
           ChildItem child = (ChildItem) adapter.getChild(groupPosition, childPosition);
 
           getActivity().startActivity(new Intent(getActivity().getApplicationContext(), AppTimelineGraph.class)
-            .putExtra("app_uid", group.app.uidString)
+            .putExtra("app_uid", group.app.uid)
             .putExtra("src_addr", child.receivedAddress)
             .putExtra("src_port", child.receivedPort)
             .putExtra("dst_addr", child.sentAddress)
@@ -447,7 +435,7 @@ public class AppFragment extends Fragment {
       registerForContextMenu(listView);
 
       if(gotInstalledApps == false) {
-        getInstalledApps();
+        getInstalledApps(true);
         gotInstalledApps = true;
       }
 
@@ -485,7 +473,6 @@ public class AppFragment extends Fragment {
           info = (ExpandableListContextMenuInfo) item.getMenuInfo();
           groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
           childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
-
           ChildItem childItem = (ChildItem) adapter.getChild(groupPos, childPos);
           copyIpAddress(childItem);
           return true;
@@ -493,9 +480,8 @@ public class AppFragment extends Fragment {
           info = (ExpandableListContextMenuInfo) item.getMenuInfo();
           groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
           childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
-
           GroupItem groupItem = (GroupItem) adapter.getGroup(groupPos);
-          showGraph(groupItem.app.uidString);
+          showGraph(groupItem.app.uid);
           return true;
         default:
           return super.onContextItemSelected(item);
@@ -512,11 +498,9 @@ public class AppFragment extends Fragment {
 
       if(NetworkLog.resolveHosts && NetworkLog.resolveCopies) {
         sentAddressString = NetworkLog.resolver.resolveAddress(childItem.sentAddress);
-
         if(sentAddressString == null) {
           sentAddressString = childItem.sentAddress;
         }
-
       } else {
         sentAddressString = childItem.sentAddress;
       }
@@ -526,7 +510,6 @@ public class AppFragment extends Fragment {
       } else {
         sentPortString = String.valueOf(childItem.sentPort);
       }
-
       hostString = sentAddressString + ":" + sentPortString;
     }
     else if(childItem.receivedPackets > 0 && childItem.in != null) {
@@ -535,11 +518,9 @@ public class AppFragment extends Fragment {
 
       if(NetworkLog.resolveHosts && NetworkLog.resolveCopies) {
         receivedAddressString = NetworkLog.resolver.resolveAddress(childItem.receivedAddress);
-
         if(receivedAddressString == null) {
           receivedAddressString = childItem.receivedAddress;
         }
-
       } else {
         receivedAddressString = childItem.receivedAddress;
       }
@@ -549,7 +530,6 @@ public class AppFragment extends Fragment {
       } else {
         receivedPortString = String.valueOf(childItem.receivedPort);
       }
-
       hostString = receivedAddressString + ":" + receivedPortString;
     }
 
@@ -564,7 +544,7 @@ public class AppFragment extends Fragment {
     clipboard.setText(hostString);
   }
 
-  void showGraph(String appuid) {
+  void showGraph(int appuid) {
     getActivity().startActivity(new Intent(getActivity().getApplicationContext(), AppTimelineGraph.class)
         .putExtra("app_uid", appuid));
   }
@@ -600,32 +580,44 @@ public class AppFragment extends Fragment {
   }
 
   public void rebuildLogEntries() {
+    Log.d("NetworkLog", "AppFragment rebuilding entries start");
+    long start = System.currentTimeMillis();
+    stopUpdater();
     synchronized(groupDataBuffer) {
       clear();
 
-      Iterator<LogFragment.ListItem> iterator = NetworkLog.logFragment.listDataUnfiltered.iterator();
-      LogEntry entry = new LogEntry();
-      while(iterator.hasNext()) {
-        LogFragment.ListItem item = iterator.next();
+      synchronized(NetworkLog.logFragment.listDataUnfiltered) {
+        Iterator<LogFragment.ListItem> iterator = NetworkLog.logFragment.listDataUnfiltered.iterator();
+        LogEntry entry = new LogEntry();
+        while(iterator.hasNext()) {
+          LogFragment.ListItem item = iterator.next();
 
-        entry.uid = item.mUid;
-        entry.in = item.in;
-        entry.out = item.out;
-        entry.src = item.srcAddr;
-        entry.dst = item.dstAddr;
-        entry.len = item.len;
-        entry.spt = item.srcPort;
-        entry.dpt = item.dstPort;
-        entry.timestamp = item.timestamp;
+          entry.uid = item.mUid;
+          entry.in = item.in;
+          entry.out = item.out;
+          entry.src = item.srcAddr;
+          entry.dst = item.dstAddr;
+          entry.len = item.len;
+          entry.spt = item.srcPort;
+          entry.dpt = item.dstPort;
+          entry.timestamp = item.timestamp;
 
-        onNewLogEntry(entry);
+          onNewLogEntry(entry);
+        }
       }
       groupDataBufferIsDirty = true;
     }
+    startUpdater();
+    long elapsed = System.currentTimeMillis() - start;
+    Log.d("NetworkLog", "AppFragment rebuilding entries end -- elapsed: " + elapsed);
   }
 
-  private StringBuilder srcSb = new StringBuilder(256);
-  private StringBuilder dstSb = new StringBuilder(256);
+  // cache objects to prevent unnecessary allocations
+  private CharArray charBuffer = new CharArray(256);
+  private String srcKey;
+  private String dstKey;
+  private GroupItem newLogItem;
+  private ChildItem newLogChild;
 
   public void onNewLogEntry(final LogEntry entry) {
     if(MyLog.enabled) {
@@ -640,92 +632,89 @@ public class AppFragment extends Fragment {
     }
 
     synchronized(groupDataBuffer) {
-      srcSb.setLength(0);
-      String src = srcSb.append(entry.src).append(":").append(entry.spt).toString();
-      dstSb.setLength(0);
-      String dst = dstSb.append(entry.dst).append(":").append(entry.dpt).toString();
+      try {
+        charBuffer.reset();
+        charBuffer.append(entry.src).append(':').append(entry.spt);
+        srcKey = StringPool.get(charBuffer);
+
+        charBuffer.reset();
+        charBuffer.append(entry.dst).append(':').append(entry.dpt);
+        dstKey = StringPool.get(charBuffer);
+      } catch (ArrayIndexOutOfBoundsException e) {
+        Log.e("NetworkLog", "[AppFragment.onNewEntry] charBuffer too long, skipping entry", e);
+        return;
+      }
 
       // generally this will iterate once, but some apps may be grouped under the same uid
       while(true) {
-        GroupItem item = groupDataBuffer.get(index);
+        newLogItem = groupDataBuffer.get(index);
 
-        if(item.app.uid != entry.uid) {
+        if(newLogItem.app.uid != entry.uid) {
           break;
         }
 
         groupDataBufferIsDirty = true;
 
-        PacketGraphItem graphItem = new PacketGraphItem(entry.timestamp, entry.len);
-
-        item.packetGraphBuffer.add(graphItem);
-        item.totalPackets++;
-        item.totalBytes += entry.len;
-        item.lastTimestamp = entry.timestamp;
-
-        ChildItem childData;
+        newLogItem.totalPackets++;
+        newLogItem.totalBytes += entry.len;
+        newLogItem.lastTimestamp = entry.timestamp;
 
         if(entry.in != null && entry.in.length() != 0) {
-          synchronized(item.childrenData) {
-            childData = item.childrenData.get(src);
+          synchronized(newLogItem.childrenData) {
+            newLogChild = newLogItem.childrenData.get(srcKey);
 
-            if(childData == null) {
-              childData = new ChildItem();
-              childData.packetGraphBuffer = new ArrayList<PacketGraphItem>();
+            if(newLogChild == null) {
+              newLogChild = new ChildItem();
+              newLogItem.childrenData.put(srcKey, newLogChild);
             }
 
-            childData.in = entry.in;
+            newLogChild.in = entry.in;
 
-            childData.out = null;
-            childData.receivedPackets++;
-            childData.receivedBytes += entry.len;
-            childData.receivedTimestamp = entry.timestamp;
+            newLogChild.out = null;
+            newLogChild.receivedPackets++;
+            newLogChild.receivedBytes += entry.len;
+            newLogChild.receivedTimestamp = entry.timestamp;
 
             if(MyLog.enabled) {
-              MyLog.d("Added received packet index=" + index + " in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + childData.receivedPackets + "; bytes: " + childData.receivedBytes);
+              MyLog.d("Added received packet index=" + index + " in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + newLogChild.receivedPackets + "; bytes: " + newLogChild.receivedBytes);
             }
 
-            childData.receivedPort = entry.spt;
-            childData.receivedAddress = entry.src;
+            newLogChild.receivedPort = entry.spt;
+            newLogChild.receivedAddress = entry.src;
 
-            childData.sentPort = entry.dpt;
-            childData.sentAddress = entry.dst;
+            newLogChild.sentPort = entry.dpt;
+            newLogChild.sentAddress = entry.dst;
 
-            childData.packetGraphBuffer.add(graphItem);
-
-            item.childrenData.put(src, childData);
-            item.childrenDataNeedsSort = true;
+            newLogItem.childrenDataNeedsSort = true;
           }
         }
 
         if(entry.out != null && entry.out.length() != 0) {
-          synchronized(item.childrenData) {
-            childData = item.childrenData.get(dst);
+          synchronized(newLogItem.childrenData) {
+            newLogChild = newLogItem.childrenData.get(dstKey);
 
-            if(childData == null) {
-              childData = new ChildItem();
-              childData.packetGraphBuffer = new ArrayList<PacketGraphItem>();
+            if(newLogChild == null) {
+              newLogChild = new ChildItem();
+              newLogItem.childrenData.put(dstKey, newLogChild);
             }
 
-            childData.in = null;
-            childData.out = entry.out;
-            childData.sentPackets++;
-            childData.sentBytes += entry.len;
-            childData.sentTimestamp = entry.timestamp;
+            newLogChild.in = null;
+            newLogChild.out = entry.out;
+            newLogChild.sentPackets++;
+            newLogChild.sentBytes += entry.len;
+            newLogChild.sentTimestamp = entry.timestamp;
 
             if(MyLog.enabled) {
-              MyLog.d("Added sent packet index=" + index + " in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + childData.sentPackets + "; bytes: " + childData.sentBytes);
+              MyLog.d("Added sent packet index=" + index + " in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + newLogChild.sentPackets + "; bytes: " + newLogChild.sentBytes);
             }
 
-            childData.sentPort = entry.dpt;
-            childData.sentAddress = entry.dst;
+            newLogChild.sentPort = entry.dpt;
+            newLogChild.sentAddress = entry.dst;
 
-            childData.receivedPort = entry.spt;
-            childData.receivedAddress = entry.src;
+            newLogChild.receivedPort = entry.spt;
+            newLogChild.receivedAddress = entry.src;
 
-            childData.packetGraphBuffer.add(graphItem);
-
-            item.childrenData.put(dst, childData);
-            item.childrenDataNeedsSort = true;
+            newLogItem.childrenDataNeedsSort = true;
           }
         }
 
@@ -753,42 +742,34 @@ public class AppFragment extends Fragment {
     }
   }
 
+  Runnable updaterRunner = new Runnable() {
+    public void run() {
+      synchronized(groupData) {
+        if(MyLog.enabled) {
+          MyLog.d("AppFragmentListUpdater enter");
+        }
+          Log.d("NetworkLog", "AppFragmentListUpdater enter");
+
+        preSortData();
+        sortData();
+        refreshAdapter();
+        setFilter("");
+      }
+
+      if(MyLog.enabled) {
+        MyLog.d("AppFragmentListUpdater exit");
+      }
+        Log.d("NetworkLog", "AppFragmentListUpdater exit");
+    }
+  };
+
+  public void updaterRunOnce() {
+    getActivity().runOnUiThread(updaterRunner);
+  }
+
   // todo: this is largely duplicated in LogFragment -- move to its own file
   private class ListViewUpdater implements Runnable {
     boolean running = false;
-    Runnable runner = new Runnable() {
-      public void run() {
-        synchronized(groupData) {
-          if(MyLog.enabled) {
-            MyLog.d("AppFragmentListUpdater enter");
-          }
-
-          synchronized(groupDataBuffer) {
-            // todo: find a way so that we don't have to go through every entry
-            // in groupDataBuffer here (maybe use some sort of reference mapping)
-            for(GroupItem item : groupDataBuffer) {
-              if(item.childrenDataNeedsSort) {
-                if(MyLog.enabled) {
-                  MyLog.d("Updating " + item);
-                }
-                item.childrenDataNeedsSort = false;
-
-                //sortChildrenData(item);
-              }
-            }
-          }
-
-          preSortData();
-          sortData();
-          setFilter("");
-          refreshAdapter();
-        }
-
-        if(MyLog.enabled) {
-          MyLog.d("AppFragmentListUpdater exit");
-        }
-      }
-    };
 
     public void stop() {
       running = false;
@@ -800,11 +781,8 @@ public class AppFragment extends Fragment {
 
       while(running) {
         if(groupDataBufferIsDirty == true) {
-          Activity activity = getActivity();
-          if(activity != null) {
-            activity.runOnUiThread(runner);
-          }
           groupDataBufferIsDirty = false;
+          updaterRunOnce();
         }
 
         try {
@@ -831,19 +809,29 @@ public class AppFragment extends Fragment {
     CustomFilter filter;
 
     private class CustomFilter extends Filter {
-      ArrayList<GroupItem> originalItems = new ArrayList<GroupItem>();
       FilterResults results = new FilterResults();
-      ArrayList<GroupItem> filteredItems = new ArrayList<GroupItem>();
-      ArrayList<GroupItem> localItems = new ArrayList<GroupItem>();
 
       @Override
         protected FilterResults performFiltering(CharSequence constraint) {
+          ArrayList<GroupItem> originalItems = new ArrayList<GroupItem>(groupDataBuffer.size());
+          ArrayList<GroupItem> filteredItems = new ArrayList<GroupItem>(groupDataBuffer.size());
+          String host;
+          ChildItem childData;
+          boolean matched;
+          String sentAddressResolved;
+          String sentPortResolved;
+          String receivedAddressResolved;
+          String receivedPortResolved;
+
+          doNotRefresh = true;
+
           if(MyLog.enabled) {
             MyLog.d("[AppFragment] performFiltering");
           }
 
+          Log.d("NetworkLog", "[appFragment] performing filtering");
+
           synchronized(groupDataBuffer) {
-            originalItems.clear();
             originalItems.addAll(groupDataBuffer);
           }
 
@@ -853,6 +841,7 @@ public class AppFragment extends Fragment {
             }
 
             // undo uniqueHosts filtering
+            // fixme: perhaps an array of indices into which items are filtered?
             for(GroupItem item : originalItems) {
               if(item.childrenAreFiltered) {
                 item.childrenAreFiltered = false;
@@ -863,10 +852,7 @@ public class AppFragment extends Fragment {
             results.values = originalItems;
             results.count = originalItems.size();
           } else {
-            filteredItems.clear();
-            localItems.clear();
-            localItems.addAll(originalItems);
-            int count = localItems.size();
+            int count = originalItems.size();
 
             if(MyLog.enabled) {
               MyLog.d("[AppFragment] item count: " + count);
@@ -877,20 +863,16 @@ public class AppFragment extends Fragment {
                 MyLog.d("[AppFragment] no include filter, adding all items");
               }
 
-              for(GroupItem item : localItems) {
+              for(GroupItem item : originalItems) {
                 filteredItems.add(item);
 
                 synchronized(item.childrenData) {
-                  List<String> list = new ArrayList<String>(item.childrenData.keySet());
-                  // todo: sort by user preference
-                  Collections.sort(list);
-                  Iterator<String> itr = list.iterator();
-
                   item.filteredChildItems.clear();
-
+                  List<String> list = new ArrayList<String>(item.childrenData.keySet());
+                  Iterator<String> itr = list.iterator();
                   while(itr.hasNext()) {
-                    String host = itr.next();
-                    ChildItem childData = item.childrenData.get(host);
+                    host = itr.next();
+                    childData = item.childrenData.get(host);
                     if(MyLog.enabled) {
                       MyLog.d("[AppFragment] adding filtered host " + childData);
                     }
@@ -905,43 +887,41 @@ public class AppFragment extends Fragment {
                   || NetworkLog.filterAddressInclude
                   || NetworkLog.filterPortInclude) 
               {
+                GroupItem item;
                 for(int i = 0; i < count; i++) {
-                  GroupItem item = localItems.get(i);
+                  item = originalItems.get(i);
                   // MyLog.d("[AppFragment] testing filtered item " + item + "; includes: [" + NetworkLog.filterTextInclude + "]");
 
                   boolean item_added = false;
-                  boolean matched = false;
+                  matched = false;
 
-                  for(String c : NetworkLog.filterTextIncludeList) {
-                    if((NetworkLog.filterNameInclude && item.app.nameLowerCase.contains(c))
-                        || (NetworkLog.filterUidInclude && item.app.uidString.equals(c))) {
-                      matched = true;
-                        }
+                  if(NetworkLog.filterNameInclude || NetworkLog.filterUidInclude) {
+                    for(String c : NetworkLog.filterTextIncludeList) {
+                      if((NetworkLog.filterNameInclude && item.app.nameLowerCase.contains(c))
+                          || (NetworkLog.filterUidInclude && item.app.uidString.equals(c))) {
+                        matched = true;
+                          }
+                    }
+                  } else {
+                    matched = true;
                   }
 
                   if(matched) {
                     // test filter against address/port
                     if(NetworkLog.filterAddressInclude || NetworkLog.filterPortInclude) {
                       synchronized(item.childrenData) {
+                        item.filteredChildItems.clear();
                         List<String> list = new ArrayList<String>(item.childrenData.keySet());
                         // todo: sort by user preference (bytes, timestamp, address, ports)
                         Collections.sort(list);
                         Iterator<String> itr = list.iterator();
-
-                        item.filteredChildItems.clear();
-
                         while(itr.hasNext()) {
-                          String host = itr.next();
+                          host = itr.next();
                           // MyLog.d("[AppFragment] testing " + host);
 
-                          ChildItem childData = item.childrenData.get(host);
+                          childData = item.childrenData.get(host);
 
                           matched = false;
-
-                          String sentAddressResolved;
-                          String sentPortResolved;
-                          String receivedAddressResolved;
-                          String receivedPortResolved;
 
                           if(NetworkLog.resolveHosts) {
                             sentAddressResolved = NetworkLog.resolver.resolveAddress(childData.sentAddress);
@@ -999,13 +979,11 @@ public class AppFragment extends Fragment {
                         List<String> list = new ArrayList<String>(item.childrenData.keySet());
                         // todo: sort by user preference
                         Collections.sort(list);
-                        Iterator<String> itr = list.iterator();
-
                         item.filteredChildItems.clear();
-
+                        Iterator<String> itr = list.iterator();
                         while(itr.hasNext()) {
-                          String host = itr.next();
-                          ChildItem childData = item.childrenData.get(host);
+                          host = itr.next();
+                          childData = item.childrenData.get(host);
                           // MyLog.d("[AppFragment] adding filtered host " + childData);
                           item.filteredChildItems.put(host, childData);
                           item.childrenAreFiltered = true;
@@ -1020,18 +998,23 @@ public class AppFragment extends Fragment {
             if(NetworkLog.filterTextExcludeList.size() > 0) {
               count = filteredItems.size();
 
+              GroupItem item;
               for(int i = count - 1; i >= 0; i--) {
-                GroupItem item = filteredItems.get(i);
+                item = filteredItems.get(i);
                 // MyLog.d("[AppFragment] testing filtered item: " + i + " " + item + "; excludes: [" + NetworkLog.filterTextExclude + "]");
 
-                boolean matched = false;
+                matched = false;
 
-                for(String c : NetworkLog.filterTextExcludeList) {
-                  if((NetworkLog.filterNameExclude && item.app.nameLowerCase.contains(c))
-                      || NetworkLog.filterUidExclude && item.app.uidString.equals(c)) 
-                  {
-                    matched = true;
+                if(NetworkLog.filterNameExclude || NetworkLog.filterUidExclude) {
+                  for(String c : NetworkLog.filterTextExcludeList) {
+                    if((NetworkLog.filterNameExclude && item.app.nameLowerCase.contains(c))
+                        || NetworkLog.filterUidExclude && item.app.uidString.equals(c)) 
+                    {
+                      matched = true;
+                    }
                   }
+                } else {
+                  matched = true;
                 }
 
                 if(matched) {
@@ -1042,17 +1025,11 @@ public class AppFragment extends Fragment {
 
                 List<String> list = new ArrayList<String>(item.filteredChildItems.keySet());
                 Iterator<String> itr = list.iterator();
-
                 while(itr.hasNext()) {
-                  String host = itr.next();
-                  ChildItem childData = item.filteredChildItems.get(host);
+                  host = itr.next();
+                  childData = item.filteredChildItems.get(host);
 
                   matched = false;
-
-                  String sentAddressResolved;
-                  String sentPortResolved;
-                  String receivedAddressResolved;
-                  String receivedPortResolved;
 
                   if(NetworkLog.resolveHosts) {
                     sentAddressResolved = NetworkLog.resolver.resolveAddress(childData.sentAddress);
@@ -1108,6 +1085,7 @@ public class AppFragment extends Fragment {
           if(MyLog.enabled) {
             MyLog.d("[AppFragment] filter returning " + results.count + " results");
           }
+          Log.d("NetworkLog", "[AppFragment] filter returning " + results.count + " results");
           return results;
         }
 
@@ -1117,23 +1095,18 @@ public class AppFragment extends Fragment {
           if(MyLog.enabled) {
             MyLog.d("[AppFragment] Publishing filter results");
           }
+            Log.d("NetworkLog", "[AppFragment] Publishing filter results");
           
-          final ArrayList<GroupItem> localItems = (ArrayList<GroupItem>) results.values;
-
-          if(localItems == null) {
-            MyLog.d("[AppFragment] local items null, wtf");
-            return;
-          }
-
           synchronized(groupData) {
             groupData.clear();
-            groupData.addAll(localItems);
+            groupData.addAll((ArrayList<GroupItem>) results.values);
 
             preSortData();
             sortData();
-
-            refreshAdapter();
           }
+          doNotRefresh = false;
+          refreshAdapter();
+          Log.d("NetworkLog", "[AppFragment] Published");
         }
     }
 
@@ -1243,6 +1216,7 @@ public class AppFragment extends Fragment {
 
         name = holder.getName();
 
+        Log.d("NetworkLog", "setting name text");
         name.setText("(" + item.app.uid + ")" + " " + item.app.name);
 
         packets = holder.getPackets();
@@ -1254,6 +1228,7 @@ public class AppFragment extends Fragment {
         timestamp = holder.getTimestamp();
 
         if(item.lastTimestamp != 0) {
+          Log.d("NetworkLog", "setting timestamp text");
           timestamp.setText("(" + Timestamp.getTimestamp(item.lastTimestamp) + ")");
           timestamp.setVisibility(View.VISIBLE);
         } else {
@@ -1351,7 +1326,8 @@ public class AppFragment extends Fragment {
           hostString = receivedAddressString + ":" + receivedPortString;
         }
 
-        host.setText(Html.fromHtml("<u>" + hostString + "</u>"));
+        Log.d("NetworkLog", "setting child fromHtml");
+        host.setText(Html.fromHtml("<u>" + hostString + "</u>")); // fixme: cache this
 
         sentPackets = holder.getSentPackets();
         sentBytes = holder.getSentBytes();

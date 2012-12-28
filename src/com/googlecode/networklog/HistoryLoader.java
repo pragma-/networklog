@@ -92,7 +92,7 @@ public class HistoryLoader {
 
           MyLog.d("[history] increment size: " + progress_increment_size);
 
-          long start = System.currentTimeMillis();
+          final long start = System.currentTimeMillis();
           // android.os.Debug.startMethodTracing("networklog", 32 * 1024 * 1024);
 
           try {
@@ -116,7 +116,6 @@ public class HistoryLoader {
               }
 
               NetworkLog.logFragment.onNewLogEntry(entry);
-              NetworkLog.appFragment.onNewLogEntry(entry);
             }
 
             loader.closeLogfile();
@@ -124,12 +123,29 @@ public class HistoryLoader {
             Log.w("NetworkLog", "loadEntriesFromFile", e);
           } finally {
             // android.os.Debug.stopMethodTracing();
-            long elapsed = System.currentTimeMillis() - start;
-            Log.d("NetworkLog", "Load history elapsed: " + elapsed);
 
-            MyLog.d("[history] Dismissing progress dialog");
             NetworkLog.handler.post(new Runnable() {
               public void run() {
+                dialog.setMessage("Parsing history");
+                dialog.setIndeterminate(true);
+
+                long elapsed = System.currentTimeMillis() - start;
+                Log.d("NetworkLog", "Load file elapsed: " + elapsed);
+
+                NetworkLog.logFragment.setDoNotRefresh(false);
+                NetworkLog.appFragment.setDoNotRefresh(false);
+
+                StringPool.clearCharPool();
+                NetworkLog.logFragment.appFragmentNeedsRebuild = true;
+                NetworkLog.logFragment.updaterRunOnce();
+
+                NetworkLog.logFragment.startUpdater();
+                NetworkLog.appFragment.startUpdater();
+
+                elapsed = System.currentTimeMillis() - start;
+                Log.d("NetworkLog", "Load history elapsed: " + elapsed);
+
+                MyLog.d("[history] Dismissing progress dialog");
                 if(dialog_showing) {
                   dialog_showing = false;
 
@@ -141,11 +157,6 @@ public class HistoryLoader {
                 }
               }
             });
-
-            NetworkLog.logFragment.startUpdater();
-            NetworkLog.logFragment.setDoNotRefresh(false);
-            NetworkLog.appFragment.startUpdater();
-            NetworkLog.appFragment.setDoNotRefresh(false);
           }
         }
       }, "LoadHistory").start();

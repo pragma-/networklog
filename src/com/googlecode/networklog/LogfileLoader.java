@@ -230,7 +230,8 @@ public class LogfileLoader {
               entry.out = value;
             }
 
-            entry.uid = parser.getInt(); 
+            entry.uidString = parser.getString();
+            entry.uid = Integer.parseInt(entry.uidString);
             entry.src = parser.getString();
             entry.spt = parser.getInt();
             entry.dst = parser.getString();

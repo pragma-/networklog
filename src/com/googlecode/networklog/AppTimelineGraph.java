@@ -36,7 +36,7 @@ public class AppTimelineGraph extends GraphActivity
       Bundle extras = getIntent().getExtras();
 
       if(extras != null) {
-        app_uid = Integer.parseInt(extras.getString("app_uid"));
+        app_uid = extras.getInt("app_uid");
         src_addr = extras.getString("src_addr");
         src_port = extras.getInt("src_port");
         dst_addr = extras.getString("dst_addr");

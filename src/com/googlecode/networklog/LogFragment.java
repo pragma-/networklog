@@ -44,6 +44,7 @@ import android.text.ClipboardManager;
 import android.support.v4.app.Fragment;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
@@ -51,11 +52,11 @@ import java.util.Iterator;
 
 public class LogFragment extends Fragment {
   // bound to adapter
-  protected ArrayList<ListItem> listData;
+  protected LinkedList<ListItem> listData;
   // buffers incoming log entries
-  protected ArrayList<ListItem> listDataBuffer;
+  protected LinkedList<ListItem> listDataBuffer;
   // holds all entries, used for filtering
-  protected ArrayList<ListItem> listDataUnfiltered;
+  protected LinkedList<ListItem> listDataUnfiltered;
   private CustomAdapter adapter;
   private ListViewUpdater updater;
   private NetworkLog parent = null;
@@ -98,7 +99,7 @@ public class LogFragment extends Fragment {
           listData.clear();
           listDataBuffer.clear();
           listDataUnfiltered.clear();
-          adapter.notifyDataSetChanged();
+          refreshAdapter();
         }
       }
     }
@@ -147,10 +148,9 @@ public class LogFragment extends Fragment {
       super.onCreate(savedInstanceState);
       setRetainInstance(true);
 
-      listData = new ArrayList<ListItem>();
-      listDataBuffer = new ArrayList<ListItem>();
-      MyLog.d("Created new listDataBuffer " + listDataBuffer.toString());
-      listDataUnfiltered = new ArrayList<ListItem>();
+      listData = new LinkedList<ListItem>();
+      listDataBuffer = new LinkedList<ListItem>();
+      listDataUnfiltered = new LinkedList<ListItem>();
 
       adapter = new CustomAdapter(getActivity().getApplicationContext(), R.layout.logitem, listData);
 
@@ -172,45 +172,45 @@ public class LogFragment extends Fragment {
     }
 
   @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container, 
-      Bundle savedInstanceState) {
-    MyLog.d("[LogFragment] onCreateView");
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+        Bundle savedInstanceState) {
+      MyLog.d("[LogFragment] onCreateView");
 
-    if(NetworkLog.settings == null) {
-      NetworkLog activity = (NetworkLog) getActivity();
+      if(NetworkLog.settings == null) {
+        NetworkLog activity = (NetworkLog) getActivity();
 
-      if(activity != null) {
-        activity.loadSettings();
+        if(activity != null) {
+          activity.loadSettings();
+        }
       }
+
+      LinearLayout layout = new LinearLayout(getActivity().getApplicationContext());
+      layout.setOrientation(LinearLayout.VERTICAL);
+
+      ListView listView = new ListView(getActivity().getApplicationContext());
+      listView.setAdapter(adapter);
+      listView.setTextFilterEnabled(true);
+      listView.setFastScrollEnabled(true);
+      listView.setSmoothScrollbarEnabled(false);
+      listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
+      listView.setStackFromBottom(true);
+
+      listView.setOnItemClickListener(new CustomOnItemClickListener());
+
+      layout.addView(listView);
+
+      registerForContextMenu(listView);
+
+      if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0) {
+        // trigger filtering
+        setFilter("");
+        refreshAdapter();
+      }
+
+      startUpdater();
+
+      return layout;
     }
-
-    LinearLayout layout = new LinearLayout(getActivity().getApplicationContext());
-    layout.setOrientation(LinearLayout.VERTICAL);
-
-    ListView listView = new ListView(getActivity().getApplicationContext());
-    listView.setAdapter(adapter);
-    listView.setTextFilterEnabled(true);
-    listView.setFastScrollEnabled(true);
-    listView.setSmoothScrollbarEnabled(false);
-    listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
-    listView.setStackFromBottom(true);
-
-    listView.setOnItemClickListener(new CustomOnItemClickListener());
-
-    layout.addView(listView);
-
-    registerForContextMenu(listView);
-
-    if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0) {
-      // trigger filtering
-      setFilter("");
-      adapter.notifyDataSetChanged();
-    }
-
-    startUpdater();
-
-    return layout;
-  }
 
   @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
@@ -246,72 +246,72 @@ public class LogFragment extends Fragment {
     } 
 
   @SuppressWarnings("deprecation")
-  public void copySourceIp(ListItem item) {
-    String srcAddr;
-    String srcPort;
+    public void copySourceIp(ListItem item) {
+      String srcAddr;
+      String srcPort;
 
-    if(NetworkLog.resolveHosts && NetworkLog.resolveCopies) {
-      String resolved = NetworkLog.resolver.resolveAddress(item.srcAddr);
+      if(NetworkLog.resolveHosts && NetworkLog.resolveCopies) {
+        String resolved = NetworkLog.resolver.resolveAddress(item.srcAddr);
 
-      if(resolved != null) {
-        srcAddr = resolved;
+        if(resolved != null) {
+          srcAddr = resolved;
+        } else {
+          srcAddr = item.srcAddr;
+        }
       } else {
         srcAddr = item.srcAddr;
       }
-    } else {
-      srcAddr = item.srcAddr;
+
+      if(NetworkLog.resolvePorts && NetworkLog.resolveCopies) {
+        srcPort = NetworkLog.resolver.resolveService(String.valueOf(item.srcPort));
+      } else {
+        srcPort = String.valueOf(item.srcPort);
+      }
+
+      ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+
+      /* newer API 11 clipboard unsupported on older devices
+         ClipData clip = ClipData.newPlainText("NetworkLog Source IP", srcAddr + ":" + srcPort);
+         clipboard.setPrimaryClip(clip);
+         */
+
+      /* use older deprecated ClipboardManager to support older devices */
+      clipboard.setText(srcAddr + ":" + srcPort);
     }
-
-    if(NetworkLog.resolvePorts && NetworkLog.resolveCopies) {
-      srcPort = NetworkLog.resolver.resolveService(String.valueOf(item.srcPort));
-    } else {
-      srcPort = String.valueOf(item.srcPort);
-    }
-
-    ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-
-    /* newer API 11 clipboard unsupported on older devices
-    ClipData clip = ClipData.newPlainText("NetworkLog Source IP", srcAddr + ":" + srcPort);
-    clipboard.setPrimaryClip(clip);
-    */
-
-    /* use older deprecated ClipboardManager to support older devices */
-    clipboard.setText(srcAddr + ":" + srcPort);
-  }
 
   @SuppressWarnings("deprecation")
-  public void copyDestIp(ListItem item) {
-    String dstAddr;
-    String dstPort;
+    public void copyDestIp(ListItem item) {
+      String dstAddr;
+      String dstPort;
 
-    if(NetworkLog.resolveHosts && NetworkLog.resolveCopies) {
-      String resolved = NetworkLog.resolver.resolveAddress(item.dstAddr);
+      if(NetworkLog.resolveHosts && NetworkLog.resolveCopies) {
+        String resolved = NetworkLog.resolver.resolveAddress(item.dstAddr);
 
-      if(resolved != null) {
-        dstAddr = resolved;
+        if(resolved != null) {
+          dstAddr = resolved;
+        } else {
+          dstAddr = item.dstAddr;
+        }
       } else {
         dstAddr = item.dstAddr;
       }
-    } else {
-      dstAddr = item.dstAddr;
+
+      if(NetworkLog.resolvePorts && NetworkLog.resolveCopies) {
+        dstPort = NetworkLog.resolver.resolveService(String.valueOf(item.dstPort));
+      } else {
+        dstPort = String.valueOf(item.dstPort);
+      }
+
+      ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+
+      /* newer API 11 clipboard unsupported on older devices
+         ClipData clip = ClipData.newPlainText("NetworkLog Dest IP", dstAddr + ":" + dstPort);
+         clipboard.setPrimaryClip(clip);
+         */
+
+      /* use older deprecated ClipboardManager to support older devices */
+      clipboard.setText(dstAddr + ":" + dstPort);
     }
-
-    if(NetworkLog.resolvePorts && NetworkLog.resolveCopies) {
-      dstPort = NetworkLog.resolver.resolveService(String.valueOf(item.dstPort));
-    } else {
-      dstPort = String.valueOf(item.dstPort);
-    }
-
-    ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-
-    /* newer API 11 clipboard unsupported on older devices 
-    ClipData clip = ClipData.newPlainText("NetworkLog Dest IP", dstAddr + ":" + dstPort);
-    clipboard.setPrimaryClip(clip);
-    */
-
-    /* use older deprecated ClipboardManager to support older devices */
-    clipboard.setText(dstAddr + ":" + dstPort);
-  }
 
   public void showGraph(ListItem item) {
     if(item.mUidString == null) {
@@ -319,7 +319,7 @@ public class LogFragment extends Fragment {
     }
 
     startActivity(new Intent(getActivity().getApplicationContext(), AppTimelineGraph.class)
-        .putExtra("app_uid", item.mUidString)
+        .putExtra("app_uid", item.mUid)
         .putExtra("src_addr", item.srcAddr)
         .putExtra("src_port", item.srcPort)
         .putExtra("dst_addr", item.dstAddr)
@@ -343,7 +343,11 @@ public class LogFragment extends Fragment {
   }
 
   public void onNewLogEntry(final LogEntry entry) {
-    ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.installedAppsHash.get(String.valueOf(entry.uid));
+    if(listDataBuffer == null) {
+      return;
+    }
+
+    ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.installedAppsHash.get(entry.uidString);
 
     if(appEntry == null) {
       if(MyLog.enabled) {
@@ -377,7 +381,10 @@ public class LogFragment extends Fragment {
       listDataBuffer.add(item);
 
       while(listDataBuffer.size() > maxLogEntries) {
-        listDataBuffer.remove(0);
+        if(MyLog.enabled) {
+          MyLog.d("NetworkLog", "Log buffer size reached maxLogEntries limit; truncating");
+        }
+        listDataBuffer.removeFirst();
       }
     }
   }
@@ -437,21 +444,21 @@ public class LogFragment extends Fragment {
   public void pruneLogEntries() {
     synchronized(listDataBuffer) {
       while(listDataBuffer.size() > maxLogEntries) {
-        listDataBuffer.remove(0);
+        listDataBuffer.removeFirst();
       }
     }
 
     synchronized(listDataUnfiltered) {
       while(listDataUnfiltered.size() > maxLogEntries) {
-        listDataUnfiltered.remove(0);
+        listDataUnfiltered.removeFirst();
       }
     }
 
     synchronized(listData) {
       while(listData.size() > maxLogEntries) {
-        listData.remove(0);
+        listData.removeFirst();
       }
-      adapter.notifyDataSetChanged();
+      refreshAdapter();
     }
   }
 
@@ -461,55 +468,80 @@ public class LogFragment extends Fragment {
     }
   }
 
+  public boolean appFragmentNeedsRebuild = false;
+
+  Runnable updaterRunner = new Runnable() {
+    public void run() {
+      if(MyLog.enabled) {
+        MyLog.d("LogFragmentUpdater enter");
+      }
+        Log.d("NetworkLog", "LogFragmentUpdater enter");
+
+      int i = 0;
+      boolean included = true;
+      boolean excluded = false;
+
+      long start = System.currentTimeMillis();
+
+      synchronized(listDataBuffer) {
+        synchronized(listData) {
+          synchronized(listDataUnfiltered) {
+            for(ListItem item : listDataBuffer) {
+              if(NetworkLog.filterTextInclude.length() > 0) {
+                included = testIncludeFilter(item);
+              }
+
+              if(NetworkLog.filterTextExclude.length() > 0) {
+                excluded = testExcludeFilter(item);
+              }
+
+              if(included == true && excluded == false) {
+                listData.add(item);
+              }
+              listDataUnfiltered.add(item);
+              i++;
+            }
+
+            listDataBuffer.clear();
+          }
+        }
+      }
+
+      synchronized(listDataUnfiltered) {
+        while(listDataUnfiltered.size() > maxLogEntries) {
+          listDataUnfiltered.removeFirst();
+        }
+      }
+
+      synchronized(listData) {
+        while(listData.size() > maxLogEntries) {
+          listData.removeFirst();
+        }
+      }
+
+      refreshAdapter();
+      long elapsed = System.currentTimeMillis() - start;
+
+      if(MyLog.enabled) {
+        MyLog.d("LogFragmentUpdater exit: added " + i + " items: " + elapsed);
+      }
+        Log.d("NetworkLog", "LogFragmentUpdater exit: added " + i + " items -- elapsed: " + elapsed);
+
+      if(appFragmentNeedsRebuild) {
+        appFragmentNeedsRebuild = false;
+        NetworkLog.appFragment.rebuildLogEntries();
+        NetworkLog.appFragment.updaterRunOnce();
+      }
+    }
+  };
+
+  public void updaterRunOnce() {
+    getActivity().runOnUiThread(updaterRunner);
+  }
+
   // todo: this is largely duplicated in AppFragment -- move to its own file
   private class ListViewUpdater implements Runnable {
     boolean running = false;
-    Runnable runner = new Runnable() {
-      public void run() {
-        if(MyLog.enabled) {
-          MyLog.d("LogFragmentUpdater enter");
-        }
-        int i = 0;
-
-        synchronized(listDataBuffer) {
-          synchronized(listData) {
-            synchronized(listDataUnfiltered) {
-              for(ListItem item : listDataBuffer) {
-                listData.add(item);
-                listDataUnfiltered.add(item);
-                i++;
-              }
-
-              listDataBuffer.clear();
-            }
-          }
-        }
-
-        synchronized(listDataUnfiltered) {
-          while(listDataUnfiltered.size() > maxLogEntries) {
-            listDataUnfiltered.remove(0);
-          }
-        }
-
-        synchronized(listData) {
-          while(listData.size() > maxLogEntries) {
-            listData.remove(0);
-          }
-        }
-
-        if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0)
-          // trigger filtering
-        {
-          setFilter("");
-        }
-
-        adapter.notifyDataSetChanged();
-
-        if(MyLog.enabled) {
-          MyLog.d("LogFragmentUpdater exit: added " + i + " items");
-        }
-      }
-    };
 
     public void stop() {
       running = false;
@@ -521,10 +553,7 @@ public class LogFragment extends Fragment {
 
       while(running) {
         if(listDataBuffer != null && listDataBuffer.size() > 0) {
-          Activity activity = getActivity();
-          if(activity != null) {
-            activity.runOnUiThread(runner);
-          }
+          updaterRunOnce();
         }
 
         try {
@@ -546,10 +575,118 @@ public class LogFragment extends Fragment {
     adapter.getFilter().filter(s);
   }
 
+  String srcAddrResolved;
+  String srcPortResolved;
+  String dstAddrResolved;
+  String dstPortResolved;
+  boolean matched;
+
+  public boolean testIncludeFilter(ListItem item) {
+    matched = false;
+    if(NetworkLog.resolveHosts) {
+      srcAddrResolved = NetworkLog.resolver.resolveAddress(item.srcAddr);
+
+      if(srcAddrResolved == null) {
+        srcAddrResolved = "";
+      }
+
+      dstAddrResolved = NetworkLog.resolver.resolveAddress(item.dstAddr);
+
+      if(dstAddrResolved == null) {
+        dstAddrResolved = "";
+      }
+    } else {
+      srcAddrResolved = "";
+      dstAddrResolved = "";
+    }
+
+    if(NetworkLog.resolvePorts) {
+      srcPortResolved = NetworkLog.resolver.resolveService(String.valueOf(item.srcPort));
+      dstPortResolved = NetworkLog.resolver.resolveService(String.valueOf(item.dstPort));
+    } else {
+      srcPortResolved = "";
+      dstPortResolved = "";
+    }
+
+    if(item.mUidString == null) {
+      item.mUidString = String.valueOf(item.mUid); // fixme: get this from stringpool
+    }
+
+    if(item.mNameLowerCase == null) {
+      item.mNameLowerCase = StringPool.getLowerCase(item.mName);
+    }
+
+    for(String c : NetworkLog.filterTextIncludeList) {
+      if((NetworkLog.filterNameInclude && item.mNameLowerCase.contains(c))
+          || (NetworkLog.filterUidInclude && item.mUidString.equals(c))
+          || (NetworkLog.filterAddressInclude &&
+            ((item.srcAddr.contains(c) || StringPool.getLowerCase(srcAddrResolved).contains(c))
+             || (item.dstAddr.contains(c) || StringPool.getLowerCase(dstAddrResolved).contains(c))))
+          || (NetworkLog.filterPortInclude &&
+            ((StringPool.getLowerCase(String.valueOf(item.srcPort)).equals(c) || StringPool.getLowerCase(srcPortResolved).equals(c))
+             || (StringPool.getLowerCase(String.valueOf(item.dstPort)).equals(c) || StringPool.getLowerCase(dstPortResolved).equals(c)))))
+      {
+        matched = true;
+        break;
+      }
+    }
+    return matched;
+  }
+
+  boolean testExcludeFilter(ListItem item) {
+    matched = false;
+
+    if(NetworkLog.resolveHosts) {
+      srcAddrResolved = NetworkLog.resolver.resolveAddress(item.srcAddr);
+
+      if(srcAddrResolved == null) {
+        srcAddrResolved = "";
+      }
+
+      dstAddrResolved = NetworkLog.resolver.resolveAddress(item.dstAddr);
+
+      if(dstAddrResolved == null) {
+        dstAddrResolved = "";
+      }
+    } else {
+      srcAddrResolved = "";
+      dstAddrResolved = "";
+    }
+
+    if(NetworkLog.resolvePorts) {
+      srcPortResolved = NetworkLog.resolver.resolveService(String.valueOf(item.srcPort)); // fixme: get from stringpool
+      dstPortResolved = NetworkLog.resolver.resolveService(String.valueOf(item.dstPort)); // fixme: get from stringpool
+    } else {
+      srcPortResolved = "";
+      dstPortResolved = "";
+    }
+
+    if(item.mUidString == null) {
+      item.mUidString = String.valueOf(item.mUid);
+    }
+
+    if(item.mNameLowerCase == null) {
+      item.mNameLowerCase = StringPool.getLowerCase(item.mName);
+    }
+
+    for(String c : NetworkLog.filterTextExcludeList) {
+      if((NetworkLog.filterNameExclude && item.mNameLowerCase.contains(c))
+          || (NetworkLog.filterUidExclude && item.mUidString.equals(c))
+          || (NetworkLog.filterAddressExclude && ((item.srcAddr.contains(c) || StringPool.getLowerCase(srcAddrResolved).contains(c)) || (item.dstAddr.contains(c) || StringPool.getLowerCase(dstAddrResolved).contains(c))))
+          || (NetworkLog.filterPortExclude && ((String.valueOf(item.srcPort).equals(c) || StringPool.getLowerCase(srcPortResolved).equals(c)) || (String.valueOf(item.dstPort).equals(c) || StringPool.getLowerCase(dstPortResolved).equals(c)))))
+      {
+        matched = true;
+        break;
+      }
+    }
+    return matched;
+  }
+
+
+
   private class CustomAdapter extends ArrayAdapter<ListItem> implements Filterable {
     LayoutInflater mInflater = (LayoutInflater) getActivity().getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
     CustomFilter filter;
-    ArrayList<ListItem> originalItems = new ArrayList<ListItem>();
 
     public CustomAdapter(Context context, int resource, List<ListItem> objects) {
       super(context, resource, objects);
@@ -557,167 +694,97 @@ public class LogFragment extends Fragment {
 
     private class CustomFilter extends Filter {
       FilterResults results = new FilterResults();
-      ArrayList<ListItem> filteredItems = new ArrayList<ListItem>();
-      ArrayList<ListItem> localItems = new ArrayList<ListItem>();
 
       @Override
         protected FilterResults performFiltering(CharSequence constraint) {
+          ArrayList<ListItem> originalItems = new ArrayList<ListItem>(listDataUnfiltered.size());
+          ArrayList<ListItem> filteredItems = new ArrayList<ListItem>(listDataUnfiltered.size());
+          int[] includedItemsIndex = new int[listDataUnfiltered.size()];
+          int includedItemsPos = 0;
+          int iteratorPos = -1;
+          ListItem item;
+
+          doNotRefresh = true;
+
           if(MyLog.enabled) {
             MyLog.d("[LogFragment] performFiltering");
           }
 
+          Log.d("NetworkLog", "performing filtering");
+
           synchronized(listDataUnfiltered) {
-            originalItems.clear();
             originalItems.addAll(listDataUnfiltered);
           }
 
+          Log.d("NetworkLog", "originalItems.addAll done");
+
           if(NetworkLog.filterTextInclude.length() == 0 && NetworkLog.filterTextExclude.length() == 0) {
-            // MyLog.d("[LogFragment] no constraint item count: " + originalItems.size());
+            MyLog.d("[LogFragment] no constraint item count: " + originalItems.size());
             results.values = originalItems;
             results.count = originalItems.size();
           } else {
-            localItems.clear();
-            filteredItems.clear();
-            localItems.addAll(originalItems);
-            int count = localItems.size();
+            if(MyLog.enabled) {
+              MyLog.d("[LogFragment] item count: " + originalItems.size());
+            }
 
-            // MyLog.d("[LogFragment] item count: " + count);
+            if(NetworkLog.filterTextIncludeList.size() > 0) {
+              Iterator<ListItem> iterator = originalItems.iterator();
+              while(iterator.hasNext()) {
+                item = iterator.next();
+                iteratorPos++;
 
-            if(NetworkLog.filterTextIncludeList.size() == 0) {
-              filteredItems.addAll(localItems);
-            } else {
-              for(int i = 0; i < count; i++) {
-                ListItem item = localItems.get(i);
-                // MyLog.d("[LogFragment] testing filtered item " + item + "; includes: [" + NetworkLog.filterTextInclude + "]");
-
-                boolean matched = false;
-
-                String srcAddrResolved;
-                String srcPortResolved;
-                String dstAddrResolved;
-                String dstPortResolved;
-
-                if(NetworkLog.resolveHosts) {
-                  srcAddrResolved = NetworkLog.resolver.resolveAddress(item.srcAddr);
-
-                  if(srcAddrResolved == null) {
-                    srcAddrResolved = "";
-                  }
-
-                  dstAddrResolved = NetworkLog.resolver.resolveAddress(item.dstAddr);
-
-                  if(dstAddrResolved == null) {
-                    dstAddrResolved = "";
-                  }
-                } else {
-                  srcAddrResolved = "";
-                  dstAddrResolved = "";
+                if(MyLog.enabled) {
+                  MyLog.d("[LogFragment] testing filtered item " + item + "; includes: [" + NetworkLog.filterTextInclude + "]");
                 }
 
-                if(NetworkLog.resolvePorts) {
-                  srcPortResolved = NetworkLog.resolver.resolveService(String.valueOf(item.srcPort));
-                  dstPortResolved = NetworkLog.resolver.resolveService(String.valueOf(item.dstPort));
-                } else {
-                  srcPortResolved = "";
-                  dstPortResolved = "";
-                }
-
-                if(item.mUidString == null) {
-                  item.mUidString = String.valueOf(item.mUid);
-                }
-
-                if(item.mNameLowerCase == null) {
-                  item.mNameLowerCase = StringPool.getLowerCase(item.mName);
-                }
-
-                for(String c : NetworkLog.filterTextIncludeList) {
-                  if((NetworkLog.filterNameInclude && item.mNameLowerCase.contains(c))
-                      || (NetworkLog.filterUidInclude && item.mUidString.equals(c))
-                      || (NetworkLog.filterAddressInclude && 
-                        ((item.srcAddr.contains(c) || StringPool.getLowerCase(srcAddrResolved).contains(c)) 
-                         || (item.dstAddr.contains(c) || StringPool.getLowerCase(dstAddrResolved).contains(c))))
-                      || (NetworkLog.filterPortInclude && 
-                        ((StringPool.getLowerCase(String.valueOf(item.srcPort)).equals(c) || StringPool.getLowerCase(srcPortResolved).equals(c))
-                         || (StringPool.getLowerCase(String.valueOf(item.dstPort)).equals(c) || StringPool.getLowerCase(dstPortResolved).equals(c)))))
-                  {
-                    matched = true;
-                  }
-                }
+                matched = testIncludeFilter(item);
 
                 if(matched) {
-                   // MyLog.d("[LogFragment] adding filtered item " + item);
-                  filteredItems.add(item);
+                  if(MyLog.enabled) {
+                    MyLog.d("[LogFragment] adding filtered item " + item);
+                  }
+                  includedItemsIndex[includedItemsPos++] = iteratorPos;
                 }
+              }
+            } else {
+              int count = originalItems.size();
+              for(int i = 0; i < count; i++) {
+                includedItemsIndex[includedItemsPos++] = i;
               }
             }
 
+            Log.d("NetworkLog", "done with inclusion filtering");
+
             if(NetworkLog.filterTextExcludeList.size() > 0) {
-              count = filteredItems.size();
+              for(int i = 0; i < includedItemsPos; i++) {
+                item = originalItems.get(includedItemsIndex[i]);
 
-              for(int i = count - 1; i >= 0; i--) {
-                ListItem item = filteredItems.get(i);
-                // MyLog.d("[LogFragment] testing filtered item " + item + "; excludes: [" + NetworkLog.filterTextExclude + "]");
-
-                boolean matched = false;
-
-                String srcAddrResolved;
-                String srcPortResolved;
-                String dstAddrResolved;
-                String dstPortResolved;
-
-                if(NetworkLog.resolveHosts) {
-                  srcAddrResolved = NetworkLog.resolver.resolveAddress(item.srcAddr);
-
-                  if(srcAddrResolved == null) {
-                    srcAddrResolved = "";
-                  }
-
-                  dstAddrResolved = NetworkLog.resolver.resolveAddress(item.dstAddr);
-
-                  if(dstAddrResolved == null) {
-                    dstAddrResolved = "";
-                  }
-                } else {
-                  srcAddrResolved = "";
-                  dstAddrResolved = "";
+                if(MyLog.enabled) {
+                  MyLog.d("[LogFragment] testing filtered item " + item + "; excludes: [" + NetworkLog.filterTextExclude + "]");
                 }
 
-                if(NetworkLog.resolvePorts) {
-                  srcPortResolved = NetworkLog.resolver.resolveService(String.valueOf(item.srcPort));
-                  dstPortResolved = NetworkLog.resolver.resolveService(String.valueOf(item.dstPort));
-                } else {
-                  srcPortResolved = "";
-                  dstPortResolved = "";
-                }
-
-                if(item.mUidString == null) {
-                  item.mUidString = String.valueOf(item.mUid);
-                }
-
-                if(item.mNameLowerCase == null) {
-                  item.mNameLowerCase = StringPool.getLowerCase(item.mName);
-                }
-
-                for(String c : NetworkLog.filterTextExcludeList) {
-                  if((NetworkLog.filterNameExclude && item.mNameLowerCase.contains(c))
-                      || (NetworkLog.filterUidExclude && item.mUidString.equals(c))
-                      || (NetworkLog.filterAddressExclude && ((item.srcAddr.contains(c) || StringPool.getLowerCase(srcAddrResolved).contains(c)) || (item.dstAddr.contains(c) || StringPool.getLowerCase(dstAddrResolved).contains(c))))
-                      || (NetworkLog.filterPortExclude && ((String.valueOf(item.srcPort).equals(c) || StringPool.getLowerCase(srcPortResolved).equals(c)) || (String.valueOf(item.dstPort).equals(c) || StringPool.getLowerCase(dstPortResolved).equals(c)))))
-                  {
-                    matched = true;
-                  }
-                }
+                matched = testExcludeFilter(item);
 
                 if(matched) {
-                  // MyLog.d("[LogFragment] removing filtered item " + item);
-                  filteredItems.remove(i);
+                  if(MyLog.enabled) {
+                    MyLog.d("[LogFragment] excluding filtered item " + item);
+                  }
+                } else {
+                  filteredItems.add(item);
                 }
+              }
+            } else {
+              // no exclusion filter, add all included items to filteredItems
+              for(int i = 0; i < includedItemsPos; i++) {
+                filteredItems.add(originalItems.get(includedItemsIndex[i]));
               }
             }
 
             results.values = filteredItems;
             results.count = filteredItems.size();
           }
+
+          Log.d("NetworkLog", "done with exclusion filtering, done filtering");
 
           if(MyLog.enabled) {
             MyLog.d("[LogFragment] filter returning " + results.count + " items");
@@ -732,14 +799,19 @@ public class LogFragment extends Fragment {
             MyLog.d("[LogFragment] Publishing filter results");
           }
 
+          Log.d("NetworkLog", "[LogFragment] Publishing filter results");
+
           synchronized(listData) {
             listData.clear();
             listData.addAll((ArrayList<ListItem>) results.values);
             if(MyLog.enabled) {
               MyLog.d("[LogFilter] listdata size after filter: " + listData.size());
             }
-            refreshAdapter();
+            Log.d("NetworkLog", "listdata all added, refreshing adapter");
           }
+
+          doNotRefresh = false;
+          refreshAdapter();
         }
     }
 
@@ -754,6 +826,7 @@ public class LogFragment extends Fragment {
 
     @Override
       public View getView(int position, View convertView, ViewGroup parent) {
+        Log.d("NetworkLog", "LogFragment getView");
         ViewHolder holder = null;
 
         ImageView icon;
@@ -832,7 +905,7 @@ public class LogFragment extends Fragment {
         } else {
           dstAddr.setText("DST: " + item.dstAddr);
         }
-        
+
         dstPort = holder.getDstPort();
 
         if(NetworkLog.resolvePorts) {

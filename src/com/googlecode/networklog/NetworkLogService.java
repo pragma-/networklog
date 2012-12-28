@@ -580,6 +580,7 @@ public class NetworkLogService extends Service {
       }
 
       entry.uid = uid;
+      entry.uidString = String.valueOf(uid); // fixme: optimize this
       entry.in = in;
       entry.out = out;
       entry.src = src;

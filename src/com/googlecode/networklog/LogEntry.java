@@ -8,6 +8,7 @@ package com.googlecode.networklog;
 
 public class LogEntry {
   int uid;
+  String uidString;
   String in;
   String out;
   String src;
