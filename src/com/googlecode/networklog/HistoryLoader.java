@@ -65,7 +65,7 @@ public class HistoryLoader {
         return;
       }
 
-      final long starting_pos = loader.seekToTimestampPosition(System.currentTimeMillis() - history_size);
+      final long starting_pos = (history_size == -1) ? 0 : loader.seekToTimestampPosition(System.currentTimeMillis() - history_size);
 
       if(starting_pos == -1) {
         // nothing to read
