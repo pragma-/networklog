@@ -186,7 +186,6 @@ public class LogFragment extends Fragment {
 
       LinearLayout layout = new LinearLayout(getActivity().getApplicationContext());
       layout.setOrientation(LinearLayout.VERTICAL);
-
       ListView listView = new ListView(getActivity().getApplicationContext());
       listView.setAdapter(adapter);
       listView.setTextFilterEnabled(true);
@@ -194,21 +193,10 @@ public class LogFragment extends Fragment {
       listView.setSmoothScrollbarEnabled(false);
       listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
       listView.setStackFromBottom(true);
-
       listView.setOnItemClickListener(new CustomOnItemClickListener());
-
       layout.addView(listView);
-
       registerForContextMenu(listView);
-
-      if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0) {
-        // trigger filtering
-        setFilter("");
-        refreshAdapter();
-      }
-
       startUpdater();
-
       return layout;
     }
 
