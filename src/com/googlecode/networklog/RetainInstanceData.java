@@ -15,11 +15,13 @@ public class RetainInstanceData {
   /* ApplicationsTracker */
   ArrayList<ApplicationsTracker.AppEntry> applicationsTrackerInstalledApps;
   HashMap<String, ApplicationsTracker.AppEntry> applicationsTrackerInstalledAppsHash;
+  HashMap<String, ApplicationsTracker.AppEntry> applicationsTrackerPackageMap;
   int applicationsTrackerAppCount;
 
   public void retainApplicationsTrackerData() {
     applicationsTrackerInstalledApps = ApplicationsTracker.installedApps;
     applicationsTrackerInstalledAppsHash = ApplicationsTracker.installedAppsHash;
+    applicationsTrackerPackageMap = ApplicationsTracker.packageMap;
     applicationsTrackerAppCount = ApplicationsTracker.appCount;
   }
 

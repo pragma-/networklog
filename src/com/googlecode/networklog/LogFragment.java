@@ -842,12 +842,11 @@ public class LogFragment extends Fragment {
         holder = (ViewHolder) convertView.getTag();
         icon = holder.getIcon();
 
-        if(item.mIcon == null) {
-          if(item.mUidString == null) {
-            item.mUidString = String.valueOf(item.mUid);
-          }
-          item.mIcon = ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), ApplicationsTracker.installedAppsHash.get(item.mUidString).packageName);
+        if(item.mUidString == null) {
+          item.mUidString = String.valueOf(item.mUid);
         }
+
+        item.mIcon = ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), icon, ApplicationsTracker.installedAppsHash.get(item.mUidString).packageName);
 
         icon.setImageDrawable(item.mIcon);
 

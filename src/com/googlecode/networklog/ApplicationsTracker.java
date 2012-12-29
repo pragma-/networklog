@@ -10,9 +10,11 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.ApplicationInfo;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.app.ProgressDialog;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.ImageView;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,12 +28,14 @@ import java.util.HashMap;
 public class ApplicationsTracker {
   public static ArrayList<AppEntry> installedApps;
   public static HashMap<String, AppEntry> installedAppsHash;
+  public static HashMap<String, AppEntry> packageMap;
   public static HashMap<String, Object> loadingIcon = new HashMap<String, Object>();
   public static ProgressDialog dialog;
   public static int appCount;
   public static Object dialogLock = new Object();
   public static Object installedAppsLock = new Object();
   public static PackageManager pm = null;
+  public static Drawable loading_icon = null;
 
   public static class AppEntry {
     String name;
@@ -106,21 +110,19 @@ public class ApplicationsTracker {
     }
 
     installedAppsHash = data.applicationsTrackerInstalledAppsHash;
+    packageMap = data.applicationsTrackerPackageMap;
   }
 
-  public static Drawable loadIcon(final Context context, final String packageName) {
-    AppEntry item = null;
-
-    for(AppEntry app : installedApps) {
-      if(app.packageName.equals(packageName)) {
-        item = app;
-        break;
-      }
+  public static Drawable loadIcon(final Context context, final ImageView view, final String packageName) {
+    if(loading_icon == null) {
+      loading_icon = context.getResources().getDrawable(R.drawable.loading_icon);
     }
+
+    AppEntry item = packageMap.get(packageName);
 
     if(item == null) {
       MyLog.d("Failed to find item for " + packageName);
-      return null;
+      return loading_icon;
     }
 
     if(item.icon != null) {
@@ -146,7 +148,11 @@ public class ApplicationsTracker {
               pm = context.getPackageManager();
             }
 
-            entry.icon = pm.getApplicationIcon(packageName);
+            Drawable[] layers = new Drawable[2];
+            layers[0] = loading_icon;
+            layers[1] = pm.getApplicationIcon(packageName);
+            final TransitionDrawable transition = new TransitionDrawable(layers);
+            transition.setCrossFadeEnabled(true);
 
             synchronized(loadingIcon) {
               loadingIcon.remove(packageName);
@@ -154,8 +160,9 @@ public class ApplicationsTracker {
 
             NetworkLog.handler.post(new Runnable() {
               public void run() {
-                NetworkLog.logFragment.needsRefresh = true;
-                NetworkLog.appFragment.needsRefresh = true;
+                entry.icon = transition;
+                view.setImageDrawable(entry.icon);
+                transition.startTransition(750);
                 MyLog.d("Icon loaded");
               }
             });
@@ -165,10 +172,10 @@ public class ApplicationsTracker {
         }
       }, "LoadIcon:" + packageName).start();
 
-      return null;
+      return loading_icon;
     }
 
-    return null;
+    return loading_icon;
   }
 
   public static void getInstalledApps(final Context context, final Handler handler) {
@@ -178,10 +185,12 @@ public class ApplicationsTracker {
       if(NetworkLog.data == null) {
         installedApps = new ArrayList<AppEntry>();
         installedAppsHash = new HashMap<String, AppEntry>();
+        packageMap = new HashMap<String, AppEntry>();
       } else {
         restoreData(NetworkLog.data);
         installedApps.clear();
         installedAppsHash.clear();
+        packageMap.clear();
       }
 
       if(pm == null) {
@@ -247,6 +256,7 @@ public class ApplicationsTracker {
         entry.packageName = StringPool.get(app.packageName);
 
         installedApps.add(entry);
+        packageMap.put(entry.packageName, entry);
 
         if(entryHash != null) {
           entryHash.name.concat("; " + entry.name);
@@ -267,6 +277,7 @@ public class ApplicationsTracker {
 
       installedApps.add(entry);
       installedAppsHash.put("-1", entry);
+      packageMap.put(entry.packageName, entry);
 
       String[] systemUids = { "root", "system", "radio", "bluetooth", "nobody", "misc",
         "graphics", "input", "audio", "camera", "log", "compass", "mount", "wifi", "dhcp",
@@ -297,6 +308,7 @@ public class ApplicationsTracker {
 
           installedApps.add(entry);
           installedAppsHash.put(uidString, entry);
+          packageMap.put(entry.packageName, entry);
         }
       }
 

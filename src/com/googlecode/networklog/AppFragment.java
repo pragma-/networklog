@@ -1220,7 +1220,7 @@ public class AppFragment extends Fragment {
         icon = holder.getIcon();
 
         if(item.app.icon == null) {
-          item.app.icon = ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), item.app.packageName);
+          item.app.icon = ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), icon, item.app.packageName);
         }
 
         icon.setImageDrawable(item.app.icon);
