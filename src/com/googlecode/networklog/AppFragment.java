@@ -66,6 +66,7 @@ public class AppFragment extends Fragment {
   // groupDataBuffer used to buffer incoming log entries and to hold original list data for filtering
   public ArrayList<GroupItem> groupDataBuffer;
   public boolean groupDataBufferIsDirty = false;
+  public boolean needsRefresh = false;
   private ExpandableListView listView;
   private CustomAdapter adapter;
   public Sort preSortBy;
@@ -297,8 +298,11 @@ public class AppFragment extends Fragment {
             activity.runOnUiThread(new Runnable() {
               public void run() {
                 preSortData();
-                setFilter("");
-                refreshAdapter();
+                if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0) {
+                  setFilter("");
+                } else {
+                  refreshAdapter();
+                }
               }
             });
           }
@@ -748,12 +752,18 @@ public class AppFragment extends Fragment {
         if(MyLog.enabled) {
           MyLog.d("AppFragmentListUpdater enter");
         }
-          Log.d("NetworkLog", "AppFragmentListUpdater enter");
+        Log.d("NetworkLog", "AppFragmentListUpdater enter");
 
-        preSortData();
-        sortData();
-        refreshAdapter();
-        setFilter("");
+        if(groupDataBufferIsDirty) {
+          preSortData();
+          sortData();
+        }
+
+        if(groupDataBufferIsDirty && (NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0)) {
+          setFilter("");
+        } else {
+          refreshAdapter();
+        }
       }
 
       if(MyLog.enabled) {
@@ -780,9 +790,10 @@ public class AppFragment extends Fragment {
       MyLog.d("Starting AppFragmentUpdater " + this);
 
       while(running) {
-        if(groupDataBufferIsDirty == true) {
-          groupDataBufferIsDirty = false;
+        if(groupDataBufferIsDirty == true || needsRefresh == true) {
           updaterRunOnce();
+          groupDataBufferIsDirty = false;
+          needsRefresh = false;
         }
 
         try {

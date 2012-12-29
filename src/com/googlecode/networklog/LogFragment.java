@@ -62,6 +62,7 @@ public class LogFragment extends Fragment {
   private NetworkLog parent = null;
   public long maxLogEntries;
   private boolean doNotRefresh = false;
+  public boolean needsRefresh = false;
 
   protected class ListItem {
     protected Drawable mIcon;
@@ -420,11 +421,13 @@ public class LogFragment extends Fragment {
       }
     }
 
-    // trigger filtering (updates logData)
     getActivity().runOnUiThread(new Runnable() {
       public void run() {
-        setFilter("");
-        refreshAdapter();
+        if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0) {
+          setFilter("");
+        } else {
+          refreshAdapter();
+        }
       }
     });
   }
@@ -540,8 +543,9 @@ public class LogFragment extends Fragment {
       MyLog.d("Starting LogFragmentUpdater " + this);
 
       while(running) {
-        if(listDataBuffer != null && listDataBuffer.size() > 0) {
+        if(needsRefresh == true || (listDataBuffer != null && listDataBuffer.size() > 0)) {
           updaterRunOnce();
+          needsRefresh = false;
         }
 
         try {

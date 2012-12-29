@@ -154,9 +154,9 @@ public class ApplicationsTracker {
 
             NetworkLog.handler.post(new Runnable() {
               public void run() {
-                NetworkLog.logFragment.refreshAdapter();
-                NetworkLog.appFragment.refreshAdapter();
-                MyLog.d("Icon loaded, adapters refreshed");
+                NetworkLog.logFragment.needsRefresh = true;
+                NetworkLog.appFragment.needsRefresh = true;
+                MyLog.d("Icon loaded");
               }
             });
           } catch(Exception e) {

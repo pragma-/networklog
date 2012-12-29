@@ -218,8 +218,8 @@ public class NetworkResolver {
             MyLog.d("Resolved " + address + " to " + resolved);
             NetworkLog.handler.post(new Runnable() {
               public void run() {
-                NetworkLog.appFragment.refreshAdapter();
-                NetworkLog.logFragment.refreshAdapter();
+                NetworkLog.appFragment.needsRefresh = true;
+                NetworkLog.logFragment.needsRefresh = true;
               }
             });
           } catch(Exception e) {
