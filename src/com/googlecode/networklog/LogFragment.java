@@ -65,13 +65,9 @@ public class LogFragment extends Fragment {
   public boolean needsRefresh = false;
 
   protected class ListItem {
-    protected Drawable mIcon;
-    protected int mUid;
-    protected String mUidString;
+    protected ApplicationsTracker.AppEntry app;
     protected String in;
     protected String out;
-    protected String mName;
-    protected String mNameLowerCase;
     protected String srcAddr;
     protected int srcPort;
     protected String dstAddr;
@@ -79,17 +75,13 @@ public class LogFragment extends Fragment {
     protected int len;
     protected long timestamp;
 
-    ListItem(Drawable icon, int uid, String name) {
-      mIcon = icon;
-      mUid = uid;
-      mUidString = null;
-      mName = name;
-      mNameLowerCase = null;
+    ListItem(ApplicationsTracker.AppEntry app) {
+      this.app = app;
     }
 
     @Override
       public String toString() {
-        return mName;
+        return app.name;
       }
   }
 
@@ -303,12 +295,8 @@ public class LogFragment extends Fragment {
     }
 
   public void showGraph(ListItem item) {
-    if(item.mUidString == null) {
-      item.mUidString = String.valueOf(item.mUid);
-    }
-
     startActivity(new Intent(getActivity().getApplicationContext(), AppTimelineGraph.class)
-        .putExtra("app_uid", item.mUid)
+        .putExtra("app_uid", item.app.uid)
         .putExtra("src_addr", item.srcAddr)
         .putExtra("src_port", item.srcPort)
         .putExtra("dst_addr", item.dstAddr)
@@ -345,7 +333,7 @@ public class LogFragment extends Fragment {
       return;
     }
 
-    final ListItem item = new ListItem(appEntry.icon, appEntry.uid, appEntry.name);
+    final ListItem item = new ListItem(appEntry);
 
     item.in = entry.in;
     item.out = entry.out;
@@ -360,10 +348,10 @@ public class LogFragment extends Fragment {
     item.timestamp = entry.timestamp;
 
     if(MyLog.enabled) {
-      if(item.mUidString == null) {
-        item.mUidString = String.valueOf(item.mUid);
+      if(item.app.uidString == null) {
+        item.app.uidString = String.valueOf(item.app.uid);
       }
-      MyLog.d("LogFragment: NewLogEntry: [" + item.mUidString + "] in=" + item.in + " out=" + item.out + " " + item.srcAddr + ":" + item.srcPort + " --> " + item.dstAddr + ":" + item.dstPort + " [" + item.len + "]");
+      MyLog.d("LogFragment: NewLogEntry: [" + item.app.uidString + "] in=" + item.in + " out=" + item.out + " " + item.srcAddr + ":" + item.srcPort + " --> " + item.dstAddr + ":" + item.dstPort + " [" + item.len + "]");
     }
 
     synchronized(listDataBuffer) {
@@ -406,7 +394,7 @@ public class LogFragment extends Fragment {
         ListItem item = iterator.next();
 
         if(MyLog.enabled) {
-          MyLog.d("Checking item " + item.mUid + " " + item.mName + " " + item.timestamp);
+          MyLog.d("Checking item " + item.app.uid + " " + item.app.name + " " + item.timestamp);
         }
 
         if(item.timestamp < timestamp) {
@@ -600,17 +588,9 @@ public class LogFragment extends Fragment {
       dstPortResolved = "";
     }
 
-    if(item.mUidString == null) {
-      item.mUidString = String.valueOf(item.mUid); // fixme: get this from stringpool
-    }
-
-    if(item.mNameLowerCase == null) {
-      item.mNameLowerCase = StringPool.getLowerCase(item.mName);
-    }
-
     for(String c : NetworkLog.filterTextIncludeList) {
-      if((NetworkLog.filterNameInclude && item.mNameLowerCase.contains(c))
-          || (NetworkLog.filterUidInclude && item.mUidString.equals(c))
+      if((NetworkLog.filterNameInclude && item.app.nameLowerCase.contains(c))
+          || (NetworkLog.filterUidInclude && item.app.uidString.equals(c))
           || (NetworkLog.filterAddressInclude &&
             ((item.srcAddr.contains(c) || StringPool.getLowerCase(srcAddrResolved).contains(c))
              || (item.dstAddr.contains(c) || StringPool.getLowerCase(dstAddrResolved).contains(c))))
@@ -653,17 +633,9 @@ public class LogFragment extends Fragment {
       dstPortResolved = "";
     }
 
-    if(item.mUidString == null) {
-      item.mUidString = String.valueOf(item.mUid);
-    }
-
-    if(item.mNameLowerCase == null) {
-      item.mNameLowerCase = StringPool.getLowerCase(item.mName);
-    }
-
     for(String c : NetworkLog.filterTextExcludeList) {
-      if((NetworkLog.filterNameExclude && item.mNameLowerCase.contains(c))
-          || (NetworkLog.filterUidExclude && item.mUidString.equals(c))
+      if((NetworkLog.filterNameExclude && item.app.nameLowerCase.contains(c))
+          || (NetworkLog.filterUidExclude && item.app.uidString.equals(c))
           || (NetworkLog.filterAddressExclude && ((item.srcAddr.contains(c) || StringPool.getLowerCase(srcAddrResolved).contains(c)) || (item.dstAddr.contains(c) || StringPool.getLowerCase(dstAddrResolved).contains(c))))
           || (NetworkLog.filterPortExclude && ((String.valueOf(item.srcPort).equals(c) || StringPool.getLowerCase(srcPortResolved).equals(c)) || (String.valueOf(item.dstPort).equals(c) || StringPool.getLowerCase(dstPortResolved).equals(c)))))
       {
@@ -842,16 +814,17 @@ public class LogFragment extends Fragment {
         holder = (ViewHolder) convertView.getTag();
         icon = holder.getIcon();
 
-        if(item.mUidString == null) {
-          item.mUidString = String.valueOf(item.mUid);
+        Drawable tempIcon;
+        if(item.app.icon == null) {
+          tempIcon = ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), icon, item.app.packageName);
+        } else {
+          tempIcon = item.app.icon;
         }
 
-        item.mIcon = ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), icon, ApplicationsTracker.installedAppsHash.get(item.mUidString).packageName);
-
-        icon.setImageDrawable(item.mIcon);
+        icon.setImageDrawable(tempIcon);
 
         name = holder.getName();
-        name.setText("(" + item.mUid + ")" + " " + item.mName);
+        name.setText("(" + item.app.uid + ")" + " " + item.app.name);
 
         iface = holder.getInterface();
 

@@ -43,12 +43,12 @@ public class OverallAppTimelineGraph extends GraphActivity
 
       synchronized(NetworkLog.logFragment.listData) {
         for(LogFragment.ListItem item : NetworkLog.logFragment.listData) {
-          packetList = appMap.get(item.mUid);
+          packetList = appMap.get(item.app.uid);
 
           if(packetList == null) {
             packetList = new ArrayList<PacketGraphItem>();
-            appMap.put(item.mUid, packetList);
-            uidNameMap.put(item.mUid, "(" + item.mUid + ") " + item.mName);
+            appMap.put(item.app.uid, packetList);
+            uidNameMap.put(item.app.uid, "(" + item.app.uid + ") " + item.app.name);
           }
 
           packetList.add(new PacketGraphItem(item.timestamp, item.len));

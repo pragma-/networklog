@@ -78,7 +78,7 @@ public class AppTimelineGraph extends GraphActivity
 
       synchronized(NetworkLog.logFragment.listData) {
         for(LogFragment.ListItem item : NetworkLog.logFragment.listData) {
-          if(item.mUid == app_uid) {
+          if(item.app.uid == app_uid) {
             //Log.d("NetworkLog", "Testing packet [" + (item.in == null ? "null" : item.in) + "] " + item.srcAddr + ":" + item.srcPort + " -> [" + (item.out == null ? "null" : item.out) + "] " + item.dstAddr + ":" + item.dstPort);
             try {
               charBuffer.reset();

@@ -596,7 +596,7 @@ public class AppFragment extends Fragment {
         while(iterator.hasNext()) {
           LogFragment.ListItem item = iterator.next();
 
-          entry.uid = item.mUid;
+          entry.uid = item.app.uid;
           entry.in = item.in;
           entry.out = item.out;
           entry.src = item.srcAddr;
