@@ -1219,11 +1219,14 @@ public class AppFragment extends Fragment {
 
         icon = holder.getIcon();
 
+        Drawable tempIcon;
         if(item.app.icon == null) {
-          item.app.icon = ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), icon, item.app.packageName);
+          tempIcon = ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), icon, item.app.packageName);
+        } else {
+          tempIcon = item.app.icon;
         }
 
-        icon.setImageDrawable(item.app.icon);
+        icon.setImageDrawable(tempIcon);
 
         name = holder.getName();
 

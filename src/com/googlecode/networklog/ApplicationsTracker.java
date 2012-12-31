@@ -29,7 +29,6 @@ public class ApplicationsTracker {
   public static ArrayList<AppEntry> installedApps;
   public static HashMap<String, AppEntry> installedAppsHash;
   public static HashMap<String, AppEntry> packageMap;
-  public static HashMap<String, Object> loadingIcon = new HashMap<String, Object>();
   public static ProgressDialog dialog;
   public static int appCount;
   public static Object dialogLock = new Object();
@@ -121,7 +120,7 @@ public class ApplicationsTracker {
     AppEntry item = packageMap.get(packageName);
 
     if(item == null) {
-      MyLog.d("Failed to find item for " + packageName);
+      Log.w("NetworkLog", "Failed to find icon item for " + packageName);
       return loading_icon;
     }
 
@@ -129,51 +128,34 @@ public class ApplicationsTracker {
       return item.icon;
     }
 
-    Object loading;
-    synchronized(loadingIcon) {
-      loading = loadingIcon.get(packageName);
-    }
-
-    if(loading == null) {
-      synchronized(loadingIcon) {
-        loadingIcon.put(packageName, packageName);
-      }
-
-      final AppEntry entry = item;
-      new Thread(new Runnable() {
-        public void run() {
-          MyLog.d("Loading icon for " + entry);
-          try {
-            if(pm == null) {
-              pm = context.getPackageManager();
-            }
-
-            Drawable[] layers = new Drawable[2];
-            layers[0] = loading_icon;
-            layers[1] = pm.getApplicationIcon(packageName);
-            final TransitionDrawable transition = new TransitionDrawable(layers);
-            transition.setCrossFadeEnabled(true);
-
-            synchronized(loadingIcon) {
-              loadingIcon.remove(packageName);
-            }
-
-            NetworkLog.handler.post(new Runnable() {
-              public void run() {
-                entry.icon = transition;
-                view.setImageDrawable(entry.icon);
-                transition.startTransition(750);
-                MyLog.d("Icon loaded");
-              }
-            });
-          } catch(Exception e) {
-            // ignored
+    final AppEntry entry = item;
+    new Thread(new Runnable() {
+      public void run() {
+        MyLog.d("Loading icon for " + entry);
+        try {
+          if(pm == null) {
+            pm = context.getPackageManager();
           }
-        }
-      }, "LoadIcon:" + packageName).start();
 
-      return loading_icon;
-    }
+          Drawable[] layers = new Drawable[2];
+          layers[0] = loading_icon;
+          layers[1] = pm.getApplicationIcon(packageName);
+          final TransitionDrawable transition = new TransitionDrawable(layers);
+          transition.setCrossFadeEnabled(true);
+
+          NetworkLog.handler.post(new Runnable() {
+            public void run() {
+              entry.icon = transition;
+              view.setImageDrawable(entry.icon);
+              transition.startTransition(750);
+              MyLog.d("Icon loaded");
+            }
+          });
+        } catch(Exception e) {
+          // ignored
+        }
+      }
+    }, "LoadIcon:" + packageName).start();
 
     return loading_icon;
   }
