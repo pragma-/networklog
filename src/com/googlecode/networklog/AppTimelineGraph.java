@@ -79,9 +79,10 @@ public class AppTimelineGraph extends GraphActivity
       synchronized(NetworkLog.logFragment.listData) {
         for(LogFragment.ListItem item : NetworkLog.logFragment.listData) {
           if(item.mUid == app_uid) {
+            //Log.d("NetworkLog", "Testing packet [" + (item.in == null ? "null" : item.in) + "] " + item.srcAddr + ":" + item.srcPort + " -> [" + (item.out == null ? "null" : item.out) + "] " + item.dstAddr + ":" + item.dstPort);
             try {
               charBuffer.reset();
-              if(item.in != null) {
+              if(item.in != null && item.in.length() != 0) {
                 charBuffer.append(item.srcAddr).append(':').append(item.srcPort);
                 address = item.srcAddr;
                 port = item.srcPort;
@@ -103,6 +104,7 @@ public class AppTimelineGraph extends GraphActivity
               hostPort.host = address;
               hostPort.port = port;
               addressMap.put(hostKey, hostPort);
+              //Log.d("NetworkLog", "Adding new hostPort: " + hostKey + " == " + address + ":" + port);
             }
 
             packetList = hostMap.get(hostKey);
@@ -199,6 +201,8 @@ public class AppTimelineGraph extends GraphActivity
 
         hostPort = addressMap.get(hostKey);
 
+        //Log.d("NetworkLog", "Got from hostMap: " + hostKey + " == " + hostPort.host + ":" + hostPort.port);
+
         String addressString;
         if(NetworkLog.resolveHosts) {
           addressString = NetworkLog.resolver.resolveAddress(hostPort.host);
@@ -245,6 +249,7 @@ public class AppTimelineGraph extends GraphActivity
           legend.mEnabled = true;
 
           legendData.add(legend);
+          //Log.d("NetworkLog", "Adding new legend: " + label);
         }
 
         graphView.setSeriesEnabled(hashCode, enabled);
