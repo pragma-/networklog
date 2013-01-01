@@ -13,7 +13,7 @@ function install_emulator() { adb -e install -r bin/$APP; }
 function logcat() { adb logcat -c && adb logcat -v time | tee log-`date +%Y%m%d-%H:%M.%N` | grep -v GoogleAnalyticsTracker; }
 function meminfo() { adb shell dumpsys meminfo; }
 function procrank_sample() { adb shell procrank | grep networklog | tee procrank-`date +%Y%m%d-%H:%M.%N`; }
-function clean_build_install_and_logcat() { clean && release_build && install_device && logcat; }
+function build_install_and_logcat() { release_build && install_device && logcat; }
 
 function check_status()
 {
@@ -36,7 +36,7 @@ function push()
   git push gitorious master
 }
 
-alias b=clean_build_install_and_logcat
+alias b=build_install_and_logcat
 alias c=clean
 alias id=install_device
 alias ie=install_emulator
