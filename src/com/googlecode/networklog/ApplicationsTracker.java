@@ -29,18 +29,19 @@ public class ApplicationsTracker {
   public static ArrayList<AppEntry> installedApps;
   public static HashMap<String, AppEntry> installedAppsHash;
   public static HashMap<String, AppEntry> packageMap;
+  public static HashMap<String, Drawable> iconMap;
   public static ProgressDialog dialog;
   public static int appCount;
   public static Object dialogLock = new Object();
   public static Object installedAppsLock = new Object();
   public static PackageManager pm = null;
   public static Drawable loading_icon = null;
+  public static Drawable[] default_layers;
 
   public static class AppEntry {
     String name;
     String nameLowerCase;
     String packageName;
-    Drawable icon;
     int uid;
     String uidString;
 
@@ -112,7 +113,7 @@ public class ApplicationsTracker {
     packageMap = data.applicationsTrackerPackageMap;
   }
 
-  public static Drawable loadIcon(final Context context, final ImageView view, final String packageName) {
+  public static Drawable loadIcon(final Context context, final String packageName) {
     if(loading_icon == null) {
       loading_icon = context.getResources().getDrawable(R.drawable.loading_icon);
     }
@@ -124,40 +125,38 @@ public class ApplicationsTracker {
       return loading_icon;
     }
 
-    if(item.icon != null) {
-      return item.icon;
+    Drawable cached_icon = iconMap.get(packageName);
+    if(cached_icon != null) {
+      return cached_icon;
     }
 
-    final AppEntry entry = item;
+    if(default_layers == null) {
+      default_layers = new Drawable[] { loading_icon, loading_icon };
+    }
+    TransitionDrawable transition = new TransitionDrawable(default_layers);
+    transition.setCrossFadeEnabled(true);
+
+    MyLog.d("Loading icon for " + item);
+    final TransitionDrawable td = transition;
     new Thread(new Runnable() {
       public void run() {
-        MyLog.d("Loading icon for " + entry);
         try {
           if(pm == null) {
             pm = context.getPackageManager();
           }
 
-          Drawable[] layers = new Drawable[2];
-          layers[0] = loading_icon;
-          layers[1] = pm.getApplicationIcon(packageName);
-          final TransitionDrawable transition = new TransitionDrawable(layers);
-          transition.setCrossFadeEnabled(true);
+          Drawable drawable = pm.getApplicationIcon(packageName);
+          iconMap.put(packageName, drawable);
 
-          NetworkLog.handler.post(new Runnable() {
-            public void run() {
-              entry.icon = transition;
-              view.setImageDrawable(entry.icon);
-              transition.startTransition(750);
-              MyLog.d("Icon loaded");
-            }
-          });
+          td.setDrawableByLayerId(td.getId(1), drawable);
+          td.startTransition(750);
         } catch(Exception e) {
           // ignored
         }
       }
     }, "LoadIcon:" + packageName).start();
 
-    return loading_icon;
+    return transition;
   }
 
   public static void getInstalledApps(final Context context, final Handler handler) {
@@ -168,11 +167,13 @@ public class ApplicationsTracker {
         installedApps = new ArrayList<AppEntry>();
         installedAppsHash = new HashMap<String, AppEntry>();
         packageMap = new HashMap<String, AppEntry>();
+        iconMap = new HashMap<String, Drawable>();
       } else {
         restoreData(NetworkLog.data);
         installedApps.clear();
         installedAppsHash.clear();
         packageMap.clear();
+        iconMap.clear();
       }
 
       if(pm == null) {
@@ -232,7 +233,6 @@ public class ApplicationsTracker {
 
         entry.name = appCache.getLabel(pm, app);
         entry.nameLowerCase = StringPool.get(StringPool.getLowerCase(entry.name));
-        entry.icon = null;
         entry.uid = uid;
         entry.uidString = StringPool.get(String.valueOf(uid));
         entry.packageName = StringPool.get(app.packageName);
@@ -252,10 +252,10 @@ public class ApplicationsTracker {
       AppEntry entry = new AppEntry();
       entry.name = StringPool.get("Kernel");
       entry.nameLowerCase = StringPool.getLowerCase("Kernel");
-      entry.icon = context.getResources().getDrawable(R.drawable.linux_icon);
       entry.packageName = StringPool.get(entry.nameLowerCase);
       entry.uid = -1;
       entry.uidString = StringPool.get("-1");
+      iconMap.put(entry.packageName, context.getResources().getDrawable(R.drawable.linux_icon));
 
       installedApps.add(entry);
       installedAppsHash.put("-1", entry);
@@ -283,10 +283,10 @@ public class ApplicationsTracker {
           entry = new AppEntry();
           entry.name = StringPool.get(name);
           entry.nameLowerCase = StringPool.getLowerCase(name);
-          entry.icon = context.getResources().getDrawable(R.drawable.android_icon);
           entry.packageName = StringPool.get(entry.nameLowerCase);
           entry.uid = uid;
           entry.uidString = StringPool.get(uidString);
+          iconMap.put(entry.packageName, context.getResources().getDrawable(R.drawable.android_icon));
 
           installedApps.add(entry);
           installedAppsHash.put(uidString, entry);

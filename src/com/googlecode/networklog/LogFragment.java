@@ -108,6 +108,7 @@ public class LogFragment extends Fragment {
     }
 
     adapter.notifyDataSetChanged();
+
     if(MyLog.enabled) {
       MyLog.d("Refreshed LogFragment adapter");
     }
@@ -348,9 +349,6 @@ public class LogFragment extends Fragment {
     item.timestamp = entry.timestamp;
 
     if(MyLog.enabled) {
-      if(item.app.uidString == null) {
-        item.app.uidString = String.valueOf(item.app.uid);
-      }
       MyLog.d("LogFragment: NewLogEntry: [" + item.app.uidString + "] in=" + item.in + " out=" + item.out + " " + item.srcAddr + ":" + item.srcPort + " --> " + item.dstAddr + ":" + item.dstPort + " [" + item.len + "]");
     }
 
@@ -812,16 +810,9 @@ public class LogFragment extends Fragment {
         }
 
         holder = (ViewHolder) convertView.getTag();
+
         icon = holder.getIcon();
-
-        Drawable tempIcon;
-        if(item.app.icon == null) {
-          tempIcon = ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), icon, item.app.packageName);
-        } else {
-          tempIcon = item.app.icon;
-        }
-
-        icon.setImageDrawable(tempIcon);
+        icon.setImageDrawable(ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), item.app.packageName));
 
         name = holder.getName();
         name.setText("(" + item.app.uid + ")" + " " + item.app.name);
