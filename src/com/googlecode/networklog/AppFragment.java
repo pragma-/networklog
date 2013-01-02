@@ -1218,7 +1218,7 @@ public class AppFragment extends Fragment {
         }
 
         icon = holder.getIcon();
-        icon.setImageDrawable(ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), item.app.packageName));
+        icon.setImageDrawable(ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), icon, item.app.packageName));
 
         name = holder.getName();
 

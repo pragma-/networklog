@@ -36,7 +36,6 @@ public class ApplicationsTracker {
   public static Object installedAppsLock = new Object();
   public static PackageManager pm = null;
   public static Drawable loading_icon = null;
-  public static Drawable[] default_layers;
 
   public static class AppEntry {
     String name;
@@ -113,7 +112,7 @@ public class ApplicationsTracker {
     packageMap = data.applicationsTrackerPackageMap;
   }
 
-  public static Drawable loadIcon(final Context context, final String packageName) {
+  public static Drawable loadIcon(final Context context, final ImageView view, final String packageName) {
     if(loading_icon == null) {
       loading_icon = context.getResources().getDrawable(R.drawable.loading_icon);
     }
@@ -130,14 +129,7 @@ public class ApplicationsTracker {
       return cached_icon;
     }
 
-    if(default_layers == null) {
-      default_layers = new Drawable[] { loading_icon, loading_icon };
-    }
-    TransitionDrawable transition = new TransitionDrawable(default_layers);
-    transition.setCrossFadeEnabled(true);
-
     MyLog.d("Loading icon for " + item);
-    final TransitionDrawable td = transition;
     new Thread(new Runnable() {
       public void run() {
         try {
@@ -145,18 +137,25 @@ public class ApplicationsTracker {
             pm = context.getPackageManager();
           }
 
-          Drawable drawable = pm.getApplicationIcon(packageName);
+          final Drawable drawable = pm.getApplicationIcon(packageName);
           iconMap.put(packageName, drawable);
 
-          td.setDrawableByLayerId(td.getId(1), drawable);
-          td.startTransition(750);
+          /* Ugh, we have to do it this way instead of using setDrawableByLayerId() since 2.x doesn't support it very well */
+          NetworkLog.handler.postDelayed(new Runnable() {
+            public void run() {
+              TransitionDrawable td = new TransitionDrawable(new Drawable[] { loading_icon, drawable });
+              td.setCrossFadeEnabled(true);
+              view.setImageDrawable(td);
+              td.startTransition(750);
+            }
+          }, 200);
         } catch(Exception e) {
           // ignored
         }
       }
     }, "LoadIcon:" + packageName).start();
 
-    return transition;
+    return loading_icon;
   }
 
   public static void getInstalledApps(final Context context, final Handler handler) {

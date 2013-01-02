@@ -812,7 +812,7 @@ public class LogFragment extends Fragment {
         holder = (ViewHolder) convertView.getTag();
 
         icon = holder.getIcon();
-        icon.setImageDrawable(ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), item.app.packageName));
+        icon.setImageDrawable(ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), icon, item.app.packageName));
 
         name = holder.getName();
         name.setText("(" + item.app.uid + ")" + " " + item.app.name);
