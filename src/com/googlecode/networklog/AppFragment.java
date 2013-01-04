@@ -252,6 +252,7 @@ public class AppFragment extends Fragment {
     int top = (v == null) ? 0 : v.getTop();
 
     adapter.notifyDataSetChanged();
+
     if(MyLog.enabled) {
       MyLog.d("Refreshed AppFragment adapter");
     }
@@ -766,15 +767,19 @@ public class AppFragment extends Fragment {
         }
       }
 
+      groupDataBufferIsDirty = false;
+      needsRefresh = false;
+
       if(MyLog.enabled) {
         MyLog.d("AppFragmentListUpdater exit");
       }
-        Log.d("NetworkLog", "AppFragmentListUpdater exit");
+
+      Log.d("NetworkLog", "AppFragmentListUpdater exit");
     }
   };
 
   public void updaterRunOnce() {
-    getActivity().runOnUiThread(updaterRunner);
+    NetworkLog.handler.post(updaterRunner);
   }
 
   // todo: this is largely duplicated in LogFragment -- move to its own file
@@ -792,8 +797,6 @@ public class AppFragment extends Fragment {
       while(running) {
         if(groupDataBufferIsDirty == true || needsRefresh == true) {
           updaterRunOnce();
-          groupDataBufferIsDirty = false;
-          needsRefresh = false;
         }
 
         try {
@@ -1222,7 +1225,6 @@ public class AppFragment extends Fragment {
 
         name = holder.getName();
 
-        Log.d("NetworkLog", "setting name text");
         name.setText("(" + item.app.uid + ")" + " " + item.app.name);
 
         packets = holder.getPackets();
@@ -1234,7 +1236,6 @@ public class AppFragment extends Fragment {
         timestamp = holder.getTimestamp();
 
         if(item.lastTimestamp != 0) {
-          Log.d("NetworkLog", "setting timestamp text");
           timestamp.setText("(" + Timestamp.getTimestamp(item.lastTimestamp) + ")");
           timestamp.setVisibility(View.VISIBLE);
         } else {
@@ -1332,7 +1333,6 @@ public class AppFragment extends Fragment {
           hostString = receivedAddressString + ":" + receivedPortString;
         }
 
-        Log.d("NetworkLog", "setting child fromHtml");
         host.setText(Html.fromHtml("<u>" + hostString + "</u>")); // fixme: cache this
 
         sentPackets = holder.getSentPackets();
