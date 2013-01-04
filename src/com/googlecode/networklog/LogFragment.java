@@ -357,7 +357,7 @@ public class LogFragment extends Fragment {
 
       while(listDataBuffer.size() > maxLogEntries) {
         if(MyLog.enabled) {
-          MyLog.d("NetworkLog", "Log buffer size reached maxLogEntries limit; truncating");
+          MyLog.d("Log buffer size reached maxLogEntries limit; truncating");
         }
         listDataBuffer.removeFirst();
       }
@@ -407,7 +407,7 @@ public class LogFragment extends Fragment {
       }
     }
 
-    getActivity().runOnUiThread(new Runnable() {
+    NetworkLog.handler.post(new Runnable() {
       public void run() {
         if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0) {
           setFilter("");
@@ -452,7 +452,6 @@ public class LogFragment extends Fragment {
       if(MyLog.enabled) {
         MyLog.d("LogFragmentUpdater enter");
       }
-        Log.d("NetworkLog", "LogFragmentUpdater enter");
 
       int i = 0;
       boolean included = true;
@@ -500,9 +499,8 @@ public class LogFragment extends Fragment {
       long elapsed = System.currentTimeMillis() - start;
 
       if(MyLog.enabled) {
-        MyLog.d("LogFragmentUpdater exit: added " + i + " items: " + elapsed);
+        MyLog.d("LogFragmentUpdater exit: added " + i + " items -- elapsed: " + elapsed);
       }
-        Log.d("NetworkLog", "LogFragmentUpdater exit: added " + i + " items -- elapsed: " + elapsed);
 
       if(appFragmentNeedsRebuild) {
         appFragmentNeedsRebuild = false;
@@ -513,7 +511,7 @@ public class LogFragment extends Fragment {
   };
 
   public void updaterRunOnce() {
-    getActivity().runOnUiThread(updaterRunner);
+    NetworkLog.handler.post(updaterRunner);
   }
 
   // todo: this is largely duplicated in AppFragment -- move to its own file
@@ -672,13 +670,9 @@ public class LogFragment extends Fragment {
             MyLog.d("[LogFragment] performFiltering");
           }
 
-          Log.d("NetworkLog", "performing filtering");
-
           synchronized(listDataUnfiltered) {
             originalItems.addAll(listDataUnfiltered);
           }
-
-          Log.d("NetworkLog", "originalItems.addAll done");
 
           if(NetworkLog.filterTextInclude.length() == 0 && NetworkLog.filterTextExclude.length() == 0) {
             MyLog.d("[LogFragment] no constraint item count: " + originalItems.size());
@@ -715,8 +709,6 @@ public class LogFragment extends Fragment {
               }
             }
 
-            Log.d("NetworkLog", "done with inclusion filtering");
-
             if(NetworkLog.filterTextExcludeList.size() > 0) {
               for(int i = 0; i < includedItemsPos; i++) {
                 item = originalItems.get(includedItemsIndex[i]);
@@ -746,8 +738,6 @@ public class LogFragment extends Fragment {
             results.count = filteredItems.size();
           }
 
-          Log.d("NetworkLog", "done with exclusion filtering, done filtering");
-
           if(MyLog.enabled) {
             MyLog.d("[LogFragment] filter returning " + results.count + " items");
           }
@@ -761,15 +751,12 @@ public class LogFragment extends Fragment {
             MyLog.d("[LogFragment] Publishing filter results");
           }
 
-          Log.d("NetworkLog", "[LogFragment] Publishing filter results");
-
           synchronized(listData) {
             listData.clear();
             listData.addAll((ArrayList<ListItem>) results.values);
             if(MyLog.enabled) {
               MyLog.d("[LogFilter] listdata size after filter: " + listData.size());
             }
-            Log.d("NetworkLog", "listdata all added, refreshing adapter");
           }
 
           doNotRefresh = false;
@@ -788,7 +775,6 @@ public class LogFragment extends Fragment {
 
     @Override
       public View getView(int position, View convertView, ViewGroup parent) {
-        Log.d("NetworkLog", "LogFragment getView");
         ViewHolder holder = null;
 
         ImageView icon;
