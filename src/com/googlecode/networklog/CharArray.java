@@ -88,6 +88,10 @@ public class CharArray implements Comparable<CharArray> {
   }
 
   public CharArray append(String string) {
+    if(string == null) {
+      return this;
+    }
+
     int length = string.length();
     int i = 0;
 
