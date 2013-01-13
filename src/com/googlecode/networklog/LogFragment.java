@@ -405,6 +405,11 @@ public class LogFragment extends Fragment {
           break;
         }
       }
+
+      synchronized(listData) {
+        listData.clear();
+        listData.addAll(listDataUnfiltered);
+      }
     }
 
     NetworkLog.handler.post(new Runnable() {
