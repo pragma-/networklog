@@ -44,6 +44,14 @@ public class FastParser {
     pos = 0;
   }
 
+  public void setPos(int newpos) {
+    if(newpos < 0 || newpos >= len) {
+      throw new IndexOutOfBoundsException("Attempt to set new pos " + newpos + " is out of range 0 - " + len);
+    }
+
+    pos = newpos;
+  }
+
   public void setDelimiter(char delimiter) {
     this.delimiter = delimiter;
   }
