@@ -12,9 +12,11 @@ public class StringPool {
   final static int maxPoolSize = 1024;
   final public static ConcurrentHashMap<String, String> pool = new ConcurrentHashMap<String, String>(maxPoolSize);
   final public static ConcurrentHashMap<String, String> lowercasePool = new ConcurrentHashMap<String, String>(maxPoolSize);
+  final public static ConcurrentHashMap<Integer, String> integerPool = new ConcurrentHashMap<Integer, String>(maxPoolSize);
   final public static CharArrayStringAATree charPool = new CharArrayStringAATree();
   static int poolSize = 0;
   static int lowercasePoolSize = 0;
+  static int integerPoolSize = 0;
   static CharArray charBuffer = new CharArray(256);
 
   public static void clearCharPool() {
@@ -26,6 +28,7 @@ public class StringPool {
   }
 
   public static String get(char[] chars, int pos, int length) {
+    /* FIXME: remove need for charBuffer */
     charBuffer.reset();
     charBuffer.append(chars, pos, length);
 
@@ -90,6 +93,36 @@ public class StringPool {
         MyLog.d("[StringPool] Clearing lowercase pool");
         lowercasePool.clear();
         lowercasePoolSize = 0;
+      }
+
+      return newString;
+    } else {
+      return result;
+    }
+  }
+
+  public static String get(Integer integer) {
+    if(integer == null) {
+      return "";
+    }
+
+    String result = integerPool.get(integer);
+
+    if(result == null) {
+      String newString = String.valueOf(integer);
+
+      integerPool.put(integer, newString);
+      integerPoolSize++;
+
+      if(MyLog.enabled) {
+        MyLog.d("[StringPool] new integer addition [" + newString + "]; pool size: " + integerPoolSize);
+      }
+
+      if (integerPoolSize >= maxPoolSize) {
+        // clear pool to free memory and allow pool to rebuild
+        MyLog.d("[StringPool] Clearing integer pool");
+        integerPool.clear();
+        integerPoolSize = 0;
       }
 
       return newString;
