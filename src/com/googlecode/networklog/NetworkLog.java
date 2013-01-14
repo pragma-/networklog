@@ -503,14 +503,19 @@ public class NetworkLog extends SherlockFragmentActivity {
 
   @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-      MenuItem item;
-
-      item = menu.findItem(R.id.sort);
+      MenuItem item = menu.findItem(R.id.sort);
 
       if(viewPager.getCurrentItem() == PAGE_APP) {
         item.setVisible(true);
 
-        switch(appFragment.sortBy) {
+        Sort sortBy;
+        if(appFragment == null || appFragment.sortBy == null) {
+          sortBy = NetworkLog.settings.getSortBy();
+        } else {
+          sortBy = appFragment.sortBy;
+        }
+
+        switch(sortBy) {
           case UID:
             item = menu.findItem(R.id.sort_by_uid);
             break;
