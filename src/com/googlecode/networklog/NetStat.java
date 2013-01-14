@@ -15,6 +15,10 @@ import java.util.ArrayList;
 import android.util.Log;
 
 public class NetStat {
+  final String states[] = { "ESTBLSH",   "SYNSENT",   "SYNRECV",   "FWAIT1",   "FWAIT2",   "TMEWAIT",
+    "CLOSED",    "CLSWAIT",   "LASTACK",   "LISTEN",   "CLOSING",  "UNKNOWN"
+  };
+
   public class Connection {
     String src;
     String spt;
@@ -23,9 +27,11 @@ public class NetStat {
     String uid;
   }
 
-  final String states[] = { "ESTBLSH",   "SYNSENT",   "SYNRECV",   "FWAIT1",   "FWAIT2",   "TMEWAIT",
-    "CLOSED",    "CLSWAIT",   "LASTACK",   "LISTEN",   "CLOSING",  "UNKNOWN"
-  };
+  ArrayList<Connection> connections;
+
+  public NetStat() {
+    connections = new ArrayList<Connection>();
+  }
 
   private final String getAddress(final String hexa) {
     try {
@@ -67,20 +73,23 @@ public class NetStat {
   }
 
   public ArrayList<Connection> getConnections() {
-    ArrayList<Connection> connections = new ArrayList<Connection>();
-
+    connections.clear();
     try {
       BufferedReader in = new BufferedReader(new FileReader("/proc/" + android.os.Process.myPid() + "/net/tcp"));
       String line;
 
       while((line = in.readLine()) != null) {
         line = line.trim();
-        MyLog.d("Netstat: " + line);
+        if(MyLog.enabled) {
+          MyLog.d("Netstat: " + line);
+        }
         String[] fields = line.split("\\s+", 10);
         int fieldn = 0;
 
-        for(String field : fields) {
-          MyLog.d("Field " + (fieldn++) + ": [" + field + "]");
+        if(MyLog.enabled) {
+          for(String field : fields) {
+            MyLog.d("Field " + (fieldn++) + ": [" + field + "]");
+          }
         }
 
         if(fields[0].equals("sl")) {
@@ -107,12 +116,16 @@ public class NetStat {
 
       while((line = in.readLine()) != null) {
         line = line.trim();
-        MyLog.d("Netstat: " + line);
+        if(MyLog.enabled) {
+          MyLog.d("Netstat: " + line);
+        }
         String[] fields = line.split("\\s+", 10);
         int fieldn = 0;
 
-        for(String field : fields) {
-          MyLog.d("Field " + (fieldn++) + ": [" + field + "]");
+        if(MyLog.enabled) {
+          for(String field : fields) {
+            MyLog.d("Field " + (fieldn++) + ": [" + field + "]");
+          }
         }
 
         if(fields[0].equals("sl")) {
@@ -139,12 +152,16 @@ public class NetStat {
 
       while((line = in.readLine()) != null) {
         line = line.trim();
-        MyLog.d("Netstat: " + line);
+        if(MyLog.enabled) {
+          MyLog.d("Netstat: " + line);
+        }
         String[] fields = line.split("\\s+", 10);
         int fieldn = 0;
 
-        for(String field : fields) {
-          MyLog.d("Field " + (fieldn++) + ": [" + field + "]");
+        if(MyLog.enabled) {
+          for(String field : fields) {
+            MyLog.d("Field " + (fieldn++) + ": [" + field + "]");
+          }
         }
 
         if(fields[0].equals("sl")) {
@@ -171,12 +188,16 @@ public class NetStat {
 
       while((line = in.readLine()) != null) {
         line = line.trim();
-        MyLog.d("Netstat: " + line);
+        if(MyLog.enabled) {
+          MyLog.d("Netstat: " + line);
+        }
         String[] fields = line.split("\\s+", 10);
         int fieldn = 0;
 
-        for(String field : fields) {
-          MyLog.d("Field " + (fieldn++) + ": [" + field + "]");
+        if(MyLog.enabled) {
+          for(String field : fields) {
+            MyLog.d("Field " + (fieldn++) + ": [" + field + "]");
+          }
         }
 
         if(fields[0].equals("sl")) {
