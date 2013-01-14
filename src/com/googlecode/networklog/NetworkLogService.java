@@ -114,17 +114,17 @@ public class NetworkLogService extends Service {
       }
     }
 
-  HashMap<String, Integer> logEntriesMap;
-  ShellCommand command;
-  NetworkLogger logger;
-  String logfile = null;
-  PrintWriter logWriter = null;
-  NotificationManager nManager;
-  Notification notification;
-  LogEntry entry;
-  Boolean start_foreground = true;
-
-  //StringBuilder buffer;
+  private HashMap<String, Integer> logEntriesMap;
+  private ShellCommand command;
+  private NetworkLogger logger;
+  private String logfile = null;
+  private PrintWriter logWriter = null;
+  private NotificationManager nManager;
+  private Notification notification;
+  private LogEntry entry;
+  private Boolean start_foreground = true;
+  private NetStat netstat = new NetStat();
+  private FastParser parser = new FastParser();
 
   public void startForeground(Notification n) {
     startForeground(NOTIFICATION_ID, n);
@@ -230,8 +230,6 @@ public class NetworkLogService extends Service {
 
             // service starting up fresh
             logEntriesMap = new HashMap<String, Integer>();
-            //buffer = new StringBuilder(8192 * 2);
-
             initEntriesMap();
           }
 
@@ -268,7 +266,6 @@ public class NetworkLogService extends Service {
   }
 
   public void initEntriesMap() {
-    NetStat netstat = new NetStat();
     ArrayList<NetStat.Connection> connections = netstat.getConnections();
 
     for(NetStat.Connection connection : connections) {
@@ -290,191 +287,184 @@ public class NetworkLogService extends Service {
     if(MyLog.enabled) {
       MyLog.d("--------------- parsing network entry --------------");
     }
-    int pos = 0 /* , buffer_pos = 0 */;
-    String in, out, src, dst, lenString, sptString, dptString, uidString;
-
-    /*
-       if(MyLog.enabled) {
-       MyLog.d("buffer length: " + buffer.length() + "; result length: " + result.length());
-       MyLog.d("buffer: [" + buffer + "] <--> [" + result + "]");
-       }
-
-       buffer.append(result);
-       */
+    int pos = 0, thisEntry, nextEntry, newline, space;
+    String in, out, src, dst, uidString;
+    int spt, dpt, len, uid;
+    parser.setLine(result.toCharArray(), result.length());
 
     while((pos = result.indexOf("[NetworkLogEntry]", pos)) > -1) {
       if(MyLog.enabled) {
         MyLog.d("---- got [NetworkLogEntry] at " + pos + " ----");
       }
-      // buffer_pos = pos;
 
       pos += "[NetworkLogEntry]".length(); // skip past "[NetworkLogEntry]"
 
-      int newline = result.indexOf("\n", pos);
-      int nextEntry = result.indexOf("[NetworkLogEntry]", pos);
+      thisEntry = pos;
+      newline = result.indexOf("\n", pos);
+      nextEntry = result.indexOf("[NetworkLogEntry]", pos);
+
+      if(newline == -1) {
+        newline = result.length();
+      }
 
       if(nextEntry != -1 && nextEntry < newline) {
-        if(MyLog.enabled) {
-          MyLog.d("Skipping corrupted entry");
-        }
+        Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+        pos = newline;
         continue;
       }
 
-      /*
-         MyLog.d("pos: " + pos + "; buffer length: " + buffer.length());
-         String line = "no newline: " + buffer.substring(pos, buffer.length());
+      try {
+        pos = result.indexOf("IN=", pos);
 
-         if(newline != -1) {
-         line = buffer.substring(pos, newline - 1);
-         }
-
-         MyLog.d("parsing line [" + line + "]");
-         */
-
-      pos = result.indexOf("IN=", pos);
-
-      if(pos == -1 || pos > newline) {
-        /* MyLog.d("buffering [" + line + "] for IN");  */ break;
-      };
-
-      int space = result.indexOf(" ", pos);
-
-      if(space == -1 || space > newline) {
-        /* MyLog.d("buffering [" + line + "] for IN space");  */ break;
-      };
-
-      in = StringPool.get(result.substring(pos + 3, space));
-
-      pos = result.indexOf("OUT=", pos);
-
-      if(pos == -1 || pos > newline) {
-        /* MyLog.d("buffering [" + line + "] for OUT");  */ break;
-      };
-
-      space = result.indexOf(" ", pos);
-
-      if(space == -1 || space > newline) {
-        /* MyLog.d("buffering [" + line + "] for OUT space");  */ break;
-      };
-
-      out = StringPool.get(result.substring(pos + 4, space));
-
-      pos = result.indexOf("SRC=", pos);
-
-      if(pos == -1 || pos > newline) {
-        /* MyLog.d("buffering [" + line + "] for SRC");  */ break;
-      };
-
-      space = result.indexOf(" ", pos);
-
-      if(space == -1 || space > newline) {
-        /* MyLog.d("buffering [" + line + "] for SRC space");  */ break;
-      };
-
-      src = StringPool.get(result.substring(pos + 4, space));
-
-      pos = result.indexOf("DST=", pos);
-
-      if(pos == -1 || pos > newline) {
-        /* MyLog.d("buffering [" + line + "] for DST");  */ break;
-      };
-
-      space = result.indexOf(" ", pos);
-
-      if(space == -1 || space > newline) {
-        /* MyLog.d("buffering [" + line + "] for DST space");  */ break;
-      };
-
-      dst = StringPool.get(result.substring(pos + 4, space));
-
-      pos = result.indexOf("LEN=", pos);
-
-      if(pos == -1 || pos > newline) {
-        /* MyLog.d("buffering [" + line + "] for LEN");  */ break;
-      };
-
-      space = result.indexOf(" ", pos);
-
-      if(space == -1 || space > newline) {
-        /* MyLog.d("buffering [" + line + "] for LEN space");  */ break;
-      };
-
-      lenString = result.substring(pos + 4, space);
-
-      pos = result.indexOf("SPT=", pos);
-
-      if(pos == -1 || pos > newline) {
-        /* MyLog.d("buffering [" + line + "] for SPT");  */ break;
-      };
-
-      space = result.indexOf(" ", pos);
-
-      if(space == -1 || space > newline) {
-        /* MyLog.d("buffering [" + line + "] for SPT space");  */ break;
-      };
-
-      sptString = result.substring(pos + 4, space);
-
-      pos = result.indexOf("DPT=", pos);
-
-      if(pos == -1 || pos > newline) {
-        /* MyLog.d("buffering [" + line + "] for DPT");  */ break;
-      };
-
-      space = result.indexOf(" ", pos);
-
-      if(space == -1 || space > newline) {
-        /* MyLog.d("buffering [" + line + "] for DPT space");  */ break;
-      };
-
-      dptString = result.substring(pos + 4, space);
-
-      int lastpos = pos;
-
-      pos = result.indexOf("UID=", pos);
-
-      // MyLog.d("newline pos: " + newline + "; UID pos: " + pos);
-      if(pos == -1 || (pos > newline && newline != -1)) {
-        uidString = "-1";
-        pos = lastpos;
-      } else {
-        if(MyLog.enabled) {
-          MyLog.d("Looking for UID newline");
+        if(pos == -1 || pos > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
         }
 
-        if(newline == -1) {
-          /* MyLog.d("buffering [" + line + "] for UID newline");  */ break;
-        };
+        space = result.indexOf(" ", pos);
 
-        uidString = result.substring(pos + 4, newline);
-      }
+        if(space == -1 || space > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
 
-      int uid = -13;
-      int spt = -1;
-      int dpt = -1;
-      int len = -1;
+        parser.setPos(pos + 3);
+        in = parser.getString();
 
-      int end, length;
+        pos = result.indexOf("OUT=", pos);
 
-      try {
-        length = uidString.length();
-        // uidString could be "-1", so check for '-'; but the other strings will be > 0
-        for(end = 0; end < length && (uidString.charAt(end) == '-' || Character.isDigit(uidString.charAt(end))); end++);
-        uid = Integer.parseInt(uidString.substring(0, end));
+        if(pos == -1 || pos > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
 
-        length = sptString.length();
-        for(end = 0; end < length && Character.isDigit(sptString.charAt(end)); end++);
-        spt = Integer.parseInt(sptString.substring(0, end));
-        
-        length = dptString.length();
-        for(end = 0; end < length && Character.isDigit(dptString.charAt(end)); end++);
-        dpt = Integer.parseInt(dptString.substring(0, end));
-        
-        length = lenString.length();
-        for(end = 0; end < length && Character.isDigit(lenString.charAt(end)); end++);
-        len = Integer.parseInt(lenString.substring(0, end));
+        space = result.indexOf(" ", pos);
+
+        if(space == -1 || space > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
+
+        parser.setPos(pos + 4);
+        out = parser.getString();
+
+        pos = result.indexOf("SRC=", pos);
+
+        if(pos == -1 || pos > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
+
+        space = result.indexOf(" ", pos);
+
+        if(space == -1 || space > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
+
+        parser.setPos(pos + 4);
+        src = parser.getString();
+
+        pos = result.indexOf("DST=", pos);
+
+        if(pos == -1 || pos > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
+
+        space = result.indexOf(" ", pos);
+
+        if(space == -1 || space > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
+
+        parser.setPos(pos + 4);
+        dst = parser.getString();
+
+        pos = result.indexOf("LEN=", pos);
+
+        if(pos == -1 || pos > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
+
+        space = result.indexOf(" ", pos);
+
+        if(space == -1 || space > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
+
+        parser.setPos(pos + 4);
+        len = parser.getInt();
+
+        pos = result.indexOf("SPT=", pos);
+
+        if(pos == -1 || pos > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
+
+        space = result.indexOf(" ", pos);
+
+        if(space == -1 || space > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
+
+        parser.setPos(pos + 4);
+        spt = parser.getInt();
+
+        pos = result.indexOf("DPT=", pos);
+
+        if(pos == -1 || pos > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
+
+        space = result.indexOf(" ", pos);
+
+        if(space == -1 || space > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
+
+        parser.setPos(pos + 4);
+        dpt = parser.getInt();
+
+        int lastpos = pos;
+
+        pos = result.indexOf("UID=", pos);
+
+        if(pos == -1 || pos > newline) {
+          uid = -42;
+          uidString = "-42";
+          pos = lastpos;
+        } else {
+          parser.setPos(pos + 4);
+          uid = parser.getInt();
+          parser.setPos(pos + 4);
+          uidString = parser.getString();
+        }
       } catch(Exception e) {
-        Log.e("NetworkLog", "Bad data for: [" + result + "]", e);
+        Log.e("NetworkLog", "Bad data for: [" + result.substring(thisEntry, newline) + "]", e);
+        pos = newline;
+        continue;
       }
 
       String srcDstMapKey = src + ":" + spt + " -> " + dst + ":" + dpt;
@@ -513,6 +503,7 @@ public class NetworkLogService extends Service {
                 MyLog.d("[dst-src] Reassigning kernel packet -1 to " + dstSrcMapUid);
               }
               uid = dstSrcMapUid;
+              uidString = StringPool.get(dstSrcMapUid);
             } else {
               if(MyLog.enabled) {
                 MyLog.d("[src-dst] New kernel entry -1 for [" + srcDstMapKey + "]");
@@ -532,6 +523,7 @@ public class NetworkLogService extends Service {
             MyLog.d("[src-dst] Found entry uid " + srcDstMapUid + " for " + uid + " [" + srcDstMapKey + "]");
           }
           uid = srcDstMapUid;
+          uidString = StringPool.get(srcDstMapUid);
         }
 
         if(dstSrcMapUid == null) {
@@ -545,6 +537,7 @@ public class NetworkLogService extends Service {
                 MyLog.d("[src-dst] Reassigning kernel packet -1 to " + srcDstMapUid);
               }
               uid = srcDstMapUid;
+              uidString = StringPool.get(srcDstMapUid);
             } else {
               if(MyLog.enabled) {
                 MyLog.d("[dst-src] New kernel entry -1 for [" + dstSrcMapKey + "]");
@@ -564,6 +557,7 @@ public class NetworkLogService extends Service {
             MyLog.d("[dst-src] Found entry uid " + dstSrcMapUid + " for " + uid + " [" + dstSrcMapKey + "]");
           }
           uid = dstSrcMapUid;
+          uidString = StringPool.get(dstSrcMapUid);
         }
       } else {
         if(MyLog.enabled) {
@@ -580,7 +574,7 @@ public class NetworkLogService extends Service {
       }
 
       entry.uid = uid;
-      entry.uidString = String.valueOf(uid); // fixme: optimize this
+      entry.uidString = uidString;
       entry.in = in;
       entry.out = out;
       entry.src = src;
@@ -595,18 +589,7 @@ public class NetworkLogService extends Service {
       }
 
       notifyNewEntry(entry);
-
-      // buffer_pos = pos;
     }
-
-    /*
-       MyLog.d("truncating buffer_pos: " + buffer_pos + "; length: " + buffer.length());
-       if(buffer_pos > buffer.length()) {
-       MyLog.d("WTF buffer: [" + buffer + "]");
-       } else {
-       buffer.delete(0, buffer_pos - 1);
-       }
-       */
   }
 
   public void notifyNewEntry(LogEntry entry) {
