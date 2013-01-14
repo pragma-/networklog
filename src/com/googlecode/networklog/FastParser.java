@@ -208,7 +208,7 @@ public class FastParser {
     }
 
     if(pos == newpos) {
-      value = null;
+      value = "";
     } else {
       value = StringPool.get(line, pos, newpos - pos);
     }
