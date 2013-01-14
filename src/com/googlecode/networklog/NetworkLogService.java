@@ -290,7 +290,7 @@ public class NetworkLogService extends Service {
     int pos = 0, thisEntry, nextEntry, newline, space;
     String in, out, src, dst, uidString;
     int spt, dpt, len, uid;
-    parser.setLine(result.toCharArray(), result.length());
+    parser.setLine(result.toCharArray(), result.length() - 1);
 
     while((pos = result.indexOf("[NetworkLogEntry]", pos)) > -1) {
       if(MyLog.enabled) {
@@ -452,8 +452,8 @@ public class NetworkLogService extends Service {
         pos = result.indexOf("UID=", pos);
 
         if(pos == -1 || pos > newline) {
-          uid = -42;
-          uidString = "-42";
+          uid = -1;
+          uidString = "-1";
           pos = lastpos;
         } else {
           parser.setPos(pos + 4);
@@ -467,8 +467,12 @@ public class NetworkLogService extends Service {
         continue;
       }
 
-      String srcDstMapKey = src + ":" + spt + " -> " + dst + ":" + dpt;
-      String dstSrcMapKey = dst + ":" + dpt + " -> " + src + ":" + spt;
+      if(MyLog.enabled) {
+        MyLog.d("Setting map key: src=[" + src + "] spt=" + spt + " dst=[" + dst + "] dpt=" + dpt);
+      }
+
+      String srcDstMapKey = src + ":" + spt + "->" + dst + ":" + dpt;
+      String dstSrcMapKey = dst + ":" + dpt + "->" + src + ":" + spt;
 
       if(MyLog.enabled) {
         MyLog.d("Checking entry for " + uid + " " + srcDstMapKey + " and " + dstSrcMapKey);
@@ -564,7 +568,7 @@ public class NetworkLogService extends Service {
           MyLog.d("Known uid");
         }
 
-        if(srcDstMapUid == null || dstSrcMapUid == null) {
+        if(srcDstMapUid == null || dstSrcMapUid == null || srcDstMapUid != uid || dstSrcMapUid != uid) {
           if(MyLog.enabled) {
             MyLog.d("Adding missing uid " + uid + " to netstat map for " + srcDstMapKey + " and " + dstSrcMapKey);
           }
