@@ -9,28 +9,42 @@
 package com.googlecode.networklog;
 
 public class CharArray implements Comparable<CharArray> {
-  char[] data;
-  int len;
-  int pos;
+  char[] value;
+  int offset;
+  int length;
   char[] intBuffer = new char[32];
 
-  public CharArray(int len) {
-    this.len = len;
-    data = new char[len];
+  public CharArray() {
+    value = null;
+    offset = 0;
+    length = 0;
+  }
+
+  public CharArray(int size) {
+    value = new char[size];
+    offset = 0;
+    length = 0;
+  }
+
+  public CharArray(char[] value, int offset, int length) {
+    this.value = value;
+    this.offset = offset;
+    this.length = length;
   }
 
   public String toString() {
-    return new String(data, 0, pos);
+    return new String(value, offset, length);
   }
 
   public int compareTo(String target) {
-    int i = 0;
+    int i = offset;
     int j = 0;
     int targetLength = target.length();
+    int end = offset + length;
     int difference;
 
-    while(i < pos && j < targetLength) {
-      difference = data[i++] - target.charAt(j++);
+    while(i < end && j < targetLength) {
+      difference = value[i++] - target.charAt(j++);
 
       if(difference > 0) {
         return 1;
@@ -39,9 +53,9 @@ public class CharArray implements Comparable<CharArray> {
       }
     }
 
-    if(pos > targetLength) {
+    if(length > targetLength) {
       return 1;
-    } else if(pos < targetLength) {
+    } else if(length < targetLength) {
       return -1;
     } else {
       return 0;
@@ -49,14 +63,14 @@ public class CharArray implements Comparable<CharArray> {
   }
 
   public int compareTo(CharArray target) {
-    int i = 0;
-    int j = 0;
-    int targetLength = target.getPos();
-    char[] targetData = target.getData();
+    int i = offset;
+    int j = target.offset;
+    int end = offset + length;
+    int targetEnd = target.offset + target.length;
     int difference;
 
-    while(i < pos && j < targetLength) {
-      difference = data[i++] - targetData[j++];
+    while(i < end && j < targetEnd) {
+      difference = value[i++] - target.value[j++];
 
       if(difference > 0) {
         return 1;
@@ -65,23 +79,24 @@ public class CharArray implements Comparable<CharArray> {
       }
     }
 
-    if(pos > targetLength) {
+    if(length > target.length) {
       return 1;
-    } else if(pos < targetLength) {
+    } else if(length < target.length) {
       return -1;
     } else {
       return 0;
     }
   }
 
-  public CharArray append(char[] chars, int pos, int length) {
-    int i = pos;
+  public CharArray append(char[] targetValue, int targetOffset, int targetLength) {
+    int i = targetOffset;
+    int end = targetOffset + targetLength;
 
-    while(i < pos + length) {
-      if(this.pos > len) {
-        throw new ArrayIndexOutOfBoundsException(this.pos);
+    while(i < end) {
+      if(length >= value.length) {
+        throw new ArrayIndexOutOfBoundsException(length);
       }
-      data[this.pos++] = chars[i++];
+      value[length++] = targetValue[i++];
     }
 
     return this;
@@ -92,14 +107,14 @@ public class CharArray implements Comparable<CharArray> {
       return this;
     }
 
-    int length = string.length();
+    int targetLength = string.length();
     int i = 0;
 
-    while(i < length) {
-      if(pos > len) {
-        throw new ArrayIndexOutOfBoundsException(pos);
+    while(i < targetLength) {
+      if(length >= value.length) {
+        throw new ArrayIndexOutOfBoundsException(length);
       }
-      data[pos++] = string.charAt(i++);
+      value[length++] = string.charAt(i++);
     }
 
     return this;
@@ -141,36 +156,46 @@ public class CharArray implements Comparable<CharArray> {
       intBuffer[right] = temp;
     }
 
-    // append intBuffer to data
+    // append intBuffer to value
     for(int i = 0; i < intPos; i++) {
-      if(pos > len) {
-        throw new ArrayIndexOutOfBoundsException(pos);
+      if(length >= value.length) {
+        throw new ArrayIndexOutOfBoundsException(length);
       }
-      data[pos++] = intBuffer[i];
+      value[length++] = intBuffer[i];
     }
 
     return this;
   }
 
   public CharArray append(char charval) {
-    if(pos < len) {
-      data[pos++] = charval;
+    if(length < value.length) {
+      value[length++] = charval;
     } else {
-      throw new ArrayIndexOutOfBoundsException(pos);
+      throw new ArrayIndexOutOfBoundsException(length);
     }
 
     return this;
   }
 
   public void reset() {
-    pos = 0;
+    length = 0;
   }
 
-  public char[] getData() {
-    return data;
+  public void setValue(char[] value, int offset, int length) {
+    this.value = value;
+    this.offset = offset;
+    this.length = length;
   }
 
-  public int getPos() {
-    return pos;
+  public char[] getValue() {
+    return value;
+  }
+
+  public int getOffset() {
+    return offset;
+  }
+
+  public int getLength() {
+    return length;
   }
 }
