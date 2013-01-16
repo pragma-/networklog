@@ -70,12 +70,14 @@ public class CharArrayStringAATree
   {
     AANode current = root;
     nullNode.element = x;
+    int compare;
 
     for( ; ; )
     {
-      if( x.compareTo( current.element ) < 0 )
+      compare = x.compareTo(current.element);
+      if( compare < 0 )
         current = current.left;
-      else if( x.compareTo( current.element ) > 0 ) 
+      else if( compare > 0 ) 
         current = current.right;
       else if( current != nullNode )
         return current.element;
@@ -115,13 +117,16 @@ public class CharArrayStringAATree
       size++;
       t = new AANode( x.toString(), nullNode, nullNode );
       result = t.element;
-    } else if( x.compareTo( t.element ) < 0 ) {
-      t.left = insert( x, t.left );
-    } else if( x.compareTo( t.element ) > 0 ) {
-      t.right = insert( x, t.right );
     } else {
-      result = t.element;
-      return t;
+      int compare = x.compareTo(t.element);
+      if(compare < 0) {
+        t.left = insert( x, t.left );
+      } else if(compare > 0 ) {
+        t.right = insert( x, t.right );
+      } else {
+        result = t.element;
+        return t;
+      }
     }
     t = skew( t );
     t = split( t );
@@ -140,13 +145,16 @@ public class CharArrayStringAATree
     if( t == nullNode ) {
       t = new AANode( x, nullNode, nullNode );
       result = t.element;
-    } else if( x.compareTo( t.element ) < 0 ) {
-      t.left = insert( x, t.left );
-    } else if( x.compareTo( t.element ) > 0 ) {
-      t.right = insert( x, t.right );
     } else {
-      result = t.element;
-      return t;
+      int compare = x.compareTo(t.element);
+      if(compare < 0) {
+        t.left = insert( x, t.left );
+      } else if(compare > 0) {
+        t.right = insert( x, t.right );
+      } else {
+        result = t.element;
+        return t;
+      }
     }
     t = skew( t );
     t = split( t );
