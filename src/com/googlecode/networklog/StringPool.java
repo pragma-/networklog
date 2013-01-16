@@ -17,28 +17,28 @@ public class StringPool {
   static int poolSize = 0;
   static int lowercasePoolSize = 0;
   static int integerPoolSize = 0;
-  static CharArray charBuffer = new CharArray(256);
+  static CharArray charBuffer = new CharArray();
 
   public static void clearCharPool() {
     charPool.clear();
   }
 
   public static String get(CharArray chars) {
-    return get(chars.getData(), 0, chars.getPos());
+    return get(chars.getValue(), chars.getOffset(), chars.getLength());
   }
 
-  public static String get(char[] chars, int pos, int length) {
-    /* FIXME: remove need for charBuffer */
-    charBuffer.reset();
-    charBuffer.append(chars, pos, length);
+  public static String get(char[] chars, int offset, int length) {
+    synchronized(charBuffer) {
+      charBuffer.setValue(chars, offset, length);
 
-    if (charPool.size + 1 >= maxPoolSize) {
-      // clear pool to free memory and allow pool to rebuild
-      MyLog.d("[StringPool] Clearing charPool");
-      charPool.clear();
+      if (charPool.size + 1 >= maxPoolSize) {
+        // clear pool to free memory and allow pool to rebuild
+        MyLog.d("[StringPool] Clearing charPool");
+        charPool.clear();
+      }
+
+      return charPool.insert(charBuffer);
     }
-
-    return charPool.insert(charBuffer);
   }
 
   public static String get(String string) {
