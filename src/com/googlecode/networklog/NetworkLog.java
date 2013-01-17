@@ -131,6 +131,8 @@ public class NetworkLog extends SherlockFragmentActivity {
     }
   };
 
+  private LogEntry entry;
+
   class IncomingHandler extends Handler {
     @Override
       public void handleMessage(Message msg) {
@@ -138,8 +140,10 @@ public class NetworkLog extends SherlockFragmentActivity {
 
         switch(msg.what) {
           case NetworkLogService.MSG_BROADCAST_LOG_ENTRY:
-            LogEntry entry = (LogEntry) msg.obj;
-            MyLog.d("Received entry: " + entry);
+            entry = (LogEntry) msg.obj;
+            if(MyLog.enabled) {
+              MyLog.d("Received entry: " + entry);
+            }
             logFragment.onNewLogEntry(entry);
             appFragment.onNewLogEntry(entry);
             break;

@@ -171,9 +171,6 @@ public class NetworkLogService extends Service {
       nManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
       notification = createNotification();
 
-      // reuse entry object
-      entry = new LogEntry();
-
       if(NetworkLog.settings == null) {
         NetworkLog.settings = new Settings(this);
       }
@@ -570,13 +567,14 @@ public class NetworkLogService extends Service {
 
         if(srcDstMapUid == null || dstSrcMapUid == null || srcDstMapUid != uid || dstSrcMapUid != uid) {
           if(MyLog.enabled) {
-            MyLog.d("Adding missing uid " + uid + " to netstat map for " + srcDstMapKey + " and " + dstSrcMapKey);
+            MyLog.d("Updating uid " + uid + " to netstat map for " + srcDstMapKey + " and " + dstSrcMapKey);
           }
           logEntriesMap.put(srcDstMapKey, uid);
           logEntriesMap.put(dstSrcMapKey, uid);
         }
       }
 
+      entry = new LogEntry();
       entry.uid = uid;
       entry.uidString = uidString;
       entry.in = in;
@@ -825,8 +823,6 @@ public class NetworkLogService extends Service {
       running = true;
 
       while(running && command.checkForExit() == false) {
-        MyLog.d("NetworkLogger checking stdout");
-
         if(command.stdoutAvailable()) {
           result = command.readStdout();
         } else {
