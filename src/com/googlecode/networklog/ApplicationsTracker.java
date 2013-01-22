@@ -141,14 +141,17 @@ public class ApplicationsTracker {
           iconMap.put(packageName, drawable);
 
           /* Ugh, we have to do it this way instead of using setDrawableByLayerId() since 2.x doesn't support it very well */
-          NetworkLog.handler.postDelayed(new Runnable() {
+          NetworkLog.handler.post(new Runnable() {
             public void run() {
-              TransitionDrawable td = new TransitionDrawable(new Drawable[] { loading_icon, drawable });
-              td.setCrossFadeEnabled(true);
-              view.setImageDrawable(td);
-              td.startTransition(750);
+              String tag = (String)view.getTag();
+              if(tag.equals(packageName)) {
+                TransitionDrawable td = new TransitionDrawable(new Drawable[] { loading_icon, drawable });
+                td.setCrossFadeEnabled(true);
+                view.setImageDrawable(td);
+                td.startTransition(750);
+              }
             }
-          }, 200);
+          });
         } catch(Exception e) {
           // ignored
         }

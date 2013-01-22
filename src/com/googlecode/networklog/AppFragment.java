@@ -674,7 +674,6 @@ public class AppFragment extends Fragment {
             }
 
             newLogChild.in = entry.in;
-
             newLogChild.out = null;
             newLogChild.receivedPackets++;
             newLogChild.receivedBytes += entry.len;
@@ -686,7 +685,6 @@ public class AppFragment extends Fragment {
 
             newLogChild.receivedPort = entry.spt;
             newLogChild.receivedAddress = entry.src;
-
             newLogChild.sentPort = entry.dpt;
             newLogChild.sentAddress = entry.dst;
 
@@ -713,11 +711,10 @@ public class AppFragment extends Fragment {
               MyLog.d("Added sent packet index=" + index + " in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + newLogChild.sentPackets + "; bytes: " + newLogChild.sentBytes);
             }
 
-            newLogChild.sentPort = entry.dpt;
-            newLogChild.sentAddress = entry.dst;
-
             newLogChild.receivedPort = entry.spt;
             newLogChild.receivedAddress = entry.src;
+            newLogChild.sentPort = entry.dpt;
+            newLogChild.sentAddress = entry.dst;
 
             newLogItem.childrenDataNeedsSort = true;
           }
@@ -1221,6 +1218,7 @@ public class AppFragment extends Fragment {
         }
 
         icon = holder.getIcon();
+        icon.setTag(item.app.packageName);
         icon.setImageDrawable(ApplicationsTracker.loadIcon(getActivity().getApplicationContext(), icon, item.app.packageName));
 
         name = holder.getName();
