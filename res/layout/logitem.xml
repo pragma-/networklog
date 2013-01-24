@@ -2,66 +2,73 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="fill_parent"
   android:layout_height="fill_parent">
-    <ImageView 
-      android:id="@+id/logIcon" 
-      android:layout_width="27dp"
-      android:layout_height="27dp"
-      android:scaleType="centerInside"
-      android:adjustViewBounds="false" />
-    <TextView
-      android:id="@+id/logName" 
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_toRightOf="@id/logIcon" />
-    <TextView
-      android:id="@+id/logInterface" 
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:gravity="right"
-      android:layout_alignBottom="@id/logName"
-      android:layout_alignParentRight="true"
-      android:layout_toRightOf="@id/logName" />
 
+  <ImageView
+    android:id="@+id/logIcon"
+    android:layout_width="32dp"
+    android:layout_height="32dp"
+    android:scaleType="centerInside"
+    android:adjustViewBounds="false"
+    android:layout_alignParentLeft="true" />
+  <TextView
+    android:id="@+id/logInterface"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="right"
+    android:layout_alignParentRight="true" />
+  <TextView
+    android:id="@+id/logName"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:paddingRight="10dp"
+    android:layout_toLeftOf="@id/logInterface"
+    android:layout_toRightOf="@id/logIcon" />
 
-    <TextView
-      android:id="@+id/srcAddr" 
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_below="@id/logIcon" />
-    <TextView
-      android:id="@+id/srcPort" 
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:gravity="right"
-      android:layout_toRightOf="@id/srcAddr" 
-      android:layout_alignBottom="@id/srcAddr" 
-      android:layout_alignParentRight="true" />
+  <TextView
+    android:id="@+id/srcPort"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="right"
+    android:layout_alignParentRight="true"
+    android:layout_below="@id/logIcon" />
+  <TextView
+    android:id="@+id/srcAddr"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:paddingRight="10dp"
+    android_layout_alignParentLeft="true"
+    android:layout_below="@id/logIcon"
+    android:gravity="left"
+    android:layout_toLeftOf="@id/srcPort" />
 
-    <TextView
-      android:id="@+id/dstAddr" 
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_below="@id/srcAddr" />
-    <TextView
-      android:id="@+id/dstPort" 
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:gravity="right"
-      android:layout_toRightOf="@id/dstAddr" 
-      android:layout_alignBottom="@id/dstAddr" 
-      android:layout_alignParentRight="true" />
+  <TextView
+    android:id="@+id/dstPort"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="right"
+    android:layout_alignParentRight="true"
+    android:layout_below="@id/srcAddr" />
+  <TextView
+    android:id="@+id/dstAddr"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:paddingRight="10dp"
+    android:layout_alignParentLeft="true"
+    android:layout_below="@id/srcAddr"
+    android:gravity="left"
+    android:layout_toLeftOf="@id/dstPort"/>
 
-    <TextView
-      android:id="@+id/len" 
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_below="@id/dstAddr" />
-    <TextView
-      android:id="@+id/timestamp" 
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:gravity="right"
-      android:layout_toRightOf="@id/len" 
-      android:layout_alignBottom="@id/len" 
-      android:layout_alignParentRight="true" />
+  <TextView
+    android:id="@+id/len"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/dstAddr" />
+  <TextView
+    android:id="@+id/timestamp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="right"
+    android:layout_toRightOf="@id/len"
+    android:layout_alignBottom="@id/len"
+    android:layout_alignParentRight="true" />
 </RelativeLayout>
