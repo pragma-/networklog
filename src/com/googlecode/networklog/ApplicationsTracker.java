@@ -140,18 +140,19 @@ public class ApplicationsTracker {
           final Drawable drawable = pm.getApplicationIcon(packageName);
           iconMap.put(packageName, drawable);
 
-          /* Ugh, we have to do it this way instead of using setDrawableByLayerId() since 2.x doesn't support it very well */
-          NetworkLog.handler.post(new Runnable() {
-            public void run() {
-              String tag = (String)view.getTag();
-              if(tag.equals(packageName)) {
+          /* Ensure that view hasn't been recycled for another package */
+          String tag = (String)view.getTag();
+          if(tag != null && tag.equals(packageName)) {
+            /* Ugh, we have to do it this way instead of using setDrawableByLayerId() since 2.x doesn't support it very well */
+            NetworkLog.handler.post(new Runnable() {
+              public void run() {
                 TransitionDrawable td = new TransitionDrawable(new Drawable[] { loading_icon, drawable });
                 td.setCrossFadeEnabled(true);
                 view.setImageDrawable(td);
                 td.startTransition(750);
               }
-            }
-          });
+            });
+          }
         } catch(Exception e) {
           // ignored
         }
