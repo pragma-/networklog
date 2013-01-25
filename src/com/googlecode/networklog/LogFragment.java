@@ -148,6 +148,14 @@ public class LogFragment extends Fragment {
 
       adapter = new CustomAdapter(getActivity().getApplicationContext(), R.layout.logitem, listData);
 
+      if(NetworkLog.settings == null) {
+        NetworkLog activity = (NetworkLog) getActivity();
+
+        if(activity != null) {
+          activity.loadSettings();
+        }
+      }
+
       maxLogEntries = NetworkLog.settings.getMaxLogEntries();
 
       MyLog.d("LogFragment onCreate");
@@ -169,15 +177,6 @@ public class LogFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
         Bundle savedInstanceState) {
       MyLog.d("[LogFragment] onCreateView");
-
-      if(NetworkLog.settings == null) {
-        NetworkLog activity = (NetworkLog) getActivity();
-
-        if(activity != null) {
-          activity.loadSettings();
-        }
-      }
-
       LinearLayout layout = new LinearLayout(getActivity().getApplicationContext());
       layout.setOrientation(LinearLayout.VERTICAL);
       ListView listView = new ListView(getActivity().getApplicationContext());
