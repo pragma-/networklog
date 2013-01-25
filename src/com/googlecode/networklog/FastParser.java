@@ -229,7 +229,7 @@ public class FastParser {
     pos++;
   }
 
-  public boolean more() {
+  public boolean hasMore() {
     return pos < len;
   }
 }
