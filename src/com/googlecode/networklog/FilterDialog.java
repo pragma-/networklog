@@ -26,12 +26,16 @@ public class FilterDialog implements DialogInterface.OnDismissListener
   CheckBox checkboxNameInclude;
   CheckBox checkboxAddressInclude;
   CheckBox checkboxPortInclude;
+  CheckBox checkboxInterfaceInclude;
+  CheckBox checkboxProtocolInclude;
 
   EditText editTextExclude;
   CheckBox checkboxUidExclude;
   CheckBox checkboxNameExclude;
   CheckBox checkboxAddressExclude;
   CheckBox checkboxPortExclude;
+  CheckBox checkboxInterfaceExclude;
+  CheckBox checkboxProtocolExclude;
   Context context;
 
   public FilterDialog(final Context context)
@@ -45,24 +49,32 @@ public class FilterDialog implements DialogInterface.OnDismissListener
     checkboxNameInclude = (CheckBox) view.findViewById(R.id.filterNameInclude);
     checkboxAddressInclude = (CheckBox) view.findViewById(R.id.filterAddressInclude);
     checkboxPortInclude = (CheckBox) view.findViewById(R.id.filterPortInclude);
+    checkboxInterfaceInclude = (CheckBox) view.findViewById(R.id.filterInterfaceInclude);
+    checkboxProtocolInclude = (CheckBox) view.findViewById(R.id.filterProtocolInclude);
 
     editTextExclude = (EditText) view.findViewById(R.id.filterTextExclude);
     checkboxUidExclude = (CheckBox) view.findViewById(R.id.filterUidExclude);
     checkboxNameExclude = (CheckBox) view.findViewById(R.id.filterNameExclude);
     checkboxAddressExclude = (CheckBox) view.findViewById(R.id.filterAddressExclude);
     checkboxPortExclude = (CheckBox) view.findViewById(R.id.filterPortExclude);
+    checkboxInterfaceExclude = (CheckBox) view.findViewById(R.id.filterInterfaceExclude);
+    checkboxProtocolExclude = (CheckBox) view.findViewById(R.id.filterProtocolExclude);
 
     editTextInclude.setText(NetworkLog.filterTextInclude);
     checkboxUidInclude.setChecked(NetworkLog.filterUidInclude);
     checkboxNameInclude.setChecked(NetworkLog.filterNameInclude);
     checkboxAddressInclude.setChecked(NetworkLog.filterAddressInclude);
     checkboxPortInclude.setChecked(NetworkLog.filterPortInclude);
+    checkboxInterfaceInclude.setChecked(NetworkLog.filterInterfaceInclude);
+    checkboxProtocolInclude.setChecked(NetworkLog.filterProtocolInclude);
 
     editTextExclude.setText(NetworkLog.filterTextExclude);
     checkboxUidExclude.setChecked(NetworkLog.filterUidExclude);
     checkboxNameExclude.setChecked(NetworkLog.filterNameExclude);
     checkboxAddressExclude.setChecked(NetworkLog.filterAddressExclude);
     checkboxPortExclude.setChecked(NetworkLog.filterPortExclude);
+    checkboxInterfaceExclude.setChecked(NetworkLog.filterInterfaceExclude);
+    checkboxProtocolExclude.setChecked(NetworkLog.filterProtocolExclude);
 
     CompoundButton.OnCheckedChangeListener listener = new CompoundButton.OnCheckedChangeListener()
     {
@@ -76,6 +88,10 @@ public class FilterDialog implements DialogInterface.OnDismissListener
           NetworkLog.filterAddressInclude = isChecked;
         } else if(button == checkboxPortInclude) {
           NetworkLog.filterPortInclude = isChecked;
+        } else if(button == checkboxInterfaceInclude) {
+          NetworkLog.filterInterfaceInclude = isChecked;
+        } else if(button == checkboxProtocolInclude) {
+          NetworkLog.filterProtocolInclude = isChecked;
         }
 
         if(button == checkboxUidExclude) {
@@ -86,6 +102,10 @@ public class FilterDialog implements DialogInterface.OnDismissListener
           NetworkLog.filterAddressExclude = isChecked;
         } else if(button == checkboxPortExclude) {
           NetworkLog.filterPortExclude = isChecked;
+        } else if(button == checkboxInterfaceExclude) {
+          NetworkLog.filterInterfaceExclude = isChecked;
+        } else if(button == checkboxProtocolExclude) {
+          NetworkLog.filterProtocolExclude = isChecked;
         }
       }
     };
@@ -94,11 +114,15 @@ public class FilterDialog implements DialogInterface.OnDismissListener
     checkboxNameInclude.setOnCheckedChangeListener(listener);
     checkboxAddressInclude.setOnCheckedChangeListener(listener);
     checkboxPortInclude.setOnCheckedChangeListener(listener);
+    checkboxInterfaceInclude.setOnCheckedChangeListener(listener);
+    checkboxProtocolInclude.setOnCheckedChangeListener(listener);
 
     checkboxUidExclude.setOnCheckedChangeListener(listener);
     checkboxNameExclude.setOnCheckedChangeListener(listener);
     checkboxAddressExclude.setOnCheckedChangeListener(listener);
     checkboxPortExclude.setOnCheckedChangeListener(listener);
+    checkboxInterfaceExclude.setOnCheckedChangeListener(listener);
+    checkboxProtocolExclude.setOnCheckedChangeListener(listener);
 
     TextWatcher filterTextIncludeWatcher = new TextWatcher()
     {
@@ -140,6 +164,8 @@ public class FilterDialog implements DialogInterface.OnDismissListener
           NetworkLog.filterNameInclude = false;
           NetworkLog.filterAddressInclude = false;
           NetworkLog.filterPortInclude = false;
+          NetworkLog.filterInterfaceInclude = false;
+          NetworkLog.filterProtocolInclude = false;
 
           NetworkLog.filterTextExclude = "";
           NetworkLog.filterTextExcludeList.clear();
@@ -147,6 +173,8 @@ public class FilterDialog implements DialogInterface.OnDismissListener
           NetworkLog.filterNameExclude = false;
           NetworkLog.filterAddressExclude = false;
           NetworkLog.filterPortExclude = false;
+          NetworkLog.filterInterfaceExclude = false;
+          NetworkLog.filterProtocolExclude = false;
         }
       })
     .setNeutralButton("Done", new DialogInterface.OnClickListener() {
@@ -174,12 +202,16 @@ public class FilterDialog implements DialogInterface.OnDismissListener
       NetworkLog.settings.setFilterNameInclude(NetworkLog.filterNameInclude);
       NetworkLog.settings.setFilterAddressInclude(NetworkLog.filterAddressInclude);
       NetworkLog.settings.setFilterPortInclude(NetworkLog.filterPortInclude);
+      NetworkLog.settings.setFilterInterfaceInclude(NetworkLog.filterInterfaceInclude);
+      NetworkLog.settings.setFilterProtocolInclude(NetworkLog.filterProtocolInclude);
 
       NetworkLog.settings.setFilterTextExclude(NetworkLog.filterTextExclude);
       NetworkLog.settings.setFilterUidExclude(NetworkLog.filterUidExclude);
       NetworkLog.settings.setFilterNameExclude(NetworkLog.filterNameExclude);
       NetworkLog.settings.setFilterAddressExclude(NetworkLog.filterAddressExclude);
       NetworkLog.settings.setFilterPortExclude(NetworkLog.filterPortExclude);
+      NetworkLog.settings.setFilterInterfaceExclude(NetworkLog.filterInterfaceExclude);
+      NetworkLog.settings.setFilterProtocolExclude(NetworkLog.filterProtocolExclude);
 
       FilterUtils.buildList(NetworkLog.filterTextInclude, NetworkLog.filterTextIncludeList);
       FilterUtils.buildList(NetworkLog.filterTextExclude, NetworkLog.filterTextExcludeList);

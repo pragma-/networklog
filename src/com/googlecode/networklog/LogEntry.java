@@ -11,6 +11,7 @@ public class LogEntry {
   String uidString;
   String in;
   String out;
+  String proto;
   String src;
   String dst;
   int len;

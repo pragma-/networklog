@@ -68,6 +68,7 @@ public class LogFragment extends Fragment {
     protected ApplicationsTracker.AppEntry app;
     protected String in;
     protected String out;
+    protected String proto;
     protected String srcAddr;
     protected int srcPort;
     protected String dstAddr;
@@ -344,11 +345,12 @@ public class LogFragment extends Fragment {
     item.dstAddr = entry.dst;
     item.dstPort = entry.dpt;
 
+    item.proto = entry.proto;
     item.len = entry.len;
     item.timestamp = entry.timestamp;
 
     if(MyLog.enabled) {
-      MyLog.d("LogFragment: NewLogEntry: [" + item.app.uidString + "] in=" + item.in + " out=" + item.out + " " + item.srcAddr + ":" + item.srcPort + " --> " + item.dstAddr + ":" + item.dstPort + " [" + item.len + "]");
+      MyLog.d("LogFragment: NewLogEntry: [" + item.app.uidString + "] in=" + item.in + " out=" + item.out + " " + item.srcAddr + ":" + item.srcPort + " --> " + item.dstAddr + ":" + item.dstPort + " proto=" + item.proto + " len=" + item.len);
     }
 
     synchronized(listDataBuffer) {
@@ -559,6 +561,7 @@ public class LogFragment extends Fragment {
   String srcPortResolved;
   String dstAddrResolved;
   String dstPortResolved;
+  String iface;
   boolean matched;
 
   public boolean testIncludeFilter(ListItem item) {
@@ -588,6 +591,12 @@ public class LogFragment extends Fragment {
       dstPortResolved = "";
     }
 
+    if(item.in != null && item.in.length() > 0) {
+      iface = item.in;
+    } else {
+      iface = item.out;
+    }
+
     for(String c : NetworkLog.filterTextIncludeList) {
       if((NetworkLog.filterNameInclude && item.app.nameLowerCase.contains(c))
           || (NetworkLog.filterUidInclude && item.app.uidString.equals(c))
@@ -595,8 +604,11 @@ public class LogFragment extends Fragment {
             ((item.srcAddr.contains(c) || StringPool.getLowerCase(srcAddrResolved).contains(c))
              || (item.dstAddr.contains(c) || StringPool.getLowerCase(dstAddrResolved).contains(c))))
           || (NetworkLog.filterPortInclude &&
-            ((StringPool.getLowerCase(String.valueOf(item.srcPort)).equals(c) || StringPool.getLowerCase(srcPortResolved).equals(c))
-             || (StringPool.getLowerCase(String.valueOf(item.dstPort)).equals(c) || StringPool.getLowerCase(dstPortResolved).equals(c)))))
+            ((String.valueOf(item.srcPort).equals(c) || StringPool.getLowerCase(srcPortResolved).equals(c))
+             || (String.valueOf(item.dstPort).equals(c) || StringPool.getLowerCase(dstPortResolved).equals(c))))
+          || (NetworkLog.filterInterfaceInclude && iface.contains(c))
+          || (NetworkLog.filterProtocolInclude &&
+            (item.proto.equals(c) || StringPool.getLowerCase(NetworkLog.resolver.resolveProtocol(item.proto)).equals(c))))
       {
         matched = true;
         break;
@@ -633,11 +645,20 @@ public class LogFragment extends Fragment {
       dstPortResolved = "";
     }
 
+    if(item.in != null && item.in.length() > 0) {
+      iface = item.in;
+    } else {
+      iface = item.out;
+    }
+
     for(String c : NetworkLog.filterTextExcludeList) {
       if((NetworkLog.filterNameExclude && item.app.nameLowerCase.contains(c))
           || (NetworkLog.filterUidExclude && item.app.uidString.equals(c))
           || (NetworkLog.filterAddressExclude && ((item.srcAddr.contains(c) || StringPool.getLowerCase(srcAddrResolved).contains(c)) || (item.dstAddr.contains(c) || StringPool.getLowerCase(dstAddrResolved).contains(c))))
-          || (NetworkLog.filterPortExclude && ((String.valueOf(item.srcPort).equals(c) || StringPool.getLowerCase(srcPortResolved).equals(c)) || (String.valueOf(item.dstPort).equals(c) || StringPool.getLowerCase(dstPortResolved).equals(c)))))
+          || (NetworkLog.filterPortExclude && ((String.valueOf(item.srcPort).equals(c) || StringPool.getLowerCase(srcPortResolved).equals(c)) || (String.valueOf(item.dstPort).equals(c) || StringPool.getLowerCase(dstPortResolved).equals(c))))
+          || (NetworkLog.filterInterfaceExclude && iface.contains(c))
+          || (NetworkLog.filterProtocolExclude &&
+            (item.proto.equals(c) || StringPool.getLowerCase(NetworkLog.resolver.resolveProtocol(item.proto)).equals(c))))
       {
         matched = true;
         break;
@@ -645,8 +666,6 @@ public class LogFragment extends Fragment {
     }
     return matched;
   }
-
-
 
   private class CustomAdapter extends ArrayAdapter<ListItem> implements Filterable {
     LayoutInflater mInflater = (LayoutInflater) getActivity().getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
@@ -810,10 +829,17 @@ public class LogFragment extends Fragment {
 
         iface = holder.getInterface();
 
-        if(item.in != null && item.in.length() != 0) {
-          iface.setText(item.in);
+        String proto;
+        if(item.proto != null && item.proto.length() > 0) {
+          proto = NetworkLog.resolver.resolveProtocol(item.proto) + "/";
         } else {
-          iface.setText(item.out);
+          proto = "";
+        }
+
+        if(item.in != null && item.in.length() != 0) {
+          iface.setText(proto + item.in);
+        } else {
+          iface.setText(proto + item.out);
         }
 
         srcAddr = holder.getSrcAddr();

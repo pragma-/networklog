@@ -76,6 +76,8 @@ public class NetworkLog extends SherlockFragmentActivity {
   public static boolean filterNameInclude;
   public static boolean filterAddressInclude;
   public static boolean filterPortInclude;
+  public static boolean filterInterfaceInclude;
+  public static boolean filterProtocolInclude;
 
   public static String filterTextExclude;
   public static ArrayList<String> filterTextExcludeList = new ArrayList<String>();
@@ -83,6 +85,8 @@ public class NetworkLog extends SherlockFragmentActivity {
   public static boolean filterNameExclude;
   public static boolean filterAddressExclude;
   public static boolean filterPortExclude;
+  public static boolean filterInterfaceExclude;
+  public static boolean filterProtocolExclude;
 
   public static NetworkResolver resolver;
   public static boolean resolveHosts;
@@ -254,6 +258,8 @@ public class NetworkLog extends SherlockFragmentActivity {
     filterNameInclude = settings.getFilterNameInclude();
     filterAddressInclude = settings.getFilterAddressInclude();
     filterPortInclude = settings.getFilterPortInclude();
+    filterInterfaceInclude = settings.getFilterInterfaceInclude();
+    filterProtocolInclude = settings.getFilterProtocolInclude();
 
     filterTextExclude = settings.getFilterTextExclude();
     FilterUtils.buildList(filterTextExclude, filterTextExcludeList);
@@ -261,6 +267,8 @@ public class NetworkLog extends SherlockFragmentActivity {
     filterNameExclude = settings.getFilterNameExclude();
     filterAddressExclude = settings.getFilterAddressExclude();
     filterPortExclude = settings.getFilterPortExclude();
+    filterInterfaceExclude = settings.getFilterInterfaceExclude();
+    filterProtocolExclude = settings.getFilterProtocolExclude();
 
     startServiceAtStart = settings.getStartServiceAtStart();
     stopServiceAtExit = settings.getStopServiceAtExit();

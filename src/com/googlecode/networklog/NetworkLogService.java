@@ -284,8 +284,8 @@ public class NetworkLogService extends Service {
     if(MyLog.enabled) {
       MyLog.d("--------------- parsing network entry --------------");
     }
-    int pos = 0, thisEntry, nextEntry, newline, space;
-    String in, out, src, dst, uidString;
+    int pos = 0, lastpos, thisEntry, nextEntry, newline, space;
+    String in, out, src, dst, proto, uidString;
     int spt, dpt, len, uid;
     parser.setLine(result.toCharArray(), result.length() - 1);
 
@@ -406,46 +406,66 @@ public class NetworkLogService extends Service {
         parser.setPos(pos + 4);
         len = parser.getInt();
 
+        pos = result.indexOf("PROTO=", pos);
+
+        if(pos == -1 || pos > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
+
+        space = result.indexOf(" ", pos);
+
+        if(space == -1 || space > newline) {
+          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          pos = newline;
+          continue;
+        }
+
+        parser.setPos(pos + 6);
+        proto = parser.getString();
+
+        lastpos = pos;
         pos = result.indexOf("SPT=", pos);
 
         if(pos == -1 || pos > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
-          pos = newline;
-          continue;
+          // no SPT field, probably a broadcast packet
+          spt = 0;
+          pos = lastpos;
+        } else {
+          space = result.indexOf(" ", pos);
+
+          if(space == -1 || space > newline) {
+            Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+            pos = newline;
+            continue;
+          }
+
+          parser.setPos(pos + 4);
+          spt = parser.getInt();
         }
 
-        space = result.indexOf(" ", pos);
-
-        if(space == -1 || space > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
-          pos = newline;
-          continue;
-        }
-
-        parser.setPos(pos + 4);
-        spt = parser.getInt();
-
+        lastpos = pos;
         pos = result.indexOf("DPT=", pos);
 
         if(pos == -1 || pos > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
-          pos = newline;
-          continue;
+          // no DPT field, probably a broadcast packet
+          dpt = 0;
+          pos = lastpos;
+        } else {
+          space = result.indexOf(" ", pos);
+
+          if(space == -1 || space > newline) {
+            Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+            pos = newline;
+            continue;
+          }
+
+          parser.setPos(pos + 4);
+          dpt = parser.getInt();
         }
 
-        space = result.indexOf(" ", pos);
-
-        if(space == -1 || space > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
-          pos = newline;
-          continue;
-        }
-
-        parser.setPos(pos + 4);
-        dpt = parser.getInt();
-
-        int lastpos = pos;
-
+        lastpos = pos;
         pos = result.indexOf("UID=", pos);
 
         if(pos == -1 || pos > newline) {
@@ -583,11 +603,12 @@ public class NetworkLogService extends Service {
       entry.spt = spt;
       entry.dst = dst;
       entry.dpt = dpt;
+      entry.proto = proto;
       entry.len = len;
       entry.timestamp = System.currentTimeMillis();
 
       if(MyLog.enabled) {
-        MyLog.d("+++ entry: (" + entry.uid + ") in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " -> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
+        MyLog.d("+++ entry: (" + entry.uid + ") in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " -> " + entry.dst + ":" + entry.dpt + " proto=" + entry.proto + " len=" + entry.len);
       }
 
       notifyNewEntry(entry);
@@ -618,7 +639,7 @@ public class NetworkLogService extends Service {
 
     // log entry to logfile
     if(logWriter != null) {
-      logWriter.println(entry.timestamp + "," + entry.in + "," + entry.out + "," + entry.uid + "," + entry.src + "," + entry.spt + "," + entry.dst + "," + entry.dpt + "," + entry.len);
+      logWriter.println(entry.timestamp + "," + entry.in + "," + entry.out + "," + entry.uid + "," + entry.src + "," + entry.spt + "," + entry.dst + "," + entry.dpt + "," + entry.len + "," + entry.proto);
     }
 
     if(MyLog.enabled) {

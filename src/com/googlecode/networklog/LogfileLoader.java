@@ -237,6 +237,13 @@ public class LogfileLoader {
             entry.dst = parser.getString();
             entry.dpt = parser.getInt();
             entry.len = parser.getInt();
+
+            // Check hasMore() to support legacy logfile entries that did not include a protocol field
+            if(parser.hasMore()) {
+              entry.proto = parser.getString();
+            } else {
+              entry.proto = "";
+            }
           } catch (Exception e) {
             Log.w("NetworkLog", "Skipping malformed entry", e);
             line_length = 0;

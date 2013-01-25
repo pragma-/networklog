@@ -100,6 +100,14 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return prefs.getBoolean("filter_by_port_include", false);
   }
 
+  public boolean getFilterInterfaceInclude() {
+    return prefs.getBoolean("filter_by_interface_include", false);
+  }
+
+  public boolean getFilterProtocolInclude() {
+    return prefs.getBoolean("filter_by_protocol_include", false);
+  }
+
   public String getFilterTextExclude() {
     return prefs.getString("filter_text_exclude", "");
   }
@@ -118,6 +126,14 @@ public class Settings implements OnSharedPreferenceChangeListener {
 
   public boolean getFilterPortExclude() {
     return prefs.getBoolean("filter_by_port_exclude", false);
+  }
+
+  public boolean getFilterInterfaceExclude() {
+    return prefs.getBoolean("filter_by_interface_exclude", false);
+  }
+
+  public boolean getFilterProtocolExclude() {
+    return prefs.getBoolean("filter_by_protocol_exclude", false);
   }
 
   public long getMaxLogEntries() {
@@ -206,6 +222,18 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
+  public void setFilterInterfaceInclude(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("filter_by_interface_include", value);
+    editor.commit();
+  }
+
+  public void setFilterProtocolInclude(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("filter_by_protocol_include", value);
+    editor.commit();
+  }
+
   public void setFilterTextExclude(String value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putString("filter_text_exclude", value);
@@ -233,6 +261,18 @@ public class Settings implements OnSharedPreferenceChangeListener {
   public void setFilterPortExclude(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("filter_by_port_exclude", value);
+    editor.commit();
+  }
+
+  public void setFilterInterfaceExclude(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("filter_by_interface_exclude", value);
+    editor.commit();
+  }
+
+  public void setFilterProtocolExclude(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("filter_by_protocol_exclude", value);
     editor.commit();
   }
 

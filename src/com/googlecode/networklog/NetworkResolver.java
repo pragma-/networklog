@@ -13,6 +13,7 @@ import android.util.Log;
 
 public class NetworkResolver {
   final HashMap<String, String> serviceMap = new HashMap<String, String>();
+  final HashMap<String, String> protocolMap = new HashMap<String, String>();
   final HashMap<String, String> resolvedHostMap = new HashMap<String, String>();
   final HashMap<String, Object> resolvingHostMap = new HashMap<String, Object>();
 
@@ -177,6 +178,135 @@ public class NetworkResolver {
     serviceMap.put("992", "STELNET");
     serviceMap.put("993", "IMAPS");
     serviceMap.put("995", "POP3S");
+
+    protocolMap.put("0", "HOPOPT");
+    protocolMap.put("1", "ICMP");
+    protocolMap.put("2", "IGMP");
+    protocolMap.put("3", "GGP");
+    protocolMap.put("4", "IPv4");
+    protocolMap.put("5", "ST");
+    protocolMap.put("6", "TCP");
+    protocolMap.put("7", "CBT");
+    protocolMap.put("8", "EGP");
+    protocolMap.put("9", "IGP");
+    protocolMap.put("10", "BBN");
+    protocolMap.put("11", "NVP2");
+    protocolMap.put("12", "PUP");
+    protocolMap.put("13", "ARGUS");
+    protocolMap.put("14", "EMCON");
+    protocolMap.put("15", "XNET");
+    protocolMap.put("16", "CHAOS");
+    protocolMap.put("17", "UDP");
+    protocolMap.put("18", "MUX");
+    protocolMap.put("19", "DCN");
+    protocolMap.put("20", "HMP");
+    protocolMap.put("21", "PRM");
+    protocolMap.put("22", "XNS");
+    protocolMap.put("27", "RDP");
+    protocolMap.put("28", "IRTP");
+    protocolMap.put("29", "ISO");
+    protocolMap.put("30", "BLT");
+    protocolMap.put("31", "MFE-NSP");
+    protocolMap.put("32", "MERIT-INP");
+    protocolMap.put("33", "DCCP");
+    protocolMap.put("34", "3PC");
+    protocolMap.put("35", "IDPR");
+    protocolMap.put("36", "XTP");
+    protocolMap.put("37", "DDP");
+    protocolMap.put("38", "IDPR-CMTP");
+    protocolMap.put("39", "TP++");
+    protocolMap.put("40", "IL");
+    protocolMap.put("41", "IPv6");
+    protocolMap.put("42", "SDRP");
+    protocolMap.put("43", "IPv6-Route");
+    protocolMap.put("44", "IPv6-Frag");
+    protocolMap.put("45", "IDRP");
+    protocolMap.put("46", "RSVP");
+    protocolMap.put("47", "GRE");
+    protocolMap.put("48", "MHRP");
+    protocolMap.put("49", "BNA");
+    protocolMap.put("50", "ESP");
+    protocolMap.put("51", "AH");
+    protocolMap.put("52", "I-NLSP");
+    protocolMap.put("53", "SWIPE");
+    protocolMap.put("54", "NARP");
+    protocolMap.put("55", "MOBILE");
+    protocolMap.put("56", "TLSP");
+    protocolMap.put("57", "SKIP");
+    protocolMap.put("58", "IPv6-ICMP");
+    protocolMap.put("59", "IPv6-NoNxt");
+    protocolMap.put("60", "IPv6-Opts");
+    protocolMap.put("62", "CFTP");
+    protocolMap.put("64", "SAT-EXPAK");
+    protocolMap.put("65", "KRYPTOLAN");
+    protocolMap.put("66", "RVD");
+    protocolMap.put("67", "IPPC");
+    protocolMap.put("69", "SAT-MON");
+    protocolMap.put("70", "VISA");
+    protocolMap.put("71", "IPCV");
+    protocolMap.put("72", "CPNX");
+    protocolMap.put("73", "CPHB");
+    protocolMap.put("74", "WSN");
+    protocolMap.put("75", "PVP");
+    protocolMap.put("76", "BR-SAT-MON");
+    protocolMap.put("77", "SUN-ND");
+    protocolMap.put("78", "WB-MON");
+    protocolMap.put("79", "WB-EXPAK");
+    protocolMap.put("80", "ISO-IP");
+    protocolMap.put("81", "VMTP");
+    protocolMap.put("82", "SECURE-VMTP");
+    protocolMap.put("83", "VINES");
+    protocolMap.put("84", "TTP");
+    protocolMap.put("84", "IPTM");
+    protocolMap.put("85", "NSFNET-IGP");
+    protocolMap.put("86", "DGP");
+    protocolMap.put("87", "TCF");
+    protocolMap.put("88", "EIGRP");
+    protocolMap.put("89", "OSPF");
+    protocolMap.put("90", "SPRITE-RPC");
+    protocolMap.put("91", "LARP");
+    protocolMap.put("92", "MTP");
+    protocolMap.put("93", "AX.25");
+    protocolMap.put("94", "IPIP");
+    protocolMap.put("95", "MICP");
+    protocolMap.put("96", "SCC-SP");
+    protocolMap.put("97", "ETHERIP");
+    protocolMap.put("98", "ENCAP");
+    protocolMap.put("100", "GMTP");
+    protocolMap.put("101", "IFMP");
+    protocolMap.put("102", "PNNI");
+    protocolMap.put("103", "PIM");
+    protocolMap.put("104", "ARIS");
+    protocolMap.put("105", "SCPS");
+    protocolMap.put("106", "QNX");
+    protocolMap.put("107", "A/N");
+    protocolMap.put("108", "IPComp");
+    protocolMap.put("109", "SNP");
+    protocolMap.put("110", "Compaq-Peer");
+    protocolMap.put("111", "IPX-in-IP");
+    protocolMap.put("112", "VRRP");
+    protocolMap.put("113", "PGM");
+    protocolMap.put("115", "L2TP");
+    protocolMap.put("116", "DDX");
+    protocolMap.put("117", "IATP");
+    protocolMap.put("118", "STP");
+    protocolMap.put("119", "SRP");
+    protocolMap.put("120", "UTI");
+    protocolMap.put("121", "SMP");
+    protocolMap.put("122", "SM");
+    protocolMap.put("123", "PTP");
+    protocolMap.put("125", "FIRE");
+    protocolMap.put("126", "CRTP");
+    protocolMap.put("127", "CRUDP");
+    protocolMap.put("128", "SSCOPMCE");
+    protocolMap.put("129", "IPLT");
+    protocolMap.put("130", "SPS");
+    protocolMap.put("131", "PIPE");
+    protocolMap.put("132", "SCTP");
+    protocolMap.put("133", "FC");
+    protocolMap.put("138", "MANET");
+    protocolMap.put("139", "HIP");
+    protocolMap.put("140", "SHIM6");
   }
 
   public String resolveAddress(final String address) {
@@ -239,6 +369,17 @@ public class NetworkResolver {
 
     if(name == null) {
       return service;
+    }
+    else {
+      return name;
+    }
+  }
+
+  public String resolveProtocol(String protocol) {
+    String name = protocolMap.get(protocol);
+
+    if(name == null) {
+      return protocol;
     }
     else {
       return name;

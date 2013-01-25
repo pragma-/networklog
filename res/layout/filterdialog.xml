@@ -72,6 +72,13 @@
         android:layout_below="@id/filterUidInclude" />
 
       <CheckBox
+        android:id="@+id/filterInterfaceInclude"
+        android:text="Interfaces"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/filterAddressInclude" />
+
+      <CheckBox
         android:id="@+id/filterPortInclude"
         android:text="Ports"
         android:layout_width="wrap_content"
@@ -90,6 +97,16 @@
         android:layout_alignLeft="@id/filterPortInclude"
         android:layout_alignBottom="@id/filterUidInclude" />
 
+      <CheckBox
+        android:id="@+id/filterProtocolInclude"
+        android:text="Protocols"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/filterInterfaceInclude"
+        android:layout_toRightOf="@id/filterInterfaceInclude"
+        android:layout_alignLeft="@id/filterPortInclude"
+        android_layout_alignBottom="@id/filterInterfaceInclude" />
+
       <ImageView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:src="@android:drawable/divider_horizontal_dark"
@@ -101,7 +118,7 @@
         android:paddingRight="0dp"
         android:paddingBottom="2dp"
         android:paddingTop="2dp" 
-        android:layout_below="@id/filterAddressInclude" />
+        android:layout_below="@id/filterInterfaceInclude" />
 
       <TextView
         android:id="@+id/labelFilterExclude"
@@ -139,6 +156,13 @@
         android:layout_below="@id/filterUidExclude" />
 
       <CheckBox
+        android:id="@+id/filterInterfaceExclude"
+        android:text="Interfaces"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/filterAddressExclude" />
+
+      <CheckBox
         android:id="@+id/filterPortExclude"
         android:text="Ports"
         android:layout_width="wrap_content"
@@ -156,6 +180,16 @@
         android:layout_toRightOf="@id/filterUidExclude"
         android:layout_alignLeft="@id/filterPortExclude"
         android:layout_alignBottom="@id/filterUidExclude" />
+
+      <CheckBox
+        android:id="@+id/filterProtocolExclude"
+        android:text="Protocols"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/filterInterfaceExclude"
+        android:layout_toRightOf="@id/filterInterfaceExclude"
+        android:layout_alignLeft="@id/filterPortExclude"
+        android_layout_alignBottom="@id/filterInterfaceExclude" />
     </RelativeLayout>
   </ScrollView>
 </RelativeLayout>

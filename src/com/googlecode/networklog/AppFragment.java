@@ -101,6 +101,7 @@ public class AppFragment extends Fragment {
   }
 
   public class ChildItem {
+    protected String proto; // protocol (udp, tcp, igmp, icmp, etc)
     protected int sentPackets;
     protected int sentBytes;
     protected long sentTimestamp;
@@ -600,6 +601,7 @@ public class AppFragment extends Fragment {
           entry.uid = item.app.uid;
           entry.in = item.in;
           entry.out = item.out;
+          entry.proto = item.proto;
           entry.src = item.srcAddr;
           entry.dst = item.dstAddr;
           entry.len = item.len;
@@ -639,11 +641,25 @@ public class AppFragment extends Fragment {
     synchronized(groupDataBuffer) {
       try {
         charBuffer.reset();
-        charBuffer.append(entry.src).append(':').append(entry.spt);
+        charBuffer.append(entry.src).append(':').append(entry.spt).append(':').append(entry.proto).append(':');
+
+        if(entry.in != null && entry.in.length() > 0) {
+          charBuffer.append(entry.in);
+        } else {
+          charBuffer.append(entry.out);
+        }
+
         srcKey = StringPool.get(charBuffer);
 
         charBuffer.reset();
-        charBuffer.append(entry.dst).append(':').append(entry.dpt);
+        charBuffer.append(entry.dst).append(':').append(entry.dpt).append(':').append(entry.proto).append(':');
+
+        if(entry.in != null && entry.in.length() > 0) {
+          charBuffer.append(entry.in);
+        } else {
+          charBuffer.append(entry.out);
+        }
+
         dstKey = StringPool.get(charBuffer);
       } catch (ArrayIndexOutOfBoundsException e) {
         Log.e("NetworkLog", "[AppFragment.onNewEntry] charBuffer too long, skipping entry", e);
@@ -675,12 +691,13 @@ public class AppFragment extends Fragment {
 
             newLogChild.in = entry.in;
             newLogChild.out = null;
+            newLogChild.proto = entry.proto;
             newLogChild.receivedPackets++;
             newLogChild.receivedBytes += entry.len;
             newLogChild.receivedTimestamp = entry.timestamp;
 
             if(MyLog.enabled) {
-              MyLog.d("Added received packet index=" + index + " in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + newLogChild.receivedPackets + "; bytes: " + newLogChild.receivedBytes);
+              MyLog.d("Added received packet index=" + index + " in=" + entry.in + " out=" + entry.out + " proto=" + entry.proto + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + newLogChild.receivedPackets + "; bytes: " + newLogChild.receivedBytes);
             }
 
             newLogChild.receivedPort = entry.spt;
@@ -703,6 +720,7 @@ public class AppFragment extends Fragment {
 
             newLogChild.in = null;
             newLogChild.out = entry.out;
+            newLogChild.proto = entry.proto;
             newLogChild.sentPackets++;
             newLogChild.sentBytes += entry.len;
             newLogChild.sentTimestamp = entry.timestamp;
@@ -827,6 +845,7 @@ public class AppFragment extends Fragment {
           ArrayList<GroupItem> originalItems = new ArrayList<GroupItem>(groupDataBuffer.size());
           ArrayList<GroupItem> filteredItems = new ArrayList<GroupItem>(groupDataBuffer.size());
           String host;
+          String iface;
           ChildItem childData;
           boolean matched;
           String sentAddressResolved;
@@ -893,112 +912,118 @@ public class AppFragment extends Fragment {
                 }
               }
             } else {
-              if(NetworkLog.filterNameInclude
-                  || NetworkLog.filterUidInclude
-                  || NetworkLog.filterAddressInclude
-                  || NetworkLog.filterPortInclude) 
-              {
-                GroupItem item;
-                for(int i = 0; i < count; i++) {
-                  item = originalItems.get(i);
-                  // MyLog.d("[AppFragment] testing filtered item " + item + "; includes: [" + NetworkLog.filterTextInclude + "]");
+              GroupItem item;
+              for(int i = 0; i < count; i++) {
+                item = originalItems.get(i);
+                // MyLog.d("[AppFragment] testing filtered item " + item + "; includes: [" + NetworkLog.filterTextInclude + "]");
 
-                  boolean item_added = false;
-                  matched = false;
+                boolean item_added = false;
+                matched = false;
 
-                  if(NetworkLog.filterNameInclude || NetworkLog.filterUidInclude) {
-                    for(String c : NetworkLog.filterTextIncludeList) {
-                      if((NetworkLog.filterNameInclude && item.app.nameLowerCase.contains(c))
-                          || (NetworkLog.filterUidInclude && item.app.uidString.equals(c))) {
-                        matched = true;
-                          }
-                    }
-                  } else {
-                    matched = true;
+                if(NetworkLog.filterNameInclude || NetworkLog.filterUidInclude) {
+                  for(String c : NetworkLog.filterTextIncludeList) {
+                    if((NetworkLog.filterNameInclude && item.app.nameLowerCase.contains(c))
+                        || (NetworkLog.filterUidInclude && item.app.uidString.equals(c))) {
+                      matched = true;
+                        }
                   }
+                } else {
+                  matched = true;
+                }
 
-                  if(matched) {
-                    // test filter against address/port
-                    if(NetworkLog.filterAddressInclude || NetworkLog.filterPortInclude) {
-                      synchronized(item.childrenData) {
-                        item.filteredChildItems.clear();
-                        List<String> list = new ArrayList<String>(item.childrenData.keySet());
-                        // todo: sort by user preference (bytes, timestamp, address, ports)
-                        Collections.sort(list);
-                        Iterator<String> itr = list.iterator();
-                        while(itr.hasNext()) {
-                          host = itr.next();
-                          // MyLog.d("[AppFragment] testing " + host);
+                if(matched) {
+                  // test filter against address/port/iface/proto
+                  if(NetworkLog.filterAddressInclude || NetworkLog.filterPortInclude 
+                      || NetworkLog.filterInterfaceInclude || NetworkLog.filterProtocolInclude) {
+                    synchronized(item.childrenData) {
+                      item.filteredChildItems.clear();
+                      List<String> list = new ArrayList<String>(item.childrenData.keySet());
+                      // todo: sort by user preference (bytes, timestamp, address, ports)
+                      Collections.sort(list);
+                      Iterator<String> itr = list.iterator();
+                      while(itr.hasNext()) {
+                        host = itr.next();
+                        // MyLog.d("[AppFragment] testing " + host);
 
-                          childData = item.childrenData.get(host);
+                        childData = item.childrenData.get(host);
 
-                          matched = false;
+                        matched = false;
 
-                          if(NetworkLog.resolveHosts) {
-                            sentAddressResolved = NetworkLog.resolver.resolveAddress(childData.sentAddress);
+                        if(NetworkLog.resolveHosts) {
+                          sentAddressResolved = NetworkLog.resolver.resolveAddress(childData.sentAddress);
 
-                            if(sentAddressResolved == null) {
-                              sentAddressResolved = "";
-                            }
-
-                            receivedAddressResolved = NetworkLog.resolver.resolveAddress(childData.receivedAddress);
-
-                            if(receivedAddressResolved == null) {
-                              receivedAddressResolved = "";
-                            }
-                          } else {
+                          if(sentAddressResolved == null) {
                             sentAddressResolved = "";
+                          }
+
+                          receivedAddressResolved = NetworkLog.resolver.resolveAddress(childData.receivedAddress);
+
+                          if(receivedAddressResolved == null) {
                             receivedAddressResolved = "";
                           }
-
-                          if(NetworkLog.resolvePorts) {
-                            sentPortResolved = NetworkLog.resolver.resolveService(String.valueOf(childData.sentPort));
-                            receivedPortResolved = NetworkLog.resolver.resolveService(String.valueOf(childData.receivedPort));
-                          } else {
-                            sentPortResolved = "";
-                            receivedPortResolved = "";
-                          }
-
-                          for(String c : NetworkLog.filterTextIncludeList) {
-                            if((NetworkLog.filterAddressInclude && ((childData.sentPackets > 0 && (childData.sentAddress.contains(c) || StringPool.getLowerCase(sentAddressResolved).contains(c)))
-                                    || (childData.receivedPackets > 0 && (childData.receivedAddress.contains(c) || StringPool.getLowerCase(receivedAddressResolved).contains(c)))))
-                                || (NetworkLog.filterPortInclude && ((childData.sentPackets > 0 && (String.valueOf(childData.sentPort).equals(c) || StringPool.getLowerCase(sentPortResolved).equals(c)))
-                                    || (childData.receivedPackets > 0 && (String.valueOf(childData.receivedPort).equals(c) || StringPool.getLowerCase(receivedPortResolved).equals(c)))))) {
-                              matched = true;
-                                    }
-                          }
-
-                          if(matched) {
-                            if(!item_added) {
-                              // MyLog.d("[AppFragment] adding filtered item " + item);
-                              filteredItems.add(item);
-                              item_added = true;
-                            }
-
-                            // MyLog.d("[AppFragment] adding filtered host " + childData);
-                            item.filteredChildItems.put(host, childData);
-                            item.childrenAreFiltered = true;
-                          }
+                        } else {
+                          sentAddressResolved = "";
+                          receivedAddressResolved = "";
                         }
-                      }
-                    } else {
-                      // no filtering for host/port, matches everything
-                      // MyLog.d("[AppFragment] no filter for host/port; adding filtered item " + item);
-                      filteredItems.add(item);
 
-                      synchronized(item.childrenData) {
-                        List<String> list = new ArrayList<String>(item.childrenData.keySet());
-                        // todo: sort by user preference
-                        Collections.sort(list);
-                        item.filteredChildItems.clear();
-                        Iterator<String> itr = list.iterator();
-                        while(itr.hasNext()) {
-                          host = itr.next();
-                          childData = item.childrenData.get(host);
+                        if(NetworkLog.resolvePorts) {
+                          sentPortResolved = NetworkLog.resolver.resolveService(String.valueOf(childData.sentPort));
+                          receivedPortResolved = NetworkLog.resolver.resolveService(String.valueOf(childData.receivedPort));
+                        } else {
+                          sentPortResolved = "";
+                          receivedPortResolved = "";
+                        }
+
+                        if(childData.in != null && childData.in.length() > 0) {
+                          iface = childData.in;
+                        } else {
+                          iface = childData.out;
+                        }
+
+                        for(String c : NetworkLog.filterTextIncludeList) {
+                          if((NetworkLog.filterAddressInclude && 
+                                ((childData.sentPackets > 0 && (childData.sentAddress.contains(c) || StringPool.getLowerCase(sentAddressResolved).contains(c)))
+                                  || (childData.receivedPackets > 0 && (childData.receivedAddress.contains(c) || StringPool.getLowerCase(receivedAddressResolved).contains(c)))))
+                              || (NetworkLog.filterPortInclude && 
+                                ((childData.sentPackets > 0 && (String.valueOf(childData.sentPort).equals(c) || StringPool.getLowerCase(sentPortResolved).equals(c)))
+                                  || (childData.receivedPackets > 0 && (String.valueOf(childData.receivedPort).equals(c) || StringPool.getLowerCase(receivedPortResolved).equals(c)))))
+                              || (NetworkLog.filterInterfaceInclude && iface.contains(c))
+                              || (NetworkLog.filterProtocolInclude && StringPool.getLowerCase(NetworkLog.resolver.resolveProtocol(childData.proto)).equals(c))) {
+                            matched = true;
+                            break;
+                                  }
+                        }
+
+                        if(matched) {
+                          if(!item_added) {
+                            // MyLog.d("[AppFragment] adding filtered item " + item);
+                            filteredItems.add(item);
+                            item_added = true;
+                          }
+
                           // MyLog.d("[AppFragment] adding filtered host " + childData);
                           item.filteredChildItems.put(host, childData);
                           item.childrenAreFiltered = true;
                         }
+                      }
+                    }
+                  } else {
+                    // no filtering for host/port, matches everything
+                    // MyLog.d("[AppFragment] no filter for host/port; adding filtered item " + item);
+                    filteredItems.add(item);
+
+                    synchronized(item.childrenData) {
+                      List<String> list = new ArrayList<String>(item.childrenData.keySet());
+                      // todo: sort by user preference
+                      Collections.sort(list);
+                      item.filteredChildItems.clear();
+                      Iterator<String> itr = list.iterator();
+                      while(itr.hasNext()) {
+                        host = itr.next();
+                        childData = item.childrenData.get(host);
+                        // MyLog.d("[AppFragment] adding filtered host " + childData);
+                        item.filteredChildItems.put(host, childData);
+                        item.childrenAreFiltered = true;
                       }
                     }
                   }
@@ -1025,7 +1050,7 @@ public class AppFragment extends Fragment {
                     }
                   }
                 } else {
-                  matched = true;
+                  matched = false;
                 }
 
                 if(matched) {
@@ -1034,58 +1059,72 @@ public class AppFragment extends Fragment {
                   continue;
                 }
 
-                List<String> list = new ArrayList<String>(item.filteredChildItems.keySet());
-                Iterator<String> itr = list.iterator();
-                while(itr.hasNext()) {
-                  host = itr.next();
-                  childData = item.filteredChildItems.get(host);
+                if(NetworkLog.filterAddressExclude || NetworkLog.filterPortExclude
+                    || NetworkLog.filterInterfaceExclude || NetworkLog.filterProtocolExclude) {
+                  List<String> list = new ArrayList<String>(item.filteredChildItems.keySet());
+                  Iterator<String> itr = list.iterator();
+                  while(itr.hasNext()) {
+                    host = itr.next();
+                    childData = item.filteredChildItems.get(host);
 
-                  matched = false;
+                    matched = false;
 
-                  if(NetworkLog.resolveHosts) {
-                    sentAddressResolved = NetworkLog.resolver.resolveAddress(childData.sentAddress);
+                    if(NetworkLog.resolveHosts) {
+                      sentAddressResolved = NetworkLog.resolver.resolveAddress(childData.sentAddress);
 
-                    if(sentAddressResolved == null) {
+                      if(sentAddressResolved == null) {
+                        sentAddressResolved = "";
+                      }
+
+                      receivedAddressResolved = NetworkLog.resolver.resolveAddress(childData.receivedAddress);
+
+                      if(receivedAddressResolved == null) {
+                        receivedAddressResolved = "";
+                      }
+                    } else {
                       sentAddressResolved = "";
-                    }
-
-                    receivedAddressResolved = NetworkLog.resolver.resolveAddress(childData.receivedAddress);
-
-                    if(receivedAddressResolved == null) {
                       receivedAddressResolved = "";
                     }
-                  } else {
-                    sentAddressResolved = "";
-                    receivedAddressResolved = "";
+
+                    if(NetworkLog.resolvePorts) {
+                      sentPortResolved = NetworkLog.resolver.resolveService(String.valueOf(childData.sentPort));
+                      receivedPortResolved = NetworkLog.resolver.resolveService(String.valueOf(childData.receivedPort));
+                    } else {
+                      sentPortResolved = "";
+                      receivedPortResolved = "";
+                    }
+
+                    if(childData.in != null && childData.in.length() > 0) {
+                      iface = childData.in;
+                    } else {
+                      iface = childData.out;
+                    }
+
+                    for(String c : NetworkLog.filterTextExcludeList) {
+                      if((NetworkLog.filterAddressExclude && 
+                            ((childData.sentPackets > 0 && (childData.sentAddress.contains(c) || StringPool.getLowerCase(sentAddressResolved).contains(c)))
+                             || (childData.receivedPackets > 0 && (childData.receivedAddress.contains(c) || StringPool.getLowerCase(receivedAddressResolved).contains(c)))))
+                          || (NetworkLog.filterPortExclude && 
+                            ((childData.sentPackets > 0 && (String.valueOf(childData.sentPort).equals(c) || StringPool.getLowerCase(sentPortResolved).equals(c)))
+                             || (childData.receivedPackets > 0 && (String.valueOf(childData.receivedPort).equals(c) || StringPool.getLowerCase(receivedPortResolved).equals(c)))))
+                          || (NetworkLog.filterInterfaceExclude && iface.contains(c))
+                          || (NetworkLog.filterProtocolExclude && StringPool.getLowerCase(NetworkLog.resolver.resolveProtocol(childData.proto)).equals(c))) {
+                        matched = true;
+                        break;
+                          }
+                    }
+
+                    if(matched) {
+                      // MyLog.d("[AppFragment] removing filtered host [" + host + "] " + childData);
+                      item.filteredChildItems.remove(host);
+                    }
                   }
 
-                  if(NetworkLog.resolvePorts) {
-                    sentPortResolved = NetworkLog.resolver.resolveService(String.valueOf(childData.sentPort));
-                    receivedPortResolved = NetworkLog.resolver.resolveService(String.valueOf(childData.receivedPort));
-                  } else {
-                    sentPortResolved = "";
-                    receivedPortResolved = "";
+                  if(item.filteredChildItems.size() == 0 && matched) {
+                    // MyLog.d("[AppFragment] removed all hosts, removing item from filter results");
+                    filteredItems.remove(i);
                   }
-
-                  for(String c : NetworkLog.filterTextExcludeList) {
-                    if((NetworkLog.filterAddressExclude && ((childData.sentPackets > 0 && (childData.sentAddress.contains(c) || StringPool.getLowerCase(sentAddressResolved).contains(c)))
-                            || (childData.receivedPackets > 0 && (childData.receivedAddress.contains(c) || StringPool.getLowerCase(receivedAddressResolved).contains(c)))))
-                        || (NetworkLog.filterPortExclude && ((childData.sentPackets > 0 && (String.valueOf(childData.sentPort).equals(c) || StringPool.getLowerCase(sentPortResolved).equals(c)))
-                            || (childData.receivedPackets > 0 && (String.valueOf(childData.receivedPort).equals(c) || StringPool.getLowerCase(receivedPortResolved).equals(c)))))) {
-                      matched = true;
-                            }
-                  }
-
-                  if(matched) {
-                    // MyLog.d("[AppFragment] removing filtered host " + childData);
-                    item.filteredChildItems.remove(host);
-                  }
-                }
-
-                if(item.filteredChildItems.size() == 0 && matched) {
-                  // MyLog.d("[AppFragment] removed all hosts, removing item from filter results");
-                  filteredItems.remove(i);
-                }
+                    }
               }
             }
 
@@ -1282,7 +1321,8 @@ public class AppFragment extends Fragment {
 
         host = holder.getHost();
 
-        String hostString = null;
+        String hostString;
+        String iface;
 
         if(item.sentPackets > 0 && item.out != null) {
           String sentAddressString;
@@ -1305,9 +1345,14 @@ public class AppFragment extends Fragment {
             sentPortString = String.valueOf(item.sentPort);
           }
 
-          hostString = sentAddressString + ":" + sentPortString;
-        }
-        else if(item.receivedPackets > 0 && item.in != null) {
+          if(item.proto != null && item.proto.length() > 0) {
+            iface = NetworkLog.resolver.resolveProtocol(item.proto) + "/" + item.out;
+          } else {
+            iface = item.out;
+          }
+
+          hostString = sentAddressString + ":" + sentPortString + " (" + iface + ")";
+        } else {
           String receivedAddressString;
           String receivedPortString;
 
@@ -1328,7 +1373,13 @@ public class AppFragment extends Fragment {
             receivedPortString = String.valueOf(item.receivedPort);
           }
 
-          hostString = receivedAddressString + ":" + receivedPortString;
+          if(item.proto != null && item.proto.length() > 0) {
+            iface = NetworkLog.resolver.resolveProtocol(item.proto) + "/" + item.in;
+          } else {
+            iface = item.in;
+          }
+
+          hostString = receivedAddressString + ":" + receivedPortString + " (" + iface + ")";
         }
 
         host.setText(Html.fromHtml("<u>" + hostString + "</u>")); // fixme: cache this
