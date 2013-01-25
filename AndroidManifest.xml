@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.googlecode.networklog"
-  android:versionCode="20702"
-  android:versionName="2.7.2">
+  android:versionCode="20800"
+  android:versionName="2.8.0">
   <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="15" />
   <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
   <application
