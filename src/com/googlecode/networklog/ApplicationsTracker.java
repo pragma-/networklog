@@ -27,7 +27,7 @@ import java.util.HashMap;
 
 public class ApplicationsTracker {
   public static ArrayList<AppEntry> installedApps;
-  public static HashMap<String, AppEntry> installedAppsHash;
+  public static HashMap<String, AppEntry> uidMap;
   public static HashMap<String, AppEntry> packageMap;
   public static HashMap<String, Drawable> iconMap;
   public static ProgressDialog dialog;
@@ -108,7 +108,7 @@ public class ApplicationsTracker {
       installedApps = data.applicationsTrackerInstalledApps;
     }
 
-    installedAppsHash = data.applicationsTrackerInstalledAppsHash;
+    uidMap = data.applicationsTrackerInstalledAppsHash;
     packageMap = data.applicationsTrackerPackageMap;
   }
 
@@ -168,13 +168,13 @@ public class ApplicationsTracker {
     synchronized(installedAppsLock) {
       if(NetworkLog.data == null) {
         installedApps = new ArrayList<AppEntry>();
-        installedAppsHash = new HashMap<String, AppEntry>();
+        uidMap = new HashMap<String, AppEntry>();
         packageMap = new HashMap<String, AppEntry>();
         iconMap = new HashMap<String, Drawable>();
       } else {
         restoreData(NetworkLog.data);
         installedApps.clear();
-        installedAppsHash.clear();
+        uidMap.clear();
         packageMap.clear();
         iconMap.clear();
       }
@@ -230,7 +230,7 @@ public class ApplicationsTracker {
         int uid = app.uid;
         String sUid = Integer.toString(uid);
 
-        AppEntry entryHash = installedAppsHash.get(sUid);
+        AppEntry entryHash = uidMap.get(sUid);
 
         AppEntry entry = new AppEntry();
 
@@ -246,7 +246,7 @@ public class ApplicationsTracker {
         if(entryHash != null) {
           entryHash.name.concat("; " + entry.name);
         } else {
-          installedAppsHash.put(sUid, entry);
+          uidMap.put(sUid, entry);
         }
       }
 
@@ -261,7 +261,7 @@ public class ApplicationsTracker {
       iconMap.put(entry.packageName, context.getResources().getDrawable(R.drawable.linux_icon));
 
       installedApps.add(entry);
-      installedAppsHash.put("-1", entry);
+      uidMap.put("-1", entry);
       packageMap.put(entry.packageName, entry);
 
       String[] systemUids = { "root", "system", "radio", "bluetooth", "nobody", "misc",
@@ -280,7 +280,7 @@ public class ApplicationsTracker {
         }
 
         String uidString = StringPool.get(String.valueOf(uid));
-        AppEntry entryHash = installedAppsHash.get(uidString);
+        AppEntry entryHash = uidMap.get(uidString);
 
         if(entryHash == null) {
           entry = new AppEntry();
@@ -292,7 +292,7 @@ public class ApplicationsTracker {
           iconMap.put(entry.packageName, context.getResources().getDrawable(R.drawable.android_icon));
 
           installedApps.add(entry);
-          installedAppsHash.put(uidString, entry);
+          uidMap.put(uidString, entry);
           packageMap.put(entry.packageName, entry);
         }
       }

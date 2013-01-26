@@ -325,7 +325,7 @@ public class LogFragment extends Fragment {
       return;
     }
 
-    ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.installedAppsHash.get(entry.uidString);
+    ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.uidMap.get(entry.uidString);
 
     if(appEntry == null) {
       if(MyLog.enabled) {

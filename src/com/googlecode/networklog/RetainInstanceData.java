@@ -20,7 +20,7 @@ public class RetainInstanceData {
 
   public void retainApplicationsTrackerData() {
     applicationsTrackerInstalledApps = ApplicationsTracker.installedApps;
-    applicationsTrackerInstalledAppsHash = ApplicationsTracker.installedAppsHash;
+    applicationsTrackerInstalledAppsHash = ApplicationsTracker.uidMap;
     applicationsTrackerPackageMap = ApplicationsTracker.packageMap;
     applicationsTrackerAppCount = ApplicationsTracker.appCount;
   }
