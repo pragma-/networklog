@@ -14,13 +14,13 @@ import java.util.HashMap;
 public class RetainInstanceData {
   /* ApplicationsTracker */
   ArrayList<ApplicationsTracker.AppEntry> applicationsTrackerInstalledApps;
-  HashMap<String, ApplicationsTracker.AppEntry> applicationsTrackerInstalledAppsHash;
+  HashMap<String, ApplicationsTracker.AppEntry> applicationsTrackerUidMap;
   HashMap<String, ApplicationsTracker.AppEntry> applicationsTrackerPackageMap;
   int applicationsTrackerAppCount;
 
   public void retainApplicationsTrackerData() {
     applicationsTrackerInstalledApps = ApplicationsTracker.installedApps;
-    applicationsTrackerInstalledAppsHash = ApplicationsTracker.uidMap;
+    applicationsTrackerUidMap = ApplicationsTracker.uidMap;
     applicationsTrackerPackageMap = ApplicationsTracker.packageMap;
     applicationsTrackerAppCount = ApplicationsTracker.appCount;
   }

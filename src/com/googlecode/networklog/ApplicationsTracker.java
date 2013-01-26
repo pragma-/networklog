@@ -108,7 +108,7 @@ public class ApplicationsTracker {
       installedApps = data.applicationsTrackerInstalledApps;
     }
 
-    uidMap = data.applicationsTrackerInstalledAppsHash;
+    uidMap = data.applicationsTrackerUidMap;
     packageMap = data.applicationsTrackerPackageMap;
   }
 
