@@ -204,24 +204,8 @@ public class AppFragment extends Fragment {
         c2 = item.childrenData.get(o2);
       }
 
-      long totalBytes1 = 0;
-      long totalBytes2 = 0;
-
-      if(c1.out != null && c1.out.length() > 0) {
-        totalBytes1 += c1.sentBytes;
-      }
-
-      if(c1.in != null && c1.in.length() > 0) {
-        totalBytes1 += c1.receivedBytes;
-      }
-
-      if(c2.out != null && c2.out.length() > 0) {
-        totalBytes2 += c2.sentBytes;
-      }
-
-      if(c2.in != null && c2.in.length() > 0) {
-        totalBytes2 += c2.receivedBytes;
-      }
+      long totalBytes1 = c1.sentBytes + c1.receivedBytes;
+      long totalBytes2 = c2.sentBytes + c2.receivedBytes;
 
       return totalBytes1 > totalBytes2 ? -1 : (totalBytes1 == totalBytes2) ? 0 : 1;
     }
@@ -246,24 +230,8 @@ public class AppFragment extends Fragment {
         c2 = item.childrenData.get(o2);
       }
 
-      long totalPackets1 = 0;
-      long totalPackets2 = 0;
-
-      if(c1.out != null && c1.out.length() > 0) {
-        totalPackets1 += c1.sentPackets;
-      }
-
-      if(c1.in != null && c1.in.length() > 0) {
-        totalPackets1 += c1.receivedPackets;
-      }
-
-      if(c2.out != null && c2.out.length() > 0) {
-        totalPackets2 += c2.sentPackets;
-      }
-
-      if(c2.in != null && c2.in.length() > 0) {
-        totalPackets2 += c2.receivedPackets;
-      }
+      long totalPackets1 = c1.sentPackets + c1.receivedPackets;
+      long totalPackets2 = c2.sentPackets + c2.receivedPackets;
 
       return totalPackets1 > totalPackets2 ? -1 : (totalPackets1 == totalPackets2) ? 0 : 1;
     }
@@ -288,27 +256,15 @@ public class AppFragment extends Fragment {
         c2 = item.childrenData.get(o2);
       }
 
-      long timestamp1 = 0;
-      long timestamp2 = 0;
+      long timestamp1 = c1.sentTimestamp;
+      long timestamp2 = c2.sentTimestamp;
 
-      if(c1.out != null && c1.out.length() > 0) {
-        timestamp1 = c1.sentTimestamp;
+      if(c1.receivedTimestamp > timestamp1) {
+        timestamp1 = c1.receivedTimestamp;
       }
 
-      if(c1.in != null && c1.in.length() > 0) {
-        if(c1.receivedTimestamp > timestamp1) {
-          timestamp1 = c1.receivedTimestamp;
-        }
-      }
-
-      if(c2.out != null && c2.out.length() > 0) {
-        timestamp2 = c2.sentTimestamp;
-      }
-
-      if(c2.in != null && c2.in.length() > 0) {
-        if(c2.receivedTimestamp > timestamp2) {
-          timestamp2 = c2.receivedTimestamp;
-        }
+      if(c2.receivedTimestamp > timestamp2) {
+        timestamp2 = c2.receivedTimestamp;
       }
 
       return timestamp1 > timestamp2 ? -1 : (timestamp1 == timestamp2) ? 0 : 1;
@@ -1507,7 +1463,7 @@ public class AppFragment extends Fragment {
         String hostString;
         String iface;
 
-        if(item.sentPackets > 0 && item.out != null) {
+        if(item.sentPackets > 0 && item.out != null && item.out.length() > 0) {
           String sentAddressString;
           String sentPortString;
 
@@ -1576,7 +1532,7 @@ public class AppFragment extends Fragment {
           sentBytes.setText(String.valueOf(item.sentBytes));
 
           String timestampString = Timestamp.getTimestamp(item.sentTimestamp);
-          sentTimestamp.setText("(" + timestampString.substring(timestampString.indexOf('-') + 1, timestampString.length()) + ")"); //
+          sentTimestamp.setText("(" + timestampString.substring(timestampString.indexOf('-') + 1, timestampString.length()) + ")");
 
           sentPackets.setVisibility(View.VISIBLE);
           sentBytes.setVisibility(View.VISIBLE);
@@ -1602,7 +1558,7 @@ public class AppFragment extends Fragment {
           receivedBytes.setText(String.valueOf(item.receivedBytes));
 
           String timestampString = Timestamp.getTimestamp(item.receivedTimestamp);
-          receivedTimestamp.setText("(" + timestampString.substring(timestampString.indexOf('-') + 1, timestampString.length()) + ")"); //
+          receivedTimestamp.setText("(" + timestampString.substring(timestampString.indexOf('-') + 1, timestampString.length()) + ")");
           receivedPackets.setVisibility(View.VISIBLE);
           receivedBytes.setVisibility(View.VISIBLE);
           receivedTimestamp.setVisibility(View.VISIBLE);
