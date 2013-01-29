@@ -52,6 +52,7 @@ import android.text.ClipboardManager;
 import android.support.v4.app.Fragment;
 
 import java.lang.StringBuilder;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,8 +89,10 @@ public class AppFragment extends Fragment {
     protected HashMap<String, ChildItem> childrenData;
     // holds filtered list of children
     // used in place of childrenData in getView, if non-empty
-    protected HashMap<String, ChildItem> filteredChildItems;
-    protected boolean childrenDataNeedsSort = false;
+    protected HashMap<String, ChildItem> childrenDataFiltered;
+    // holds sorted keys into childrenData
+    protected String[] childrenDataSorted;
+    protected boolean childrenNeedSort = false;
     protected boolean childrenAreFiltered = false;
     protected boolean childrenAreDirty = false;
     protected boolean isExpanded = false;
@@ -136,7 +139,8 @@ public class AppFragment extends Fragment {
             }
 
             item.childrenData.clear();
-            item.filteredChildItems.clear();
+            item.childrenDataFiltered.clear();
+            item.childrenDataSorted = null;
             item.childrenAreFiltered = false;
           }
         }
@@ -178,6 +182,136 @@ public class AppFragment extends Fragment {
   protected static class SortAppsByUid implements Comparator<GroupItem> {
     public int compare(GroupItem o1, GroupItem o2) {
       return o1.app.uid < o2.app.uid ? -1 : (o1.app.uid == o2.app.uid) ? 0 : 1;
+    }
+  }
+
+  protected static class SortChildrenByBytes implements Comparator<String> {
+    GroupItem item;
+
+    public SortChildrenByBytes(GroupItem item) {
+      this.item = item;
+    }
+
+    public int compare(String o1, String o2) {
+      ChildItem c1;
+      ChildItem c2;
+
+      if(item.childrenAreFiltered) {
+        c1 = item.childrenDataFiltered.get(o1);
+        c2 = item.childrenDataFiltered.get(o2);
+      } else {
+        c1 = item.childrenData.get(o1);
+        c2 = item.childrenData.get(o2);
+      }
+
+      long totalBytes1 = 0;
+      long totalBytes2 = 0;
+
+      if(c1.out != null && c1.out.length() > 0) {
+        totalBytes1 += c1.sentBytes;
+      }
+
+      if(c1.in != null && c1.in.length() > 0) {
+        totalBytes1 += c1.receivedBytes;
+      }
+
+      if(c2.out != null && c2.out.length() > 0) {
+        totalBytes2 += c2.sentBytes;
+      }
+
+      if(c2.in != null && c2.in.length() > 0) {
+        totalBytes2 += c2.receivedBytes;
+      }
+
+      return totalBytes1 > totalBytes2 ? -1 : (totalBytes1 == totalBytes2) ? 0 : 1;
+    }
+  }
+
+  protected static class SortChildrenByPackets implements Comparator<String> {
+    GroupItem item;
+
+    public SortChildrenByPackets(GroupItem item) {
+      this.item = item;
+    }
+
+    public int compare(String o1, String o2) {
+      ChildItem c1;
+      ChildItem c2;
+
+      if(item.childrenAreFiltered) {
+        c1 = item.childrenDataFiltered.get(o1);
+        c2 = item.childrenDataFiltered.get(o2);
+      } else {
+        c1 = item.childrenData.get(o1);
+        c2 = item.childrenData.get(o2);
+      }
+
+      long totalPackets1 = 0;
+      long totalPackets2 = 0;
+
+      if(c1.out != null && c1.out.length() > 0) {
+        totalPackets1 += c1.sentPackets;
+      }
+
+      if(c1.in != null && c1.in.length() > 0) {
+        totalPackets1 += c1.receivedPackets;
+      }
+
+      if(c2.out != null && c2.out.length() > 0) {
+        totalPackets2 += c2.sentPackets;
+      }
+
+      if(c2.in != null && c2.in.length() > 0) {
+        totalPackets2 += c2.receivedPackets;
+      }
+
+      return totalPackets1 > totalPackets2 ? -1 : (totalPackets1 == totalPackets2) ? 0 : 1;
+    }
+  }
+
+  protected static class SortChildrenByTimestamp implements Comparator<String> {
+    GroupItem item;
+
+    public SortChildrenByTimestamp(GroupItem item) {
+      this.item = item;
+    }
+
+    public int compare(String o1, String o2) {
+      ChildItem c1;
+      ChildItem c2;
+
+      if(item.childrenAreFiltered) {
+        c1 = item.childrenDataFiltered.get(o1);
+        c2 = item.childrenDataFiltered.get(o2);
+      } else {
+        c1 = item.childrenData.get(o1);
+        c2 = item.childrenData.get(o2);
+      }
+
+      long timestamp1 = 0;
+      long timestamp2 = 0;
+
+      if(c1.out != null && c1.out.length() > 0) {
+        timestamp1 = c1.sentTimestamp;
+      }
+
+      if(c1.in != null && c1.in.length() > 0) {
+        if(c1.receivedTimestamp > timestamp1) {
+          timestamp1 = c1.receivedTimestamp;
+        }
+      }
+
+      if(c2.out != null && c2.out.length() > 0) {
+        timestamp2 = c2.sentTimestamp;
+      }
+
+      if(c2.in != null && c2.in.length() > 0) {
+        if(c2.receivedTimestamp > timestamp2) {
+          timestamp2 = c2.receivedTimestamp;
+        }
+      }
+
+      return timestamp1 > timestamp2 ? -1 : (timestamp1 == timestamp2) ? 0 : 1;
     }
   }
 
@@ -235,6 +369,14 @@ public class AppFragment extends Fragment {
     }
   }
 
+  public void sortChildren() {
+    synchronized(groupData) {
+      for(GroupItem item : groupData) {
+        item.childrenNeedSort = true;
+      }
+    }
+  }
+
   public void setDoNotRefresh(boolean value) {
     doNotRefresh = value;
   }
@@ -287,7 +429,7 @@ public class AppFragment extends Fragment {
             item.app = app;
             item.lastTimestamp = 0;
             item.childrenData = new HashMap<String, ChildItem>();
-            item.filteredChildItems = new HashMap<String, ChildItem>();
+            item.childrenDataFiltered = new HashMap<String, ChildItem>();
             groupData.add(item);
             groupDataBuffer.add(item);
           }
@@ -705,7 +847,7 @@ public class AppFragment extends Fragment {
             newLogChild.sentPort = entry.dpt;
             newLogChild.sentAddress = entry.dst;
 
-            newLogItem.childrenDataNeedsSort = true;
+            newLogItem.childrenNeedSort = true;
           }
         }
 
@@ -734,7 +876,7 @@ public class AppFragment extends Fragment {
             newLogChild.sentPort = entry.dpt;
             newLogChild.sentAddress = entry.dst;
 
-            newLogItem.childrenDataNeedsSort = true;
+            newLogItem.childrenNeedSort = true;
           }
         }
 
@@ -764,6 +906,10 @@ public class AppFragment extends Fragment {
 
   Runnable updaterRunner = new Runnable() {
     public void run() {
+      if(groupData == null) {
+        return;
+      }
+
       synchronized(groupData) {
         if(MyLog.enabled) {
           MyLog.d("AppFragmentListUpdater enter");
@@ -875,7 +1021,8 @@ public class AppFragment extends Fragment {
             for(GroupItem item : originalItems) {
               if(item.childrenAreFiltered) {
                 item.childrenAreFiltered = false;
-                item.filteredChildItems.clear();
+                item.childrenDataFiltered.clear();
+                item.childrenNeedSort = true;
               }
             }
 
@@ -897,7 +1044,7 @@ public class AppFragment extends Fragment {
                 filteredItems.add(item);
 
                 synchronized(item.childrenData) {
-                  item.filteredChildItems.clear();
+                  item.childrenDataFiltered.clear();
                   List<String> list = new ArrayList<String>(item.childrenData.keySet());
                   Iterator<String> itr = list.iterator();
                   while(itr.hasNext()) {
@@ -906,7 +1053,7 @@ public class AppFragment extends Fragment {
                     if(MyLog.enabled) {
                       MyLog.d("[AppFragment] adding filtered host " + childData);
                     }
-                    item.filteredChildItems.put(host, childData);
+                    item.childrenDataFiltered.put(host, childData);
                     item.childrenAreFiltered = true;
                   }
                 }
@@ -936,7 +1083,7 @@ public class AppFragment extends Fragment {
                   if(NetworkLog.filterAddressInclude || NetworkLog.filterPortInclude 
                       || NetworkLog.filterInterfaceInclude || NetworkLog.filterProtocolInclude) {
                     synchronized(item.childrenData) {
-                      item.filteredChildItems.clear();
+                      item.childrenDataFiltered.clear();
                       List<String> list = new ArrayList<String>(item.childrenData.keySet());
                       // todo: sort by user preference (bytes, timestamp, address, ports)
                       Collections.sort(list);
@@ -1002,8 +1149,9 @@ public class AppFragment extends Fragment {
                           }
 
                           // MyLog.d("[AppFragment] adding filtered host " + childData);
-                          item.filteredChildItems.put(host, childData);
+                          item.childrenDataFiltered.put(host, childData);
                           item.childrenAreFiltered = true;
+                          item.childrenNeedSort = true;
                         }
                       }
                     }
@@ -1016,14 +1164,15 @@ public class AppFragment extends Fragment {
                       List<String> list = new ArrayList<String>(item.childrenData.keySet());
                       // todo: sort by user preference
                       Collections.sort(list);
-                      item.filteredChildItems.clear();
+                      item.childrenDataFiltered.clear();
                       Iterator<String> itr = list.iterator();
                       while(itr.hasNext()) {
                         host = itr.next();
                         childData = item.childrenData.get(host);
                         // MyLog.d("[AppFragment] adding filtered host " + childData);
-                        item.filteredChildItems.put(host, childData);
+                        item.childrenDataFiltered.put(host, childData);
                         item.childrenAreFiltered = true;
+                        item.childrenNeedSort = true;
                       }
                     }
                   }
@@ -1061,11 +1210,11 @@ public class AppFragment extends Fragment {
 
                 if(NetworkLog.filterAddressExclude || NetworkLog.filterPortExclude
                     || NetworkLog.filterInterfaceExclude || NetworkLog.filterProtocolExclude) {
-                  List<String> list = new ArrayList<String>(item.filteredChildItems.keySet());
+                  List<String> list = new ArrayList<String>(item.childrenDataFiltered.keySet());
                   Iterator<String> itr = list.iterator();
                   while(itr.hasNext()) {
                     host = itr.next();
-                    childData = item.filteredChildItems.get(host);
+                    childData = item.childrenDataFiltered.get(host);
 
                     matched = false;
 
@@ -1116,15 +1265,15 @@ public class AppFragment extends Fragment {
 
                     if(matched) {
                       // MyLog.d("[AppFragment] removing filtered host [" + host + "] " + childData);
-                      item.filteredChildItems.remove(host);
+                      item.childrenDataFiltered.remove(host);
                     }
                   }
 
-                  if(item.filteredChildItems.size() == 0 && matched) {
+                  if(item.childrenDataFiltered.size() == 0 && matched) {
                     // MyLog.d("[AppFragment] removed all hosts, removing item from filter results");
                     filteredItems.remove(i);
                   }
-                    }
+                }
               }
             }
 
@@ -1172,14 +1321,48 @@ public class AppFragment extends Fragment {
     @Override
       public Object getChild(int groupPosition, int childPosition) {
         GroupItem groupItem = groupData.get(groupPosition);
+        HashMap<String, ChildItem> children;
 
         if(groupItem.childrenAreFiltered == false) {
-          Set<String> set = (Set<String>) groupItem.childrenData.keySet();
-          return groupItem.childrenData.get(set.toArray()[childPosition]);
+          children = groupItem.childrenData;
         } else {
-          Set<String> set = (Set<String>) groupItem.filteredChildItems.keySet();
-          return groupItem.filteredChildItems.get(set.toArray()[childPosition]);
+          children = groupItem.childrenDataFiltered;
         }
+
+        if(groupItem.childrenNeedSort == true || groupItem.childrenDataSorted == null) {
+          groupItem.childrenNeedSort = false;
+
+          if(groupItem.childrenDataSorted == null || groupItem.childrenDataSorted.length < children.size()) {
+            groupItem.childrenDataSorted = new String[children.size()];
+          }
+
+          children.keySet().toArray(groupItem.childrenDataSorted);
+
+          Comparator<String> sortMethod;
+          switch(sortBy) {
+            case UID:
+              sortMethod = new SortChildrenByBytes(groupItem);
+              break;
+            case NAME:
+              sortMethod = new SortChildrenByBytes(groupItem);
+              break;
+            case PACKETS:
+              sortMethod = new SortChildrenByPackets(groupItem);
+              break;
+            case BYTES:
+              sortMethod = new SortChildrenByBytes(groupItem);
+              break;
+            case TIMESTAMP:
+              sortMethod = new SortChildrenByTimestamp(groupItem);
+              break;
+            default:
+              sortMethod = new SortChildrenByBytes(groupItem);
+          }
+
+          Arrays.sort(groupItem.childrenDataSorted, sortMethod);
+        }
+
+        return children.get(groupItem.childrenDataSorted[childPosition]);
       }
 
     @Override
@@ -1194,7 +1377,7 @@ public class AppFragment extends Fragment {
         if(groupItem.childrenAreFiltered == false) {
           return groupItem.childrenData.size();
         } else {
-          return groupItem.filteredChildItems.size();
+          return groupItem.childrenDataFiltered.size();
         }
       }
 
@@ -1393,7 +1576,7 @@ public class AppFragment extends Fragment {
           sentBytes.setText(String.valueOf(item.sentBytes));
 
           String timestampString = Timestamp.getTimestamp(item.sentTimestamp);
-          sentTimestamp.setText("(" + timestampString.substring(timestampString.indexOf(' ') + 1, timestampString.length()) + ")");
+          sentTimestamp.setText("(" + timestampString.substring(timestampString.indexOf('-') + 1, timestampString.length()) + ")");
 
           sentPackets.setVisibility(View.VISIBLE);
           sentBytes.setVisibility(View.VISIBLE);
@@ -1419,7 +1602,7 @@ public class AppFragment extends Fragment {
           receivedBytes.setText(String.valueOf(item.receivedBytes));
 
           String timestampString = Timestamp.getTimestamp(item.receivedTimestamp);
-          receivedTimestamp.setText("(" + timestampString.substring(timestampString.indexOf(' ') + 1, timestampString.length()) + ")");
+          receivedTimestamp.setText("(" + timestampString.substring(timestampString.indexOf('-') + 1, timestampString.length()) + ")");
           receivedPackets.setVisibility(View.VISIBLE);
           receivedBytes.setVisibility(View.VISIBLE);
           receivedTimestamp.setVisibility(View.VISIBLE);

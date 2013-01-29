@@ -452,6 +452,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
         NetworkLog.appFragment.sortBy = Sort.forValue(value);
         NetworkLog.appFragment.preSortData();
         NetworkLog.appFragment.sortData();
+        NetworkLog.appFragment.sortChildren();
         NetworkLog.appFragment.refreshAdapter();
         return;
       }
