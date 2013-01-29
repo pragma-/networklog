@@ -21,7 +21,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:id="@+id/sentPackets"
-    android:textSize="14sp"
+    android:textSize="13sp"
     android:textStyle="bold" 
     android:layout_alignBaseline="@id/sentLabel"
     android:layout_toRightOf="@id/sentLabel" />
@@ -38,7 +38,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:id="@+id/sentBytes"
-    android:textSize="14sp"
+    android:textSize="13sp"
     android:textStyle="bold"
     android:layout_alignBaseline="@id/sentLabel"
     android:layout_toRightOf="@id/sentPacketsLabel" />
@@ -55,10 +55,12 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:id="@+id/sentTimestamp"
-    android:textSize="14sp"
+    android:textSize="13sp"
     android:textStyle="bold"
+    android:layout_below="@id/hostName"
     android:layout_alignBaseline="@id/sentLabel"
     android:layout_toRightOf="@id/sentBytesLabel" />
+
   <TextView
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -66,12 +68,13 @@
     android:text="  Recv: "
     android:textSize="12sp"
     android:textStyle="normal"
-    android:layout_below="@id/sentLabel" />
+    android:layout_below="@id/sentTimestamp"
+    android:layout_alignParentLeft="true" />
   <TextView
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:id="@+id/receivedPackets"
-    android:textSize="14sp"
+    android:textSize="13sp"
     android:textStyle="bold" 
     android:layout_alignBaseline="@id/receivedLabel"
     android:layout_toRightOf="@id/receivedLabel" />
@@ -88,7 +91,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:id="@+id/receivedBytes"
-    android:textSize="14sp"
+    android:textSize="13sp"
     android:textStyle="bold"
     android:layout_alignBaseline="@id/receivedLabel"
     android:layout_toRightOf="@id/receivedPacketsLabel" />
@@ -105,9 +108,9 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:id="@+id/receivedTimestamp"
-    android:textSize="14sp"
+    android:textSize="13sp"
     android:textStyle="bold"
+    android:layout_below="@id/sentTimestamp"
     android:layout_alignBaseline="@id/receivedLabel"
     android:layout_toRightOf="@id/receivedBytesLabel" />
-
 </RelativeLayout>
