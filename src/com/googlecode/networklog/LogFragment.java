@@ -459,6 +459,10 @@ public class LogFragment extends Fragment {
         MyLog.d("LogFragmentUpdater enter");
       }
 
+      if(listDataBuffer == null || listData == null || listDataUnfiltered == null) {
+        return;
+      }
+
       int i = 0;
       boolean included = true;
       boolean excluded = false;
