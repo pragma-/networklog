@@ -1532,7 +1532,7 @@ public class AppFragment extends Fragment {
           sentBytes.setText(String.valueOf(item.sentBytes));
 
           String timestampString = Timestamp.getTimestamp(item.sentTimestamp);
-          sentTimestamp.setText("(" + timestampString.substring(timestampString.indexOf('-') + 1, timestampString.length()) + ")");
+          sentTimestamp.setText("(" + timestampString.substring(timestampString.indexOf('-') + 1, timestampString.indexOf('.')) + ")");
 
           sentPackets.setVisibility(View.VISIBLE);
           sentBytes.setVisibility(View.VISIBLE);
@@ -1558,7 +1558,7 @@ public class AppFragment extends Fragment {
           receivedBytes.setText(String.valueOf(item.receivedBytes));
 
           String timestampString = Timestamp.getTimestamp(item.receivedTimestamp);
-          receivedTimestamp.setText("(" + timestampString.substring(timestampString.indexOf('-') + 1, timestampString.length()) + ")");
+          receivedTimestamp.setText("(" + timestampString.substring(timestampString.indexOf('-') + 1, timestampString.indexOf('.')) + ")");
           receivedPackets.setVisibility(View.VISIBLE);
           receivedBytes.setVisibility(View.VISIBLE);
           receivedTimestamp.setVisibility(View.VISIBLE);
