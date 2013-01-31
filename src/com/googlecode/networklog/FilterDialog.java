@@ -17,7 +17,6 @@ import android.content.DialogInterface;
 import android.app.AlertDialog;
 import android.view.View;
 import android.view.LayoutInflater;
-import android.text.Html;
 
 public class FilterDialog implements DialogInterface.OnDismissListener
 {
