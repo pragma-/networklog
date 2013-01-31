@@ -30,6 +30,9 @@
   <item android:id="@+id/settings"
     android:title="Settings"
     android:showAsAction="ifRoom|withText" />
+  <item android:id="@+id/feedback"
+    android:title="Report Bug/Feedback"
+    android:showAsAction="ifRoom|withText" />
   <item android:id="@+id/exit"
     android:title="Exit"
     android:showAsAction="ifRoom|withText" />

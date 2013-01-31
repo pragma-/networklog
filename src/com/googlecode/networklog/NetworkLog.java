@@ -63,11 +63,8 @@ public class NetworkLog extends SherlockFragmentActivity {
   public static AppFragment appFragment;
 
   public static TextView statusText;
-
   public static Settings settings;
-
   public static Handler handler;
-
   public static Object scriptLock = new Object();
 
   public static String filterTextInclude;
@@ -97,7 +94,7 @@ public class NetworkLog extends SherlockFragmentActivity {
   public static boolean stopServiceAtExit;
 
   public static HistoryLoader history;
-
+  public static FeedbackDialog feedbackDialog;
   public static ClearLog clearLog;
 
   public static StatusUpdater statusUpdater;
@@ -350,6 +347,13 @@ public class NetworkLog extends SherlockFragmentActivity {
           history.createProgressDialog(this);
         }
 
+        if(data.feedbackDialogMessage != null) {
+          feedbackDialog = new FeedbackDialog(this);
+          feedbackDialog.setMessage(data.feedbackDialogMessage);
+          feedbackDialog.setCursorPosition(data.feedbackDialogCursorPosition);
+          feedbackDialog.show();
+        }
+
         if(data.clearLogDialogShowing) {
           clearLog.showClearLogDialog(this);
         }
@@ -459,6 +463,12 @@ public class NetworkLog extends SherlockFragmentActivity {
       if(history.dialog_showing == true && history.dialog != null) {
         history.dialog.dismiss();
         history.dialog = null;
+      }
+
+      if(feedbackDialog != null && feedbackDialog.dialog != null && feedbackDialog.dialog.isShowing()) {
+        feedbackDialog.dialog.dismiss();
+        feedbackDialog.dialog = null;
+        feedbackDialog = null;
       }
 
       if(clearLog.dialog != null && clearLog.dialog.isShowing()) {
@@ -594,6 +604,11 @@ public class NetworkLog extends SherlockFragmentActivity {
 
         case R.id.exit:
           finish();
+          break;
+
+        case R.id.feedback:
+          feedbackDialog = new FeedbackDialog(this);
+          feedbackDialog.show();
           break;
 
         case R.id.clearlog:

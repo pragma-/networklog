@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:paddingLeft="6dp"
+  android:paddingRight="6dp">
+
+  <TextView
+    android:id="@+id/feedbackInstructions"
+    android:text="Enter message for bug report/feedback:"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />
+
+  <EditText
+    android:id="@+id/feedbackMessage"
+    android:singleLine="false"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:inputType="textCapSentences|textAutoCorrect|textMultiLine|textLongMessage"
+    android:scrollHorizontally="false"
+    android:minLines="6"
+    android:gravity="top|left"
+    android:scrollbars="vertical"
+    android:layout_below="@id/feedbackInstructions" />
+</RelativeLayout>
