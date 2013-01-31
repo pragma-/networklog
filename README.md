@@ -45,7 +45,7 @@ Full source code available at [http://code.google.com/p/iptableslog/source/list]
 
 _Note: While the app itself is designed to use minimal CPU/battery, you can further reduce the CPU/battery use by exiting the app after starting the logging service._
 
-<a href="http://imgbin.org/images/11309.png"><img height="535" width="320" src="http://imgbin.org/images/11309.png"></img></a>
+<a href="http://imgbin.org/images/11405.png"><img height="535" width="320" src="http://imgbin.org/images/11405.png"></img></a>
 &nbsp;
 <a href="http://imgbin.org/images/10967.png"><img height="535" width="320" src="http://imgbin.org/images/10967.png"></img></a>
 &nbsp;
