@@ -10,11 +10,11 @@ function debug_build() { ant debug; }
 function release_build() { ant release; }
 function install_device() { adb -d install -r bin/$APP; }
 function install_emulator() { adb -e install -r bin/$APP; }
-function logcat_networklog() { adb logcat -c && adb logcat -v time | tee log-`date +%Y%m%d-%H:%M.%N` | grep NetworkLog; }
-function logcat_all() { adb logcat -c && adb logcat -v time | tee log-`date +%Y%m%d-%H:%M.%N`; }
+function logcat_networklog() { adb -d logcat -c && adb -d logcat -v time | tee log-`date +%Y%m%d-%H:%M.%N` | grep NetworkLog; }
+function logcat_all() { adb -d logcat -c && adb -d logcat -v time | tee log-`date +%Y%m%d-%H:%M.%N`; }
 function meminfo() { adb shell dumpsys meminfo; }
 function procrank_sample() { adb shell procrank | grep networklog | tee procrank-`date +%Y%m%d-%H:%M.%N`; }
-function build_install_and_logcat() { release_build && install_device && logcat; }
+function build_install_and_logcat() { release_build && install_device && logcat_networklog; }
 
 function check_status()
 {
