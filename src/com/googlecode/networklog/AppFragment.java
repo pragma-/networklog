@@ -729,6 +729,10 @@ public class AppFragment extends Fragment {
       MyLog.d("AppFragment: NewLogEntry: [" + entry.uid + "] in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
     }
 
+    if(groupDataBuffer == null) {
+      return;
+    }
+
     int index = getItemByAppUid(entry.uid);
 
     if(index < 0) {
