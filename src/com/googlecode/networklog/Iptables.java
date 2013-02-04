@@ -19,8 +19,6 @@ import java.io.BufferedWriter;
 
 
 public class Iptables {
-  public static final String SCRIPT = "networklog.sh";
-
   public static final String[] CELL_INTERFACES = {
     "rmnet+", "ppp+", "pdp+", "pnp+", "rmnet_sdio+", "uwbr+", "wimax+", "vsnet+", "usb+", "ccmni+"
   };
@@ -30,8 +28,8 @@ public class Iptables {
   };
 
   public static boolean checkRoot(Context context) {
-    synchronized(NetworkLog.scriptLock) {
-      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
+    synchronized(NetworkLog.SCRIPT) {
+      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
@@ -106,8 +104,8 @@ public class Iptables {
       removeRules(context);
     }
 
-    synchronized(NetworkLog.scriptLock) {
-      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
+    synchronized(NetworkLog.SCRIPT) {
+      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
       String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + "iptables_armv5";
 
       try {
@@ -147,8 +145,8 @@ public class Iptables {
     int tries = 0;
 
     while(checkRules(context) == true) {
-      synchronized(NetworkLog.scriptLock) {
-        String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
+      synchronized(NetworkLog.SCRIPT) {
+        String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
 
         try {
           PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
@@ -192,8 +190,8 @@ public class Iptables {
 
   public static boolean checkRules(Context context) {
     String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + "iptables_armv5";
-    synchronized(NetworkLog.scriptLock) {
-      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + SCRIPT;
+    synchronized(NetworkLog.SCRIPT) {
+      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));

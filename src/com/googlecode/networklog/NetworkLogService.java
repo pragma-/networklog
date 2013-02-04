@@ -674,8 +674,8 @@ public class NetworkLogService extends Service {
   }
 
   public void killLogger() {
-    synchronized(NetworkLog.scriptLock) {
-      String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + Iptables.SCRIPT;
+    synchronized(NetworkLog.SCRIPT) {
+      String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
@@ -792,8 +792,8 @@ public class NetworkLogService extends Service {
       return false;
     }
 
-    synchronized(NetworkLog.scriptLock) {
-      String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + Iptables.SCRIPT;
+    synchronized(NetworkLog.SCRIPT) {
+      String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
       String busybox = getFilesDir().getAbsolutePath() + File.separator + "busybox_g1";
 
       try {

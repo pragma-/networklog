@@ -52,6 +52,8 @@ import java.util.ArrayList;
 import java.io.File;
 
 public class NetworkLog extends SherlockFragmentActivity {
+  public static final String SCRIPT = "networklog.sh";
+
   public static RetainInstanceData data = null;
 
   public static ViewPager viewPager;
@@ -65,7 +67,6 @@ public class NetworkLog extends SherlockFragmentActivity {
   public static TextView statusText;
   public static Settings settings;
   public static Handler handler;
-  public static Object scriptLock = new Object();
 
   public static String filterTextInclude;
   public static ArrayList<String> filterTextIncludeList = new ArrayList<String>();
