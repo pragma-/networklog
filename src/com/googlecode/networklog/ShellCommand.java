@@ -60,13 +60,12 @@ public class ShellCommand {
         if(MyLog.enabled) {
           MyLog.d("ShellCommand waitForExit [" + tag + "] discarding read: " + readStdout());
         }
-      }
-      else
+      } else {
         try {
           Thread.sleep(100);
+        } catch(Exception e) {
+          Log.d("NetworkLog", "waitForExit", e);
         }
-      catch(Exception e) {
-        Log.e("NetworkLog", "waitForExit error", e);
       }
     }
   }
