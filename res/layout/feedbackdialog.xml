@@ -19,7 +19,16 @@
     android:inputType="textCapSentences|textAutoCorrect|textMultiLine|textLongMessage"
     android:scrollHorizontally="false"
     android:minLines="6"
+    android:maxLines="6"
     android:gravity="top|left"
     android:scrollbars="vertical"
     android:layout_below="@id/feedbackInstructions" />
+
+  <CheckBox
+    android:id="@+id/attachLogcat"
+    android:text="Attach debug log"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    android:layout_below="@id/feedbackMessage" />
 </RelativeLayout>

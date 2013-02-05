@@ -12,14 +12,23 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.view.View;
 import android.view.LayoutInflater;
 import android.os.Build;
+import android.os.Environment;
+
+import java.io.File;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+
 
 public class FeedbackDialog
 {
   public EditText message;
+  public CheckBox attachLogcat;
   public AlertDialog dialog;
   private Context context;
 
@@ -30,6 +39,7 @@ public class FeedbackDialog
     View view = inflater.inflate(R.layout.feedbackdialog, null);
 
     message = (EditText) view.findViewById(R.id.feedbackMessage);
+    attachLogcat = (CheckBox) view.findViewById(R.id.attachLogcat);
 
     AlertDialog.Builder builder = new AlertDialog.Builder(context);
     builder.setTitle("Send Feedback")
@@ -67,28 +77,26 @@ public class FeedbackDialog
       dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
         public void onClick(View v) {
           String msg = message.getText().toString().trim();
+          File logcat = null;
 
           if(msg.length() == 0) {
             Iptables.showError(context, "No message", "Please enter a message, or use the Cancel button.");
             return;
           }
 
+          if(attachLogcat.isChecked()) {
+            try {
+              logcat = generateLogcat();
+            } catch(Exception e) {
+              Iptables.showError(context, "Error creating logcat", e.toString());
+              return;
+            }
+          }
+
           dialog.dismiss();
           dialog = null;
 
-          try {
-            msg += "\n\nNetworkLog " + context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
-          } catch (android.content.pm.PackageManager.NameNotFoundException e) {
-            msg += "\n\nNetworkLog unknown version";
-          }
-          msg += "\nAndroid " + Build.VERSION.RELEASE;
-          msg += "\nDevice " + Build.MANUFACTURER + " " + Build.MODEL + " " + Build.PRODUCT + " " + Build.BRAND;
-          msg += "\n" + Build.DISPLAY;
-          msg += "\nCPU " + Build.CPU_ABI + " " + Build.CPU_ABI2;
-
-          Intent sendIntent = new Intent(Intent.ACTION_SENDTO);
-          sendIntent.setData(Uri.parse("mailto:pragma78@gmail.com?subject=[NetworkLog] Bug report/feedback&body=" + msg));
-          context.startActivity(Intent.createChooser(sendIntent, "Send Bug Report/Feedback"));
+          sendFeedback(msg, logcat);
         }
       });
     }
@@ -99,5 +107,53 @@ public class FeedbackDialog
       dialog.dismiss();
       dialog = null;
     }
+  }
+
+  public File generateLogcat() throws Exception {
+    File logcat = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "netlog_logcat.txt");
+
+    synchronized(NetworkLog.SCRIPT) {
+      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
+      PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
+      script.println("logcat -d -v time > " + logcat.getAbsolutePath());
+      script.flush();
+      script.close();
+
+      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "generateLogcat");
+      String error = command.start(true);
+
+      if(error != null) {
+        throw new Exception(error);
+      }
+    }
+    return logcat;
+  }
+
+  public void sendFeedback(String message, File logcat) {
+    StringBuilder msg = new StringBuilder(message.length() + 512);
+
+    msg.append(message);
+
+    try {
+      msg.append("\n\nNetworkLog " + context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName);
+    } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+      msg.append("\n\nNetworkLog unknown version");
+    }
+    msg.append("\nAndroid " + Build.VERSION.RELEASE);
+    msg.append("\nDevice " + Build.MANUFACTURER + " " + Build.MODEL + " " + Build.PRODUCT + " " + Build.BRAND);
+    msg.append("\n" + Build.DISPLAY);
+    msg.append("\nCPU " + Build.CPU_ABI + " " + Build.CPU_ABI2);
+
+    Intent intent = new Intent(Intent.ACTION_SEND);
+    intent.putExtra(Intent.EXTRA_EMAIL, new String[]{ "pragma78@gmail.com" });
+    intent.putExtra(Intent.EXTRA_SUBJECT, "[NetworkLog] Bug report/feedback");
+    intent.putExtra(Intent.EXTRA_TEXT, msg.toString());
+    intent.setType("message/rfc822");
+
+    if(logcat != null) {
+      intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(logcat));
+    }
+
+    context.startActivity(Intent.createChooser(intent, "Send Bug Report/Feedback"));
   }
 }
