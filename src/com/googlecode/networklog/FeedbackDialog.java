@@ -71,6 +71,12 @@ public class FeedbackDialog
     }
   }
 
+  public void setAttachLogcat(boolean value) {
+    if(attachLogcat != null) {
+      attachLogcat.setChecked(value);
+    }
+  }
+
   public void show() {
     if(dialog != null) {
       dialog.show();

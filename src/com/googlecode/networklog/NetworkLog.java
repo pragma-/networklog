@@ -351,6 +351,7 @@ public class NetworkLog extends SherlockFragmentActivity {
         if(data.feedbackDialogMessage != null) {
           feedbackDialog = new FeedbackDialog(this);
           feedbackDialog.setMessage(data.feedbackDialogMessage);
+          feedbackDialog.setAttachLogcat(data.feedbackDialogAttachLogcat);
           feedbackDialog.setCursorPosition(data.feedbackDialogCursorPosition);
           feedbackDialog.show();
         }
