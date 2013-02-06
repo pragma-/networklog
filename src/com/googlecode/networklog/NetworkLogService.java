@@ -779,7 +779,7 @@ public class NetworkLogService extends Service {
           MyLog.d(cmd + " is our child");
           networklog_pid = pid;
 
-          if(cmd.equals(busybox)) {
+          if(cmd.contains(busybox)) {
             MyLog.d("Killing tracker " + pid);
 
             try {
@@ -923,6 +923,10 @@ public class NetworkLogService extends Service {
   }
 
   void stopWatchingExternalStorage() {
-    unregisterReceiver(mExternalStorageReceiver);
+    try {
+      unregisterReceiver(mExternalStorageReceiver);
+    } catch (Exception e) {
+      // ignored
+    }
   }
 }
