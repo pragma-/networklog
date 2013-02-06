@@ -45,6 +45,7 @@ public class NetworkLogService extends Service {
   static final int MSG_TOGGLE_FOREGROUND   = 5;
   final Messenger messenger = new Messenger(new IncomingHandler(this));
   boolean has_root = false;
+  boolean has_binaries = false;
   public static NetworkLogService instance = null;
   private Context context;
 
@@ -107,7 +108,7 @@ public class NetworkLogService extends Service {
   @Override
     public IBinder onBind(Intent intent) {
       MyLog.d("[service] onBind");
-      if(!has_root) {
+      if(!has_root || !has_binaries) {
         return null;
       } else {
         return messenger.getBinder();
@@ -144,7 +145,7 @@ public class NetworkLogService extends Service {
   }
 
   public boolean hasRoot() {
-    return Iptables.checkRoot(this);
+    return SysUtils.checkRoot(this);
   }
 
   @Override
@@ -152,7 +153,7 @@ public class NetworkLogService extends Service {
       MyLog.d("[service] onCreate");
 
       if(!hasRoot()) {
-        Iptables.showError(this, "Network Log Error", "Network Log requires root/superuser access");
+        SysUtils.showError(this, "Network Log Error", "Network Log requires root/superuser access");
         has_root = false;
         stopSelf();
         return;
@@ -160,7 +161,13 @@ public class NetworkLogService extends Service {
         has_root = true;
       }
 
-      Iptables.installBinaries(this);
+      if(!SysUtils.installBinaries(this)) {
+        has_binaries = false;
+        stopSelf();
+        return;
+      } else {
+        has_binaries = true;
+      }
 
       if(instance != null) {
         Log.w("NetworkLog", "[service] Last instance destroyed unexpectedly");
@@ -186,7 +193,7 @@ public class NetworkLogService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
       MyLog.d("[service] onStartCommand");
 
-      if(!has_root) {
+      if(!has_root || !has_binaries) {
         return Service.START_NOT_STICKY;
       }
 
@@ -252,7 +259,7 @@ public class NetworkLogService extends Service {
 
       instance = null;
 
-      if(has_root) {
+      if(has_root && has_binaries) {
         stopLogging();
         Toast.makeText(this, "Network Log service done", Toast.LENGTH_SHORT).show();
       }
@@ -627,7 +634,7 @@ public class NetworkLogService extends Service {
           Handler handler = new Handler(Looper.getMainLooper());
           handler.post(new Runnable() {
             public void run() {
-              Iptables.showError(context, "Network Log Error", "Failed to open logfile: " + e.getMessage());
+              SysUtils.showError(context, "Network Log Error", "Failed to open logfile: " + e.getMessage());
             }
           });
           return;
@@ -674,6 +681,11 @@ public class NetworkLogService extends Service {
   }
 
   public void killLogger() {
+    String busyboxBinary = SysUtils.getBusyboxBinary();
+    if(busyboxBinary == null) {
+      return;
+    }
+
     synchronized(NetworkLog.SCRIPT) {
       String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
 
@@ -693,7 +705,7 @@ public class NetworkLogService extends Service {
       int pid = 0, ppid = 0, token, pos, space;
       boolean error = false;
 
-      String busybox = getFilesDir().getAbsolutePath() + File.separator + "busybox_g1";
+      String busybox = getFilesDir().getAbsolutePath() + File.separator + busyboxBinary;
 
       while(true) {
         String line = command.readStdoutBlocking();
@@ -792,9 +804,14 @@ public class NetworkLogService extends Service {
       return false;
     }
 
+    String busyboxBinary = SysUtils.getBusyboxBinary();
+    if(busyboxBinary == null) {
+      return false;
+    }
+
     synchronized(NetworkLog.SCRIPT) {
       String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
-      String busybox = getFilesDir().getAbsolutePath() + File.separator + "busybox_g1";
+      String busybox = getFilesDir().getAbsolutePath() + File.separator + busyboxBinary;
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
@@ -810,7 +827,7 @@ public class NetworkLogService extends Service {
       final String error = command.start(false);
 
       if(error != null) {
-        Iptables.showError(this, "Network Log Error", error);
+        SysUtils.showError(this, "Network Log Error", error);
         return false;
       }
     }

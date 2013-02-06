@@ -8,15 +8,11 @@ package com.googlecode.networklog;
 
 import android.content.Context;
 import android.util.Log;
-import android.content.Intent;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.FileWriter;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.BufferedWriter;
-
 
 public class Iptables {
   public static final String[] CELL_INTERFACES = {
@@ -27,86 +23,19 @@ public class Iptables {
     "eth+", "wlan+", "tiwlan+", "athwlan+", "ra+"
   };
 
-  public static boolean checkRoot(Context context) {
-    synchronized(NetworkLog.SCRIPT) {
-      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
-
-      try {
-        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        script.println("exit 0");
-        script.flush();
-        script.close();
-      } catch(java.io.IOException e) {
-        Log.e("NetworkLog", "Check root error", e);
-      }
-
-      String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "checkRoot").start(true);
-
-      if(error != null) {
-        Log.d("[NetworkLog]", "Failed check root: " + error);
-        return false;
-      } else {
-        Log.d("[NetworkLog]", "Check root passed");
-        return true;
-      }
-    }
-  }
-
-  public static void installBinaries(Context context) {
-    String iptablesPath = context.getFilesDir().getAbsolutePath() + File.separator + "iptables_armv5";
-    String busyboxPath  = context.getFilesDir().getAbsolutePath() + File.separator + "busybox_g1";
-
-    if(!new File(iptablesPath).isFile()) {
-      try {
-        MyLog.d("iptables_armv5 not found: installing to " + iptablesPath);
-
-        final FileOutputStream out = new FileOutputStream(iptablesPath);
-        final InputStream in = context.getResources().openRawResource(R.raw.iptables_armv5);
-        byte buf[] = new byte[1024];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-          out.write(buf, 0, len);
-        }
-        out.close();
-        in.close();
-        Runtime.getRuntime().exec("chmod 755 " + iptablesPath).waitFor();
-      } catch (Exception e) {
-        showError(context, "Network Log", "Install iptables error: " + e.getMessage());
-      }
-    } else {
-      MyLog.d("iptables_armv5 found at " + iptablesPath);
-    }
-
-    if(!new File(busyboxPath).isFile()) {
-      MyLog.d("busybox_g1 not found: installing to " + busyboxPath);
-
-      try {
-        final FileOutputStream out = new FileOutputStream(busyboxPath);
-        final InputStream in = context.getResources().openRawResource(R.raw.busybox_g1);
-        byte buf[] = new byte[1024];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-          out.write(buf, 0, len);
-        }
-        out.close();
-        in.close();
-        Runtime.getRuntime().exec("chmod 755 " + busyboxPath).waitFor();
-      } catch (Exception e) {
-        showError(context, "Network Log", "Install busybox error: " + e.getMessage());
-      }
-    } else {
-      MyLog.d("busybox_g1 found at " + busyboxPath);
-    }
-  }
-
   public static boolean addRules(Context context) {
+    String iptablesBinary = SysUtils.getIptablesBinary();
+    if(iptablesBinary == null) {
+      return false;
+    }
+
     if(checkRules(context) == true) {
       removeRules(context);
     }
 
     synchronized(NetworkLog.SCRIPT) {
       String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
-      String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + "iptables_armv5";
+      String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + iptablesBinary;
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
@@ -132,7 +61,7 @@ public class Iptables {
       String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "addRules").start(true);
 
       if(error != null) {
-        showError(context, "Add rules error", error);
+        SysUtils.showError(context, "Add rules error", error);
         return false;
       }
     }
@@ -141,7 +70,12 @@ public class Iptables {
   }
 
   public static boolean removeRules(Context context) {
-    String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + "iptables_armv5";
+    String iptablesBinary = SysUtils.getIptablesBinary();
+    if(iptablesBinary == null) {
+      return false;
+    }
+
+    String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + iptablesBinary;
     int tries = 0;
 
     while(checkRules(context) == true) {
@@ -172,7 +106,7 @@ public class Iptables {
         String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "removeRules").start(true);
 
         if(error != null) {
-          showError(context, "Remove rules error", error);
+          SysUtils.showError(context, "Remove rules error", error);
           return false;
         }
 
@@ -189,7 +123,13 @@ public class Iptables {
   }
 
   public static boolean checkRules(Context context) {
-    String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + "iptables_armv5";
+    String iptablesBinary = SysUtils.getIptablesBinary();
+    if(iptablesBinary == null) {
+      return false;
+    }
+
+    String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + iptablesBinary;
+
     synchronized(NetworkLog.SCRIPT) {
       String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
 
@@ -206,7 +146,7 @@ public class Iptables {
       String error = command.start(false);
 
       if(error != null) {
-        showError(context, "Check rules error", error);
+        SysUtils.showError(context, "Check rules error", error);
         return false;
       }
 
@@ -228,22 +168,18 @@ public class Iptables {
 
       command.checkForExit();
       if(command.exit != 0) {
-        showError(context, "Check rules error", result.toString());
+        SysUtils.showError(context, "Check rules error", result.toString());
         return false;
       }
 
       MyLog.d("checkRules result: [" + result + "]");
 
+      if(result.indexOf("Perhaps iptables or your kernel needs to be upgraded", 0) != -1) {
+        SysUtils.showError(context, "Iptables error", "Iptables is not supported by this version of Android. Upgrade the kernel with the netfilter module or install a supported version of Android such as CyanogenMod.");
+        return false;
+      }
+
       return result.indexOf("[NetworkLogEntry]", 0) == -1 ? false : true;
     }
-  }
-
-  public static void showError(final Context context, final String title, final String message) {
-    MyLog.d("Got error: [" + title + "] [" + message + "]");
-
-    context.startActivity(new Intent(context, ErrorDialogActivity.class)
-        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        .putExtra("title", title)
-        .putExtra("message", message));
   }
 }

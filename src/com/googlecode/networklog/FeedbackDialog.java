@@ -86,7 +86,7 @@ public class FeedbackDialog
           File logcat = null;
 
           if(msg.length() == 0) {
-            Iptables.showError(context, "No message", "Please enter a message, or use the Cancel button.");
+            SysUtils.showError(context, "No message", "Please enter a message, or use the Cancel button.");
             return;
           }
 
@@ -94,7 +94,7 @@ public class FeedbackDialog
             try {
               logcat = generateLogcat();
             } catch(Exception e) {
-              Iptables.showError(context, "Error creating logcat", e.toString());
+              SysUtils.showError(context, "Error creating logcat", e.toString());
               return;
             }
           }
