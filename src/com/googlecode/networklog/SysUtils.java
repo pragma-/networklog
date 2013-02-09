@@ -28,7 +28,12 @@ public class SysUtils {
   public static boolean getBinariesIdentifiers() {
     String cpu_abi = Build.CPU_ABI.toLowerCase();
 
-    if(cpu_abi.contains("armeabi")) {
+    if(cpu_abi.contains("armeabi-v7")) {
+      iptablesBinary = "iptables_arm7";
+      iptablesResource = R.raw.iptables_arm7;
+      busyboxBinary = "busybox_g1";
+      busyboxResource = R.raw.busybox_g1;
+    } else if(cpu_abi.contains("armeabi")) {
       iptablesBinary = "iptables_armv5";
       iptablesResource = R.raw.iptables_armv5;
       busyboxBinary = "busybox_g1";
