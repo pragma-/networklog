@@ -23,6 +23,7 @@ log-*
 # generated files
 bin/
 gen/
+obj/
 
 # Local configuration file (sdk path, etc)
 local.properties

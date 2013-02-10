@@ -22,35 +22,35 @@ import java.util.zip.ZipInputStream;
 public class SysUtils {
   public static String iptablesBinary;
   public static int iptablesResource;
-  public static String busyboxBinary;
-  public static int busyboxResource;
+  public static String grepBinary;
+  public static int grepResource;
 
   public static boolean getBinariesIdentifiers() {
     String cpu_abi = Build.CPU_ABI.toLowerCase();
 
     if(cpu_abi.contains("armeabi-v7")) {
-      iptablesBinary = "iptables_arm7";
-      iptablesResource = R.raw.iptables_arm7;
-      busyboxBinary = "busybox_g1";
-      busyboxResource = R.raw.busybox_g1;
+      iptablesBinary = "iptables_armv7";
+      iptablesResource = R.raw.iptables_armv7;
+      grepBinary = "grep_armv7";
+      grepResource = R.raw.grep_armv7;
     } else if(cpu_abi.contains("armeabi")) {
       iptablesBinary = "iptables_armv5";
       iptablesResource = R.raw.iptables_armv5;
-      busyboxBinary = "busybox_g1";
-      busyboxResource = R.raw.busybox_g1;
+      grepBinary = "grep_armv5";
+      grepResource = R.raw.grep_armv5;
     } else if(cpu_abi.contains("x86")) {
       iptablesBinary = "iptables_x86";
       iptablesResource = R.raw.iptables_x86;
-      busyboxBinary = "busybox_x86";
-      busyboxResource = R.raw.busybox_x86;
+      grepBinary = "grep_x86";
+      grepResource = R.raw.grep_x86;
     } else if(cpu_abi.contains("mips")) {
       iptablesBinary = "iptables_mips";
       iptablesResource = R.raw.iptables_mips;
-      busyboxBinary = "busybox_mips";
-      busyboxResource = R.raw.busybox_mips;
+      grepBinary = "grep_mips";
+      grepResource = R.raw.grep_mips;
     } else {
       iptablesBinary = null;
-      busyboxBinary = null;
+      grepBinary = null;
       return false;
     }
     return true;
@@ -63,11 +63,11 @@ public class SysUtils {
     return iptablesBinary;
   }
 
-  public static String getBusyboxBinary() {
-    if(busyboxBinary == null) {
+  public static String getGrepBinary() {
+    if(grepBinary == null) {
       getBinariesIdentifiers();
     }
-    return busyboxBinary;
+    return grepBinary;
   }
 
   public static boolean installBinary(Context context, String binary, int resource, String path) {
@@ -114,8 +114,8 @@ public class SysUtils {
       return false;
     }
 
-    String busyboxPath  = context.getFilesDir().getAbsolutePath() + File.separator + busyboxBinary;
-    if(!installBinary(context, busyboxBinary, busyboxResource, busyboxPath)) {
+    String grepPath  = context.getFilesDir().getAbsolutePath() + File.separator + grepBinary;
+    if(!installBinary(context, grepBinary, grepResource, grepPath)) {
       return false;
     }
 

@@ -681,8 +681,8 @@ public class NetworkLogService extends Service {
   }
 
   public void killLogger() {
-    String busyboxBinary = SysUtils.getBusyboxBinary();
-    if(busyboxBinary == null) {
+    String grepBinary = SysUtils.getGrepBinary();
+    if(grepBinary == null) {
       return;
     }
 
@@ -705,7 +705,7 @@ public class NetworkLogService extends Service {
       int pid = 0, ppid = 0, token, pos, space;
       boolean error = false;
 
-      String busybox = getFilesDir().getAbsolutePath() + File.separator + busyboxBinary;
+      String grep = getFilesDir().getAbsolutePath() + File.separator + grepBinary;
 
       while(true) {
         String line = command.readStdoutBlocking();
@@ -779,7 +779,7 @@ public class NetworkLogService extends Service {
           MyLog.d(cmd + " is our child");
           networklog_pid = pid;
 
-          if(cmd.contains(busybox)) {
+          if(cmd.contains(grep)) {
             MyLog.d("Killing tracker " + pid);
 
             try {
@@ -804,18 +804,18 @@ public class NetworkLogService extends Service {
       return false;
     }
 
-    String busyboxBinary = SysUtils.getBusyboxBinary();
-    if(busyboxBinary == null) {
+    String grepBinary = SysUtils.getGrepBinary();
+    if(grepBinary == null) {
       return false;
     }
 
     synchronized(NetworkLog.SCRIPT) {
       String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
-      String busybox = getFilesDir().getAbsolutePath() + File.separator + busyboxBinary;
+      String grep = getFilesDir().getAbsolutePath() + File.separator + grepBinary;
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        script.println(busybox + " grep NetworkLogEntry /proc/kmsg");
+        script.println(grep + " NetworkLogEntry /proc/kmsg");
         script.close();
       } catch(java.io.IOException e) {
         e.printStackTrace();
