@@ -76,7 +76,7 @@ public class AppTimelineGraph extends GraphActivity
 
       graphView.graphSeries.clear();
 
-      if(NetworkLog.logFragment == null && NetworkLog.logFragment.listData == null || NetworkLog.logFragment.listData.size() == 0) {
+      if(NetworkLog.logFragment == null || NetworkLog.logFragment.listData == null || NetworkLog.logFragment.listData.size() == 0) {
         SysUtils.showError(this, "No data", "There is no graph to show because there are no network log entries.");
         finish();
       }
