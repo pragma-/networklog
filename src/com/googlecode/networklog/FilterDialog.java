@@ -155,7 +155,7 @@ public class FilterDialog implements DialogInterface.OnDismissListener
     builder.setTitle("Filter")
       .setView(view)
       .setCancelable(true)
-      .setPositiveButton("Reset", new DialogInterface.OnClickListener() {
+      .setNeutralButton("Reset", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
           NetworkLog.filterTextInclude = "";
           NetworkLog.filterTextIncludeList.clear();
@@ -176,7 +176,7 @@ public class FilterDialog implements DialogInterface.OnDismissListener
           NetworkLog.filterProtocolExclude = false;
         }
       })
-    .setNeutralButton("Done", new DialogInterface.OnClickListener() {
+    .setPositiveButton("Done", new DialogInterface.OnClickListener() {
       public void onClick(DialogInterface dialog, int id) {
         dialog.dismiss();
       }
