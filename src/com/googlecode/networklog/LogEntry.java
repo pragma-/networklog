@@ -18,4 +18,28 @@ public class LogEntry {
   int spt;
   int dpt;
   long timestamp;
+
+  public static boolean isValid(LogEntry entry) {
+    if(StringUtils.contains(entry.in, "[]:=")) {
+      return false;
+    }
+
+    if(StringUtils.contains(entry.out, "[]:=")) {
+      return false;
+    }
+
+    if(StringUtils.contains(entry.proto, "[]:=")) {
+      return false;
+    }
+
+    if(StringUtils.contains(entry.src, "[]:=")) {
+      return false;
+    }
+
+    if(StringUtils.contains(entry.dst, "[]:=")) {
+      return false;
+    }
+
+    return true;
+  }
 }

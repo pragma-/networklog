@@ -325,6 +325,10 @@ public class LogFragment extends Fragment {
       return;
     }
 
+    if(!LogEntry.isValid(entry)) {
+      return;
+    }
+
     ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.uidMap.get(entry.uidString);
 
     if(appEntry == null) {

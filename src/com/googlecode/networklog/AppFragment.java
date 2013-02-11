@@ -733,6 +733,10 @@ public class AppFragment extends Fragment {
       return;
     }
 
+    if(!LogEntry.isValid(entry)) {
+      return;
+    }
+
     int index = getItemByAppUid(entry.uid);
 
     if(index < 0) {

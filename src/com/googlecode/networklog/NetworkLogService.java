@@ -644,6 +644,10 @@ public class NetworkLogService extends Service {
       }
     }
 
+    if(!LogEntry.isValid(entry)) {
+      return;
+    }
+
     // log entry to logfile
     if(logWriter != null) {
       logWriter.println(entry.timestamp + "," + entry.in + "," + entry.out + "," + entry.uid + "," + entry.src + "," + entry.spt + "," + entry.dst + "," + entry.dpt + "," + entry.len + "," + entry.proto);
