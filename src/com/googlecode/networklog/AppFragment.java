@@ -935,7 +935,9 @@ public class AppFragment extends Fragment {
     if(MyLog.enabled) {
       MyLog.d("[AppFragment] setFilter(" + s + ")");
     }
-    adapter.getFilter().filter(s);
+    if(adapter != null) {
+      adapter.getFilter().filter(s);
+    }
   }
 
   private class CustomAdapter extends BaseExpandableListAdapter implements Filterable {

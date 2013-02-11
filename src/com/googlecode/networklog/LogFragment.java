@@ -558,7 +558,9 @@ public class LogFragment extends Fragment {
 
   public void setFilter(CharSequence s) {
     // MyLog.d("[LogFragment] setFilter(" + s + ")");
-    adapter.getFilter().filter(s);
+    if(adapter != null) {
+      adapter.getFilter().filter(s);
+    }
   }
 
   String srcAddrResolved;
