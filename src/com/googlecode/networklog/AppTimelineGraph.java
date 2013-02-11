@@ -76,6 +76,11 @@ public class AppTimelineGraph extends GraphActivity
 
       graphView.graphSeries.clear();
 
+      if(NetworkLog.logFragment == null && NetworkLog.logFragment.listData == null || NetworkLog.logFragment.listData.size() == 0) {
+        SysUtils.showError(this, "No data", "There is no graph to show because there are no network log entries.");
+        finish();
+      }
+
       synchronized(NetworkLog.logFragment.listData) {
         for(LogFragment.ListItem item : NetworkLog.logFragment.listData) {
           if(item.app.uid == app_uid) {
@@ -116,6 +121,11 @@ public class AppTimelineGraph extends GraphActivity
             packetList.add(new PacketGraphItem(item.timestamp, item.len));
           }
         }
+      }
+
+      if(hostMap.size() == 0) {
+        SysUtils.showError(this, "No data", "There is no graph to show because there are no network log entries.");
+        finish();
       }
 
       int color = 0;
