@@ -41,15 +41,15 @@ public class Iptables {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
 
         for(String iface : CELL_INTERFACES) {
-          script.println(iptables + " -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+          script.println(iptables + " -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
 
-          script.println(iptables + " -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+          script.println(iptables + " -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
         }
 
         for(String iface : WIFI_INTERFACES) {
-          script.println(iptables + " -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+          script.println(iptables + " -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
 
-          script.println(iptables + " -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+          script.println(iptables + " -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
         }
 
         script.flush();
@@ -86,15 +86,15 @@ public class Iptables {
           PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
 
           for(String iface : CELL_INTERFACES) {
-            script.println(iptables + " -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+            script.println(iptables + " -D OUTPUT -o " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
 
-            script.println(iptables + " -D INPUT -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+            script.println(iptables + " -D INPUT -i " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
           }
 
           for(String iface : WIFI_INTERFACES) {
-            script.println(iptables + " -D OUTPUT -o " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+            script.println(iptables + " -D OUTPUT -o " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
 
-            script.println(iptables + " -D INPUT -i " + iface + " -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid");
+            script.println(iptables + " -D INPUT -i " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
           }
 
           script.flush();
@@ -179,7 +179,7 @@ public class Iptables {
         return false;
       }
 
-      return result.indexOf("[NetworkLogEntry]", 0) == -1 ? false : true;
+      return result.indexOf("{NL}", 0) == -1 ? false : true;
     }
   }
 }

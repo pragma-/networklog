@@ -20,23 +20,23 @@ public class LogEntry {
   long timestamp;
 
   public static boolean isValid(LogEntry entry) {
-    if(StringUtils.contains(entry.in, "[]:=")) {
+    if(StringUtils.contains(entry.in, "{}:=")) {
       return false;
     }
 
-    if(StringUtils.contains(entry.out, "[]:=")) {
+    if(StringUtils.contains(entry.out, "{}:=")) {
       return false;
     }
 
-    if(StringUtils.contains(entry.proto, "[]:=")) {
+    if(StringUtils.contains(entry.proto, "{}:=")) {
       return false;
     }
 
-    if(StringUtils.contains(entry.src, "[]:=")) {
+    if(StringUtils.contains(entry.src, "{}:=")) {
       return false;
     }
 
-    if(StringUtils.contains(entry.dst, "[]:=")) {
+    if(StringUtils.contains(entry.dst, "{}:=")) {
       return false;
     }
 

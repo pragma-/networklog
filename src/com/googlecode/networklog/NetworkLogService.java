@@ -296,16 +296,16 @@ public class NetworkLogService extends Service {
     int spt, dpt, len, uid;
     parser.setLine(result.toCharArray(), result.length() - 1);
 
-    while((pos = result.indexOf("[NetworkLogEntry]", pos)) > -1) {
+    while((pos = result.indexOf("{NL}", pos)) > -1) {
       if(MyLog.enabled) {
-        MyLog.d("---- got [NetworkLogEntry] at " + pos + " ----");
+        MyLog.d("---- got {NL} at " + pos + " ----");
       }
 
-      pos += "[NetworkLogEntry]".length(); // skip past "[NetworkLogEntry]"
+      pos += "{NL}".length(); // skip past "{NL}"
 
       thisEntry = pos;
       newline = result.indexOf("\n", pos);
-      nextEntry = result.indexOf("[NetworkLogEntry]", pos);
+      nextEntry = result.indexOf("{NL}", pos);
 
       if(newline == -1) {
         newline = result.length();
@@ -819,7 +819,7 @@ public class NetworkLogService extends Service {
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        script.println(grep + " NetworkLogEntry /proc/kmsg");
+        script.println(grep + " {NL} /proc/kmsg");
         script.close();
       } catch(java.io.IOException e) {
         e.printStackTrace();
