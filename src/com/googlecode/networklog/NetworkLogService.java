@@ -76,7 +76,7 @@ public class NetworkLogService extends Service {
             Intent i = new Intent(context, NetworkLog.class);
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pi = PendingIntent.getActivity(context, 0, i, 0);
-            notification.setLatestEventInfo(context, "Network Log", "Logging active [" + ((String)msg.obj) + "]", pi);
+            notification.setLatestEventInfo(context, getString(R.string.app_name), getString(R.string.logging_active) + " [" + ((String)msg.obj) + "]", pi);
 
             if(start_foreground) {
               nManager.notify(NOTIFICATION_ID, notification);
@@ -136,11 +136,11 @@ public class NetworkLogService extends Service {
   }
 
   public Notification createNotification() {
-    Notification n = new Notification(R.drawable.icon, "Network logging started", System.currentTimeMillis());
+    Notification n = new Notification(R.drawable.icon, getString(R.string.logging_started), System.currentTimeMillis());
     Intent i = new Intent(this, NetworkLog.class);
     i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
     PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
-    n.setLatestEventInfo(this, "Network Log", "Logging active", pi);
+    n.setLatestEventInfo(this, getString(R.string.app_name), getString(R.string.logging_active), pi);
     return n;
   }
 
@@ -153,7 +153,7 @@ public class NetworkLogService extends Service {
       MyLog.d("[service] onCreate");
 
       if(!hasRoot()) {
-        SysUtils.showError(this, "Network Log Error", "Network Log requires root/superuser access");
+        SysUtils.showError(this, getString(R.string.error_default_title), getString(R.string.error_noroot));
         has_root = false;
         stopSelf();
         return;
@@ -261,7 +261,7 @@ public class NetworkLogService extends Service {
 
       if(has_root && has_binaries) {
         stopLogging();
-        Toast.makeText(this, "Network Log service done", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.logging_stopped), Toast.LENGTH_SHORT).show();
       }
     }
 
@@ -634,7 +634,7 @@ public class NetworkLogService extends Service {
           Handler handler = new Handler(Looper.getMainLooper());
           handler.post(new Runnable() {
             public void run() {
-              SysUtils.showError(context, "Network Log Error", "Failed to open logfile: " + e.getMessage());
+              SysUtils.showError(context, getString(R.string.error_default_title), getString(R.string.error_openlogfile) + e.getMessage());
             }
           });
           return;
@@ -831,7 +831,7 @@ public class NetworkLogService extends Service {
       final String error = command.start(false);
 
       if(error != null) {
-        SysUtils.showError(this, "Network Log Error", error);
+        SysUtils.showError(this, getString(R.string.error_default_title), error);
         return false;
       }
     }

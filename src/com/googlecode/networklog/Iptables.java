@@ -7,6 +7,7 @@
 package com.googlecode.networklog;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.util.Log;
 
 import java.io.File;
@@ -61,7 +62,7 @@ public class Iptables {
       String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "addRules").start(true);
 
       if(error != null) {
-        SysUtils.showError(context, "Add rules error", error);
+        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_add_rules), error);
         return false;
       }
     }
@@ -106,7 +107,7 @@ public class Iptables {
         String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "removeRules").start(true);
 
         if(error != null) {
-          SysUtils.showError(context, "Remove rules error", error);
+          SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_remove_rules), error);
           return false;
         }
 
@@ -146,7 +147,7 @@ public class Iptables {
       String error = command.start(false);
 
       if(error != null) {
-        SysUtils.showError(context, "Check rules error", error);
+        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), error);
         return false;
       }
 
@@ -168,14 +169,15 @@ public class Iptables {
 
       command.checkForExit();
       if(command.exit != 0) {
-        SysUtils.showError(context, "Check rules error", result.toString());
+        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), result.toString());
         return false;
       }
 
       MyLog.d("checkRules result: [" + result + "]");
 
       if(result.indexOf("Perhaps iptables or your kernel needs to be upgraded", 0) != -1) {
-        SysUtils.showError(context, "Iptables error", "Iptables is not supported by this version of Android. Upgrade the kernel with the netfilter module or install a supported version of Android such as CyanogenMod.");
+        Resources res = context.getResources();
+        SysUtils.showError(context, res.getString(R.string.iptables_error_unsupported_title), res.getString(R.string.iptables_error_unsupported_text));
         return false;
       }
 

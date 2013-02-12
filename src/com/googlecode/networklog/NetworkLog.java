@@ -13,6 +13,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.content.ServiceConnection;
 import android.content.ComponentName;
+import android.content.res.Resources;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.os.IBinder;
@@ -291,9 +292,9 @@ public class NetworkLog extends SherlockFragmentActivity {
       public String getTitle(int index) {
         switch(index) {
           case PAGE_LOG:
-            return "Log";
+            return context.getResources().getString(R.string.tab_log);
           case PAGE_APP:
-            return "Apps";
+            return context.getResources().getString(R.string.tab_apps);
         }
         return "Unnamed";
       }
@@ -670,14 +671,15 @@ public class NetworkLog extends SherlockFragmentActivity {
       return;
     }
 
-    StringBuilder message = new StringBuilder("Are you sure you want to exit?");
+    StringBuilder message = new StringBuilder(getString(R.string.confirm_exit_text));
     boolean serviceRunning = isServiceRunning(context, NetworkLogService.class.getName());
 
     if(serviceRunning) {
+      message.append("\n\n");
       if(stopServiceAtExit) {
-        message.append("\n\nLogging will be stopped.");
+        message.append(getString(R.string.logging_will_stop));
       } else {
-        message.append("\n\nLogging will continue in background service.");
+        message.append(getString(R.string.logging_will_continue));
       }
     }
 
@@ -686,17 +688,17 @@ public class NetworkLog extends SherlockFragmentActivity {
     checkBox.setChecked(false);
 
     AlertDialog.Builder builder = new AlertDialog.Builder(context);
-    builder.setTitle("Confirm exit")
+    builder.setTitle(getString(R.string.confirm_exit_title))
       .setMessage(message.toString())
       .setCancelable(true)
       .setView(checkBoxView)
-      .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+      .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
           settings.setConfirmExit(!checkBox.isChecked());
           finish();
         }
       })
-    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+    .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
       public void onClick(DialogInterface dialog, int id) {
         dialog.cancel();
       }
@@ -780,10 +782,15 @@ public class NetworkLog extends SherlockFragmentActivity {
   }
 
   public static void updateStatusText() {
+    if(networklogContext == null) {
+      return;
+    }
+
     StringBuilder sb = new StringBuilder();
+    Resources res = networklogContext.getResources();
 
     if(filterTextInclude.length() > 0 || filterTextExclude.length() > 0) {
-      sb.append("Filter: ");
+      sb.append(res.getString(R.string.filter_applied));
 
       if(filterTextInclude.length() > 0) {
         sb.append("+[" + filterTextInclude + "] ");
@@ -795,7 +802,7 @@ public class NetworkLog extends SherlockFragmentActivity {
     }
 
     if(!isServiceRunning(networklogContext, NetworkLogService.class.getName())) {
-      sb.append("Logging not active.");
+      sb.append(res.getString(R.string.logging_inactive));
     }
 
     try {
@@ -813,7 +820,7 @@ public class NetworkLog extends SherlockFragmentActivity {
           size = String.valueOf(length);
         }
 
-        sb.append(" Logfile size: " + size);
+        sb.append(res.getString(R.string.logfile_size) + size);
 
         if(isBound) {
           if(service != null) {
@@ -829,7 +836,7 @@ public class NetworkLog extends SherlockFragmentActivity {
         }
       }
     } catch(Exception e) {
-      sb.append(" Bad logfile.");
+      sb.append(res.getString(R.string.logfile_bad) + e.getMessage());
     }
 
     statusText.setText(Html.fromHtml("<small>" + sb + "</small>"));

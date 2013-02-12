@@ -7,7 +7,7 @@
 
   <TextView
     android:id="@+id/feedbackInstructions"
-    android:text="Enter message for bug report/feedback:"
+    android:text="@string/feedback_instructions"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 
@@ -26,7 +26,7 @@
 
   <CheckBox
     android:id="@+id/attachLogcat"
-    android:text="Attach debug log"
+    android:text="@string/feedback_attach_log"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:layout_margin="5dp"

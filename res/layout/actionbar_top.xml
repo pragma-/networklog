@@ -8,13 +8,13 @@
     android:layout_alignParentLeft="true"
     style="?android:attr/actionBarStyle"
     android:gravity="center"
-    android:text="Network Log"/>
+    android:text="@string/app_name"/>
   <ToggleButton
     android:id="@+id/actionbar_service_toggle"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_alignParentRight="true"
-    android:textOn="Logging On"
-    android:textOff="Logging Off"
+    android:textOn="@string/logging_on"
+    android:textOff="@string/logging_off"
     android:onClick="serviceToggle"/>
 </RelativeLayout>

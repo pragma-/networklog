@@ -473,7 +473,7 @@ public class AppFragment extends Fragment {
       layout.setOrientation(LinearLayout.VERTICAL);
 
       TextView tv = new TextView(context);
-      tv.setText("Press for connections, long-press for graph");
+      tv.setText(getString(R.string.app_instructions));
       layout.addView(tv);
 
       listView = new ExpandableListView(context);
@@ -1414,10 +1414,10 @@ public class AppFragment extends Fragment {
         name.setText("(" + item.app.uid + ")" + " " + item.app.name);
 
         packets = holder.getPackets();
-        packets.setText("Packets: " + item.totalPackets);
+        packets.setText(getString(R.string.app_packets) + item.totalPackets);
 
         bytes = holder.getBytes();
-        bytes.setText("Bytes: " + item.totalBytes);
+        bytes.setText(getString(R.string.app_bytes) + item.totalBytes);
 
         timestamp = holder.getTimestamp();
 

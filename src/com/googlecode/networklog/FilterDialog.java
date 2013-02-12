@@ -8,6 +8,7 @@ package com.googlecode.networklog;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.widget.EditText;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -151,11 +152,12 @@ public class FilterDialog implements DialogInterface.OnDismissListener
 
     editTextExclude.addTextChangedListener(filterTextExcludeWatcher);
 
+    Resources res = context.getResources();
     AlertDialog.Builder builder = new AlertDialog.Builder(context);
-    builder.setTitle("Filter")
+    builder.setTitle(res.getString(R.string.filter_title))
       .setView(view)
       .setCancelable(true)
-      .setNeutralButton("Reset", new DialogInterface.OnClickListener() {
+      .setNeutralButton(res.getString(R.string.reset), new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
           NetworkLog.filterTextInclude = "";
           NetworkLog.filterTextIncludeList.clear();
@@ -176,7 +178,7 @@ public class FilterDialog implements DialogInterface.OnDismissListener
           NetworkLog.filterProtocolExclude = false;
         }
       })
-    .setPositiveButton("Done", new DialogInterface.OnClickListener() {
+    .setPositiveButton(res.getString(R.string.done), new DialogInterface.OnClickListener() {
       public void onClick(DialogInterface dialog, int id) {
         dialog.dismiss();
       }

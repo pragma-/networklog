@@ -11,6 +11,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -35,6 +36,7 @@ public class FeedbackDialog
   public FeedbackDialog(final Context context)
   {
     this.context = context;
+    Resources res = context.getResources();
     LayoutInflater inflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
     View view = inflater.inflate(R.layout.feedbackdialog, null);
 
@@ -42,15 +44,15 @@ public class FeedbackDialog
     attachLogcat = (CheckBox) view.findViewById(R.id.attachLogcat);
 
     AlertDialog.Builder builder = new AlertDialog.Builder(context);
-    builder.setTitle("Send Feedback")
+    builder.setTitle(res.getString(R.string.feedback_title))
       .setView(view)
       .setCancelable(true)
-      .setPositiveButton("Send", new DialogInterface.OnClickListener() {
+      .setPositiveButton(res.getString(R.string.feedback_send), new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface d, int id) {
           // see show() method for implementation -- avoids dismiss() unless validation passes
         }
       })
-    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+    .setNegativeButton(res.getString(R.string.cancel), new DialogInterface.OnClickListener() {
       public void onClick(DialogInterface d, int id) {
         dialog.cancel();
         dialog = null;
@@ -82,11 +84,12 @@ public class FeedbackDialog
       dialog.show();
       dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
         public void onClick(View v) {
+          Resources res = context.getResources();
           String msg = message.getText().toString().trim();
           File logcat = null;
 
           if(msg.length() == 0) {
-            SysUtils.showError(context, "No message", "Please enter a message, or use the Cancel button.");
+            SysUtils.showError(context, res.getString(R.string.feedback_error_no_message_title), res.getString(R.string.feedback_error_no_message_text));
             return;
           }
 
@@ -94,7 +97,7 @@ public class FeedbackDialog
             try {
               logcat = generateLogcat();
             } catch(Exception e) {
-              SysUtils.showError(context, "Error creating logcat", e.toString());
+              SysUtils.showError(context, res.getString(R.string.feedback_error_getting_debug_log), e.toString());
               return;
             }
           }
@@ -160,6 +163,6 @@ public class FeedbackDialog
       intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(logcat));
     }
 
-    context.startActivity(Intent.createChooser(intent, "Send Bug Report/Feedback"));
+    context.startActivity(Intent.createChooser(intent, context.getResources().getString(R.string.feedback_chooser_title)));
   }
 }

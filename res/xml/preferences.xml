@@ -1,167 +1,167 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-  <PreferenceScreen android:title="General Options">
+  <PreferenceScreen android:title="@string/pref_general">
     <PreferenceCategory
-      android:title="General">
+      android:title="@string/pref_general">
       <CheckBoxPreference
         android:defaultValue="false"
         android:key="resolve_hosts"
-        android:title="Resolve hosts"
-        android:summary="Resolve IP addresses to DNS hostnames (Note: makes DNS network queries on port 53)" />
+        android:title="@string/pref_resolve_hosts_title"
+        android:summary="@string/pref_resolve_hosts_summary" />
       <CheckBoxPreference
         android:defaultValue="true"
         android:key="resolve_ports"
-        android:title="Resolve ports"
-        android:summary="Resolve known port numbers to service names (Note: Uses internal list; no network queries made)" />
+        android:title="@string/pref_resolve_ports_title"
+        android:summary="@string/pref_resolve_ports_summary" />
       <CheckBoxPreference
         android:defaultValue="false"
         android:key="copy_original_addrs"
-        android:title="Copy unresolved addresses"
-        android:summary="When copying to clipboard, use original address/port instead of resolved addresses" />
+        android:title="@string/pref_copy_addrs_title"
+        android:summary="@string/pref_copy_addrs_summary" />
       <Preference
         android:persistent="false"
         android:key="filter_dialog"
-        android:title="Filter"
-        android:summary="Configure advanced filtering options" />
+        android:title="@string/pref_filter_title"
+        android:summary="@string/pref_filter_summary" />
       <ListPreference
         android:defaultValue="14400000"
         android:key="history_size"
-        android:title="Load logfile history"
-        android:summary="Select how much history to load, effective immediately and at app start (default: 4 hours)"
+        android:title="@string/pref_history_size_title"
+        android:summary="@string/pref_history_size_summary"
         android:entries="@array/history_timerange_entries"
         android:entryValues="@array/history_timerange_values"
-        android:dialogTitle="Load history" />
+        android:dialogTitle="@string/history_load" />
       <Preference
         android:persistent="false"
         android:key="clear_log"
-        android:title="Clear log"
-        android:summary="Select time range to delete from log, effective immediately" />
+        android:title="@string/pref_clearlog_title"
+        android:summary="@string/pref_clearlog_summary" />
       <CheckBoxPreference
         android:defaultValue="true"
         android:key="confirm_exit"
-        android:title="Confirm exit"
-        android:summary="Display dialog to confirm exit when using back button to exit" />
+        android:title="@string/pref_confirm_exit_title"
+        android:summary="@string/pref_confirm_exit_summary" />
     </PreferenceCategory>
 
     <PreferenceCategory
-      android:title="Log tab">
+      android:title="@string/pref_log_tab">
       <EditTextPreference
         android:defaultValue="150000"
         android:numeric="integer"
         android:key="max_log_entries"
-        android:title="Max log entries"
-        android:summary="Limit number of entries to conserve memory; older entries will be truncated" />
+        android:title="@string/pref_max_log_entries_title"
+        android:summary="@string/pref_max_log_entries_summary" />
     </PreferenceCategory>
 
     <PreferenceCategory
-      android:title="Apps tab">
+      android:title="@string/pref_apps_tab">
       <ListPreference
         android:defaultValue="NAME"
         android:key="presort_by"
-        android:title="Base sort method"
-        android:summary="Select how to sort the app entries that have no data yet (default: By name)"
+        android:title="@string/pref_presort_by_title"
+        android:summary="@string/pref_presort_by_summary"
         android:entries="@array/presort_method"
         android:entryValues="@array/presort_method_values"
-        android:dialogTitle="No Data Sort" />
+        android:dialogTitle="@string/pref_presort_by_dialog_title" />
       <ListPreference
         android:defaultValue="BYTES"
         android:key="sort_by"
-        android:title="Sort method"
-        android:summary="Select how to sort the app entries that have data (default: By bytes)" 
+        android:title="@string/pref_sort_by_title"
+        android:summary="@string/pref_sort_by_summary" 
         android:entries="@array/sort_method"
         android:entryValues="@array/sort_method_values"
-        android:dialogTitle="Sort" />
+        android:dialogTitle="@string/menu_sort" />
     </PreferenceCategory>
   </PreferenceScreen>
 
-  <PreferenceScreen android:title="Log Service">
+  <PreferenceScreen android:title="@string/pref_log_service">
     <PreferenceCategory
-      android:title="Log Service">
+      android:title="@string/pref_log_service">
       <EditTextPreference
         android:singleLine="true"
         android:key="logfile"
-        android:title="Log file location"
-        android:summary="Set path and filename of the log file (defaults to networklog.txt at root of external storage)" />
-    <CheckBoxPreference
-      android:defaultValue="false"
-      android:key="startServiceAtBoot"
-      android:title="Start log at boot"
-      android:summary="Start logging when device boots up" />
-    <CheckBoxPreference
-      android:defaultValue="false"
-      android:key="startServiceAtStart"
-      android:title="Start log at app-start"
-      android:summary="Start logging when this app starts-up" />
-    <CheckBoxPreference
-      android:defaultValue="false"
-      android:key="stopServiceAtExit"
-      android:title="Stop log at app-exit"
-      android:summary="Stop logging when this app exits" />
-    <CheckBoxPreference
-      android:persistent="false"
-      android:defaultValue="true"
-      android:key="start_foreground"
-      android:title="Start foreground"
-      android:summary="Prevent Android from killing service. Disabling this will remove the status bar notification" />
-  </PreferenceCategory>
-</PreferenceScreen>
+        android:title="@string/pref_logfile_title"
+        android:summary="@string/pref_logfile_summary" />
+      <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="startServiceAtBoot"
+        android:title="@string/pref_atboot_title"
+        android:summary="@string/pref_atboot_summary" />
+      <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="startServiceAtStart"
+        android:title="@string/pref_atstart_title"
+        android:summary="@string/pref_atstart_summary" />
+      <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="stopServiceAtExit"
+        android:title="@string/pref_atexit_title"
+        android:summary="@string/pref_atexit_summary" />
+      <CheckBoxPreference
+        android:persistent="false"
+        android:defaultValue="true"
+        android:key="start_foreground"
+        android:title="@string/pref_foreground_title"
+        android:summary="@string/pref_foreground_summary" />
+    </PreferenceCategory>
+  </PreferenceScreen>
 
-  <PreferenceScreen android:title="Connection Notifications">
+  <PreferenceScreen android:title="@string/pref_notifications">
     <PreferenceCategory
-      android:title="Notifications">
+      android:title="@string/pref_notifications">
       <CheckBoxPreference
         android:defaultValue="false"
         android:key="notifications_statusbar"
-        android:title="Status bar"
-        android:summary="Display status bar notification when an app makes a network transmission" />
+        android:title="@string/pref_statusbar_title"
+        android:summary="@string/pref_statusbar_summary" />
       <Preference
         android:persistent="false"
         android:key="notifications_statusbar_apps_dialog"
-        android:title="Choose apps"
-        android:summary="Select which apps should have status bar notifications"
+        android:title="@string/pref_choose_apps"
+        android:summary="@string/pref_statusbar_apps_summary"
         android:dependency="notifications_statusbar"
         android:layout="?android:attr/preferenceLayoutChild" />
       <CheckBoxPreference
         android:defaultValue="false"
         android:key="notifications_toast"
-        android:title="Toast pop-up"
-        android:summary="Display toast pop-up notification when an app makes a network transmission" />
+        android:title="@string/pref_toast_title"
+        android:summary="@string/pref_toast_summary" />
       <Preference
         android:persistent="false"
         android:key="notifications_toast_apps_dialog"
-        android:title="Choose apps"
-        android:summary="Select which apps should have toast notifications"
+        android:title="@string/pref_choose_apps"
+        android:summary="@string/pref_toast_apps_summary"
         android:dependency="notifications_toast"
         android:layout="?android:attr/preferenceLayoutChild" />
     </PreferenceCategory>
   </PreferenceScreen>
 
-  <PreferenceScreen android:title="Graph Options">
+  <PreferenceScreen android:title="@string/pref_graphs">
     <PreferenceCategory
-      android:title="Graph Options">
+      android:title="@string/pref_graphs">
       <ListPreference
         android:persistent="false"
         android:key="interval_placeholder"
-        android:title="Interval"
-        android:summary="Sets how often the data is summed. To see individual packets, set to 1 ms; for Kbps, set to 1 second; for Kb-per-hour set to 1 hour; etc"
-        android:dialogTitle="Set Interval" />
+        android:title="@string/pref_interval_title"
+        android:summary="@string/pref_interval_summary"
+        android:dialogTitle="@string/interval_prompt" />
       <ListPreference
         android:persistent="false"
         android:key="viewsize_placeholder"
-        android:title="Viewsize"
-        android:summary="Sets the visble time-range of data. If the range chosen is larger than the range of data, the viewsize will shrink to fit the data"
-        android:dialogTitle="Set Viewsize" />
+        android:title="@string/pref_viewsize_title"
+        android:summary="@string/pref_viewsize_summary"
+        android:dialogTitle="@string/viewsize_prompt" />
     </PreferenceCategory>
   </PreferenceScreen>
 
-  <PreferenceScreen android:title="Debugging Options">
+  <PreferenceScreen android:title="@string/pref_debugging">
     <PreferenceCategory
-      android:title="Debugging">
+      android:title="@string/pref_debugging">
       <CheckBoxPreference
         android:defaultValue="false"
         android:key="logcat_debug"
-        android:title="Logcat debug output"
-        android:summary="Print verbose debugging output to logcat. Warning: may cause performance to degrade if enabled" />
+        android:title="@string/pref_debug_title"
+        android:summary="@string/pref_debug_summary" />
     </PreferenceCategory>
   </PreferenceScreen>
 </PreferenceScreen>

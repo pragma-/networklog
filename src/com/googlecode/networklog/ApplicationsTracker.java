@@ -198,7 +198,7 @@ public class ApplicationsTracker {
             dialog.setMax(appCount);
             dialog.setCancelable(false);
             dialog.setTitle("");
-            dialog.setMessage("Loading apps");
+            dialog.setMessage(context.getResources().getString(R.string.loading_apps));
             dialog.show();
           }
         }

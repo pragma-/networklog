@@ -11,6 +11,7 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -50,7 +51,7 @@ public class ClearLog
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setCancelable(false);
         progressDialog.setTitle("");
-        progressDialog.setMessage("Clearing log");
+        progressDialog.setMessage(context.getResources().getString(R.string.clear_progress_message));
         progressDialog.setMax(progress_max);
         progressDialog.setProgress(progress);
         progressDialog.show();
@@ -182,7 +183,7 @@ public class ClearLog
     layout.setOrientation(LinearLayout.HORIZONTAL);
 
     TextView tv = new TextView(context);
-    tv.setText("Remove log entries older than ");
+    tv.setText(context.getResources().getString(R.string.clear_dialog_prompt));
     layout.addView(tv);
 
     final String[] timerangeValues = context.getResources().getStringArray(R.array.clearlog_timerange_values);
@@ -192,7 +193,7 @@ public class ClearLog
         context, R.array.clearlog_timerange_entries, android.R.layout.simple_spinner_item);
     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
     spinner.setAdapter(adapter);
-    spinner.setPrompt("Remove entires older than");
+    spinner.setPrompt(context.getResources().getString(R.string.clear_dialog_prompt));
     spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
       @Override
       public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
@@ -227,23 +228,24 @@ public class ClearLog
     view.addView(layout);
 
     final CheckBox checkbox = new CheckBox(context);
+    Resources res = context.getResources();
     checkbox.setChecked(false);
-    checkbox.setText("Delete entries from logfile");
+    checkbox.setText(res.getString(R.string.clear_dialog_delete_from_logfile));
 
     view.addView(checkbox);
 
     dialog = new FixedSpinnerAlertDialog(context);
-    dialog.setTitle("Clear Log");
+    dialog.setTitle(res.getString(R.string.clear_dialog_title));
     dialog.setCancelable(true);
     dialog.setView(view);
     dialog.setLayout(view); /* workaround to dismiss Spinner pop-up dialog when changing orientation */
-    dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Clear log", new DialogInterface.OnClickListener() {
+    dialog.setButton(DialogInterface.BUTTON_POSITIVE, res.getString(R.string.clear_dialog_button_positive), new DialogInterface.OnClickListener() {
       public void onClick(DialogInterface dialog, int whichButton) {
         dialog.dismiss();
         clearLogEntriesOlderThan(context, Long.parseLong(timerangeValues[spinner.getSelectedItemPosition()]), checkbox.isChecked());
       }
     });
-    dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+    dialog.setButton(DialogInterface.BUTTON_NEGATIVE, res.getString(R.string.cancel), new DialogInterface.OnClickListener() {
       public void onClick(DialogInterface dialog, int whichButton) {
         dialog.cancel();
       }

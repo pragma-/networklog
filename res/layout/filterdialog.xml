@@ -6,8 +6,8 @@
   android:paddingRight="6dp">
 
   <TextView
-    android:id="@+id/labelInstructions"
-    android:text="Use comma to separate multiple keywords\n(Scroll down for more filter options)"
+    android:id="@+id/filterInstructions"
+    android:text="@string/filter_instructions"
     android:layout_width="wrap_content" 
     android:layout_height="wrap_content" />
 
@@ -22,7 +22,7 @@
     android:paddingRight="0dp"
     android:paddingBottom="2dp"
     android:paddingTop="2dp" 
-    android:layout_below="@id/labelInstructions" />
+    android:layout_below="@id/filterInstructions" />
 
   <ScrollView 
     android:id="@+id/scroll"
@@ -38,7 +38,7 @@
 
       <TextView
         android:id="@+id/labelFilterInclude"
-        android:text="Include filter:"
+        android:text="@string/filter_include"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" 
         android:layout_below="@id/rel1" />
@@ -52,35 +52,35 @@
 
       <TextView
         android:id="@+id/labelAppliesInclude"
-        android:text="Applies to:"
+        android:text="@string/filter_applies"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" 
         android:layout_below="@id/filterTextInclude" />
 
       <CheckBox
         android:id="@+id/filterUidInclude"
-        android:text="App IDs"
+        android:text="@string/filter_app_ids"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/labelAppliesInclude" />
 
       <CheckBox
         android:id="@+id/filterAddressInclude" 
-        android:text="Addresses"
+        android:text="@string/filter_addresses"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/filterUidInclude" />
 
       <CheckBox
         android:id="@+id/filterInterfaceInclude"
-        android:text="Interfaces"
+        android:text="@string/filter_interfaces"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/filterAddressInclude" />
 
       <CheckBox
         android:id="@+id/filterPortInclude"
-        android:text="Ports"
+        android:text="@string/filter_ports"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@id/filterAddressInclude"
@@ -89,7 +89,7 @@
 
       <CheckBox
         android:id="@+id/filterNameInclude"
-        android:text="App names"
+        android:text="@string/filter_app_names"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@id/filterUidInclude"
@@ -99,7 +99,7 @@
 
       <CheckBox
         android:id="@+id/filterProtocolInclude"
-        android:text="Protocols"
+        android:text="@string/filter_protocols"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@id/filterInterfaceInclude"
@@ -122,7 +122,7 @@
 
       <TextView
         android:id="@+id/labelFilterExclude"
-        android:text="Exclude filter:"
+        android:text="@string/filter_exclude"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/line2" />
@@ -136,35 +136,35 @@
 
       <TextView
         android:id="@+id/labelAppliesExclude"
-        android:text="Applies to:"
+        android:text="@string/filter_applies"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" 
         android:layout_below="@id/filterTextExclude" />
 
       <CheckBox
         android:id="@+id/filterUidExclude"
-        android:text="App IDs"
+        android:text="@string/filter_app_ids"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/labelAppliesExclude" />
 
       <CheckBox
         android:id="@+id/filterAddressExclude" 
-        android:text="Addresses"
+        android:text="@string/filter_addresses"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/filterUidExclude" />
 
       <CheckBox
         android:id="@+id/filterInterfaceExclude"
-        android:text="Interfaces"
+        android:text="@string/filter_interfaces"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/filterAddressExclude" />
 
       <CheckBox
         android:id="@+id/filterPortExclude"
-        android:text="Ports"
+        android:text="@string/filter_ports"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@id/filterAddressExclude"
@@ -173,7 +173,7 @@
 
       <CheckBox
         android:id="@+id/filterNameExclude"
-        android:text="App names"
+        android:text="@string/filter_app_names"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@id/filterUidExclude"
@@ -183,7 +183,7 @@
 
       <CheckBox
         android:id="@+id/filterProtocolExclude"
-        android:text="Protocols"
+        android:text="@string/filter_protocols"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@id/filterInterfaceExclude"

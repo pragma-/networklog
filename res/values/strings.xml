@@ -2,6 +2,193 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <string name="app_name">Network Log</string>
 
-  <string name="interval_prompt">Set interval</string>
-  <string name="viewsize_prompt">Set view size</string>
+  <string name="tab_log">Log</string>
+  <string name="tab_apps">Apps</string>
+
+  <string name="app_instructions">Press for connections, long-press for graph</string>
+  <string name="app_packets">Packets:\u0020</string>
+  <string name="app_bytes">Bytes:\u0020</string>
+
+  <string name="logging_on">Logging On</string>
+  <string name="logging_off">Logging Off</string>
+  <string name="logging_started">Network logging started</string>
+  <string name="logging_stopped">Network log service done</string>
+  <string name="logging_active">Logging active</string>
+  <string name="logging_inactive">Logging not active.</string>
+  <string name="logfile_size">\u0020Logfile size:\u0020</string>
+  <string name="logfile_bad">\u0020Bad logfile:\u0020</string>
+
+  <string name="hostitem_sent">\u0020\u0020Sent:\u0020</string>
+  <string name="hostitem_recv">\u0020\u0020Recv:\u0020</string>
+  <string name="hostitem_packets">\u0020packets,\u0020</string>
+  <string name="hostitem_bytes">\u0020bytes\u0020</string>
+
+  <string name="confirm_exit_title">Confirm exit</string>
+  <string name="confirm_exit_text">Are you sure you want to exit?</string>
+  <string name="do_not_show_again">Do not show this again</string>
+  <string name="logging_will_stop">Logging will be stopped.</string>
+  <string name="logging_will_continue">Logging will continue in background service.</string>
+
+  <string name="filter_title">Filter</string>
+  <string name="filter_instructions">Use comma to separate multiple keywords\n(Scroll down for more filter options)</string>
+  <string name="filter_include">Include filter:</string>
+  <string name="filter_exclude">Exclude filter:</string>
+  <string name="filter_applies">Applies to:</string>
+  <string name="filter_app_ids">App IDs</string>
+  <string name="filter_app_names">App names</string>
+  <string name="filter_addresses">Addresses</string>
+  <string name="filter_ports">Ports</string>
+  <string name="filter_interfaces">Interfaces</string>
+  <string name="filter_protocols">Protocols</string>
+  <string name="filter_applied">Filter:\u0020</string>
+
+  <string name="menu_graph">Graph</string>
+  <string name="menu_sort">Sort</string>
+  <string name="menu_by_app_id">By App ID</string>
+  <string name="menu_by_name">By Name</string>
+  <string name="menu_by_packets">By Packets</string>
+  <string name="menu_by_bytes">By Bytes</string>
+  <string name="menu_by_timestamp">By Timestamp</string>
+  <string name="menu_filter">Filter</string>
+  <string name="menu_clearlog">Clear</string>
+  <string name="menu_settings">Settings</string>
+  <string name="menu_feedback">Report Bug/Feedback</string>
+  <string name="menu_exit">Exit</string>
+
+  <string name="copy_ip">Copy IP Address</string>
+  <string name="copy_src_ip">Copy Source IP</string>
+  <string name="copy_dst_ip">Copy Dest IP</string>
+  <string name="show_graph">Show Graph</string>
+
+  <string name="interval_prompt">Set Interval</string>
+  <string name="viewsize_prompt">Set Viewsize</string>
+  <string name="range_1ms">1 ms</string>
+  <string name="range_100ms">100 ms</string>
+  <string name="range_500ms">500 ms</string>
+  <string name="range_1sec">1 second</string>
+  <string name="range_30sec">30 seconds</string>
+  <string name="range_1min">1 minute</string>
+  <string name="range_5min">5 minutes</string>
+  <string name="range_10min">10 minutes</string>
+  <string name="range_15min">15 minutes</string>
+  <string name="range_30min">30 minutes</string>
+  <string name="range_1hour">1 hour</string>
+  <string name="range_2hour">2 hours</string>
+  <string name="range_4hour">4 hours</string>
+  <string name="range_8hour">8 hours</string>
+  <string name="range_16hour">16 hours</string>
+  <string name="range_24hour">24 hours</string>
+  <string name="range_48hour">48 hours</string>
+
+  <string name="ok">OK</string>
+  <string name="cancel">Cancel</string>
+  <string name="dismiss">Dismiss</string>
+  <string name="reset">Reset</string>
+  <string name="done">Done</string>
+  <string name="yes">Yes</string>
+  <string name="no">No</string>
+
+  <string name="graph_apps_timeline">Apps Timeline</string>
+  <string name="graph_timeline">\u0020Timeline</string>
+  <string name="graph_error_nodata_title">No graph data</string>
+  <string name="graph_error_nodata_text">There is no graph to show because there are no network log entries.</string>
+
+  <string name="clear_dialog_title">Clear Log</string>
+  <string name="clear_dialog_prompt">Remove entries older than</string>
+  <string name="clear_dialog_button_positive">Clear log</string>
+  <string name="clear_dialog_delete_from_logfile">Delete entries from logfile</string>
+  <string name="clear_progress_message">Clearing log</string>
+
+  <string name="feedback_title">Send Feedback</string>
+  <string name="feedback_instructions">Enter message for bug report/feedback:</string>
+  <string name="feedback_attach_log">Attach debug log</string>
+  <string name="feedback_send">Send</string>
+  <string name="feedback_chooser_title">Send Bug Report/Feedback</string>
+  <string name="feedback_error_no_message_title">No message</string>
+  <string name="feedback_error_no_message_text">Please enter a message, or use the Cancel button.</string>
+  <string name="feedback_error_getting_debug_log">Error getting debug log</string>
+
+  <string name="loading_apps">Loading apps</string>
+
+  <string name="history_load">Load history</string>
+  <string name="history_loading">Loading history</string>
+  <string name="history_parsing">Parsing history</string>
+
+  <string name="iptables_error_add_rules">Add rules error</string>
+  <string name="iptables_error_remove_rules">Remove rules error</string>
+  <string name="iptables_error_check_rules">Check rules error</string>
+  <string name="iptables_error_unsupported_title">Iptables error</string>
+  <string name="iptables_error_unsupported_text">Iptables is not supported by this version of Android. Enable the netfilter module in the kernel or install a supported version of Android such as CyanogenMod.</string>
+
+  <string name="error_default_title">Network Log Error</string>
+  <string name="error_default_text">Some error occurred</string>
+  <string name="error_noroot">Network Log requires root/superuser access</string>
+  <string name="error_openlogfile">Failed to open logfile:\u0020</string>
+  <string name="error_unsupported_system_title">Unsupported system</string>
+  <string name="error_unsupported_system_text">The CPU type \'%s\' is currently unsupported. Please use the Bug Report/Feedback option to request support.</string>
+  <string name="error_install_binary_text">Install %s error:\u0020</string>
+
+  <string name="warning">Warning</string>
+  <string name="warning_disabling_notification">Disabling the notification/foreground state will allow Android to kill this service at any time, which may disrupt logging.</string>
+
+  <string name="coming_soon_title">Coming soon</string>
+  <string name="coming_soon_text">Sorry, this feature is not yet available.</string>
+
+  <string name="pref_general">General Options</string>
+  <string name="pref_resolve_hosts_title">Resolve hosts</string>
+  <string name="pref_resolve_hosts_summary">Resolve IP addresses to DNS hostnames (Note: makes DNS network queries on port 53)</string>
+  <string name="pref_resolve_ports_title">Resolve ports</string>
+  <string name="pref_resolve_ports_summary">Resolve known port numbers to service names (Note: Uses internal list; no network queries made)</string>
+  <string name="pref_copy_addrs_title">Copy unresolved addresses</string>
+  <string name="pref_copy_addrs_summary">When copying to clipboard, use original address/port instead of resolved addresses</string>
+  <string name="pref_filter_title">Filter</string>
+  <string name="pref_filter_summary">Configure advanced filtering options</string>
+  <string name="pref_history_size_title">Load logfile history</string>
+  <string name="pref_history_size_summary">Select how much history to load, effective immediately and at app start (default: 4 hours)</string>
+  <string name="pref_clearlog_title">Clear log</string>
+  <string name="pref_clearlog_summary">Select time range to delete from log, effective immediately</string>
+  <string name="pref_confirm_exit_title">Confirm exit</string>
+  <string name="pref_confirm_exit_summary">Display dialog to confirm exit when using back button to exit</string>
+
+  <string name="pref_log_tab">Log tab</string>
+  <string name="pref_max_log_entries_title">Max log entries</string>
+  <string name="pref_max_log_entries_summary">Limit number of entries to conserve memory; older entries will be truncated</string>
+
+  <string name="pref_apps_tab">Apps tab</string>
+  <string name="pref_presort_by_title">Base sort method</string>
+  <string name="pref_presort_by_summary">Select how to sort the app entries that have no data yet (default: By name)</string>
+  <string name="pref_presort_by_dialog_title">No Data Sort</string>
+  <string name="pref_sort_by_title">Sort method</string>
+  <string name="pref_sort_by_summary">Select how to sort the app entries that have data (default: By bytes)</string>
+
+  <string name="pref_log_service">Log Service</string>
+  <string name="pref_logfile_title">Log file location</string>
+  <string name="pref_logfile_summary">Set path and filename of the log file (defaults to networklog.txt at root of external storage)</string>
+  <string name="pref_atboot_title">Start log at boot</string>
+  <string name="pref_atboot_summary">Start logging when device boots up</string>
+  <string name="pref_atstart_title">Start log at app-start</string>
+  <string name="pref_atstart_summary">Start logging when this app starts-up</string>
+  <string name="pref_atexit_title">Stop log at app-exit</string>
+  <string name="pref_atexit_summary">Stop logging when this app exits</string>
+  <string name="pref_foreground_title">Start foreground</string>
+  <string name="pref_foreground_summary">Prevent Android from killing service. Disabling this will remove the status bar notification</string>
+
+  <string name="pref_notifications">Connection Notifications</string>
+  <string name="pref_statusbar_title">Status bar</string>
+  <string name="pref_statusbar_summary">Display status bar notification when an app makes a network transmission</string>
+  <string name="pref_choose_apps">Choose apps</string>
+  <string name="pref_statusbar_apps_summary">Select which apps should have status bar notifications</string>
+  <string name="pref_toast_title">Toast pop-up</string>
+  <string name="pref_toast_summary">Display toast pop-up notification when an app makes a network transmission</string>
+  <string name="pref_toast_apps_summary">Select which apps should have toast notifications</string>
+
+  <string name="pref_graphs">Graph Options</string>
+  <string name="pref_interval_title">Interval</string>
+  <string name="pref_interval_summary">Sets how often the data is summed. To see individual packets, set to 1 ms; for Kbps, set to 1 second; for Kb-per-hour set to 1 hour; etc</string>
+  <string name="pref_viewsize_title">Viewsize</string>
+  <string name="pref_viewsize_summary">Sets the visble time-range of data. If the range chosen is larger than the range of data, the viewsize will shrink to fit the data</string>
+
+  <string name="pref_debugging">Debugging Options</string>
+  <string name="pref_debug_title">Log extra debug output</string>
+  <string name="pref_debug_summary">Print verbose debugging output to logcat. Warning: may cause performance to degrade if enabled</string>
 </resources>

@@ -29,9 +29,9 @@ public class HistoryLoader {
           dialog.setMax(dialog_max);
           dialog.setCancelable(false);
           dialog.setTitle("");
-          dialog.setMessage("Loading history");
+          dialog.setMessage(context.getResources().getString(R.string.history_loading));
 
-          dialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Cancel", new DialogInterface.OnClickListener() {
+          dialog.setButton(DialogInterface.BUTTON_NEUTRAL, context.getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
               canceled = true;
             }
@@ -45,7 +45,7 @@ public class HistoryLoader {
     });
   }
 
-  public void loadEntriesFromFile(Context context, String historySize) {
+  public void loadEntriesFromFile(final Context context, final String historySize) {
     final LogfileLoader loader = new LogfileLoader();
     canceled = false;
 
@@ -126,7 +126,7 @@ public class HistoryLoader {
 
             NetworkLog.handler.post(new Runnable() {
               public void run() {
-                dialog.setMessage("Parsing history");
+                dialog.setMessage(context.getResources().getString(R.string.history_parsing));
                 dialog.setIndeterminate(true);
 
                 long elapsed = System.currentTimeMillis() - start;

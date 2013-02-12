@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
   <item android:id="@+id/overallgraph"
-    android:title="Graph"
+    android:title="@string/menu_graph"
     android:showAsAction="ifRoom|withText" />
   <item android:id="@+id/sort"
-    android:title="Sort"
+    android:title="@string/menu_sort"
     android:showAsAction="ifRoom|withText">
     <menu>
       <group android:checkableBehavior="single">
         <item android:id="@+id/sort_by_uid"
-          android:title="By App ID" />
+          android:title="@string/menu_by_app_id" />
         <item android:id="@+id/sort_by_name"
-          android:title="By Name" />
+          android:title="@string/menu_by_name" />
         <item android:id="@+id/sort_by_packets"
-          android:title="By Packets" />
+          android:title="@string/menu_by_packets" />
         <item android:id="@+id/sort_by_bytes"
-          android:title="By Bytes" />
+          android:title="@string/menu_by_bytes" />
         <item android:id="@+id/sort_by_timestamp"
-          android:title="By Timestamp" />
+          android:title="@string/menu_by_timestamp" />
       </group>
     </menu>
   </item>
   <item android:id="@+id/filter"
-    android:title="Filter"
+    android:title="@string/menu_filter"
     android:showAsAction="ifRoom|withText" />
   <item android:id="@+id/clearlog"
-    android:title="Clear"
+    android:title="@string/menu_clearlog"
     android:showAsAction="ifRoom|withText" />
   <item android:id="@+id/settings"
-    android:title="Settings"
+    android:title="@string/menu_settings"
     android:showAsAction="ifRoom|withText" />
   <item android:id="@+id/feedback"
-    android:title="Report Bug/Feedback"
+    android:title="@string/menu_feedback"
     android:showAsAction="ifRoom|withText" />
   <item android:id="@+id/exit"
-    android:title="Exit"
+    android:title="@string/menu_exit"
     android:showAsAction="ifRoom|withText" />
 </menu>

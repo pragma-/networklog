@@ -8,6 +8,7 @@ package com.googlecode.networklog;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Build;
 import android.util.Log;
 
@@ -93,7 +94,8 @@ public class SysUtils {
 
         Runtime.getRuntime().exec("chmod 755 " + path).waitFor();
       } catch (Exception e) {
-        showError(context, "Network Log", "Install " + binary + " error: " + e.getMessage());
+        Resources res = context.getResources();
+        showError(context, res.getString(R.string.error_default_title), String.format(res.getString(R.string.error_install_binary_text), binary) + e.getMessage());
         return false;
       }
     } else {
@@ -105,7 +107,8 @@ public class SysUtils {
 
   public static boolean installBinaries(Context context) {
     if(!getBinariesIdentifiers()) {
-      showError(context, "Unsupported system", "The CPU type '" + Build.CPU_ABI + "' is currently unsupported. Please use the Bug Report/Feedback option to request support.");
+      Resources res = context.getResources();
+      showError(context, res.getString(R.string.error_unsupported_system_title), String.format(res.getString(R.string.error_unsupported_system_text), Build.CPU_ABI));
       return false;
     }
 

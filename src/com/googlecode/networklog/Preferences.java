@@ -201,10 +201,10 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
       preference.setChecked(true);
 
       AlertDialog.Builder builder = new AlertDialog.Builder(context);
-      builder.setTitle("Warning")
-        .setMessage("Disabling the notification/foreground state will allow Android to kill this service at any time, which may disrupt logging.")
+      builder.setTitle(getString(R.string.warning))
+        .setMessage(getString(R.string.warning_disabling_notification))
         .setCancelable(true)
-        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int id) {
             preference.setChecked(true);
             NetworkLog.settings.setStartForeground(true);
@@ -213,7 +213,7 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
             dialog.dismiss();
           }
         })
-      .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+      .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
           preference.setChecked(false);
           NetworkLog.settings.setStartForeground(false);
@@ -231,10 +231,10 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
   public class ComingSoonDialog {
     public ComingSoonDialog(Context context) {
       AlertDialog.Builder builder = new AlertDialog.Builder(context);
-      builder.setTitle("Coming soon")
-        .setMessage("Sorry, this feature is not yet available.")
+      builder.setTitle(getString(R.string.coming_soon_title))
+        .setMessage(getString(R.string.coming_soon_text))
         .setCancelable(true)
-        .setNeutralButton("OK", new DialogInterface.OnClickListener() {
+        .setNeutralButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int id) {
             dialog.dismiss();
           }

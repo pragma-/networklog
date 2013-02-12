@@ -51,7 +51,7 @@ public class AppTimelineGraph extends GraphActivity
       }
 
       AppFragment.GroupItem item = NetworkLog.appFragment.groupDataBuffer.get(index);
-      graphView.setTitle(item.toString() + " Timeline");
+      graphView.setTitle(item.toString() + getString(R.string.graph_timeline));
 
       buildSeries(interval, viewsize);
     }
@@ -77,7 +77,7 @@ public class AppTimelineGraph extends GraphActivity
       graphView.graphSeries.clear();
 
       if(NetworkLog.logFragment == null || NetworkLog.logFragment.listData == null || NetworkLog.logFragment.listData.size() == 0) {
-        SysUtils.showError(this, "No data", "There is no graph to show because there are no network log entries.");
+        SysUtils.showError(this, getString(R.string.graph_error_nodata_title), getString(R.string.graph_error_nodata_text));
         finish();
       }
 
@@ -124,7 +124,7 @@ public class AppTimelineGraph extends GraphActivity
       }
 
       if(hostMap.size() == 0) {
-        SysUtils.showError(this, "No data", "There is no graph to show because there are no network log entries.");
+        SysUtils.showError(this, getString(R.string.graph_error_nodata_title), getString(R.string.graph_error_nodata_text));
         finish();
       }
 
