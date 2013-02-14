@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="app_name">Netzwerk Log</string>
+
+  <string name="tab_log">Log</string>
+  <string name="tab_apps">Apps</string>
+
+  <string name="app_instructions">Drücken für Verbindungen, Lange drücken für Graph</string>
+  <string name="app_packets">Pakete:\u0020</string>
+  <string name="app_bytes">Bytes:\u0020</string>
+
+  <string name="logging_on">Logging An</string>
+  <string name="logging_off">Logging Aus</string>
+  <string name="logging_started">Netzwerkprotokollierung gestartet</string>
+  <string name="logging_stopped">Netzwerkprotokollierung beendet</string>
+  <string name="logging_active">Prokollierung aktiv</string>
+  <string name="logging_inactive">Protokollierung nicht aktiv.</string>
+  <string name="logfile_size">\u0020Logdatei Größe:\u0020</string>
+  <string name="logfile_bad">\u0020Defekter Log:\u0020</string>
+
+  <string name="hostitem_sent">\u0020\u0020Gesendet:\u0020</string>
+  <string name="hostitem_recv">\u0020\u0020Empfangen:\u0020</string>
+  <string name="hostitem_packets">\u0020packets,\u0020</string>
+  <string name="hostitem_bytes">\u0020bytes\u0020</string>
+
+  <string name="confirm_exit_title">Wirklich beenden</string>
+  <string name="confirm_exit_text">Bist Du sicher, dass du die Anwendungen beenden willst?</string>
+  <string name="do_not_show_again">Nicht mehr anzeigen</string>
+  <string name="logging_will_stop">Protokollierung wird beendet</string>
+  <string name="logging_will_continue">Protokollierung wird im Hintergrund fortgesetzt.</string>
+
+  <string name="filter_title">Filter</string>
+  <string name="filter_instructions">Kommas zum Trennen mehrerer Keywords verwenden\n(Für mehr Filteroptionen runterscrollen)</string>
+  <string name="filter_include">Include filter:</string>
+  <string name="filter_exclude">Exclude filter:</string>
+  <string name="filter_applies">Anwenden auf:</string>
+  <string name="filter_app_ids">App IDs</string>
+  <string name="filter_app_names">App Namen</string>
+  <string name="filter_addresses">Addressen</string>
+  <string name="filter_ports">Ports</string>
+  <string name="filter_interfaces">Interfaces</string>
+  <string name="filter_protocols">Protokolle</string>
+  <string name="filter_applied">Filter:\u0020</string>
+
+  <string name="menu_graph">Graph</string>
+  <string name="menu_sort">Sortieren</string>
+  <string name="menu_by_app_id">Nach App ID</string>
+  <string name="menu_by_name">Nach Name</string>
+  <string name="menu_by_packets">Nach Paketen</string>
+  <string name="menu_by_bytes">Nach Bytes</string>
+  <string name="menu_by_timestamp">Nach Zeitstempel</string>
+  <string name="menu_filter">Filter</string>
+  <string name="menu_clearlog">Löschen</string>
+  <string name="menu_settings">Einstellungen</string>
+  <string name="menu_feedback">Bug/Feedbacks melden</string>
+  <string name="menu_exit">Beenden</string>
+
+  <string name="copy_ip">Kopiere IP Addresse</string>
+  <string name="copy_src_ip">Kopiere Quell-IP</string>
+  <string name="copy_dst_ip">Kopiere Ziel-IP</string>
+  <string name="show_graph">Zeige Graph</string>
+
+  <string name="interval_prompt">Setze Interval</string>
+  <string name="viewsize_prompt">Setze Zeitfenster</string>
+  <string name="range_1ms">1 ms</string>
+  <string name="range_100ms">100 ms</string>
+  <string name="range_500ms">500 ms</string>
+  <string name="range_1sec">1 Sekunde</string>
+  <string name="range_30sec">30 Sekunden</string>
+  <string name="range_1min">1 Minute</string>
+  <string name="range_5min">5 Minuten</string>
+  <string name="range_10min">10 Minuten</string>
+  <string name="range_15min">15 Minuten</string>
+  <string name="range_30min">30 Minuten</string>
+  <string name="range_1hour">1 Stunde</string>
+  <string name="range_2hour">2 Stunden</string>
+  <string name="range_4hour">4 Stunden</string>
+  <string name="range_8hour">8 Stunden</string>
+  <string name="range_16hour">16 Stunden</string>
+  <string name="range_24hour">24 Stunden</string>
+  <string name="range_48hour">48 Stunden</string>
+
+  <string name="ok">OK</string>
+  <string name="cancel">Abbrechen</string>
+  <string name="dismiss">Ausblenden</string>
+  <string name="reset">Reset</string>
+  <string name="done">Fertig</string>
+  <string name="yes">Ja</string>
+  <string name="no">Nein</string>
+
+  <string name="graph_apps_timeline">Apps-Zeitleiste</string>
+  <string name="graph_timeline">\u0020Zeitleiste</string>
+  <string name="graph_error_nodata_title">Keine Daten für Graph</string>
+  <string name="graph_error_nodata_text">Es kann kein Graph angezeigt werden, da es noch keine Network Logs gibt.</string>
+
+  <string name="clear_dialog_title">Log löschen</string>
+  <string name="clear_dialog_prompt">Alte Einträge löschen</string>
+  <string name="clear_dialog_button_positive">Löschen</string>
+  <string name="clear_dialog_delete_from_logfile">Einträge aus Logdatei löschen</string>
+  <string name="clear_progress_message">Logs werden gelöscht</string>
+
+  <string name="feedback_title">Feedback senden</string>
+  <string name="feedback_instructions">Feedback oder Bugbeschreibung eingeben:</string>
+  <string name="feedback_attach_log">Debuglog anhängen</string>
+  <string name="feedback_send">Senden</string>
+  <string name="feedback_chooser_title">Bug/Feedback melden</string>
+  <string name="feedback_error_no_message_title">Nachricht fehlt</string>
+  <string name="feedback_error_no_message_text">Bitte gebe eine Nachricht ein oder breche den Vorgang ab.</string>
+  <string name="feedback_error_getting_debug_log">Fehler beim Erhalten des Debuglogs</string>
+
+  <string name="loading_apps">Lade Apps</string>
+
+  <string name="history_load">Lade History</string>
+  <string name="history_loading">History wird geladen</string>
+  <string name="history_parsing">History wird analysiert</string>
+
+  <string name="iptables_error_add_rules">Fehler beim Regel Hinzufügen</string>
+  <string name="iptables_error_remove_rules">Fehler beim Regel Entfernen</string>
+  <string name="iptables_error_check_rules">Fehler beim Regel Überprüfen</string>
+  <string name="iptables_error_unsupported_title">Iptables Fehler</string>
+  <string name="iptables_error_unsupported_text">Iptables wird von dieser Androidversion nicht unterstützt. Aktiviere das netfilter-Modul im Kernel oder installiere eine unterstützte Androidversion wie CyanogenMod.</string>
+
+  <string name="error_default_title">Netzwerk Log Error</string>
+  <string name="error_default_text">Es ist ein Fehler aufgetreten.</string>
+  <string name="error_noroot">Netzwerk Log benötigt Administrator/Root-Rechte</string>
+  <string name="error_openlogfile">Logdatei konnte nicht geöffnet werden:\u0020</string>
+  <string name="error_unsupported_system_title">Nicht unterstütztes System</string>
+  <string name="error_unsupported_system_text">Der CPU-Typ \'%s\' wird momentan nicht unterstützt. Bitte verwende die Feedbackfunktion, falls du diesen CPU-Typ untersützt haben willst.</string>
+  <string name="error_install_binary_text">Installation Fehler für %s:\u0020</string>
+
+  <string name="warning">Warnung</string>
+  <string name="warning_disabling_notification">Wenn der Notification/Vordergrundstatus deaktiviert ist, kann Android diesen Service jederzeit beenden, was die Protokollierung unterbrechen kann.</string>
+
+  <string name="coming_soon_title">Demnächst verfügbar</string>
+  <string name="coming_soon_text">Tut uns leid, dieses Funktion kommt in Kürze.</string>
+
+  <string name="pref_general">Allgemeine Optionen</string>
+  <string name="pref_resolve_hosts_title">Hostnamen auflösen</string>
+  <string name="pref_resolve_hosts_summary">Löse IP-Adressen zu DNS-Hostnamen auf (Anmerkung: DNS-Queries werden über den Port 53 versendet)</string>
+  <string name="pref_resolve_ports_title">Portnamen auflösen</string>
+  <string name="pref_resolve_ports_summary">Löse bekannte Portnummern zu ihren Dienstnamen auf (Anmerkung: Verwende interne Liste, kein Netzwerk benötigt)</string>
+  <string name="pref_copy_addrs_title">Kopiere IP-Adresse</string>
+  <string name="pref_copy_addrs_summary">Beim Kopieren IP-Adressen und keine Host- und Dienstnamen kopieren</string>
+  <string name="pref_filter_title">Filter</string>
+  <string name="pref_filter_summary">Fortgeschrittene Filteroptionen einstellen</string>
+  <string name="pref_history_size_title">Lade Logdateien-History</string>
+  <string name="pref_history_size_summary">Wähle wie viel History geladen werden soll (sofort und beim jedem Start, Standard: 4 Stunden)</string>
+  <string name="pref_clearlog_title">Lösche Log</string>
+  <string name="pref_clearlog_summary">Wählre die Zeitspanne, die vom Log ab sofort gelöscht werden soll.</string>
+  <string name="pref_confirm_exit_title">Beenden bestätigen</string>
+  <string name="pref_confirm_exit_summary">Soll beim Verlassen der Anwendung mit dem Zurück-Button nachgefragt werden?</string>
+
+  <string name="pref_log_tab">Log Tab</string>
+  <string name="pref_max_log_entries_title">Maximale Log Einträge</string>
+  <string name="pref_max_log_entries_summary">Begrenze die Anzahl der Einträge um Speicher zu sparen. Ältere Einträge werden verborgen.</string>
+
+  <string name="pref_apps_tab">Apps Tab</string>
+  <string name="pref_presort_by_title">Sortieren nach (Datenlos)</string>
+  <string name="pref_presort_by_summary">Auswahl nach was Einträge ohne Daten sortiert werden sollen. (Standard: Nach Name)</string>
+  <string name="pref_presort_by_dialog_title">No Data Sort</string>
+  <string name="pref_sort_by_title">Sortieren nach</string>
+  <string name="pref_sort_by_summary">Auswahl nach was Einträge mit Daten sortiert werden sollen. (Standard: Nach Bytes)</string>
+
+  <string name="pref_log_service">Log Service</string>
+  <string name="pref_logfile_title">Logdatei Speicherort</string>
+  <string name="pref_logfile_summary">Lege einen Pfad und Dateinamen für die Logdatei fest. (Standard: networklog.txt im externen Speicher)</string>
+  <string name="pref_atboot_title">Protokollieren nach Hochfahren</string>
+  <string name="pref_atboot_summary">Starte Protokollierung, wenn das Gerät hochgefahren ist automatisch.</string>
+  <string name="pref_atstart_title">Prtotokollierung für bestimmte Apps</string>
+  <string name="pref_atstart_summary">Starte Protokollierung, wenn diese App gestartet wird.</string>
+  <string name="pref_atexit_title">Stoppe Protokollierung</string>
+  <string name="pref_atexit_summary">Stoppe Protokollierung, wenn diese App beendet wird.</string>
+  <string name="pref_foreground_title">Starte als Vordergrundaktivität</string>
+  <string name="pref_foreground_summary">Android kann diese App nicht automatisch beenden. Solange aktiviert wird eine Statusbar Notification angezeigt.</string>
+
+  <string name="pref_notifications">Verbindungsnotifications</string>
+  <string name="pref_statusbar_title">Statusbar</string>
+  <string name="pref_statusbar_summary">Zeige eine Statusbar Notification an, wenn eine App Netzwerkverkehr erzeugt.</string>
+  <string name="pref_choose_apps">Apps auswählen</string>
+  <string name="pref_statusbar_apps_summary">Wähle Apps aus, für die eine Statusbar Notification angezeigt werden soll.</string>
+  <string name="pref_toast_title">Pop-up</string>
+  <string name="pref_toast_summary">Zeige einen kurzen Pop-up wenn eine App Netzwerkverkehr erzeugt.</string>
+  <string name="pref_toast_apps_summary">Wähle Apps aus, für die ein Pop-up angezeigt werden soll.</string>
+
+  <string name="pref_graphs">Graph Optionen</string>
+  <string name="pref_interval_title">Intervall</string>
+  <string name="pref_interval_summary">Lege das Intervall fest, wie oft Pakete zusammen gezählt werden sollen. (1 ms für einzelne Pakete; 1 Sekunde für Kbps; 1 Stunde für kb/Std; etc.)</string>
+  <string name="pref_viewsize_title">Zeitfenster</string>
+  <string name="pref_viewsize_summary">Lege das Zeitfenster fest, aus dem Daten angezeigt werden sollen. Sind zu wenig Daten vorhanden, wird dies beim Anzeigen automatisch verkleinert.</string>
+
+  <string name="pref_debugging">Debugging Optionen</string>
+  <string name="pref_debug_title">Erzeuge extra Debugausgaben</string>
+  <string name="pref_debug_summary">Gebe ausführliche Debugausgaben auf der Konsole aus. Warnung: Kann die Geschwindigkeit verringern.</string>
+</resources>
