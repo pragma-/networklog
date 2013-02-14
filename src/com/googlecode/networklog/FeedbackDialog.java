@@ -125,6 +125,13 @@ public class FeedbackDialog
       String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
       PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
       script.println("logcat -d -v time > " + logcat.getAbsolutePath());
+      script.println("uname -a &>> " + logcat.getAbsolutePath());
+      script.println("echo ip_tables_matches: &>> " + logcat.getAbsolutePath());
+      script.println("cat /proc/net/ip_tables_matches &>> " + logcat.getAbsolutePath());
+      script.println("echo ip_tables_names: &>> " + logcat.getAbsolutePath());
+      script.println("cat /proc/net/ip_tables_names &>> " + logcat.getAbsolutePath());
+      script.println("echo ip_tables_targets: &>> " + logcat.getAbsolutePath());
+      script.println("cat /proc/net/ip_tables_targets &>> " + logcat.getAbsolutePath());
       script.flush();
       script.close();
 
@@ -150,6 +157,7 @@ public class FeedbackDialog
     }
     msg.append("\nAndroid " + Build.VERSION.RELEASE);
     msg.append("\nDevice " + Build.MANUFACTURER + " " + Build.MODEL + " " + Build.PRODUCT + " " + Build.BRAND);
+    msg.append("\nKernel " + System.getProperty("os.version"));
     msg.append("\n" + Build.DISPLAY);
     msg.append("\nCPU " + Build.CPU_ABI + " " + Build.CPU_ABI2);
 
