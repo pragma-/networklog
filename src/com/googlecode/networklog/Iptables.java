@@ -16,14 +16,6 @@ import java.io.FileWriter;
 import java.io.BufferedWriter;
 
 public class Iptables {
-  public static final String[] CELL_INTERFACES = {
-    "rmnet+", "ppp+", "pdp+", "pnp+", "rmnet_sdio+", "uwbr+", "wimax+", "vsnet+", "usb+", "ccmni+"
-  };
-
-  public static final String[] WIFI_INTERFACES = {
-    "eth+", "wlan+", "tiwlan+", "athwlan+", "ra+"
-  };
-
   public static boolean addRules(Context context) {
     String iptablesBinary = SysUtils.getIptablesBinary();
     if(iptablesBinary == null) {
@@ -41,17 +33,8 @@ public class Iptables {
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
 
-        for(String iface : CELL_INTERFACES) {
-          script.println(iptables + " -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
-
-          script.println(iptables + " -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
-        }
-
-        for(String iface : WIFI_INTERFACES) {
-          script.println(iptables + " -I OUTPUT 1 -o " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
-
-          script.println(iptables + " -I INPUT 1 -i " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
-        }
+        script.println(iptables + " -I OUTPUT 1 ! -o lo -j LOG --log-prefix \"{NL}\" --log-uid");
+        script.println(iptables + " -I INPUT 1 ! -i lo -j LOG --log-prefix \"{NL}\" --log-uid");
 
         script.flush();
         script.close();
@@ -59,10 +42,35 @@ public class Iptables {
         Log.e("NetworkLog", "addRules error", e);
       }
 
-      String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "addRules").start(true);
+      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "addRules");
+      String error = command.start(false);
 
       if(error != null) {
         SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_add_rules), error);
+        return false;
+      }
+
+      StringBuilder result = new StringBuilder();
+      String line;
+      while(true) {
+        line = command.readStdoutBlocking();
+        if(line == null) {
+          break;
+        }
+        result.append(line);
+      }
+
+      command.checkForExit();
+      if(command.exit != 0) {
+        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_add_rules), result.toString());
+        return false;
+      }
+
+      MyLog.d("addRules result: [" + result + "]");
+
+      if(result.indexOf("No chain/target/match by that name", 0) != -1) {
+        Resources res = context.getResources();
+        SysUtils.showError(context, res.getString(R.string.iptables_error_unsupported_title), res.getString(R.string.iptables_error_missingfeatures_text));
         return false;
       }
     }
@@ -86,17 +94,8 @@ public class Iptables {
         try {
           PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
 
-          for(String iface : CELL_INTERFACES) {
-            script.println(iptables + " -D OUTPUT -o " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
-
-            script.println(iptables + " -D INPUT -i " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
-          }
-
-          for(String iface : WIFI_INTERFACES) {
-            script.println(iptables + " -D OUTPUT -o " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
-
-            script.println(iptables + " -D INPUT -i " + iface + " -j LOG --log-prefix \"{NL}\" --log-uid");
-          }
+          script.println(iptables + " -D OUTPUT ! -o lo -j LOG --log-prefix \"{NL}\" --log-uid");
+          script.println(iptables + " -D INPUT ! -i lo -j LOG --log-prefix \"{NL}\" --log-uid");
 
           script.flush();
           script.close();
@@ -136,7 +135,7 @@ public class Iptables {
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        script.println(iptables + " -L");
+        script.println(iptables + " -L -v");
         script.flush();
         script.close();
       } catch(java.io.IOException e) {
@@ -152,19 +151,13 @@ public class Iptables {
       }
 
       StringBuilder result = new StringBuilder();
-
+      String line;
       while(true) {
-        String line = command.readStdoutBlocking();
-
+        line = command.readStdoutBlocking();
         if(line == null) {
           break;
         }
-
         result.append(line);
-      }
-
-      if(result == null) {
-        return true;
       }
 
       command.checkForExit();

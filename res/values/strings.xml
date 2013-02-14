@@ -117,8 +117,9 @@
   <string name="iptables_error_add_rules">Add rules error</string>
   <string name="iptables_error_remove_rules">Remove rules error</string>
   <string name="iptables_error_check_rules">Check rules error</string>
-  <string name="iptables_error_unsupported_title">Iptables error</string>
+  <string name="iptables_error_unsupported_title">Iptables unsupported</string>
   <string name="iptables_error_unsupported_text">Iptables is not supported by this version of Android. Enable the netfilter module in the kernel or install a supported version of Android such as CyanogenMod.</string>
+  <string name="iptables_error_missingfeatures_text">The kernel used by this version of Android is missing required iptables/netfilter modules. Load the required modules or install a supported version of Android such as CyanogenMod.</string>
 
   <string name="error_default_title">Network Log Error</string>
   <string name="error_default_text">Some error occurred</string>
