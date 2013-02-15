@@ -99,9 +99,11 @@ public class ShellCommand {
 
   public boolean stdoutAvailable() {
     try {
+      /*
       if(MyLog.enabled) {
         MyLog.d("stdoutAvailable [" + tag + "]: " + stdout.ready());
       }
+      */
       return stdout.ready();
     } catch(java.io.IOException e) {
       Log.e("NetworkLog", "stdoutAvailable error", e);

@@ -878,7 +878,6 @@ public class AppFragment extends Fragment {
         if(MyLog.enabled) {
           MyLog.d("AppFragmentListUpdater enter");
         }
-        Log.d("NetworkLog", "AppFragmentListUpdater enter");
 
         if(groupDataBufferIsDirty) {
           preSortData();
@@ -898,8 +897,6 @@ public class AppFragment extends Fragment {
       if(MyLog.enabled) {
         MyLog.d("AppFragmentListUpdater exit");
       }
-
-      Log.d("NetworkLog", "AppFragmentListUpdater exit");
     }
   };
 
