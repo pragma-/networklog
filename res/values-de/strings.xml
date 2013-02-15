@@ -117,8 +117,9 @@
   <string name="iptables_error_add_rules">Fehler beim Regel Hinzufügen</string>
   <string name="iptables_error_remove_rules">Fehler beim Regel Entfernen</string>
   <string name="iptables_error_check_rules">Fehler beim Regel Überprüfen</string>
-  <string name="iptables_error_unsupported_title">Iptables Fehler</string>
+  <string name="iptables_error_unsupported_title">Keine Iptables Unterstützung</string>
   <string name="iptables_error_unsupported_text">Iptables wird von dieser Androidversion nicht unterstützt. Aktiviere das netfilter-Modul im Kernel oder installiere eine unterstützte Androidversion wie CyanogenMod.</string>
+  <string name="iptables_error_missingfeatures_text">Der verwendete Kernel in dieser Android Version hat nicht die bentigten Iptables/Netfilter Module. Lade die entsprechenden Module oder installiere eine unterstütze Android Version wie CyanogenMod.</string>
 
   <string name="error_default_title">Netzwerk Log Error</string>
   <string name="error_default_text">Es ist ein Fehler aufgetreten.</string>
