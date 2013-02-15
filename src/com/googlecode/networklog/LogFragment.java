@@ -813,14 +813,14 @@ public class LogFragment extends Fragment {
         ImageView icon;
         TextView name;
         TextView iface;
-        TextView srcAddr;
+        final TextView srcAddr;
         TextView srcPort;
-        TextView dstAddr;
+        final TextView dstAddr;
         TextView dstPort;
         TextView len;
         TextView timestamp;
 
-        ListItem item = getItem(position);
+        final ListItem item = getItem(position);
 
         if(convertView == null) {
           convertView = mInflater.inflate(R.layout.logitem, null);
@@ -853,9 +853,22 @@ public class LogFragment extends Fragment {
         }
 
         srcAddr = holder.getSrcAddr();
+        srcAddr.setTag(item.srcAddr);
 
         if(NetworkLog.resolveHosts) {
-          String resolved = NetworkLog.resolver.resolveAddress(item.srcAddr);
+          String resolved = NetworkLog.resolver.getResolvedAddress(item.srcAddr);
+
+          if(resolved == null) {
+            NetworkResolverUpdater updater = new NetworkResolverUpdater() {
+              public void run() {
+                String tag = (String) srcAddr.getTag();
+                if(tag != null && tag.equals(item.srcAddr)) {
+                  srcAddr.setText("SRC: " + resolved);
+                }
+              }
+            };
+            resolved = NetworkLog.resolver.resolveAddress(item.srcAddr, updater);
+          }
 
           if(resolved != null) {
             srcAddr.setText("SRC: " + resolved);
@@ -875,9 +888,21 @@ public class LogFragment extends Fragment {
         }
 
         dstAddr = holder.getDstAddr();
+        dstAddr.setTag(item.dstAddr);
 
         if(NetworkLog.resolveHosts) {
-          String resolved = NetworkLog.resolver.resolveAddress(item.dstAddr);
+          String resolved = NetworkLog.resolver.getResolvedAddress(item.dstAddr);
+          if(resolved == null) {
+            NetworkResolverUpdater updater = new NetworkResolverUpdater() {
+              public void run() {
+                String tag = (String) dstAddr.getTag();
+                if(tag != null && tag.equals(item.dstAddr)) {
+                  dstAddr.setText("DST: " + resolved);
+                }
+              }
+            };
+            resolved = NetworkLog.resolver.resolveAddress(item.dstAddr, updater);
+          }
 
           if(resolved != null) {
             dstAddr.setText("DST: " + resolved);

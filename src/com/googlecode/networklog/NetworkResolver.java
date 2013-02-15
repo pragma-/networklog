@@ -6,16 +6,20 @@
 
 package com.googlecode.networklog;
 
-import java.util.HashMap;
-import java.net.InetAddress;
-
 import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.net.InetAddress;
+import java.lang.Runnable;
 
 public class NetworkResolver {
   final HashMap<String, String> serviceMap = new HashMap<String, String>();
   final HashMap<String, String> protocolMap = new HashMap<String, String>();
   final HashMap<String, String> resolvedHostMap = new HashMap<String, String>();
   final HashMap<String, Object> resolvingHostMap = new HashMap<String, Object>();
+  final HashMap<String, ArrayList<NetworkResolverUpdater>> hostUpdatersMap = new HashMap<String, ArrayList<NetworkResolverUpdater>>();
 
   public NetworkResolver() {
     serviceMap.put("1", "TCPMUX");
@@ -309,9 +313,32 @@ public class NetworkResolver {
     protocolMap.put("140", "SHIM6");
   }
 
-  public String resolveAddress(final String address) {
-    Object resolving;
+  public String getResolvedAddress(final String address) {
+    return resolvedHostMap.get(address);
+  }
 
+  public String resolveAddress(final String address) {
+    return resolveAddress(address, null);
+  }
+
+  public String resolveAddress(final String address, final NetworkResolverUpdater updater) {
+    String resolved;
+    synchronized(resolvedHostMap) {
+      resolved = resolvedHostMap.get(address);
+    }
+
+    if(resolved == null && updater != null) {
+      synchronized(hostUpdatersMap) {
+        ArrayList<NetworkResolverUpdater> updaters = hostUpdatersMap.get(address);
+        if(updaters == null) {
+          updaters = new ArrayList<NetworkResolverUpdater>();
+          hostUpdatersMap.put(address, updaters);
+        }
+        updaters.add(updater);
+      }
+    }
+
+    Object resolving;
     synchronized(resolvingHostMap) {
       resolving = resolvingHostMap.get(address);
     }
@@ -320,14 +347,10 @@ public class NetworkResolver {
       return null;
     }
 
-    String resolved;
-
-    synchronized(resolvedHostMap) {
-      resolved = resolvedHostMap.get(address);
-    }
-
     if(resolved == null) {
-      resolvingHostMap.put(address, address);
+      synchronized(resolvingHostMap) {
+        resolvingHostMap.put(address, address);
+      }
 
       new Thread(new Runnable() {
         public void run() {
@@ -346,12 +369,19 @@ public class NetworkResolver {
             }
 
             MyLog.d("Resolved " + address + " to " + resolved);
-            NetworkLog.handler.post(new Runnable() {
-              public void run() {
-                NetworkLog.appFragment.needsRefresh = true;
-                NetworkLog.logFragment.needsRefresh = true;
+            synchronized(hostUpdatersMap) {
+              ArrayList<NetworkResolverUpdater> updaters = hostUpdatersMap.get(address);
+              if(updaters != null) {
+                Iterator<NetworkResolverUpdater> iterator = updaters.iterator();
+                while(iterator.hasNext()) {
+                  NetworkResolverUpdater update = iterator.next();
+                  update.setResolved(resolved);
+                  NetworkLog.handler.post(update);
+                }
+                updaters.clear();
+                hostUpdatersMap.remove(address);
               }
-            });
+            }
           } catch(Exception e) {
             Log.d("NetworkLog", e.toString(), e);
           }

@@ -1434,7 +1434,7 @@ public class AppFragment extends Fragment {
       {
         ChildViewHolder holder = null;
 
-        TextView host;
+        final TextView host;
 
         TextView sentPackets;
         TextView sentBytes;
@@ -1444,7 +1444,7 @@ public class AppFragment extends Fragment {
         TextView receivedBytes;
         TextView receivedTimestamp;
 
-        ChildItem item;
+        final ChildItem item;
 
         synchronized(groupData) {
           item = (ChildItem) getChild(groupPosition, childPosition);
@@ -1466,24 +1466,16 @@ public class AppFragment extends Fragment {
         }
 
         host = holder.getHost();
+        host.setPaintFlags(host.getPaintFlags() | android.graphics.Paint.UNDERLINE_TEXT_FLAG);
 
         String hostString;
-        String iface;
+        final String iface;
 
         if(item.sentPackets > 0 && item.out != null && item.out.length() > 0) {
+          host.setTag(item.sentAddress);
+
           String sentAddressString;
-          String sentPortString;
-
-          if(NetworkLog.resolveHosts) {
-            sentAddressString = NetworkLog.resolver.resolveAddress(item.sentAddress);
-
-            if(sentAddressString == null) {
-              sentAddressString = item.sentAddress;
-            }
-
-          } else {
-            sentAddressString = item.sentAddress;
-          }
+          final String sentPortString;
 
           if(NetworkLog.resolvePorts) {
             sentPortString = NetworkLog.resolver.resolveService(String.valueOf(item.sentPort));
@@ -1497,21 +1489,35 @@ public class AppFragment extends Fragment {
             iface = item.out;
           }
 
+          if(NetworkLog.resolveHosts) {
+            sentAddressString = NetworkLog.resolver.getResolvedAddress(item.sentAddress);
+
+            if(sentAddressString == null) {
+              NetworkResolverUpdater updater = new NetworkResolverUpdater() {
+                public void run() {
+                  String tag = (String) host.getTag();
+                  if(tag != null && tag.equals(item.sentAddress)) {
+                    host.setText(resolved + ":" + sentPortString + " (" + iface + ")");
+                  }
+                }
+              };
+
+              sentAddressString = NetworkLog.resolver.resolveAddress(item.sentAddress, updater);
+
+              if(sentAddressString == null) {
+                sentAddressString = item.sentAddress;
+              }
+            }
+          } else {
+            sentAddressString = item.sentAddress;
+          }
+
           hostString = sentAddressString + ":" + sentPortString + " (" + iface + ")";
         } else {
+          host.setTag(item.receivedAddress);
+
           String receivedAddressString;
-          String receivedPortString;
-
-          if(NetworkLog.resolveHosts) {
-            receivedAddressString = NetworkLog.resolver.resolveAddress(item.receivedAddress);
-
-            if(receivedAddressString == null) {
-              receivedAddressString = item.receivedAddress;
-            }
-
-          } else {
-            receivedAddressString = item.receivedAddress;
-          }
+          final String receivedPortString;
 
           if(NetworkLog.resolvePorts) {
             receivedPortString = NetworkLog.resolver.resolveService(String.valueOf(item.receivedPort));
@@ -1525,10 +1531,33 @@ public class AppFragment extends Fragment {
             iface = item.in;
           }
 
+          if(NetworkLog.resolveHosts) {
+            receivedAddressString = NetworkLog.resolver.getResolvedAddress(item.receivedAddress);
+
+            if(receivedAddressString == null) {
+              NetworkResolverUpdater updater = new NetworkResolverUpdater() {
+                public void run() {
+                  String tag = (String) host.getTag();
+                  if(tag != null && tag.equals(item.receivedAddress)) {
+                    host.setText(resolved + ":" + receivedPortString + " (" + iface + ")");
+                  }
+                }
+              };
+
+              receivedAddressString = NetworkLog.resolver.resolveAddress(item.receivedAddress, updater);
+
+              if(receivedAddressString == null) {
+                receivedAddressString = item.receivedAddress;
+              }
+            }
+          } else {
+            receivedAddressString = item.receivedAddress;
+          }
+
           hostString = receivedAddressString + ":" + receivedPortString + " (" + iface + ")";
         }
 
-        host.setText(Html.fromHtml("<u>" + hostString + "</u>")); // fixme: cache this
+        host.setText(hostString);
 
         sentPackets = holder.getSentPackets();
         sentBytes = holder.getSentBytes();
