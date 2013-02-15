@@ -256,8 +256,11 @@ public class NetworkLogService extends Service {
       MyLog.d("[service] onDestroy");
 
       stopForeground();
-
       instance = null;
+
+      if(NetworkLog.loggingButton != null) {
+        NetworkLog.loggingButton.setChecked(false);
+      }
 
       if(has_root && has_binaries) {
         stopLogging();

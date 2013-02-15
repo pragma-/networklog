@@ -65,6 +65,7 @@ public class NetworkLog extends SherlockFragmentActivity {
   public static LogFragment logFragment;
   public static AppFragment appFragment;
 
+  public static ToggleButton loggingButton;
   public static TextView statusText;
   public static Settings settings;
   public static Handler handler;
@@ -571,26 +572,26 @@ public class NetworkLog extends SherlockFragmentActivity {
         item.setVisible(false);
       }
 
-      ToggleButton button = (ToggleButton) findViewById(R.id.actionbar_service_toggle);
+      loggingButton = (ToggleButton) findViewById(R.id.actionbar_service_toggle);
 
       if(isServiceRunning(this, NetworkLogService.class.getName())) {
-        button.setChecked(true);
+        loggingButton.setChecked(true);
       } else {
-        button.setChecked(false);
+        loggingButton.setChecked(false);
       }
 
       return true;
     }
 
   public void serviceToggle(View view) {
-    ToggleButton button = (ToggleButton)view;
+    loggingButton = (ToggleButton)view;
 
     if(!isServiceRunning(this, NetworkLogService.class.getName())) {
       startService();
-      button.setChecked(true);
+      loggingButton.setChecked(true);
     } else {
       stopService();
-      button.setChecked(false);
+      loggingButton.setChecked(false);
     }
   }
 
