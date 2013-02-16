@@ -273,6 +273,10 @@ public abstract class GraphActivity extends Activity
       }
   }
 
+  public void refreshLegendAdapter() {
+    adapter.notifyDataSetChanged();
+  }
+
   private class CustomAdapter extends ArrayAdapter<LegendItem> {
     LayoutInflater mInflater = (LayoutInflater) getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
 

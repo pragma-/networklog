@@ -16,7 +16,6 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import com.jjoe64.graphview.GraphView.GraphViewData;
 import com.jjoe64.graphview.GraphView.GraphViewSeries;
@@ -213,21 +212,37 @@ public class AppTimelineGraph extends GraphActivity
 
         //Log.d("NetworkLog", "Got from hostMap: " + hostKey + " == " + hostPort.host + ":" + hostPort.port);
 
-        String addressString;
-        if(NetworkLog.resolveHosts) {
-          addressString = NetworkLog.resolver.resolveAddress(hostPort.host);
-          if(addressString == null) {
-            addressString = hostPort.host;
-          }
-        } else {
-          addressString = hostPort.host;
-        }
-
-        String portString;
+        final String portString;
         if(NetworkLog.resolvePorts) {
           portString = NetworkLog.resolver.resolveService(String.valueOf(hostPort.port));
         } else {
           portString = String.valueOf(hostPort.port);
+        }
+
+        String addressString;
+        if(NetworkLog.resolveHosts) {
+          addressString = NetworkLog.resolver.getResolvedAddress(hostPort.host);
+          if(addressString == null) {
+            String label = hostPort.host + ":" + portString;
+            final int hashCode = label.hashCode();
+            NetworkResolverUpdater updater = new NetworkResolverUpdater() {
+              public void run() {
+                for(LegendItem legend : legendData) {
+                  if(legend.mHashCode == hashCode) {
+                    legend.mName = resolved + ":" + portString;
+                    refreshLegendAdapter();
+                    break;
+                  }
+                }
+              }
+            };
+            addressString = NetworkLog.resolver.resolveAddress(hostPort.host, updater);
+            if(addressString == null) {
+              addressString = hostPort.host;
+            }
+          }
+        } else {
+          addressString = hostPort.host;
         }
 
         String label = addressString + ":" + portString;
