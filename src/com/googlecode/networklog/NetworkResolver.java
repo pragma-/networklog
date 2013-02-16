@@ -376,7 +376,7 @@ public class NetworkResolver {
                 while(iterator.hasNext()) {
                   NetworkResolverUpdater update = iterator.next();
                   update.setResolved(resolved);
-                  NetworkLog.handler.post(update);
+                  NetworkLog.handler.postDelayed(update, 500);
                 }
                 updaters.clear();
                 hostUpdatersMap.remove(address);
