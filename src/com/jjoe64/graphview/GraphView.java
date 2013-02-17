@@ -11,8 +11,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.RectF;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -45,8 +48,6 @@ abstract public class GraphView extends LinearLayout {
   }
 
   private class GraphViewContentView extends View {
-    private float lastTouchEventX;
-    private int lastTouchEventId;
     private float graphwidth;
 
     /**
@@ -83,54 +84,59 @@ abstract public class GraphView extends LinearLayout {
         float graphheight = height - top_border - bottom_border;
         graphwidth = width;
 
-        if (horlabels == null) {
-          horlabels = generateHorlabels(graphwidth);
-        }
+        synchronized(verlabelsLock) {
+          if (verlabels == null) {
+            verlabels = generateVerlabels(graphheight - top_border);
+          }
 
-        if (verlabels == null) {
-          verlabels = generateVerlabels(graphheight - top_border);
-        }
-
-        // vertical lines
-        paint.setTextAlign(Align.LEFT);
-        paint.setStrokeWidth(0);
-        paint.setColor(Color.DKGRAY);
-        int vers = verlabels.length - 1;
-        for (int i = 0; i < verlabels.length; i++) {
-          float y = (((graphheight - top_border) / vers) * i) + top_border;
-          canvas.drawLine(horstart, y, width, y, paint);
-        }
-
-        // horizontal labels + lines
-        int hors = horlabels.length - 1;
-        for (int i = 0; i < horlabels.length; i++) {
-          float x = ((graphwidth / hors) * i) + horstart;
+          // vertical lines
+          paint.setTextAlign(Align.LEFT);
+          paint.setStrokeWidth(0);
           paint.setColor(Color.DKGRAY);
-          canvas.drawLine(x, top_border, x, graphheight, paint);
 
-          if (i==horlabels.length-1)
-            paint.setTextAlign(Align.RIGHT);
-          else if (i==0)
-            paint.setTextAlign(Align.LEFT);
-          else
-            paint.setTextAlign(Align.CENTER);
+          int vers = verlabels.length - 1;
+          for (int i = 0; i < verlabels.length; i++) {
+            float y = (((graphheight - top_border) / vers) * i) + top_border;
+            canvas.drawLine(horstart, y, width, y, paint);
+          }
+        }
 
-          paint.setColor(Color.WHITE);
+        synchronized(horlabelsLock) {
+          if (horlabels == null) {
+            horlabels = generateHorlabels(graphwidth);
+          }
 
-          if(enableMultiLineXLabel) {
-            float offsetY = height - bottom_border + GraphViewConfig.LABEL_PADDING;
+          // horizontal labels + lines
+          int hors = horlabels.length - 1;
+          for (int i = 0; i < horlabels.length; i++) {
+            float x = ((graphwidth / hors) * i) + horstart;
+            paint.setColor(Color.DKGRAY);
+            canvas.drawLine(x, top_border, x, graphheight, paint);
 
-            int delim = horlabels[i].indexOf('\n', 0);
-            String str = horlabels[i].substring(0, delim);
-            canvas.drawText(str, x, offsetY, paint);
+            if (i==horlabels.length-1)
+              paint.setTextAlign(Align.RIGHT);
+            else if (i==0)
+              paint.setTextAlign(Align.LEFT);
+            else
+              paint.setTextAlign(Align.CENTER);
 
-            paint.getTextBounds(str, 0, str.length(), rect);
-            offsetY += (rect.height() + GraphViewConfig.LABEL_PADDING);
+            paint.setColor(Color.WHITE);
 
-            str = horlabels[i].substring(delim + 1, horlabels[i].length());
-            canvas.drawText(str, x, offsetY, paint);
-          } else {
-            canvas.drawText(horlabels[i], x, height - 4, paint);
+            if(enableMultiLineXLabel) {
+              float offsetY = height - bottom_border + GraphViewConfig.LABEL_PADDING;
+
+              int delim = horlabels[i].indexOf('\n', 0);
+              String str = horlabels[i].substring(0, delim);
+              canvas.drawText(str, x, offsetY, paint);
+
+              paint.getTextBounds(str, 0, str.length(), rect);
+              offsetY += (rect.height() + GraphViewConfig.LABEL_PADDING);
+
+              str = horlabels[i].substring(delim + 1, horlabels[i].length());
+              canvas.drawText(str, x, offsetY, paint);
+            } else {
+              canvas.drawText(horlabels[i], x, height - 4, paint);
+            }
           }
         }
 
@@ -160,8 +166,12 @@ abstract public class GraphView extends LinearLayout {
         }
       }
 
-    public void onMoveGesture(float f) {
-      // view port update
+    public boolean onMoveGesture(float f) {
+      return onMoveGesture(f, false);
+    }
+
+    public boolean onMoveGesture(float f, boolean inThread) {
+      boolean atBounds = false;
       if (viewportSize != 0) {
         viewportStart -= f*viewportSize/graphwidth;
 
@@ -170,21 +180,38 @@ abstract public class GraphView extends LinearLayout {
         double maxX = getMaxX(true);
         if (viewportStart < minX) {
           viewportStart = minX;
+          atBounds = true;
         } else if (viewportStart+viewportSize > maxX) {
           viewportStart = maxX - viewportSize;
+          atBounds = true;
         }
 
         // labels have to be regenerated
-        horlabels = null;
-        verlabels = null;
-        viewVerLabels.invalidate();
-        invalidate();
-        graphContent.invalidate();
+        synchronized(verlabelsLock) {
+          verlabels = null;
+        }
+
+        synchronized(horlabelsLock) {
+          horlabels = null;
+        }
+
+        if(inThread) {
+          viewVerLabels.postInvalidate();
+          postInvalidate();
+          graphContent.postInvalidate();
+        } else {
+          viewVerLabels.invalidate();
+          invalidate();
+          graphContent.invalidate();
+        }
 
         if(onScrollChangeListener != null) {
           onScrollChangeListener.scrollChanged(viewportStart);
         }
+      } else {
+        atBounds = true;
       }
+      return atBounds;
     }
 
     /**
@@ -201,39 +228,102 @@ abstract public class GraphView extends LinearLayout {
         if (scalable && scaleDetector != null) {
           scaleDetector.onTouchEvent(event);
           if(scaleDetector.isInProgress() == true) {
-            lastTouchEventX = 0;
             handled = true;
           }
         }
 
-        if(event.getPointerCount() > 1) {
-          lastTouchEventX = 0;
-          lastTouchEventId = 0;
+        if(!handled) {
+          handled = gestureDetector.onTouchEvent(event);
         }
 
-        if (!handled && event.getPointerCount() == 1) {
-          // if not scaled, scroll
-          if ((event.getAction() & MotionEvent.ACTION_DOWN) == MotionEvent.ACTION_DOWN) {
-            handled = true;
-          }
-          if ((event.getAction() & MotionEvent.ACTION_UP) == MotionEvent.ACTION_UP) {
-            lastTouchEventX = 0;
-            handled = true;
-          }
-          if ((event.getAction() & MotionEvent.ACTION_MOVE) == MotionEvent.ACTION_MOVE) {
-            if (lastTouchEventX != 0 && event.getPointerId(0) == lastTouchEventId) {
-              onMoveGesture(event.getX() - lastTouchEventX);
-            }
-            lastTouchEventX = event.getX();
-            lastTouchEventId = event.getPointerId(0);
-            handled = true;
-          }
-          if(handled) {
-            invalidate();
-            graphContent.invalidate();
-          }
-        }
         return handled;
+      }
+  }
+
+  private class FlingAnimator extends Thread {
+    boolean isAnimating;
+    Context context;
+    GraphView graphView;
+    float velocity;
+    float friction;
+
+    public FlingAnimator(Context context, GraphView graphView) {
+      this.context = context;
+      this.graphView = graphView;
+    }
+
+    public void startAnimating(float velocity, float friction) {
+      this.velocity = velocity;
+      this.friction = friction;
+      isAnimating = true;
+      start();
+    }
+
+    public void stopAnimating() {
+      isAnimating = false;
+    }
+
+    public void run() {
+      boolean atBounds;
+      while(isAnimating) {
+        atBounds = graphView.graphContent.onMoveGesture(velocity, true);
+
+        velocity -= velocity * friction;
+
+        if(atBounds || Math.abs(velocity) <= 1) {
+          isAnimating = false;
+          return;
+        }
+
+        try {
+          Thread.sleep(1000/30);
+        } catch (Exception e) {
+          // ignored
+        }
+      }
+    }
+  }
+
+  private class MyGestureDetector extends SimpleOnGestureListener {
+    Context context;
+    GraphView graphView;
+    ViewConfiguration vc;
+
+    public MyGestureDetector(Context context, GraphView graphView) {
+      this.context = context;
+      this.graphView = graphView;
+      this.vc = ViewConfiguration.get(context);
+    }
+
+    @Override
+      public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        try {
+          if(Math.abs(velocityX) > vc.getScaledMinimumFlingVelocity()) {
+            flingAnimator = new FlingAnimator(context, graphView);
+            flingAnimator.startAnimating(velocityX / 14, vc.getScrollFriction() * 10);
+          }
+        } catch (Exception e) {
+          Log.d("NetworkLog", "Exception while flinging", e);
+        }
+
+        return false;
+      }
+
+    @Override
+      public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)  {
+        if(flingAnimator != null) {
+          flingAnimator.stopAnimating();
+        }
+        graphView.graphContent.onMoveGesture(-distanceX);
+        return false;
+      }
+
+    @Override
+      public boolean onDown(MotionEvent e) {
+        if(flingAnimator != null) {
+          flingAnimator.stopAnimating();
+        }
+        return true;
       }
   }
 
@@ -312,17 +402,19 @@ abstract public class GraphView extends LinearLayout {
         float height = getHeight();
         float graphheight = height - top_border - bottom_border;
 
-        if (verlabels == null) {
-          verlabels = generateVerlabels(graphheight - top_border);
-        }
+        synchronized(verlabelsLock) {
+          if (verlabels == null) {
+            verlabels = generateVerlabels(graphheight - top_border);
+          }
 
-        // vertical labels
-        paint.setTextAlign(Align.LEFT);
-        paint.setColor(Color.WHITE);
-        int vers = verlabels.length - 1;
-        for (int i = 0; i < verlabels.length; i++) {
-          float y = (((graphheight - top_border) / vers) * i) + top_border;
-          canvas.drawText(verlabels[i], 0, y, paint);
+          // vertical labels
+          paint.setTextAlign(Align.LEFT);
+          paint.setColor(Color.WHITE);
+          int vers = verlabels.length - 1;
+          for (int i = 0; i < verlabels.length; i++) {
+            float y = (((graphheight - top_border) / vers) * i) + top_border;
+            canvas.drawText(verlabels[i], 0, y, paint);
+          }
         }
       }
   }
@@ -334,6 +426,8 @@ abstract public class GraphView extends LinearLayout {
   }
 
   protected final Paint paint;
+  Object horlabelsLock = new Object();
+  Object verlabelsLock = new Object();
   private String[] horlabels;
   private String[] verlabels;
   private String title = "";
@@ -342,7 +436,9 @@ abstract public class GraphView extends LinearLayout {
   private double viewportSize;
   private final View viewVerLabels;
   private ScaleGestureDetector scaleDetector;
+  private GestureDetector gestureDetector;
   private boolean scalable;
+  private FlingAnimator flingAnimator;
   private NumberFormat numberformatter;
   public List<GraphViewSeries> graphSeries;
   private boolean showLegend = false;
@@ -401,6 +497,9 @@ abstract public class GraphView extends LinearLayout {
     seekbar.setOnSeekBarChangeListener(new MyOnSeekBarChangeListener());
 
     layout.addView(seekbar, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
+
+    gestureDetector = new GestureDetector(new MyGestureDetector(context, this));
+    gestureDetector.setIsLongpressEnabled(false);
   }
 
   /**
@@ -831,12 +930,22 @@ abstract public class GraphView extends LinearLayout {
           // minimal and maximal view limit
           double minX = getMinX(true);
           double maxX = getMaxX(true);
-          // labels have to be regenerated
-          horlabels = null;
-          verlabels = null;
-          viewVerLabels.invalidate();
 
+          // labels have to be regenerated
+          synchronized(horlabelsLock) {
+            horlabels = null;
+          }
+
+          synchronized(verlabelsLock) {
+            verlabels = null;
+          }
+
+          viewVerLabels.invalidate();
           viewportStart = ((percentage / 100.0) * ((maxX - viewportSize) - minX)) + minX;
+        }
+
+        if(flingAnimator != null) {
+          flingAnimator.stopAnimating();
         }
         invalidate();
         graphContent.invalidate();
