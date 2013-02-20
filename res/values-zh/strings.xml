@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="app_name">网络日志</string>
+
+  <string name="tab_log">日志</string>
+  <string name="tab_apps">应用</string>
+
+  <string name="app_instructions">点击显示连接详情，长按显示图表</string>
+  <string name="app_packets">数据包：\u0020</string>
+  <string name="app_bytes">字节数：\u0020</string>
+
+  <string name="logging_on">启动</string>
+  <string name="logging_off">关闭</string>
+  <string name="logging_started">网络记录已启动</string>
+  <string name="logging_stopped">网络记录已停止</string>
+  <string name="logging_active">记录已启动</string>
+  <string name="logging_inactive">记录未启动</string>
+  <string name="logfile_size">\u0020日志文件大小：\u0020</string>
+  <string name="logfile_bad">\u0020损坏的日志文件：\u0020</string>
+
+  <string name="hostitem_sent">\u0020\u0020发送：\u0020</string>
+  <string name="hostitem_recv">\u0020\u0020接收：\u0020</string>
+  <string name="hostitem_packets">\u0020数据包，\u0020</string>
+  <string name="hostitem_bytes">\u0020字节\u0020</string>
+
+  <string name="confirm_exit_title">确认退出</string>
+  <string name="confirm_exit_text">确定要退出？</string>
+  <string name="do_not_show_again">不要再显示</string>
+  <string name="logging_will_stop">记录将停止。</string>
+  <string name="logging_will_continue">将继续以后台服务的方式记录。</string>
+
+  <string name="filter_title">过滤器</string>
+  <string name="filter_instructions">用逗号分隔关键词\n（向下滚动以获得更多过滤选项）</string>
+  <string name="filter_include">包含过滤器:</string>
+  <string name="filter_exclude">排除过滤器:</string>
+  <string name="filter_applies">应用于：</string>
+  <string name="filter_app_ids">应用ID</string>
+  <string name="filter_app_names">应用名称</string>
+  <string name="filter_addresses">IP地址</string>
+  <string name="filter_ports">端口</string>
+  <string name="filter_interfaces">接口</string>
+  <string name="filter_protocols">协议</string>
+  <string name="filter_applied">过滤器：\u0020</string>
+
+  <string name="menu_graph">图表</string>
+  <string name="menu_sort">排序</string>
+  <string name="menu_by_app_id">按应用ID排序</string>
+  <string name="menu_by_name">按名称排序</string>
+  <string name="menu_by_packets">按数据包排序</string>
+  <string name="menu_by_bytes">按字节数排序</string>
+  <string name="menu_by_timestamp">按时间排序</string>
+  <string name="menu_filter">过滤器</string>
+  <string name="menu_clearlog">清除</string>
+  <string name="menu_settings">设置</string>
+  <string name="menu_feedback">错误报告/反馈</string>
+  <string name="menu_exit">退出</string>
+
+  <string name="copy_ip">复制IP地址</string>
+  <string name="copy_src_ip">复制源IP地址</string>
+  <string name="copy_dst_ip">复制目标IP地址</string>
+  <string name="show_graph">显示图表</string>
+
+  <string name="interval_prompt">时间间隔设置</string>
+  <string name="viewsize_prompt">数据时间段设置</string>
+  <string name="range_1ms">1毫秒</string>
+  <string name="range_100ms">100毫秒</string>
+  <string name="range_500ms">500毫秒</string>
+  <string name="range_1sec">1秒</string>
+  <string name="range_30sec">30秒</string>
+  <string name="range_1min">1分钟</string>
+  <string name="range_5min">5分钟</string>
+  <string name="range_10min">10分钟</string>
+  <string name="range_15min">15分钟</string>
+  <string name="range_30min">30分钟</string>
+  <string name="range_1hour">1小时</string>
+  <string name="range_2hour">2小时</string>
+  <string name="range_4hour">4小时</string>
+  <string name="range_8hour">8小时</string>
+  <string name="range_16hour">16小时</string>
+  <string name="range_24hour">24小时</string>
+  <string name="range_48hour">48小时</string>
+
+  <string name="ok">确认</string>
+  <string name="cancel">取消</string>
+  <string name="dismiss">离开</string>
+  <string name="reset">重置</string>
+  <string name="done">完成</string>
+  <string name="yes">是</string>
+  <string name="no">否</string>
+
+  <string name="graph_apps_timeline">分应用的时间线</string>
+  <string name="graph_timeline">\u0020时间线</string>
+  <string name="graph_error_nodata_title">无图表数据</string>
+  <string name="graph_error_nodata_text">无网络日志记录，所以无法显示图表。</string>
+
+  <string name="clear_dialog_title">清除日志</string>
+  <string name="clear_dialog_prompt">移除记录，如果时间超过</string>
+  <string name="clear_dialog_button_positive">清除日志</string>
+  <string name="clear_dialog_delete_from_logfile">删除日志文件里的记录</string>
+  <string name="clear_progress_message">正在清除日志</string>
+
+  <string name="feedback_title">发送反馈</string>
+  <string name="feedback_instructions">为错误报告/反馈输入信息：</string>
+  <string name="feedback_attach_log">附加调试日志</string>
+  <string name="feedback_send">发送</string>
+  <string name="feedback_chooser_title">发送错误报告/反馈</string>
+  <string name="feedback_error_no_message_title">无信息</string>
+  <string name="feedback_error_no_message_text">请输入信息，或按取消键。</string>
+  <string name="feedback_error_getting_debug_log">无法获取调试日志</string>
+
+  <string name="loading_apps">正在载入应用</string>
+
+  <string name="history_load">载入历史</string>
+  <string name="history_loading">正在载入历史</string>
+  <string name="history_parsing">正在解析历史</string>
+
+  <string name="iptables_error_add_rules">添加规则错误</string>
+  <string name="iptables_error_remove_rules">移除规则错误</string>
+  <string name="iptables_error_check_rules">校验规则错误</string>
+  <string name="iptables_error_unsupported_title">不支持iptables</string>
+  <string name="iptables_error_unsupported_text">当前版本的安卓系统不支持iptables，请在kernel中启用网络过滤模块或者安装支持iptables的版本的安卓系统如CyanogenMod。</string>
+  <string name="iptables_error_missingfeatures_text">当前版本的安卓系统使用的kernel缺少iptables/网络过滤模块，请加载所需模块或者安装支持iptables的版本的安卓系统如CyanogenMod。</string>
+
+  <string name="error_default_title">网络日志错误</string>
+  <string name="error_default_text">出现错误</string>
+  <string name="error_noroot">网络日志需要Root权限。</string>
+  <string name="error_openlogfile">无法打开日志文件：\u0020</string>
+  <string name="error_unsupported_system_title">不支持的系统</string>
+  <string name="error_unsupported_system_text">目前暂不支持当前CPU型号\'%s\'，请使用错误报告/反馈选项寻求支持。</string>
+  <string name="error_install_binary_text">安装%s错误：\u0020</string>
+
+  <string name="warning">警告</string>
+  <string name="warning_disabling_notification">禁止通知/前台服务将允许安卓系统在任何时候终止本服务，而导致记录中断。</string>
+
+  <string name="coming_soon_title">敬请期待</string>
+  <string name="coming_soon_text">对不起，本功能暂不可用。</string>
+
+  <string name="pref_general">常规选项</string>
+  <string name="pref_resolve_hosts_title">解析hosts</string>
+  <string name="pref_resolve_hosts_summary">将IP地址解析为DNS主机名（注：网络查询使用端口53）</string>
+  <string name="pref_resolve_ports_title">解析端口</string>
+  <string name="pref_resolve_ports_summary">解析已知端口号为服务名（注：使用内部清单，不进行网络查询）</string>
+  <string name="pref_copy_addrs_title">复制未解析地址</string>
+  <string name="pref_copy_addrs_summary">拷贝到剪贴板时，使用原始地址/端口而不是已解析地址。</string>
+  <string name="pref_filter_title">过滤器</string>
+  <string name="pref_filter_summary">配置高级过滤选项</string>
+  <string name="pref_history_size_title">载入日志文件时间长度</string>
+  <string name="pref_history_size_summary">选择载入日志文件的时间长度，立即生效或本应用启动时生效（缺省：4小时）</string>
+  <string name="pref_clearlog_title">清除日志</string>
+  <string name="pref_clearlog_summary">选择从日志文件中删除的时间范围，立即生效</string>
+  <string name="pref_confirm_exit_title">确认退出</string>
+  <string name="pref_confirm_exit_summary">使用后退键退出时显示对话框以确认退出</string>
+
+  <string name="pref_log_tab">日志选项</string>
+  <string name="pref_max_log_entries_title">最大日志记录数</string>
+  <string name="pref_max_log_entries_summary">限制记录数以节约内存，旧记录将被删简。</string>
+
+  <string name="pref_apps_tab">应用选项</string>
+  <string name="pref_presort_by_title">基本排序方式</string>
+  <string name="pref_presort_by_summary">选择无数据的应用记录的排序方式（缺省：按名称排序）</string>
+  <string name="pref_presort_by_dialog_title">无数据排序</string>
+  <string name="pref_sort_by_title">排序方式</string>
+  <string name="pref_sort_by_summary">选择有数据的应用记录的排序方式（缺省：按字节数排序）</string>
+
+  <string name="pref_log_service">日志服务</string>
+  <string name="pref_logfile_title">日志文件存放位置</string>
+  <string name="pref_logfile_summary">设置日志文件的存放路径和文件名（缺省保存为外置存储根目录中networklog.txt文件）</string>
+  <string name="pref_atboot_title">启动时开始记录</string>
+  <string name="pref_atboot_summary">设备启动时开始记录</string>
+  <string name="pref_atstart_title">应用启动时开始记录</string>
+  <string name="pref_atstart_summary">本应用程序启动时开始记录</string>
+  <string name="pref_atexit_title">应用退出时停止记录</string>
+  <string name="pref_atexit_summary">本应用程序退出时停止记录</string>
+  <string name="pref_foreground_title">启用前台服务</string>
+  <string name="pref_foreground_summary">防止安卓系统终止本服务，禁止此选项将移除状态栏通知。</string>
+
+  <string name="pref_notifications">连接通知</string>
+  <string name="pref_statusbar_title">状态栏</string>
+  <string name="pref_statusbar_summary">当应用产生数据传输时在状态栏显示通知</string>
+  <string name="pref_choose_apps">选择应用</string>
+  <string name="pref_statusbar_apps_summary">选择启用状态栏通知的应用</string>
+  <string name="pref_toast_title">弹出式消息条</string>
+  <string name="pref_toast_summary">当应用产生数据传输时显示弹出式消息条通知</string>
+  <string name="pref_toast_apps_summary">选择启用消息条通知的应用</string>
+
+  <string name="pref_graphs">图表选项</string>
+  <string name="pref_interval_title">时间间隔</string>
+  <string name="pref_interval_summary">设置数据统计的时间间隔。设置为1毫秒可以看到单独数据包的数据，设置为1秒可以看到Kbps的数据，设置为1小时可以看到kb/小时的数据，以此类推。</string>
+  <string name="pref_viewsize_title">数据时间段</string>
+  <string name="pref_viewsize_summary">设置数据显示的时间范围。如果选择的范围超出数据记录的范围，将缩短为数据记录的范围。</string>
+
+  <string name="pref_debugging">调试选项</string>
+  <string name="pref_debug_title">记录额外的调试输出</string>
+  <string name="pref_debug_summary">输出详细的调试信息到日志。警告：启用本选项可能会引起性能下降。</string>
+</resources>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
