@@ -121,17 +121,27 @@ public class FeedbackDialog
   public File generateLogcat() throws Exception {
     File logcat = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "netlog_logcat.txt");
 
+    String iptablesBinary = SysUtils.getIptablesBinary();
+    if(iptablesBinary == null) {
+      throw new Exception(String.format(context.getResources().getString(R.string.error_unsupported_system_text), Build.CPU_ABI));
+    }
+
+    String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + iptablesBinary;
+
     synchronized(NetworkLog.SCRIPT) {
       String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
       PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
       script.println("logcat -d -v time > " + logcat.getAbsolutePath());
+      script.println("echo === uname: &>> " + logcat.getAbsolutePath());
       script.println("uname -a &>> " + logcat.getAbsolutePath());
-      script.println("echo ip_tables_matches: &>> " + logcat.getAbsolutePath());
+      script.println("echo === ip_tables_matches: &>> " + logcat.getAbsolutePath());
       script.println("cat /proc/net/ip_tables_matches &>> " + logcat.getAbsolutePath());
-      script.println("echo ip_tables_names: &>> " + logcat.getAbsolutePath());
+      script.println("echo === ip_tables_names: &>> " + logcat.getAbsolutePath());
       script.println("cat /proc/net/ip_tables_names &>> " + logcat.getAbsolutePath());
-      script.println("echo ip_tables_targets: &>> " + logcat.getAbsolutePath());
+      script.println("echo === ip_tables_targets: &>> " + logcat.getAbsolutePath());
       script.println("cat /proc/net/ip_tables_targets &>> " + logcat.getAbsolutePath());
+      script.println("echo === iptables: &>> " + logcat.getAbsolutePath());
+      script.println(iptables + " -L -v &>> " + logcat.getAbsolutePath());
       script.flush();
       script.close();
 
