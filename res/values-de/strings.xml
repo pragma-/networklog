@@ -6,6 +6,7 @@
   <string name="tab_apps">Apps</string>
 
   <string name="app_instructions">Drücken für Verbindungen, Lange drücken für Graph</string>
+  <string name="app_throughput">Verkehr:\u0020</string>
   <string name="app_packets">Pakete:\u0020</string>
   <string name="app_bytes">Bytes:\u0020</string>
 
@@ -22,6 +23,8 @@
   <string name="hostitem_recv">\u0020\u0020Empfangen:\u0020</string>
   <string name="hostitem_packets">\u0020packets,\u0020</string>
   <string name="hostitem_bytes">\u0020bytes\u0020</string>
+
+  <string name="throughput">\u0020Verkehr:\u0020</string>
 
   <string name="confirm_exit_title">Wirklich beenden</string>
   <string name="confirm_exit_text">Bist Du sicher, dass du die Anwendungen beenden willst?</string>
