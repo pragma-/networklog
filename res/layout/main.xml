@@ -6,6 +6,7 @@
   android:padding="5dp">
   <TextView
     android:id="@+id/statusText"
+    android:textSize="12sp"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
   <com.viewpagerindicator.TitlePageIndicator

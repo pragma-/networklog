@@ -165,6 +165,11 @@ public class ApplicationsTracker {
   public static void getInstalledApps(final Context context, final Handler handler) {
     MyLog.d("Loading installed apps");
 
+    if(installedApps != null) {
+      MyLog.d("Installed apps already loaded");
+      return;
+    }
+
     synchronized(installedAppsLock) {
       if(NetworkLog.data == null) {
         installedApps = new ArrayList<AppEntry>();
@@ -187,22 +192,24 @@ public class ApplicationsTracker {
 
       appCount = apps.size();
 
-      handler.post(new Runnable() {
-        public void run() {
-          MyLog.d("Showing progress dialog; size: " + appCount);
+      if(handler != null) {
+        handler.post(new Runnable() {
+          public void run() {
+            MyLog.d("Showing progress dialog; size: " + appCount);
 
-          synchronized(dialogLock) {
-            dialog = new ProgressDialog(context);
-            dialog.setIndeterminate(false);
-            dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            dialog.setMax(appCount);
-            dialog.setCancelable(false);
-            dialog.setTitle("");
-            dialog.setMessage(context.getResources().getString(R.string.loading_apps));
-            dialog.show();
+            synchronized(dialogLock) {
+              dialog = new ProgressDialog(context);
+              dialog.setIndeterminate(false);
+              dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+              dialog.setMax(appCount);
+              dialog.setCancelable(false);
+              dialog.setTitle("");
+              dialog.setMessage(context.getResources().getString(R.string.loading_apps));
+              dialog.show();
+            }
           }
-        }
-      });
+        });
+      }
 
       int count = 0;
 
@@ -211,21 +218,23 @@ public class ApplicationsTracker {
       for(final ApplicationInfo app : apps) {
         MyLog.d("Processing app " + app);
 
-        if(NetworkLog.initRunner.running == false) {
+        if(NetworkLog.initRunner != null && NetworkLog.initRunner.running == false) {
           MyLog.d("[ApplicationsTracker] Initialization aborted");
           return;
         }
 
         final int progress = ++count;
-        handler.post(new Runnable() {
-          public void run() {
-            synchronized(dialogLock) {
-              if(dialog != null) {
-                dialog.setProgress(progress);
+        if(handler != null) {
+          handler.post(new Runnable() {
+            public void run() {
+              synchronized(dialogLock) {
+                if(dialog != null) {
+                  dialog.setProgress(progress);
+                }
               }
             }
-          }
-        });
+          });
+        }
 
         int uid = app.uid;
         String sUid = Integer.toString(uid);
@@ -297,18 +306,20 @@ public class ApplicationsTracker {
         }
       }
 
-      handler.post(new Runnable() {
-        public void run() {
-          MyLog.d("Dismissing dialog");
+      if(handler != null) {
+        handler.post(new Runnable() {
+          public void run() {
+            MyLog.d("Dismissing dialog");
 
-          synchronized(dialogLock) {
-            if(dialog != null) {
-              dialog.dismiss();
-              dialog = null;
+            synchronized(dialogLock) {
+              if(dialog != null) {
+                dialog.dismiss();
+                dialog = null;
+              }
             }
           }
-        }
-      });
+        });
+      }
       MyLog.d("Done getting installed apps");
     }
   }

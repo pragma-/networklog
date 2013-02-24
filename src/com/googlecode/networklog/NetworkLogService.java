@@ -37,7 +37,7 @@ import java.lang.reflect.Method;
 
 public class NetworkLogService extends Service {
   ArrayList<Messenger> clients = new ArrayList<Messenger>();
-  static final int NOTIFICATION_ID = 42;
+  static final int NOTIFICATION_ID = "Network Log".hashCode();
   static final int MSG_REGISTER_CLIENT     = 1;
   static final int MSG_UNREGISTER_CLIENT   = 2;
   static final int MSG_UPDATE_NOTIFICATION = 3;
@@ -47,7 +47,10 @@ public class NetworkLogService extends Service {
   boolean has_root = false;
   boolean has_binaries = false;
   public static NetworkLogService instance = null;
-  private Context context;
+  private static Context context;
+  public static Handler handler;
+  public static String throughputString = "";
+  public static String logfileString = "";
 
   private class IncomingHandler extends Handler {
     private Context context;
@@ -72,15 +75,10 @@ public class NetworkLogService extends Service {
             break;
 
           case MSG_UPDATE_NOTIFICATION:
-            MyLog.d("[service] updating notification: " + ((String)msg.obj));
-            Intent i = new Intent(context, NetworkLog.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            PendingIntent pi = PendingIntent.getActivity(context, 0, i, 0);
-            notification.setLatestEventInfo(context, getString(R.string.app_name), getString(R.string.logging_active) + " [" + ((String)msg.obj) + "]", pi);
-
-            if(start_foreground) {
-              nManager.notify(NOTIFICATION_ID, notification);
+            if(MyLog.enabled) {
+              MyLog.d("[service] updating notification: " + ((String)msg.obj));
             }
+            updateNotificationText((String)msg.obj);
             break;
 
           case MSG_TOGGLE_FOREGROUND:
@@ -115,15 +113,15 @@ public class NetworkLogService extends Service {
       }
     }
 
-  private HashMap<String, Integer> logEntriesMap;
+  private static HashMap<String, Integer> logEntriesMap = new HashMap<String, Integer>();
   private ShellCommand command;
   private NetworkLogger logger;
-  private String logfile = null;
+  private static String logfile = null;
   private PrintWriter logWriter = null;
-  private NotificationManager nManager;
-  private Notification notification;
+  private static NotificationManager nManager;
+  private static Notification notification;
   private LogEntry entry;
-  private Boolean start_foreground = true;
+  private static Boolean start_foreground = true;
   private NetStat netstat = new NetStat();
   private FastParser parser = new FastParser();
 
@@ -142,6 +140,29 @@ public class NetworkLogService extends Service {
     PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
     n.setLatestEventInfo(this, getString(R.string.app_name), getString(R.string.logging_active), pi);
     return n;
+  }
+
+  public static void updateNotificationText() {
+    if(logfileString.length() > 0) {
+      updateNotificationText(throughputString + " [" + logfileString + "]");
+    } else {
+      updateNotificationText(throughputString);
+    }
+  }
+
+  public static void updateNotificationText(String text) {
+    if(instance == null) {
+      return;
+    }
+
+    Intent i = new Intent(context, NetworkLog.class);
+    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+    PendingIntent pi = PendingIntent.getActivity(context, 0, i, 0);
+    notification.setLatestEventInfo(context, context.getResources().getString(R.string.app_name), text, pi);
+
+    if(start_foreground) {
+      nManager.notify(NOTIFICATION_ID, notification);
+    }
   }
 
   public boolean hasRoot() {
@@ -174,13 +195,22 @@ public class NetworkLogService extends Service {
       }
 
       instance = this;
+      handler = new Handler();
 
-      nManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-      notification = createNotification();
+      if(ApplicationsTracker.installedApps == null) {
+        ApplicationsTracker.getInstalledApps(this, null);
+      }
 
       if(NetworkLog.settings == null) {
         NetworkLog.settings = new Settings(this);
       }
+
+      updateLogfileString();
+      updateThroughputString("0bps/0bps");
+      ThroughputTracker.startUpdater();
+
+      nManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+      notification = createNotification();
 
       start_foreground = NetworkLog.settings.getStartForeground();
 
@@ -206,7 +236,6 @@ public class NetworkLogService extends Service {
       }
 
       final Bundle extras = ext;
-      final Handler handler = new Handler(Looper.getMainLooper());
       context = this;
 
       // run in background thread
@@ -233,7 +262,6 @@ public class NetworkLogService extends Service {
             logfile = logfile_from_intent;
 
             // service starting up fresh
-            logEntriesMap = new HashMap<String, Integer>();
             initEntriesMap();
           }
 
@@ -257,6 +285,11 @@ public class NetworkLogService extends Service {
 
       stopForeground();
       instance = null;
+      context = null;
+      handler = null;
+
+      ThroughputTracker.stopUpdater();
+      updateThroughputString("");
 
       if(NetworkLog.loggingButton != null) {
         NetworkLog.loggingButton.setChecked(false);
@@ -277,15 +310,19 @@ public class NetworkLogService extends Service {
 
     for(NetStat.Connection connection : connections) {
       String mapKey = connection.src + ":" + connection.spt + " -> " + connection.dst + ":" + connection.dpt;
+
       if(MyLog.enabled) {
         MyLog.d("[netstat src-dst] New entry " + connection.uid + " for [" + mapKey + "]");
       }
+
       logEntriesMap.put(mapKey, Integer.valueOf(connection.uid));
 
       mapKey = connection.dst + ":" + connection.dpt + " -> " + connection.src + ":" + connection.spt;
+
       if(MyLog.enabled) {
         MyLog.d("[netstat dst-src] New entry " + connection.uid + " for [" + mapKey + "]");
       }
+
       logEntriesMap.put(mapKey, Integer.valueOf(connection.uid));
     }
   }
@@ -504,6 +541,7 @@ public class NetworkLogService extends Service {
       if(MyLog.enabled) {
         MyLog.d("Checking entry for " + uid + " " + srcDstMapKey + " and " + dstSrcMapKey);
       }
+
       Integer srcDstMapUid = logEntriesMap.get(srcDstMapKey);
       Integer dstSrcMapUid = logEntriesMap.get(dstSrcMapKey);
 
@@ -634,7 +672,6 @@ public class NetworkLogService extends Service {
           Log.d("NetworkLog", "Opened " + logfile + " for logging");
         } catch(final Exception e) {
           Log.e("NetworkLog", "Exception opening logfile [" + logfile +"]", e);
-          Handler handler = new Handler(Looper.getMainLooper());
           handler.post(new Runnable() {
             public void run() {
               SysUtils.showError(context, getString(R.string.error_default_title), getString(R.string.error_openlogfile) + e.getMessage());
@@ -672,6 +709,8 @@ public class NetworkLogService extends Service {
         clients.remove(i);
       }
     }
+
+    ThroughputTracker.updateEntry(entry);
   }
 
   public void stopLogger() {
@@ -895,6 +934,58 @@ public class NetworkLogService extends Service {
       }
 
       MyLog.d("NetworkLogger " + this + " exiting [end of loop]");
+    }
+  }
+
+  private static Runnable updateNotificationRunner = new Runnable() {
+    public void run() {
+      updateNotificationText();
+    }
+  };
+
+  private static Runnable updateStatusRunner = new Runnable() {
+    public void run() {
+      NetworkLog.updateStatusText();
+    }
+  };
+
+  public static void updateThroughputString(String text) {
+    if(instance == null) {
+      throughputString = "";
+    } else {
+      throughputString = text;
+    }
+
+    if(instance != null && handler != null) {
+      handler.post(updateNotificationRunner);
+    }
+
+    if(NetworkLog.handler != null) {
+      NetworkLog.handler.post(updateStatusRunner);
+    }
+  }
+
+  public static void updateLogfileString() {
+    if(context == null) {
+      return;
+    }
+
+    try {
+      String file = logfile;
+      if(file == null) {
+        file = NetworkLog.settings.getLogFile();
+      }
+      logfileString = StringUtils.formatToBytes(new File(file).length()) + "B";
+    } catch(Exception e) {
+      logfileString = context.getResources().getString(R.string.logfile_bad) + e.getMessage();
+    }
+
+    if(instance != null && handler != null) {
+      handler.post(updateNotificationRunner);
+    }
+
+    if(NetworkLog.handler != null) {
+      NetworkLog.handler.post(updateStatusRunner);
     }
   }
 

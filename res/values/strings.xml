@@ -23,6 +23,8 @@
   <string name="hostitem_packets">\u0020packets,\u0020</string>
   <string name="hostitem_bytes">\u0020bytes\u0020</string>
 
+  <string name="throughput">\u0020Speed:\u0020</string>
+
   <string name="confirm_exit_title">Confirm exit</string>
   <string name="confirm_exit_text">Are you sure you want to exit?</string>
   <string name="do_not_show_again">Do not show this again</string>

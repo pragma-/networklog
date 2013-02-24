@@ -17,7 +17,6 @@ import android.content.res.Resources;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.os.IBinder;
-import android.text.Html;
 import android.content.Context;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -430,6 +429,7 @@ public class NetworkLog extends SherlockFragmentActivity {
       }
       statusUpdater = new StatusUpdater();
       new Thread(statusUpdater, "StatusUpdater").start();
+      NetworkLogService.updateThroughputString("0bps/0bps");
     }
 
   @Override
@@ -783,7 +783,7 @@ public class NetworkLog extends SherlockFragmentActivity {
   }
 
   public static void updateStatusText() {
-    if(networklogContext == null) {
+    if(networklogContext == null || statusText == null) {
       return;
     }
 
@@ -802,45 +802,38 @@ public class NetworkLog extends SherlockFragmentActivity {
       }
     }
 
-    if(!isServiceRunning(networklogContext, NetworkLogService.class.getName())) {
+    boolean serviceRunning = isServiceRunning(networklogContext, NetworkLogService.class.getName());
+
+    if(!serviceRunning) {
       sb.append(res.getString(R.string.logging_inactive));
     }
 
-    try {
-      File logfile = new File(settings.getLogFile());
-      long length = logfile.length();
-
-      if(length > 0) {
-        String size;
-
-        if(length > 1000000) {
-          size = String.format("%.2f", (length / 1000000.0)) + "MB";
-        } else if(length > 1000) {
-          size = String.format("%.2f", (length / 1000.0)) + "KB";
-        } else {
-          size = String.valueOf(length);
-        }
-
-        sb.append(res.getString(R.string.logfile_size) + size);
-
-        if(isBound) {
-          if(service != null) {
-            try {
-              Message msg = Message.obtain(null, NetworkLogService.MSG_UPDATE_NOTIFICATION);
-              msg.obj = size;
-              service.send(msg);
-            } catch(RemoteException e) {
-              /* do nothing */
-              Log.d("NetworkLog", "RemoteException updating notification", e);
-            }
-          }
-        }
-      }
-    } catch(Exception e) {
-      sb.append(res.getString(R.string.logfile_bad) + e.getMessage());
+    if(NetworkLogService.logfileString.length() > 0) {
+      sb.append(networklogContext.getResources().getString(R.string.logfile_size));
+      sb.append(NetworkLogService.logfileString);
     }
 
-    statusText.setText(Html.fromHtml("<small>" + sb + "</small>"));
+    if(serviceRunning && NetworkLogService.throughputString.length() > 0) {
+      sb.append(networklogContext.getResources().getString(R.string.throughput));
+      sb.append(NetworkLogService.throughputString);
+    }
+
+    statusText.setText(sb);
+  }
+
+  public static void updateNotificationText(String text) {
+    if(isBound) {
+      if(service != null) {
+        try {
+          Message msg = Message.obtain(null, NetworkLogService.MSG_UPDATE_NOTIFICATION);
+          msg.obj = text;
+          service.send(msg);
+        } catch(RemoteException e) {
+          /* do nothing */
+          Log.d("NetworkLog", "RemoteException updating notification", e);
+        }
+      }
+    }
   }
 
   class StatusUpdater implements Runnable {
@@ -848,6 +841,7 @@ public class NetworkLog extends SherlockFragmentActivity {
     Runnable runner = new Runnable() {
       public void run() {
         MyLog.d("Updating statusText");
+        NetworkLogService.updateLogfileString();
         updateStatusText();
       }
     };

@@ -23,4 +23,16 @@ public class StringUtils {
     }
     return false;
   }
+
+  public static String formatToBytes(long value) {
+    String result;
+    if(value >= 1048576) {
+      result = String.format("%.2f", (value / 1048576.0)) + "M";
+    } else if(value >= 1024) {
+      result = String.format("%.2f", (value / 1024.0)) + "K";
+    } else {
+      result = String.valueOf(value);
+    }
+    return result;
+  }
 }
