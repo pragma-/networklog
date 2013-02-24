@@ -82,6 +82,9 @@ public class AppFragment extends Fragment {
 
   public class GroupItem {
     protected ApplicationsTracker.AppEntry app;
+    protected long uploadThroughput;
+    protected long downloadThroughput;
+    protected String throughputString = "0bps/0bps";
     protected long totalPackets;
     protected long totalBytes;
     protected long lastTimestamp;
@@ -660,6 +663,10 @@ public class AppFragment extends Fragment {
   };
 
   public int getItemByAppUid(int uid) {
+    if(groupDataBuffer == null) {
+      return -1;
+    }
+
     synchronized(groupDataBuffer) {
       // check to see if we need to search for index
       // (more often than not, the last index is still the active index being requested)
@@ -681,6 +688,41 @@ public class AppFragment extends Fragment {
     }
 
     return lastGetItemByAppUidIndex;
+  }
+
+  public void updateAppThroughput(int uid, long upload, long download) {
+    if(groupDataBuffer == null) {
+      return;
+    }
+
+    synchronized(groupDataBuffer) {
+      int index = getItemByAppUid(uid);
+
+      if(index < 0) {
+        MyLog.d("updateAppThroughput: No app entry for " + uid);
+        return;
+      }
+
+      GroupItem item;
+      while(true) {
+        item = groupDataBuffer.get(index);
+
+        if(item.app.uid != uid) {
+          break;
+        }
+
+        groupDataBufferIsDirty = true;
+
+        item.uploadThroughput = upload;
+        item.downloadThroughput = download;
+        item.throughputString = StringUtils.formatToBytes(upload) + "bps/" + StringUtils.formatToBytes(download) + "bps"; 
+
+        index++;
+        if(index >= groupDataBuffer.size()) {
+          break;
+        }
+      }
+    }
   }
 
   public void rebuildLogEntries() {
@@ -740,7 +782,7 @@ public class AppFragment extends Fragment {
     int index = getItemByAppUid(entry.uid);
 
     if(index < 0) {
-      MyLog.d("No app entry");
+      MyLog.d("No app entry for uid " + entry.uid);
       return;
     }
 
@@ -1377,6 +1419,7 @@ public class AppFragment extends Fragment {
 
         ImageView icon;
         TextView name;
+        TextView throughput;
         TextView packets;
         TextView bytes;
         TextView timestamp;
@@ -1409,6 +1452,9 @@ public class AppFragment extends Fragment {
         name = holder.getName();
 
         name.setText("(" + item.app.uid + ")" + " " + item.app.name);
+
+        throughput = holder.getThroughput();
+        throughput.setText(getString(R.string.app_throughput) + item.throughputString);
 
         packets = holder.getPackets();
         packets.setText(getString(R.string.app_packets) + item.totalPackets);
@@ -1619,6 +1665,7 @@ public class AppFragment extends Fragment {
     private ImageView mDivider = null;
     private ImageView mIcon = null;
     private TextView mName = null;
+    private TextView mThroughput = null;
     private TextView mPackets = null;
     private TextView mBytes = null;
     private TextView mTimestamp = null;
@@ -1650,6 +1697,14 @@ public class AppFragment extends Fragment {
       }
 
       return mName;
+    }
+
+    public TextView getThroughput() {
+      if(mThroughput == null) {
+        mThroughput = (TextView) mView.findViewById(R.id.appThroughput);
+      }
+
+      return mThroughput;
     }
 
     public TextView getPackets() {

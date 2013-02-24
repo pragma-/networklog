@@ -20,6 +20,7 @@ public class ThroughputTracker {
   }
 
   public static HashMap<String, ThroughputData> throughputMap = new HashMap<String, ThroughputData>();
+  public static HashMap<String, ThroughputData> resetMap = new HashMap<String, ThroughputData>();
 
   public static void updateEntry(LogEntry entry) {
     ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.uidMap.get(entry.uidString);
@@ -56,21 +57,38 @@ public class ThroughputTracker {
     }
 
     public void run() {
-      String uploadSpeed;
-      String downloadSpeed;
+      String throughput;
       boolean isDirty = false;
       running = true;
 
       while(running) {
         synchronized(throughputMap) {
+          if(isDirty) {
+            isDirty = false;
+            if(!resetMap.isEmpty()) {
+              for(ThroughputData entry : resetMap.values()) {
+                if(NetworkLog.appFragment != null) {
+                  NetworkLog.appFragment.updateAppThroughput(entry.app.uid, 0, 0);
+                }
+              }
+              resetMap.clear();
+            }
+            updateThroughput(0, 0);
+          }
+
           if(!throughputMap.isEmpty()) {
             isDirty = true;
             for(ThroughputData entry : throughputMap.values()) {
-              uploadSpeed = StringUtils.formatToBytes(entry.upload * 8) + "bps";
-              downloadSpeed = StringUtils.formatToBytes(entry.download * 8) + "bps";
+              throughput = StringUtils.formatToBytes(entry.upload * 8) + "bps/" + StringUtils.formatToBytes(entry.download * 8) + "bps";
 
               if(MyLog.enabled) {
-                MyLog.d(entry.app.name + " throughput: " + uploadSpeed + "/" + downloadSpeed);
+                MyLog.d(entry.app.name + " throughput: " + throughput);
+              }
+
+              if(NetworkLog.appFragment != null) {
+                NetworkLog.appFragment.updateAppThroughput(entry.app.uid, entry.upload * 8, entry.download * 8);
+
+                resetMap.put(entry.app.packageName, entry);
               }
 
               totalUpload += entry.upload;
@@ -82,9 +100,6 @@ public class ThroughputTracker {
             throughputMap.clear();
             totalUpload = 0;
             totalDownload = 0;
-          } else if(isDirty) {
-            isDirty = false;
-            updateThroughput(0, 0);
           }
         }
 

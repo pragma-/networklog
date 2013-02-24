@@ -23,8 +23,14 @@
   <TextView
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/appPackets"
+    android:id="@+id/appThroughput"
     android:layout_below="@id/appName"
+    android:layout_alignLeft="@id/appName" />
+  <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/appPackets"
+    android:layout_below="@id/appThroughput"
     android:layout_alignLeft="@id/appName" />
   <TextView
     android:layout_width="fill_parent"
