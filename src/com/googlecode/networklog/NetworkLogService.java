@@ -49,7 +49,6 @@ public class NetworkLogService extends Service {
   public static NetworkLogService instance = null;
   private static Context context;
   public static Handler handler;
-  public static String throughputString = "";
   public static String logfileString = "";
 
   private class IncomingHandler extends Handler {
@@ -78,7 +77,7 @@ public class NetworkLogService extends Service {
             if(MyLog.enabled) {
               MyLog.d("[service] updating notification: " + ((String)msg.obj));
             }
-            updateNotificationText((String)msg.obj);
+            updateNotification((String)msg.obj);
             break;
 
           case MSG_TOGGLE_FOREGROUND:
@@ -120,6 +119,7 @@ public class NetworkLogService extends Service {
   private PrintWriter logWriter = null;
   private static NotificationManager nManager;
   private static Notification notification;
+  private static int notificationIcon;
   private LogEntry entry;
   private static Boolean start_foreground = true;
   private NetStat netstat = new NetStat();
@@ -134,7 +134,8 @@ public class NetworkLogService extends Service {
   }
 
   public Notification createNotification() {
-    Notification n = new Notification(R.drawable.icon, getString(R.string.logging_started), System.currentTimeMillis());
+    notificationIcon = R.drawable.up0_down0;
+    Notification n = new Notification(notificationIcon, getString(R.string.logging_started), System.currentTimeMillis());
     Intent i = new Intent(this, NetworkLog.class);
     i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
     PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
@@ -142,16 +143,29 @@ public class NetworkLogService extends Service {
     return n;
   }
 
-  public static void updateNotificationText() {
-    if(logfileString.length() > 0) {
-      updateNotificationText(throughputString + " [" + logfileString + "]");
-    } else {
-      updateNotificationText(throughputString);
+  static Runnable updateNotificationRunner = new Runnable() {
+    public void run() {
+      updateNotification();
+    }
+  };
+
+  public static void updateNotification(int icon) {
+    if(instance != null && handler != null) {
+      notificationIcon = icon;
+      handler.post(updateNotificationRunner);
     }
   }
 
-  public static void updateNotificationText(String text) {
-    if(instance == null) {
+  public static void updateNotification() {
+    if(logfileString.length() > 0) {
+      updateNotification(ThroughputTracker.throughputString + " [" + logfileString + "]");
+    } else {
+      updateNotification(ThroughputTracker.throughputString);
+    }
+  }
+
+  public static void updateNotification(String text) {
+    if(instance == null || notification == null) {
       return;
     }
 
@@ -159,6 +173,7 @@ public class NetworkLogService extends Service {
     i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
     PendingIntent pi = PendingIntent.getActivity(context, 0, i, 0);
     notification.setLatestEventInfo(context, context.getResources().getString(R.string.app_name), text, pi);
+    notification.icon = notificationIcon;
 
     if(start_foreground) {
       nManager.notify(NOTIFICATION_ID, notification);
@@ -206,7 +221,6 @@ public class NetworkLogService extends Service {
       }
 
       updateLogfileString();
-      updateThroughputString("0bps/0bps");
       ThroughputTracker.startUpdater();
 
       nManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
@@ -289,7 +303,6 @@ public class NetworkLogService extends Service {
       handler = null;
 
       ThroughputTracker.stopUpdater();
-      updateThroughputString("");
 
       if(NetworkLog.loggingButton != null) {
         NetworkLog.loggingButton.setChecked(false);
@@ -937,34 +950,6 @@ public class NetworkLogService extends Service {
     }
   }
 
-  private static Runnable updateNotificationRunner = new Runnable() {
-    public void run() {
-      updateNotificationText();
-    }
-  };
-
-  private static Runnable updateStatusRunner = new Runnable() {
-    public void run() {
-      NetworkLog.updateStatusText();
-    }
-  };
-
-  public static void updateThroughputString(String text) {
-    if(instance == null) {
-      throughputString = "";
-    } else {
-      throughputString = text;
-    }
-
-    if(instance != null && handler != null) {
-      handler.post(updateNotificationRunner);
-    }
-
-    if(NetworkLog.handler != null) {
-      NetworkLog.handler.post(updateStatusRunner);
-    }
-  }
-
   public static void updateLogfileString() {
     if(context == null) {
       return;
@@ -985,7 +970,7 @@ public class NetworkLogService extends Service {
     }
 
     if(NetworkLog.handler != null) {
-      NetworkLog.handler.post(updateStatusRunner);
+      NetworkLog.handler.post(NetworkLog.updateStatusRunner);
     }
   }
 

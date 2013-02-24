@@ -429,7 +429,7 @@ public class NetworkLog extends SherlockFragmentActivity {
       }
       statusUpdater = new StatusUpdater();
       new Thread(statusUpdater, "StatusUpdater").start();
-      NetworkLogService.updateThroughputString("0bps/0bps");
+      ThroughputTracker.updateThroughput(0, 0);
     }
 
   @Override
@@ -782,6 +782,18 @@ public class NetworkLog extends SherlockFragmentActivity {
     }
   }
 
+  static Runnable updateStatusRunner = new Runnable() {
+    public void run() {
+      updateStatusText();
+    }
+  };
+
+  public static void updateStatus(int icon) {
+    if(handler != null) {
+      handler.post(updateStatusRunner);
+    }
+  }
+
   public static void updateStatusText() {
     if(networklogContext == null || statusText == null) {
       return;
@@ -813,9 +825,9 @@ public class NetworkLog extends SherlockFragmentActivity {
       sb.append(NetworkLogService.logfileString);
     }
 
-    if(serviceRunning && NetworkLogService.throughputString.length() > 0) {
+    if(serviceRunning && ThroughputTracker.throughputString.length() > 0) {
       sb.append(networklogContext.getResources().getString(R.string.throughput));
-      sb.append(NetworkLogService.throughputString);
+      sb.append(ThroughputTracker.throughputString);
     }
 
     statusText.setText(sb);

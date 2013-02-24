@@ -11,6 +11,8 @@ import android.util.Log;
 import java.util.HashMap;
 
 public class ThroughputTracker {
+  public static String throughputString = "";
+
   static class ThroughputData {
     ApplicationsTracker.AppEntry app;
     long upload;
@@ -75,23 +77,14 @@ public class ThroughputTracker {
               totalDownload += entry.download;
             }
 
-            uploadSpeed = StringUtils.formatToBytes(totalUpload * 8) + "bps";
-            downloadSpeed = StringUtils.formatToBytes(totalDownload * 8) + "bps";
-
-            final String throughput = uploadSpeed + "/" + downloadSpeed;
-
-            if(MyLog.enabled) {
-              MyLog.d("Throughput: " + throughput);
-            }
-
-            NetworkLogService.instance.updateThroughputString(throughput);
+            updateThroughput(totalUpload * 8, totalDownload * 8);
 
             throughputMap.clear();
             totalUpload = 0;
             totalDownload = 0;
           } else if(isDirty) {
             isDirty = false;
-            NetworkLogService.instance.updateThroughputString("0bps/0bps");
+            updateThroughput(0, 0);
           }
         }
 
@@ -107,6 +100,7 @@ public class ThroughputTracker {
       stopUpdater();
     }
 
+    updateThroughput(0, 0);
     updater = new ThroughputUpdater();
     new Thread(updater, "ThroughputUpdater").start();
   }
@@ -116,6 +110,33 @@ public class ThroughputTracker {
       return;
     }
 
+    updateThroughput(-1, -1);
     updater.stop();
+  }
+
+  public static void updateThroughput(long upload, long download) {
+    if(NetworkLogService.instance == null || upload == -1 || download == -1) {
+      throughputString = "";
+    } else {
+      throughputString = StringUtils.formatToBytes(upload) + "bps/" + StringUtils.formatToBytes(download) + "bps";
+
+      if(MyLog.enabled) {
+        MyLog.d("Throughput: " + throughputString);
+      }
+    }
+
+    int icon;
+    if(upload > 0 && download > 0) {
+      icon = R.drawable.up1_down1;
+    } else if(upload > 0 && download == 0) {
+      icon = R.drawable.up1_down0;
+    } else if(upload == 0 && download > 0) {
+      icon = R.drawable.up0_down1;
+    } else {
+      icon = R.drawable.up0_down0;
+    }
+
+    NetworkLogService.updateNotification(icon);
+    NetworkLog.updateStatus(icon);
   }
 }
