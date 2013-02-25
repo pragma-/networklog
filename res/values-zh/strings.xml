@@ -6,6 +6,7 @@
   <string name="tab_apps">应用</string>
 
   <string name="app_instructions">点击显示连接详情，长按显示图表</string>
+  <string name="app_throughput">流量</string>
   <string name="app_packets">数据包：\u0020</string>
   <string name="app_bytes">字节数：\u0020</string>
 
@@ -22,6 +23,8 @@
   <string name="hostitem_recv">\u0020\u0020接收：\u0020</string>
   <string name="hostitem_packets">\u0020数据包，\u0020</string>
   <string name="hostitem_bytes">\u0020字节\u0020</string>
+
+  <string name="throughput">\u0020流量:\u0020</string>
 
   <string name="confirm_exit_title">确认退出</string>
   <string name="confirm_exit_text">确定要退出？</string>
@@ -46,6 +49,7 @@
   <string name="menu_sort">排序</string>
   <string name="menu_by_app_id">按应用ID排序</string>
   <string name="menu_by_name">按名称排序</string>
+  <string name="menu_by_throughput">按流量排序</string>
   <string name="menu_by_packets">按数据包排序</string>
   <string name="menu_by_bytes">按字节数排序</string>
   <string name="menu_by_timestamp">按时间排序</string>
