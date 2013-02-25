@@ -49,6 +49,7 @@
   <string name="menu_sort">Sortieren</string>
   <string name="menu_by_app_id">Nach App ID</string>
   <string name="menu_by_name">Nach Name</string>
+  <string name="menu_by_throughput">Nach Verkehr</string>
   <string name="menu_by_packets">Nach Paketen</string>
   <string name="menu_by_bytes">Nach Bytes</string>
   <string name="menu_by_timestamp">Nach Zeitstempel</string>
