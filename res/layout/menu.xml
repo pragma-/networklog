@@ -12,6 +12,8 @@
           android:title="@string/menu_by_app_id" />
         <item android:id="@+id/sort_by_name"
           android:title="@string/menu_by_name" />
+        <item android:id="@+id/sort_by_throughput"
+          android:title="@string/menu_by_throughput" />
         <item android:id="@+id/sort_by_packets"
           android:title="@string/menu_by_packets" />
         <item android:id="@+id/sort_by_bytes"

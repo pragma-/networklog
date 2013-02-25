@@ -436,7 +436,6 @@ public class NetworkLog extends SherlockFragmentActivity {
     public void onResume()
     {
       super.onResume();
-
       MyLog.d("onResume()");
     }
 
@@ -444,7 +443,6 @@ public class NetworkLog extends SherlockFragmentActivity {
     public void onPause()
     {
       super.onPause();
-
       MyLog.d("onPause()");
     }
 
@@ -545,23 +543,21 @@ public class NetworkLog extends SherlockFragmentActivity {
           case UID:
             item = menu.findItem(R.id.sort_by_uid);
             break;
-
           case NAME:
             item = menu.findItem(R.id.sort_by_name);
             break;
-
+          case THROUGHPUT:
+            item = menu.findItem(R.id.sort_by_throughput);
+            break;
           case PACKETS:
             item = menu.findItem(R.id.sort_by_packets);
             break;
-
           case BYTES:
             item = menu.findItem(R.id.sort_by_bytes);
             break;
-
           case TIMESTAMP:
             item = menu.findItem(R.id.sort_by_timestamp);
             break;
-
           default:
             NetworkLog.settings.setSortBy(Sort.BYTES);
             item = menu.findItem(R.id.sort_by_bytes);
@@ -601,53 +597,46 @@ public class NetworkLog extends SherlockFragmentActivity {
         case R.id.filter:
           showFilterDialog();
           break;
-
         case R.id.overallgraph:
           startActivity(new Intent(this, OverallAppTimelineGraph.class));
           break;
-
         case R.id.exit:
           finish();
           break;
-
         case R.id.feedback:
           feedbackDialog = new FeedbackDialog(this);
           feedbackDialog.show();
           break;
-
         case R.id.clearlog:
           clearLog.showClearLogDialog(this);
           break;
-
         case R.id.settings:
           startActivity(new Intent(this, Preferences.class));
           break;
-
         case R.id.sort_by_uid:
           NetworkLog.settings.setSortBy(Sort.UID);
           item.setChecked(true);
           break;
-
         case R.id.sort_by_name:
           NetworkLog.settings.setSortBy(Sort.NAME);
           item.setChecked(true);
           break;
-
+        case R.id.sort_by_throughput:
+          NetworkLog.settings.setSortBy(Sort.THROUGHPUT);
+          item.setChecked(true);
+          break;
         case R.id.sort_by_packets:
           NetworkLog.settings.setSortBy(Sort.PACKETS);
           item.setChecked(true);
           break;
-
         case R.id.sort_by_bytes:
           NetworkLog.settings.setSortBy(Sort.BYTES);
           item.setChecked(true);
           break;
-
         case R.id.sort_by_timestamp:
           NetworkLog.settings.setSortBy(Sort.TIMESTAMP);
           item.setChecked(true);
           break;
-
         default:
           return super.onOptionsItemSelected(item);
       }

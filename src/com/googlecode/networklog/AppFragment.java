@@ -84,6 +84,7 @@ public class AppFragment extends Fragment {
     protected ApplicationsTracker.AppEntry app;
     protected long uploadThroughput;
     protected long downloadThroughput;
+    protected long totalThroughput;
     protected String throughputString = "0bps/0bps";
     protected long totalPackets;
     protected long totalBytes;
@@ -161,6 +162,12 @@ public class AppFragment extends Fragment {
   protected static class SortAppsByBytes implements Comparator<GroupItem> {
     public int compare(GroupItem o1, GroupItem o2) {
       return o1.totalBytes > o2.totalBytes ? -1 : (o1.totalBytes == o2.totalBytes) ? 0 : 1;
+    }
+  }
+
+  protected static class SortAppsByThroughput implements Comparator<GroupItem> {
+    public int compare(GroupItem o1, GroupItem o2) {
+      return o1.totalThroughput > o2.totalThroughput ? -1 : (o1.totalThroughput == o2.totalThroughput) ? 0 : 1;
     }
   }
 
@@ -309,6 +316,9 @@ public class AppFragment extends Fragment {
         break;
       case NAME:
         sortMethod = new SortAppsByName();
+        break;
+      case THROUGHPUT:
+        sortMethod = new SortAppsByThroughput();
         break;
       case PACKETS:
         sortMethod = new SortAppsByPackets();
@@ -715,6 +725,7 @@ public class AppFragment extends Fragment {
 
         item.uploadThroughput = upload;
         item.downloadThroughput = download;
+        item.totalThroughput = upload + download;
         item.throughputString = StringUtils.formatToBytes(upload) + "bps/" + StringUtils.formatToBytes(download) + "bps"; 
 
         index++;

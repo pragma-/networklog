@@ -49,6 +49,7 @@
   <string name="menu_sort">Sort</string>
   <string name="menu_by_app_id">By App ID</string>
   <string name="menu_by_name">By Name</string>
+  <string name="menu_by_throughput">By Traffic</string>
   <string name="menu_by_packets">By Packets</string>
   <string name="menu_by_bytes">By Bytes</string>
   <string name="menu_by_timestamp">By Timestamp</string>
