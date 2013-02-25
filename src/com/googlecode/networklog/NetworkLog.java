@@ -108,6 +108,7 @@ public class NetworkLog extends SherlockFragmentActivity {
   public static boolean isBound = false;
 
   public static Context networklogContext;
+  public static Menu menu;
 
   public static ServiceConnection connection = new ServiceConnection() {
     public void onServiceConnected(ComponentName className, IBinder serv) {
@@ -527,6 +528,7 @@ public class NetworkLog extends SherlockFragmentActivity {
 
   @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+      this.menu = menu;
       MenuItem item = menu.findItem(R.id.sort);
 
       if(viewPager.getCurrentItem() == PAGE_APP) {

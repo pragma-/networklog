@@ -19,7 +19,7 @@ import android.content.DialogInterface;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 
-public class Preferences extends SherlockPreferenceActivity implements OnPreferenceClickListener {
+public class Preferences extends SherlockPreferenceActivity implements OnPreferenceClickListener, OnPreferenceChangeListener {
   private PreferenceConfigurationData data = null;
   private AlertDialog warnStartForegroundDialog = null;
 
@@ -84,6 +84,7 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
       findPreference("notifications_toast").setOnPreferenceClickListener(this);
       findPreference("notifications_toast_apps_dialog").setOnPreferenceClickListener(this);
       findPreference("clear_log").setOnPreferenceClickListener(this);
+      findPreference("sort_by").setOnPreferenceChangeListener(this);
 
       EditTextPreference logfile = (EditTextPreference) findPreference("logfile");
       logfile.setText(NetworkLog.settings.getLogFile());
@@ -157,6 +158,37 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
 
         MyLog.d("Restored preferences run");
       }
+    }
+
+  @Override
+    public boolean onPreferenceChange(Preference preference, Object newValue) {
+      if(preference.getKey().equals("sort_by")) {
+        if(NetworkLog.menu == null) {
+          return true;
+        }
+        String value = (String) newValue;
+        com.actionbarsherlock.view.MenuItem item;
+
+        if(value.equals("UID")) {
+          item = NetworkLog.menu.findItem(R.id.sort_by_uid);
+        } else if(value.equals("NAME")) {
+          item = NetworkLog.menu.findItem(R.id.sort_by_name);
+        } else if(value.equals("THROUGHPUT")) {
+          item = NetworkLog.menu.findItem(R.id.sort_by_throughput);
+        } else if(value.equals("PACKETS")) {
+          item = NetworkLog.menu.findItem(R.id.sort_by_packets);
+        } else if(value.equals("BYTES")) {
+          item = NetworkLog.menu.findItem(R.id.sort_by_bytes);
+        } else if(value.equals("TIMESTAMP")) {
+          item = NetworkLog.menu.findItem(R.id.sort_by_timestamp);
+        } else {
+          return true;
+        }
+        item.setChecked(true);
+        return true;
+      }
+
+      return true;
     }
 
   @Override
