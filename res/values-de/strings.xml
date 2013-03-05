@@ -66,6 +66,14 @@
 
   <string name="interval_prompt">Setze Interval</string>
   <string name="viewsize_prompt">Setze Zeitfenster</string>
+
+  <string name="duration_2sec">2 Sekunden</string>
+  <string name="duration_3_5sec">3.5 Sekunden</string>
+  <string name="duration_7sec">7 Sekunden</string>
+
+  <string name="range_all">Alle</string>
+  <string name="range_none">Keine</string>
+  <string name="range_now">Jetzt</string>
   <string name="range_1ms">1 ms</string>
   <string name="range_100ms">100 ms</string>
   <string name="range_500ms">500 ms</string>
@@ -80,9 +88,15 @@
   <string name="range_2hour">2 Stunden</string>
   <string name="range_4hour">4 Stunden</string>
   <string name="range_8hour">8 Stunden</string>
+  <string name="range_12hour">12 Stunden</string>
   <string name="range_16hour">16 Stunden</string>
   <string name="range_24hour">24 Stunden</string>
   <string name="range_48hour">48 Stunden</string>
+  <string name="range_2day">2 Tage</string>
+  <string name="range_4day">4 Tage</string>
+  <string name="range_1week">1 Woche</string>
+  <string name="range_2week">2 Wochen</string>
+  <string name="range_1month">1 Monate</string>
 
   <string name="ok">OK</string>
   <string name="cancel">Abbrechen</string>
@@ -179,12 +193,11 @@
   <string name="pref_foreground_summary">Android kann diese App nicht automatisch beenden. Solange aktiviert wird eine Statusbar Notification angezeigt.</string>
 
   <string name="pref_notifications">Verbindungsnotifications</string>
-  <string name="pref_statusbar_title">Statusbar</string>
-  <string name="pref_statusbar_summary">Zeige eine Statusbar Notification an, wenn eine App Netzwerkverkehr erzeugt.</string>
-  <string name="pref_choose_apps">Apps auswählen</string>
-  <string name="pref_statusbar_apps_summary">Wähle Apps aus, für die eine Statusbar Notification angezeigt werden soll.</string>
   <string name="pref_toast_title">Pop-up</string>
   <string name="pref_toast_summary">Zeige einen kurzen Pop-up wenn eine App Netzwerkverkehr erzeugt.</string>
+  <string name="pref_toast_duration_title">Anzeigedauer</string>
+  <string name="pref_toast_duration_summary">Anzeigedauer für Benachrichtigungen</string>
+  <string name="pref_choose_apps">Apps auswählen</string>
   <string name="pref_toast_apps_summary">Wähle Apps aus, für die ein Pop-up angezeigt werden soll.</string>
 
   <string name="pref_graphs">Graph Optionen</string>

@@ -66,6 +66,14 @@
 
   <string name="interval_prompt">Set Interval</string>
   <string name="viewsize_prompt">Set Viewsize</string>
+
+  <string name="duration_2sec">2 seconds</string>
+  <string name="duration_3_5sec">3.5 seconds</string>
+  <string name="duration_7sec">7 seconds</string>
+
+  <string name="range_all">all</string>
+  <string name="range_none">none</string>
+  <string name="range_now">now</string>
   <string name="range_1ms">1 ms</string>
   <string name="range_100ms">100 ms</string>
   <string name="range_500ms">500 ms</string>
@@ -80,9 +88,15 @@
   <string name="range_2hour">2 hours</string>
   <string name="range_4hour">4 hours</string>
   <string name="range_8hour">8 hours</string>
+  <string name="range_12hour">12 hours</string>
   <string name="range_16hour">16 hours</string>
   <string name="range_24hour">24 hours</string>
   <string name="range_48hour">48 hours</string>
+  <string name="range_2day">2 days</string>
+  <string name="range_4day">4 days</string>
+  <string name="range_1week">1 week</string>
+  <string name="range_2week">2 weeks</string>
+  <string name="range_1month">1 month</string>
 
   <string name="ok">OK</string>
   <string name="cancel">Cancel</string>
@@ -179,12 +193,11 @@
   <string name="pref_foreground_summary">Prevent Android from killing service. Disabling this will remove the status bar notification</string>
 
   <string name="pref_notifications">Connection Notifications</string>
-  <string name="pref_statusbar_title">Status bar</string>
-  <string name="pref_statusbar_summary">Display status bar notification when an app makes a network transmission</string>
-  <string name="pref_choose_apps">Choose apps</string>
-  <string name="pref_statusbar_apps_summary">Select which apps should have status bar notifications</string>
   <string name="pref_toast_title">Toast pop-up</string>
-  <string name="pref_toast_summary">Display toast pop-up notification when an app makes a network transmission</string>
+  <string name="pref_toast_summary">Display toast notification when an app makes a network transmission</string>
+  <string name="pref_toast_duration_title">Duration</string>
+  <string name="pref_toast_duration_summary">Select how long toast notification should remain visible</string>
+  <string name="pref_choose_apps">Choose apps</string>
   <string name="pref_toast_apps_summary">Select which apps should have toast notifications</string>
 
   <string name="pref_graphs">Graph Options</string>

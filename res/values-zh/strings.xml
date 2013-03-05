@@ -66,6 +66,14 @@
 
   <string name="interval_prompt">时间间隔设置</string>
   <string name="viewsize_prompt">数据时间段设置</string>
+
+  <string name="duration_2sec">2秒</string>
+  <string name="duration_3_5sec">3.5秒</string>
+  <string name="duration_7sec">7秒</string>
+
+  <string name="range_all">all</string>
+  <string name="range_none">none</string>
+  <string name="range_now">now</string>
   <string name="range_1ms">1毫秒</string>
   <string name="range_100ms">100毫秒</string>
   <string name="range_500ms">500毫秒</string>
@@ -80,9 +88,15 @@
   <string name="range_2hour">2小时</string>
   <string name="range_4hour">4小时</string>
   <string name="range_8hour">8小时</string>
+  <string name="range_12hour">12小时</string>
   <string name="range_16hour">16小时</string>
   <string name="range_24hour">24小时</string>
   <string name="range_48hour">48小时</string>
+  <string name="range_2day">2天</string>
+  <string name="range_4day">4天</string>
+  <string name="range_1week">1周</string>
+  <string name="range_2week">2周</string>
+  <string name="range_1month">1个月</string>
 
   <string name="ok">确认</string>
   <string name="cancel">取消</string>
@@ -179,12 +193,11 @@
   <string name="pref_foreground_summary">防止安卓系统终止本服务，禁止此选项将移除状态栏通知。</string>
 
   <string name="pref_notifications">连接通知</string>
-  <string name="pref_statusbar_title">状态栏</string>
-  <string name="pref_statusbar_summary">当应用产生数据传输时在状态栏显示通知</string>
-  <string name="pref_choose_apps">选择应用</string>
-  <string name="pref_statusbar_apps_summary">选择启用状态栏通知的应用</string>
   <string name="pref_toast_title">弹出式消息条</string>
   <string name="pref_toast_summary">当应用产生数据传输时显示弹出式消息条通知</string>
+  <string name="pref_toast_duration_title">持续时间</string>
+  <string name="pref_toast_duration_summary">选择弹出式消息条通知的显示时间</string>
+  <string name="pref_choose_apps">选择应用</string>
   <string name="pref_toast_apps_summary">选择启用消息条通知的应用</string>
 
   <string name="pref_graphs">图表选项</string>
@@ -197,28 +210,3 @@
   <string name="pref_debug_title">记录额外的调试输出</string>
   <string name="pref_debug_summary">输出详细的调试信息到日志。警告：启用本选项可能会引起性能下降。</string>
 </resources>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
