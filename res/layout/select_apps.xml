@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:padding="5dp">
+  <LinearLayout
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+    <Button
+      android:id="@+id/select_all"
+      android:text="@string/select_all"
+      android:layout_width="wrap_content"
+      android:layout_height="40dip"
+      android:layout_weight="50" />
+    <Button
+      android:id="@+id/select_none"
+      android:text="@string/select_none"
+      android:layout_width="wrap_content"
+      android:layout_height="40dip"
+      android:layout_weight="50" />
+  </LinearLayout>
+  <ListView
+    android:id="@+id/select_apps"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" />
+</LinearLayout>

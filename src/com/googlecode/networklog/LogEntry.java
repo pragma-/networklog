@@ -19,24 +19,24 @@ public class LogEntry {
   int dpt;
   long timestamp;
 
-  public static boolean isValid(LogEntry entry) {
-    if(StringUtils.contains(entry.in, "{}:=")) {
+  public boolean isValid() {
+    if(StringUtils.contains(in, "{}:=")) {
       return false;
     }
 
-    if(StringUtils.contains(entry.out, "{}:=")) {
+    if(StringUtils.contains(out, "{}:=")) {
       return false;
     }
 
-    if(StringUtils.contains(entry.proto, "{}:=")) {
+    if(StringUtils.contains(proto, "{}:=")) {
       return false;
     }
 
-    if(StringUtils.contains(entry.src, "{}:=")) {
+    if(StringUtils.contains(src, "{}:=")) {
       return false;
     }
 
-    if(StringUtils.contains(entry.dst, "{}:=")) {
+    if(StringUtils.contains(dst, "{}:=")) {
       return false;
     }
 

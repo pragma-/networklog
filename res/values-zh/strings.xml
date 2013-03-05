@@ -106,6 +106,9 @@
   <string name="yes">是</string>
   <string name="no">否</string>
 
+  <string name="select_all">选择所有</string>
+  <string name="select_none">明确选择的</string>
+
   <string name="graph_apps_timeline">分应用的时间线</string>
   <string name="graph_timeline">\u0020时间线</string>
   <string name="graph_error_nodata_title">无图表数据</string>

@@ -786,7 +786,7 @@ public class AppFragment extends Fragment {
       return;
     }
 
-    if(!LogEntry.isValid(entry)) {
+    if(!entry.isValid()) {
       return;
     }
 

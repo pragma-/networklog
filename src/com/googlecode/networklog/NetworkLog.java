@@ -98,6 +98,7 @@ public class NetworkLog extends SherlockFragmentActivity {
   public static HistoryLoader history;
   public static FeedbackDialog feedbackDialog;
   public static ClearLog clearLog;
+  public static SelectToastApps selectToastApps;
 
   public static StatusUpdater statusUpdater;
 
@@ -805,7 +806,7 @@ public class NetworkLog extends SherlockFragmentActivity {
       }
     }
 
-    boolean serviceRunning = isServiceRunning(networklogContext, NetworkLogService.class.getName());
+    boolean serviceRunning = NetworkLogService.instance != null;
 
     if(!serviceRunning) {
       sb.append(res.getString(R.string.logging_inactive));

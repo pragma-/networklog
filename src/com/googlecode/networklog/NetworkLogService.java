@@ -10,6 +10,9 @@ import android.content.ContextWrapper;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
 import android.os.Bundle;
@@ -50,6 +53,11 @@ public class NetworkLogService extends Service {
   private static Context context;
   public static Handler handler;
   public static String logfileString = "";
+  public static Toast toast;
+  public static TextView toastTextView;
+  public static CharSequence toastText;
+  public static boolean toastEnabled;
+  public static int toastDuration;
 
   private class IncomingHandler extends Handler {
     private Context context;
@@ -180,6 +188,55 @@ public class NetworkLogService extends Service {
     }
   }
 
+  private static Runnable showOnlyToastRunnable;
+  private static Runnable showToastRunnable;
+
+  public static void showToast(final CharSequence text) {
+    if(context == null || handler == null || toastEnabled == false) {
+      return;
+    }
+
+    if(showToastRunnable == null) {
+      showToastRunnable = new Runnable() {
+        public void run() {
+          if(toast == null) {
+            View layout = ((LayoutInflater)context.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_toast, null);
+            toastTextView = (TextView) layout.findViewById(R.id.toasttext);
+            toast = new Toast(context);
+            toast.setView(layout);
+          }
+
+          switch(toastDuration) {
+            case 3500:
+              toast.setDuration(Toast.LENGTH_LONG);
+              break;
+            case 7000:
+              toast.setDuration(Toast.LENGTH_LONG);
+
+              if(showOnlyToastRunnable == null) {
+                showOnlyToastRunnable  = new Runnable() {
+                  public void run() {
+                    toast.show();
+                  }
+                };
+              }
+
+              handler.postDelayed(showOnlyToastRunnable, 3250);
+              break;
+            default:
+              toast.setDuration(Toast.LENGTH_SHORT);
+          }
+
+          toastTextView.setText(android.text.Html.fromHtml(toastText.toString()));
+          toast.show();
+        }
+      };
+    }
+
+    toastText = text;
+    handler.post(showToastRunnable);
+  }
+
   public boolean hasRoot() {
     return SysUtils.checkRoot(this);
   }
@@ -219,6 +276,9 @@ public class NetworkLogService extends Service {
       if(NetworkLog.settings == null) {
         NetworkLog.settings = new Settings(this);
       }
+
+      toastEnabled = NetworkLog.settings.getToastNotifications();
+      toastDuration = NetworkLog.settings.getToastNotificationsDuration();
 
       updateLogfileString();
       ThroughputTracker.startUpdater();
@@ -365,7 +425,7 @@ public class NetworkLogService extends Service {
       }
 
       if(nextEntry != -1 && nextEntry < newline) {
-        Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+        // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
         pos = newline;
         continue;
       }
@@ -374,7 +434,7 @@ public class NetworkLogService extends Service {
         pos = result.indexOf("IN=", pos);
 
         if(pos == -1 || pos > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
           pos = newline;
           continue;
         }
@@ -382,7 +442,7 @@ public class NetworkLogService extends Service {
         space = result.indexOf(" ", pos);
 
         if(space == -1 || space > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
           pos = newline;
           continue;
         }
@@ -393,7 +453,7 @@ public class NetworkLogService extends Service {
         pos = result.indexOf("OUT=", pos);
 
         if(pos == -1 || pos > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
           pos = newline;
           continue;
         }
@@ -401,7 +461,7 @@ public class NetworkLogService extends Service {
         space = result.indexOf(" ", pos);
 
         if(space == -1 || space > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
           pos = newline;
           continue;
         }
@@ -412,7 +472,7 @@ public class NetworkLogService extends Service {
         pos = result.indexOf("SRC=", pos);
 
         if(pos == -1 || pos > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
           pos = newline;
           continue;
         }
@@ -420,7 +480,7 @@ public class NetworkLogService extends Service {
         space = result.indexOf(" ", pos);
 
         if(space == -1 || space > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
           pos = newline;
           continue;
         }
@@ -431,7 +491,7 @@ public class NetworkLogService extends Service {
         pos = result.indexOf("DST=", pos);
 
         if(pos == -1 || pos > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
           pos = newline;
           continue;
         }
@@ -439,7 +499,7 @@ public class NetworkLogService extends Service {
         space = result.indexOf(" ", pos);
 
         if(space == -1 || space > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
           pos = newline;
           continue;
         }
@@ -450,7 +510,7 @@ public class NetworkLogService extends Service {
         pos = result.indexOf("LEN=", pos);
 
         if(pos == -1 || pos > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
           pos = newline;
           continue;
         }
@@ -458,7 +518,7 @@ public class NetworkLogService extends Service {
         space = result.indexOf(" ", pos);
 
         if(space == -1 || space > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
           pos = newline;
           continue;
         }
@@ -469,7 +529,7 @@ public class NetworkLogService extends Service {
         pos = result.indexOf("PROTO=", pos);
 
         if(pos == -1 || pos > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
           pos = newline;
           continue;
         }
@@ -477,7 +537,7 @@ public class NetworkLogService extends Service {
         space = result.indexOf(" ", pos);
 
         if(space == -1 || space > newline) {
-          Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+          // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
           pos = newline;
           continue;
         }
@@ -496,7 +556,7 @@ public class NetworkLogService extends Service {
           space = result.indexOf(" ", pos);
 
           if(space == -1 || space > newline) {
-            Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+            // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
             pos = newline;
             continue;
           }
@@ -516,7 +576,7 @@ public class NetworkLogService extends Service {
           space = result.indexOf(" ", pos);
 
           if(space == -1 || space > newline) {
-            Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
+            // Log.w("NetworkLog", "Skipping corrupted entry [" + result.substring(thisEntry, newline) + "]");
             pos = newline;
             continue;
           }
@@ -697,7 +757,7 @@ public class NetworkLogService extends Service {
       }
     }
 
-    if(!LogEntry.isValid(entry)) {
+    if(!entry.isValid()) {
       return;
     }
 

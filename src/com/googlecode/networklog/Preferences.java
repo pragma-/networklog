@@ -79,8 +79,6 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
       addPreferencesFromResource(R.xml.preferences);
 
       findPreference("filter_dialog").setOnPreferenceClickListener(this);
-      findPreference("notifications_statusbar").setOnPreferenceClickListener(this);
-      findPreference("notifications_statusbar_apps_dialog").setOnPreferenceClickListener(this);
       findPreference("notifications_toast").setOnPreferenceClickListener(this);
       findPreference("notifications_toast_apps_dialog").setOnPreferenceClickListener(this);
       findPreference("clear_log").setOnPreferenceClickListener(this);
@@ -195,12 +193,12 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
     public boolean onPreferenceClick(Preference preference) {
       MyLog.d("Preference [" + preference.getKey() + "] clicked");
 
-      if(preference.getKey().equals("notifications_statusbar")
-          || preference.getKey().equals("notifications_toast")
-          || preference.getKey().equals("notifications_statusbar_apps_dialog")
-          || preference.getKey().equals("notifications_toast_apps_dialog")) 
+      if(preference.getKey().equals("notifications_toast_apps_dialog")) 
       {
-        new ComingSoonDialog(this);
+        if(NetworkLog.selectToastApps == null) {
+          NetworkLog.selectToastApps = new SelectToastApps();
+          NetworkLog.selectToastApps.showDialog(this);
+        }
         return true;
       }
 

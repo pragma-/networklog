@@ -325,7 +325,7 @@ public class LogFragment extends Fragment {
       return;
     }
 
-    if(!LogEntry.isValid(entry)) {
+    if(!entry.isValid()) {
       return;
     }
 

@@ -111,21 +111,19 @@
       android:title="@string/pref_notifications">
       <CheckBoxPreference
         android:defaultValue="false"
-        android:key="notifications_statusbar"
-        android:title="@string/pref_statusbar_title"
-        android:summary="@string/pref_statusbar_summary" />
-      <Preference
-        android:persistent="false"
-        android:key="notifications_statusbar_apps_dialog"
-        android:title="@string/pref_choose_apps"
-        android:summary="@string/pref_statusbar_apps_summary"
-        android:dependency="notifications_statusbar"
-        android:layout="?android:attr/preferenceLayoutChild" />
-      <CheckBoxPreference
-        android:defaultValue="false"
         android:key="notifications_toast"
         android:title="@string/pref_toast_title"
         android:summary="@string/pref_toast_summary" />
+      <ListPreference
+        android:defaultValue="3500"
+        android:key="notifications_toast_duration"
+        android:title="@string/pref_toast_duration_title"
+        android:summary="@string/pref_toast_duration_summary"
+        android:dependency="notifications_toast"
+        android:entries="@array/toast_duration_entries"
+        android:entryValues="@array/toast_duration_values"
+        android:dialogTitle="@string/pref_toast_duration_title"
+        android:layout="?android:attr/preferenceLayoutChild" />
       <Preference
         android:persistent="false"
         android:key="notifications_toast_apps_dialog"
