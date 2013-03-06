@@ -102,8 +102,6 @@ public class ThroughputTracker {
               ThroughputData value = (ThroughputData) entry.getValue();
 
               if(value.displayed == false) {
-                showToast = true;
-
                 totalUpload += value.upload;
                 totalDownload += value.download;
 
@@ -113,14 +111,17 @@ public class ThroughputTracker {
                 }
               }
 
-              throughput = StringUtils.formatToBytes(value.upload * 8) + "bps/" + StringUtils.formatToBytes(value.download * 8) + "bps";
+              if(NetworkLogService.toastBlockedApps.get(value.app.packageName) == null) {
+                showToast = true;
+                throughput = StringUtils.formatToBytes(value.upload * 8) + "bps/" + StringUtils.formatToBytes(value.download * 8) + "bps";
 
-              if(MyLog.enabled && value.displayed == false) {
-                MyLog.d(value.app.name + " throughput: " + throughput);
+                if(MyLog.enabled && value.displayed == false) {
+                  MyLog.d(value.app.name + " throughput: " + throughput);
+                }
+
+                toastString.append(newline + "<b>" +  value.app.name + "</b>: <u>" + value.address + "</u> <i>" + throughput + "</i>");
+                newline = "<br>";
               }
-
-              toastString.append(newline + "<b>" +  value.app.name + "</b>: <u>" + value.address + "</u> <i>" + throughput + "</i>");
-              newline = "<br>";
 
               value.displayed = true;
 

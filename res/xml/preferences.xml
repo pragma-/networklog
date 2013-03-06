@@ -127,7 +127,7 @@
       <Preference
         android:persistent="false"
         android:key="notifications_toast_apps_dialog"
-        android:title="@string/pref_choose_apps"
+        android:title="@string/pref_toast_block_apps"
         android:summary="@string/pref_toast_apps_summary"
         android:dependency="notifications_toast"
         android:layout="?android:attr/preferenceLayoutChild" />

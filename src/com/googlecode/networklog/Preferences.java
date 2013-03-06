@@ -16,24 +16,34 @@ import android.preference.ListPreference;
 import android.os.Bundle;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.util.Log;
+
+import java.util.ArrayList;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 
 public class Preferences extends SherlockPreferenceActivity implements OnPreferenceClickListener, OnPreferenceChangeListener {
-  private PreferenceConfigurationData data = null;
+  private InstanceData data = null;
   private AlertDialog warnStartForegroundDialog = null;
 
-  private class PreferenceConfigurationData {
+  private class InstanceData {
     boolean history_dialog_showing;
     boolean start_foreground_dialog_showing;
     boolean clearlog_dialog_showing;
     boolean clearlog_progress_dialog_showing;
+    boolean selectToastApps_dialog_showing;
+    ArrayList<SelectToastApps.AppItem> selectToastApps_appData;
 
-    PreferenceConfigurationData() {
+    InstanceData() {
       history_dialog_showing = NetworkLog.history.dialog_showing;
       start_foreground_dialog_showing = (warnStartForegroundDialog == null) ? false : true;
       clearlog_dialog_showing = NetworkLog.clearLog.dialog != null && NetworkLog.clearLog.dialog.isShowing();
       clearlog_progress_dialog_showing = NetworkLog.clearLog.progressDialog != null && NetworkLog.clearLog.progressDialog.isShowing();
+
+      if(NetworkLog.selectToastApps != null && NetworkLog.selectToastApps.dialog != null && NetworkLog.selectToastApps.dialog.isShowing()) {
+        selectToastApps_dialog_showing = true;
+        selectToastApps_appData = NetworkLog.selectToastApps.appData;
+      }
     }
   }
 
@@ -60,13 +70,18 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
         NetworkLog.clearLog.progressDialog = null;
       }
 
+      if(NetworkLog.selectToastApps != null && NetworkLog.selectToastApps.dialog != null && NetworkLog.selectToastApps.dialog.isShowing()) {
+        NetworkLog.selectToastApps.dialog.dismiss();
+        NetworkLog.selectToastApps = null;
+      }
+
       super.onDestroy();
     }
 
   @Override
     public Object onRetainNonConfigurationInstance() {
       MyLog.d("Saving preference run");
-      data = new PreferenceConfigurationData();
+      data = new InstanceData();
       return data;
     }
 
@@ -133,7 +148,7 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
       pref = (ListPreference) findPreference("history_size");
       pref.setOnPreferenceChangeListener(changeListener);
 
-      data = (PreferenceConfigurationData) getLastNonConfigurationInstance();
+      data = (InstanceData) getLastNonConfigurationInstance();
 
       if(data != null) {
         MyLog.d("Restoring preferences run");
@@ -152,6 +167,11 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
 
         if(data.clearlog_progress_dialog_showing) {
           NetworkLog.clearLog.showProgressDialog(this);
+        }
+
+        if(data.selectToastApps_dialog_showing) {
+          NetworkLog.selectToastApps = new SelectToastApps();
+          NetworkLog.selectToastApps.showDialog(this, data.selectToastApps_appData);
         }
 
         MyLog.d("Restored preferences run");
@@ -195,10 +215,8 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
 
       if(preference.getKey().equals("notifications_toast_apps_dialog")) 
       {
-        if(NetworkLog.selectToastApps == null) {
-          NetworkLog.selectToastApps = new SelectToastApps();
-          NetworkLog.selectToastApps.showDialog(this);
-        }
+        NetworkLog.selectToastApps = new SelectToastApps();
+        NetworkLog.selectToastApps.showDialog(this);
         return true;
       }
 

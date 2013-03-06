@@ -22,36 +22,118 @@ import android.widget.Button;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.util.Log;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.FileReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
-public class SelectToastApps implements DialogInterface.OnDismissListener
+
+public class SelectToastApps
 {
   Context context;
   ArrayList<AppItem> appData;
   CustomAdapter adapter;
-  boolean dialogShowing;
+  HashMap<String, String> apps;
+  AlertDialog dialog;
 
   class AppItem {
     Drawable icon;
     String name;
+    String packageName;
     boolean enabled;
   }
 
-  public void showDialog(final Context context)
-  {
-    if(dialogShowing) {
-      // do nothing
-      return;
+  public static File getSaveFile(Context context) {
+    return new File(context.getDir("data", Context.MODE_PRIVATE), "blockedtoasts.txt");
+  }
+
+  public static HashMap<String, String> loadBlockedApps(Context context) {
+    File file = getSaveFile(context);
+
+    if(!file.exists()) {
+      return null;
     }
 
+    HashMap<String, String> map = new HashMap<String, String>();
+
+    try {
+      BufferedReader br = new BufferedReader(new FileReader(file));
+      String line;
+      while ((line = br.readLine()) != null) {
+        map.put(line, line);
+      }
+      br.close();
+    } catch(Exception e) {
+      Log.w("NetworkLog", "Exception loading toast apps: " + e);
+      SysUtils.showError(context, "Error loading blocked notifications", e.getMessage());
+      return null;
+    }
+    return map;
+  }
+
+  public static void saveBlockedApps(Context context, HashMap<String, String> map) {
+    File file = getSaveFile(context);
+
+    try {
+      PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+      for(String key : map.keySet()) {
+        writer.println(key);
+      }
+      writer.close();
+    } catch(Exception e) {
+      Log.w("NetworkLog", "Exception saving toast apps: " + e);
+      SysUtils.showError(context, "Error saving blocked notifications", e.getMessage());
+    }
+  }
+
+  protected static class SortAppsByName implements Comparator<AppItem> {
+    public int compare(AppItem o1, AppItem o2) {
+      return o1.name.compareToIgnoreCase(o2.name);
+    }
+  }
+
+  public void showDialog(final Context context) {
+    showDialog(context, null);
+  }
+
+  public void showDialog(final Context context, ArrayList<AppItem> data)
+  {
     this.context = context;
     LayoutInflater inflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
     View view = inflater.inflate(R.layout.select_apps, null);
 
-    appData = new ArrayList<AppItem>();
+    if(data == null) {
+      appData = new ArrayList<AppItem>();
 
+      for(ApplicationsTracker.AppEntry app : ApplicationsTracker.installedApps) {
+        AppItem item = new AppItem();
+        item.name = app.name;
+        item.packageName = app.packageName;
+        appData.add(item);
+      }
+
+      Collections.sort(appData, new SortAppsByName());
+
+      apps = loadBlockedApps(context);
+      if(apps != null) {
+        for(AppItem item : appData) {
+          if(apps.get(item.packageName) != null) {
+            item.enabled = true;
+          }
+        }
+      }
+    } else {
+      appData = data;
+    }
 
     ListView listView = (ListView) view.findViewById(R.id.select_apps);
     adapter = new CustomAdapter(context, R.layout.select_apps_item, appData);
@@ -61,41 +143,52 @@ public class SelectToastApps implements DialogInterface.OnDismissListener
 
     ((Button) view.findViewById(R.id.select_all)).setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
+        for(AppItem item : appData) {
+          item.enabled = true;
+        }
+        adapter.notifyDataSetChanged();
       }
     });
 
     ((Button) view.findViewById(R.id.select_none)).setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
+        for(AppItem item : appData) {
+          item.enabled = false;
+        }
+        adapter.notifyDataSetChanged();
       }
     });
 
     Resources res = context.getResources();
     AlertDialog.Builder builder = new AlertDialog.Builder(context);
-    builder.setTitle(res.getString(R.string.pref_choose_apps))
+    builder.setTitle(res.getString(R.string.pref_toast_block_apps))
       .setView(view)
-      .setCancelable(false)
+      .setCancelable(true)
       .setNegativeButton(res.getString(R.string.cancel), new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
           dialog.dismiss();
+          NetworkLog.selectToastApps = null;
         }
       })
     .setPositiveButton(res.getString(R.string.done), new DialogInterface.OnClickListener() {
       public void onClick(DialogInterface dialog, int id) {
-        /* apply and save selections */
+        apps = new HashMap<String, String>();
+
+        for(AppItem item : appData) {
+          if(item.enabled == true) {
+            apps.put(item.packageName, item.packageName);
+          }
+        }
+        saveBlockedApps(context, apps);
+        NetworkLogService.toastBlockedApps = apps;
         dialog.dismiss();
+        NetworkLog.selectToastApps = null;
       }
     });
 
-    AlertDialog alert = builder.create();
-    alert.setOnDismissListener(this);
-    alert.show();
+    dialog = builder.create();
+    dialog.show();
   }
-
-  @Override
-    public void onDismiss(DialogInterface dialog) {
-      dialogShowing = false;
-      NetworkLog.selectToastApps = null;
-    }
 
   private class CustomOnItemClickListener implements OnItemClickListener {
     @Override
@@ -133,7 +226,8 @@ public class SelectToastApps implements DialogInterface.OnDismissListener
         }
 
         icon = holder.getIcon();
-        icon.setImageDrawable(item.icon); // ApplicationsTracker.getIcon()
+        icon.setTag(item.packageName);
+        icon.setImageDrawable(ApplicationsTracker.loadIcon(context, icon, item.packageName));
 
         name = holder.getName();
         name.setText(item.name);

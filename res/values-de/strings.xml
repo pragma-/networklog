@@ -200,8 +200,8 @@
   <string name="pref_toast_summary">Zeige einen kurzen Pop-up wenn eine App Netzwerkverkehr erzeugt.</string>
   <string name="pref_toast_duration_title">Anzeigedauer</string>
   <string name="pref_toast_duration_summary">Anzeigedauer für Benachrichtigungen</string>
-  <string name="pref_choose_apps">Apps auswählen</string>
-  <string name="pref_toast_apps_summary">Wähle Apps aus, für die ein Pop-up angezeigt werden soll.</string>
+  <string name="pref_toast_block_apps">Apps blockieren</string>
+  <string name="pref_toast_apps_summary">Wähle aus, welche Apps keine Benachrichtigungen haben sollen.</string>
 
   <string name="pref_graphs">Graph Optionen</string>
   <string name="pref_interval_title">Intervall</string>

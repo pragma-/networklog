@@ -200,8 +200,8 @@
   <string name="pref_toast_summary">Display toast notification when an app makes a network transmission</string>
   <string name="pref_toast_duration_title">Duration</string>
   <string name="pref_toast_duration_summary">Select how long toast notification should remain visible</string>
-  <string name="pref_choose_apps">Choose apps</string>
-  <string name="pref_toast_apps_summary">Select which apps should have toast notifications</string>
+  <string name="pref_toast_block_apps">Block apps</string>
+  <string name="pref_toast_apps_summary">Select which apps should not have toast notifications</string>
 
   <string name="pref_graphs">Graph Options</string>
   <string name="pref_interval_title">Interval</string>

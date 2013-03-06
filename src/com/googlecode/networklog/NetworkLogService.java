@@ -58,6 +58,7 @@ public class NetworkLogService extends Service {
   public static CharSequence toastText;
   public static boolean toastEnabled;
   public static int toastDuration;
+  public static HashMap<String, String> toastBlockedApps;
 
   private class IncomingHandler extends Handler {
     private Context context;
@@ -279,6 +280,7 @@ public class NetworkLogService extends Service {
 
       toastEnabled = NetworkLog.settings.getToastNotifications();
       toastDuration = NetworkLog.settings.getToastNotificationsDuration();
+      toastBlockedApps = SelectToastApps.loadBlockedApps(this);
 
       updateLogfileString();
       ThroughputTracker.startUpdater();
