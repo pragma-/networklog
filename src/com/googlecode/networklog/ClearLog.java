@@ -197,7 +197,6 @@ public class ClearLog
     spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
       @Override
       public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-        Log.d("NetworkLog", "clearlog spinner selected " + id + " [init: " + spinnerInit + "]");
         if(spinnerInit > 0) {
           // Don't process selection events if spinner is initializing
           spinnerInit--;
