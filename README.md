@@ -25,7 +25,7 @@ The applications tab lists installed applications along with network usage stati
   * list of all the unique connections made by each app
   * sortable and filterable
 
-##**Real-time connection notifications
+##**Real-time connection notifications**
 
 The statusbar icon's up/down arrows will highlight when upload/download traffic occurs, and the notification drop-down shade displays the connection throughput speed in Kbps.
 
