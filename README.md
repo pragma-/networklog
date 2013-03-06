@@ -12,6 +12,7 @@ The log tab shows the network packets being transmitted and their details such a
 
   * source and destination addresses/ports
   * bytes transmitted
+  * connection throughput speed in Kbps
   * timestamp 
 
 ##**Real-time network usage statistics**
@@ -19,9 +20,16 @@ The log tab shows the network packets being transmitted and their details such a
 The applications tab lists installed applications along with network usage statistics such as:
 
   * total packets and bytes sent
+  * active network throughput speed in Kbps
   * timestamp of last connection
   * list of all the unique connections made by each app
   * sortable and filterable
+
+##**Real-time connection notifications
+
+The statusbar icon's up/down arrows will highlight when upload/download traffic occurs, and the notification drop-down shade displays the connection throughput speed in Kbps.
+
+You can also configure toast pop-up notifications on a per-app basis that will pop-up a temporary notification containing connection details no matter which app you are in.
 
 ##**Graphs**
 
@@ -49,11 +57,11 @@ _Note: While the app itself is designed to use minimal CPU/battery, you can furt
 &nbsp;
 <a href="http://imgbin.org/images/10967.png"><img height="535" width="320" src="http://imgbin.org/images/10967.png"></img></a>
 &nbsp;
-<a href="http://imgbin.org/images/11312.png.png"><img height="535" width="320" src="http://imgbin.org/images/11312.png"></img></a>
-&nbsp;
-<a href="http://imgbin.org/images/11308.png"><img height="535" width="320" src="http://imgbin.org/images/11308.png"></img></a>
-&nbsp;
 <a href="http://imgbin.org/images/11311.png"><img height="535" width="320" src="http://imgbin.org/images/11311.png"></img></a>
+&nbsp;
+<a href="http://imgbin.org/images/11312.png"><img height="535" width="320" src="http://imgbin.org/images/11312.png"></img></a>
+&nbsp;
+<a href="http://imgbin.org/images/11936.png"><img height="535" width="320" src="http://imgbin.org/images/11936.png"></img></a>
 &nbsp;
 <a href="http://imgbin.org/images/10963.png"><img height="535" width="320" src="http://imgbin.org/images/10963.png"></img></a>
 &nbsp;
