@@ -58,12 +58,11 @@ public class SelectToastApps
 
   public static HashMap<String, String> loadBlockedApps(Context context) {
     File file = getSaveFile(context);
+    HashMap<String, String> map = new HashMap<String, String>();
 
     if(!file.exists()) {
-      return null;
+      return map;
     }
-
-    HashMap<String, String> map = new HashMap<String, String>();
 
     try {
       BufferedReader br = new BufferedReader(new FileReader(file));
@@ -75,7 +74,7 @@ public class SelectToastApps
     } catch(Exception e) {
       Log.w("NetworkLog", "Exception loading toast apps: " + e);
       SysUtils.showError(context, "Error loading blocked notifications", e.getMessage());
-      return null;
+      return map;
     }
     return map;
   }
