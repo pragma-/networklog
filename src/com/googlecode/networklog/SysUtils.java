@@ -25,6 +25,8 @@ public class SysUtils {
   public static int iptablesResource;
   public static String grepBinary;
   public static int grepResource;
+  public static String nflogBinary;
+  public static int nflogResource;
 
   public static boolean getBinariesIdentifiers() {
     String cpu_abi = Build.CPU_ABI.toLowerCase();
@@ -34,24 +36,33 @@ public class SysUtils {
       iptablesResource = R.raw.iptables_armv7;
       grepBinary = "grep_armv7";
       grepResource = R.raw.grep_armv7;
+      nflogBinary = "nflog_armv7";
+      nflogResource = R.raw.nflog_armv7;
     } else if(cpu_abi.contains("armeabi")) {
       iptablesBinary = "iptables_armv5";
       iptablesResource = R.raw.iptables_armv5;
       grepBinary = "grep_armv5";
       grepResource = R.raw.grep_armv5;
+      nflogBinary = "nflog_armv5";
+      nflogResource = R.raw.nflog_armv5;
     } else if(cpu_abi.contains("x86")) {
       iptablesBinary = "iptables_x86";
       iptablesResource = R.raw.iptables_x86;
       grepBinary = "grep_x86";
       grepResource = R.raw.grep_x86;
+      nflogBinary = "nflog_x86";
+      nflogResource = R.raw.nflog_x86;
     } else if(cpu_abi.contains("mips")) {
       iptablesBinary = "iptables_mips";
       iptablesResource = R.raw.iptables_mips;
       grepBinary = "grep_mips";
       grepResource = R.raw.grep_mips;
+      nflogBinary = "nflog_mips";
+      nflogResource = R.raw.nflog_mips;
     } else {
       iptablesBinary = null;
       grepBinary = null;
+      nflogBinary = null;
       return false;
     }
     return true;
@@ -69,6 +80,13 @@ public class SysUtils {
       getBinariesIdentifiers();
     }
     return grepBinary;
+  }
+
+  public static String getNflogBinary() {
+    if(nflogBinary == null) {
+      getBinariesIdentifiers();
+    }
+    return nflogBinary;
   }
 
   public static boolean installBinary(Context context, String binary, int resource, String path) {
@@ -119,6 +137,11 @@ public class SysUtils {
 
     String grepPath  = context.getFilesDir().getAbsolutePath() + File.separator + grepBinary;
     if(!installBinary(context, grepBinary, grepResource, grepPath)) {
+      return false;
+    }
+
+    String nflogPath  = context.getFilesDir().getAbsolutePath() + File.separator + nflogBinary;
+    if(!installBinary(context, nflogBinary, nflogResource, nflogPath)) {
       return false;
     }
 
