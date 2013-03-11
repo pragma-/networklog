@@ -113,7 +113,7 @@ char *netlog_if_indextoname (unsigned int ifindex, char *ifname)
 }
 
 static inline char *get_net_device_name_by_index(int ifindex) {
-    if(ifindex < 0 || ifindex > 31) {
+    if(ifindex < 0 || ifindex > MAX_NETDEVICES - 1) {
         return NULL;
     }
 
