@@ -11,8 +11,8 @@ Network Log monitors iptables-logging to display a real-time list of which apps 
 The log tab shows the network packets being transmitted and their details such as:
 
   * source and destination addresses/ports
+  * network protocol and interface
   * bytes transmitted
-  * connection throughput speed in Kbps
   * timestamp 
 
 ##**Real-time network usage statistics**
@@ -20,7 +20,7 @@ The log tab shows the network packets being transmitted and their details such a
 The applications tab lists installed applications along with network usage statistics such as:
 
   * total packets and bytes sent
-  * active network throughput speed in Kbps
+  * active network throughput speed in Bps/Kbps/Mbps
   * timestamp of last connection
   * list of all the unique connections made by each app
   * sortable and filterable
