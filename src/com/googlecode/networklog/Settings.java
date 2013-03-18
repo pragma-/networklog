@@ -164,6 +164,14 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return Integer.parseInt(prefs.getString("notifications_toast_duration", "3500"));
   }
 
+  public int getToastNotificationsPosition() {
+    return Integer.parseInt(prefs.getString("notifications_toast_position", "-1"));
+  }
+
+  public int getToastNotificationsYOffset() {
+    return prefs.getInt("notifications_toast_yoffset", 0);
+  }
+
   public long getGraphInterval() {
     return prefs.getLong("interval", 300000);
   }
@@ -319,6 +327,18 @@ public class Settings implements OnSharedPreferenceChangeListener {
   public void setToastNotificationsDuration(int value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putString("notifications_toast_duration", String.valueOf(value));
+    editor.commit();
+  }
+
+  public void setToastNotificationsPosition(int value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putString("notifications_toast_position", String.valueOf(value));
+    editor.commit();
+  }
+
+  public void setToastNotificationsYOffset(int value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putInt("notifications_toast_yoffset", value);
     editor.commit();
   }
 
@@ -478,6 +498,20 @@ public class Settings implements OnSharedPreferenceChangeListener {
         int value = Integer.parseInt(prefs.getString(key, "3500"));
         MyLog.d("New " + key + " value [" + value + "]");
         NetworkLogService.toastDuration = value;
+        return;
+      }
+
+      if(key.equals("notifications_toast_position")) {
+        int value = Integer.parseInt(prefs.getString(key, "-1"));
+        MyLog.d("New " + key + " value [" + value + "]");
+        NetworkLogService.toastPosition = value;
+        return;
+      }
+
+      if(key.equals("notifications_toast_yoffset")) {
+        int value = prefs.getInt(key, 0);
+        MyLog.d("New " + key + " value [" + value + "]");
+        NetworkLogService.toastYOffset = value;
         return;
       }
     }

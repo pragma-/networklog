@@ -115,6 +115,24 @@
         android:title="@string/pref_toast_title"
         android:summary="@string/pref_toast_summary" />
       <ListPreference
+        android:defaultValue="-1"
+        android:key="notifications_toast_position"
+        android:title="@string/pref_toast_position_title"
+        android:summary="@string/pref_toast_position_summary"
+        android:dependency="notifications_toast"
+        android:entries="@array/toast_position_entries"
+        android:entryValues="@array/toast_position_values"
+        android:dialogTitle="@string/pref_toast_position_title"
+        android:layout="?android:attr/preferenceLayoutChild" />
+      <com.robobunny.SeekBarPreference
+        android:key="notifications_toast_yoffset"
+        android:title="@string/pref_toast_yoffset_title"
+        android:summary="@string/pref_toast_yoffset_summary"
+        android:dependency="notifications_toast"
+        android:defaultValue="0"
+        android:max="1080"
+        android:layout="?android:attr/preferenceLayoutChild" />
+      <ListPreference
         android:defaultValue="3500"
         android:key="notifications_toast_duration"
         android:title="@string/pref_toast_duration_title"

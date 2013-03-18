@@ -10,6 +10,7 @@ import android.content.ContextWrapper;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -58,6 +59,9 @@ public class NetworkLogService extends Service {
   public static CharSequence toastText;
   public static boolean toastEnabled;
   public static int toastDuration;
+  public static int toastPosition;
+  public static int toastDefaultYOffset;
+  public static int toastYOffset;
   public static HashMap<String, String> toastBlockedApps;
 
   private class IncomingHandler extends Handler {
@@ -204,6 +208,7 @@ public class NetworkLogService extends Service {
             View layout = ((LayoutInflater)context.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_toast, null);
             toastTextView = (TextView) layout.findViewById(R.id.toasttext);
             toast = new Toast(context);
+            toastDefaultYOffset = toast.getYOffset();
             toast.setView(layout);
           }
 
@@ -226,6 +231,18 @@ public class NetworkLogService extends Service {
               break;
             default:
               toast.setDuration(Toast.LENGTH_SHORT);
+          }
+
+          switch(toastPosition) {
+            case 1:
+              toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP, 0, toastYOffset);
+              break;
+            case 2:
+              toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, toastYOffset);
+              break;
+            default:
+              toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, toastDefaultYOffset);
+              break;
           }
 
           toastTextView.setText(android.text.Html.fromHtml(toastText.toString()));
@@ -280,6 +297,8 @@ public class NetworkLogService extends Service {
 
       toastEnabled = NetworkLog.settings.getToastNotifications();
       toastDuration = NetworkLog.settings.getToastNotificationsDuration();
+      toastPosition = NetworkLog.settings.getToastNotificationsPosition();
+      toastYOffset = NetworkLog.settings.getToastNotificationsYOffset();
       toastBlockedApps = SelectToastApps.loadBlockedApps(this);
 
       updateLogfileString();

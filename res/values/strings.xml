@@ -109,6 +109,10 @@
   <string name="select_all">Select all</string>
   <string name="select_none">Select none</string>
 
+  <string name="position_top">Top</string>
+  <string name="position_bottom">Bottom</string>
+  <string name="position_default">Default</string>
+
   <string name="graph_apps_timeline">Apps Timeline</string>
   <string name="graph_timeline">\u0020Timeline</string>
   <string name="graph_error_nodata_title">No graph data</string>
@@ -198,6 +202,10 @@
   <string name="pref_notifications">Connection Notifications</string>
   <string name="pref_toast_title">Toast pop-up</string>
   <string name="pref_toast_summary">Display toast notification when an app makes a network transmission</string>
+  <string name="pref_toast_position_title">Position</string>
+  <string name="pref_toast_position_summary">Select how to position the toast notification</string>
+  <string name="pref_toast_yoffset_title">Padding</string>
+  <string name="pref_toast_yoffset_summary">Set padding for toast notification position</string>
   <string name="pref_toast_duration_title">Duration</string>
   <string name="pref_toast_duration_summary">Select how long toast notification should remain visible</string>
   <string name="pref_toast_block_apps">Block apps</string>
