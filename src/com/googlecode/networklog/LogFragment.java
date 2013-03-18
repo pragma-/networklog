@@ -157,7 +157,12 @@ public class LogFragment extends Fragment {
         }
       }
 
-      maxLogEntries = NetworkLog.settings.getMaxLogEntries();
+      try {
+        maxLogEntries = NetworkLog.settings.getMaxLogEntries();
+      } catch (Exception e) {
+        Log.w("NetworkLog", "Exception getting max log entries: " + e.getMessage(), e);
+        maxLogEntries = 100000;
+      }
 
       MyLog.d("LogFragment onCreate");
     }
