@@ -24,12 +24,24 @@ public class StringUtils {
     return false;
   }
 
+  public static String formatToThousands(long value) {
+    return formatToMultiplier(value, 1000);
+  }
+
   public static String formatToBytes(long value) {
+    return formatToMultiplier(value, 1024);
+  }
+
+  public static String formatToMultiplier(long value, long mult) {
     String result;
-    if(value >= 1048576) {
-      result = String.format("%.2f", (value / 1048576.0)) + "M";
-    } else if(value >= 1024) {
-      result = String.format("%.2f", (value / 1024.0)) + "K";
+    long meg = mult * mult;
+    long gig = meg * mult;
+    if(value >= gig) {
+      result = String.format("%.2f", (value / (float) gig)) + "G";
+    } else if(value >= meg) {
+      result = String.format("%.2f", (value / (float) meg)) + "M";
+    } else if(value >= mult) {
+      result = String.format("%.2f", (value / (float) mult)) + "K";
     } else {
       result = String.valueOf(value);
     }

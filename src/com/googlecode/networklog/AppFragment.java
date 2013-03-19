@@ -72,6 +72,7 @@ public class AppFragment extends Fragment {
   private CustomAdapter adapter;
   public Sort preSortBy;
   public Sort sortBy;
+  public boolean roundValues;
   public GroupItem cachedSearchItem;
   private ListViewUpdater updater;
   // remember last index return by getItemByAppUid to optimize-out call to binarySearch
@@ -458,6 +459,7 @@ public class AppFragment extends Fragment {
 
       sortBy = NetworkLog.settings.getSortBy();
       preSortBy = NetworkLog.settings.getPreSortBy();
+      roundValues = NetworkLog.settings.getRoundValues();
 
       groupData = new ArrayList<GroupItem>();
       groupDataBuffer = new ArrayList<GroupItem>();
@@ -1468,10 +1470,18 @@ public class AppFragment extends Fragment {
         throughput.setText(getString(R.string.app_throughput) + item.throughputString);
 
         packets = holder.getPackets();
-        packets.setText(getString(R.string.app_packets) + item.totalPackets);
+        if(roundValues) {
+          packets.setText(getString(R.string.app_packets) + StringUtils.formatToThousands(item.totalPackets));
+        } else {
+          packets.setText(getString(R.string.app_packets) + item.totalPackets);
+        }
 
         bytes = holder.getBytes();
-        bytes.setText(getString(R.string.app_bytes) + item.totalBytes);
+        if(roundValues) {
+          bytes.setText(getString(R.string.app_bytes) + StringUtils.formatToBytes(item.totalBytes));
+        } else {
+          bytes.setText(getString(R.string.app_bytes) + item.totalBytes);
+        }
 
         timestamp = holder.getTimestamp();
 
@@ -1621,8 +1631,13 @@ public class AppFragment extends Fragment {
         sentTimestamp = holder.getSentTimestamp();
 
         if(item.sentPackets > 0) {
-          sentPackets.setText(String.valueOf(item.sentPackets));
-          sentBytes.setText(String.valueOf(item.sentBytes));
+          if(roundValues) {
+            sentPackets.setText(StringUtils.formatToThousands(item.sentPackets));
+            sentBytes.setText(StringUtils.formatToBytes(item.sentBytes));
+          } else {
+            sentPackets.setText(String.valueOf(item.sentPackets));
+            sentBytes.setText(String.valueOf(item.sentBytes));
+          }
 
           String timestampString = Timestamp.getTimestamp(item.sentTimestamp);
           sentTimestamp.setText("(" + timestampString.substring(timestampString.indexOf('-') + 1, timestampString.indexOf('.')) + ")");
@@ -1647,8 +1662,13 @@ public class AppFragment extends Fragment {
         receivedTimestamp = holder.getReceivedTimestamp();
 
         if(item.receivedPackets > 0) {
-          receivedPackets.setText(String.valueOf(item.receivedPackets));
-          receivedBytes.setText(String.valueOf(item.receivedBytes));
+          if(roundValues) {
+            receivedPackets.setText(StringUtils.formatToThousands(item.receivedPackets));
+            receivedBytes.setText(StringUtils.formatToBytes(item.receivedBytes));
+          } else {
+            receivedPackets.setText(String.valueOf(item.receivedPackets));
+            receivedBytes.setText(String.valueOf(item.receivedBytes));
+          }
 
           String timestampString = Timestamp.getTimestamp(item.receivedTimestamp);
           receivedTimestamp.setText("(" + timestampString.substring(timestampString.indexOf('-') + 1, timestampString.indexOf('.')) + ")");

@@ -52,6 +52,10 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return prefs.getBoolean("start_foreground", true);
   }
 
+  public boolean getRoundValues() {
+    return prefs.getBoolean("round_values", true);
+  }
+
   public boolean getStartServiceAtBoot() {
     return prefs.getBoolean("startServiceAtBoot", false);
   }
@@ -360,6 +364,12 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
+  public void setRoundValues(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("round_values", value);
+    editor.commit();
+  }
+
   public void setStartServiceAtBoot(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("startServiceAtBoot", value);
@@ -512,6 +522,14 @@ public class Settings implements OnSharedPreferenceChangeListener {
         int value = prefs.getInt(key, 0);
         MyLog.d("New " + key + " value [" + value + "]");
         NetworkLogService.toastYOffset = value;
+        return;
+      }
+
+      if(key.equals("round_values")) {
+        boolean value = prefs.getBoolean(key, true);
+        MyLog.d("New " + key + " value [" + value + "]");
+        NetworkLog.appFragment.roundValues = value;
+        NetworkLog.appFragment.refreshAdapter();
         return;
       }
     }

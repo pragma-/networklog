@@ -186,6 +186,8 @@
   <string name="pref_presort_by_dialog_title">No Data Sort</string>
   <string name="pref_sort_by_title">Sort method</string>
   <string name="pref_sort_by_summary">Select how to sort the app entries that have data (default: By bytes)</string>
+  <string name="pref_round_values_title">Round values</string>
+  <string name="pref_round_values_summary">Round values to nearest G/M/K</string>
 
   <string name="pref_log_service">Log Service</string>
   <string name="pref_logfile_title">Log file location</string>

@@ -71,6 +71,11 @@
         android:entries="@array/sort_method"
         android:entryValues="@array/sort_method_values"
         android:dialogTitle="@string/menu_sort" />
+      <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="round_values"
+        android:title="@string/pref_round_values_title"
+        android:summary="@string/pref_round_values_summary" />
     </PreferenceCategory>
   </PreferenceScreen>
 
