@@ -23,6 +23,11 @@
         android:key="invert_upload_download"
         android:title="@string/pref_invert_upload_download_title"
         android:summary="@string/pref_invert_upload_download_summary" />
+      <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="behind_firewall"
+        android:title="@string/pref_behind_firewall_title"
+        android:summary="@string/pref_behind_firewall_summary" />
       <Preference
         android:persistent="false"
         android:key="filter_dialog"

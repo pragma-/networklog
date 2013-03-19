@@ -17,6 +17,7 @@ import java.io.File;
 
 public class Settings implements OnSharedPreferenceChangeListener {
   private SharedPreferences prefs;
+  private Context context;
 
   // Force use of context constructor
   private Settings() {}
@@ -27,6 +28,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
     prefs.registerOnSharedPreferenceChangeListener(this);
 
     MyLog.enabled = getLogcatDebug();
+    this.context = context;
   }
 
   public String getHistorySize() {
@@ -50,6 +52,10 @@ public class Settings implements OnSharedPreferenceChangeListener {
 
   public boolean getInvertUploadDownload() {
     return prefs.getBoolean("invert_upload_download", false);
+  }
+
+  public boolean getBehindFirewall() {
+    return prefs.getBoolean("behind_firewall", false);
   }
 
   public boolean getRoundValues() {
@@ -368,6 +374,12 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
+  public void setBehindFirewall(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("behind_firewall", value);
+    editor.commit();
+  }
+
   public void setRoundValues(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("round_values", value);
@@ -547,6 +559,17 @@ public class Settings implements OnSharedPreferenceChangeListener {
         boolean value = prefs.getBoolean(key, false);
         MyLog.d("New " + key + " value [" + value + "]");
         NetworkLogService.invertUploadDownload = value;
+        return;
+      }
+
+      if(key.equals("behind_firewall")) {
+        boolean value = prefs.getBoolean(key, false);
+        MyLog.d("New " + key + " value [" + value + "]");
+        NetworkLogService.behindFirewall = value;
+        if(NetworkLogService.instance != null) {
+          Iptables.removeRules(context);
+          Iptables.addRules(context);
+        }
         return;
       }
     }

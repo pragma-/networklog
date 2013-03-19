@@ -169,6 +169,8 @@
   <string name="pref_copy_addrs_summary">When copying to clipboard, use original address/port instead of resolved addresses</string>
   <string name="pref_invert_upload_download_title">Invert Upload/Download</string>
   <string name="pref_invert_upload_download_summary">By default, the traffic speeds are shown upload/download; select to have this inverted</string>
+  <string name="pref_behind_firewall_title">Log behind firewall</string>
+  <string name="pref_behind_firewall_summary">If selected, packets will be logged only after being accepted by the firewall; otherwise all attempted transmissions are logged</string>
   <string name="pref_filter_title">Filter</string>
   <string name="pref_filter_summary">Configure advanced filtering options</string>
   <string name="pref_history_size_title">Load logfile history</string>

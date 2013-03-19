@@ -64,6 +64,7 @@ public class NetworkLogService extends Service {
   public static int toastYOffset;
   public static HashMap<String, String> toastBlockedApps;
   public static boolean invertUploadDownload;
+  public static boolean behindFirewall;
 
   private class IncomingHandler extends Handler {
     private Context context;
@@ -302,6 +303,7 @@ public class NetworkLogService extends Service {
       toastYOffset = NetworkLog.settings.getToastNotificationsYOffset();
       toastBlockedApps = SelectToastApps.loadBlockedApps(this);
       invertUploadDownload = NetworkLog.settings.getInvertUploadDownload();
+      behindFirewall = NetworkLog.settings.getBehindFirewall();
 
       updateLogfileString();
       ThroughputTracker.startUpdater();
