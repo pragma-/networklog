@@ -18,6 +18,11 @@
         android:key="copy_original_addrs"
         android:title="@string/pref_copy_addrs_title"
         android:summary="@string/pref_copy_addrs_summary" />
+      <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="invert_upload_download"
+        android:title="@string/pref_invert_upload_download_title"
+        android:summary="@string/pref_invert_upload_download_summary" />
       <Preference
         android:persistent="false"
         android:key="filter_dialog"

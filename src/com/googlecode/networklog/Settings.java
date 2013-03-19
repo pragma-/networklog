@@ -48,12 +48,16 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return logfile;
   }
 
-  public boolean getStartForeground() {
-    return prefs.getBoolean("start_foreground", true);
+  public boolean getInvertUploadDownload() {
+    return prefs.getBoolean("invert_upload_download", false);
   }
 
   public boolean getRoundValues() {
     return prefs.getBoolean("round_values", true);
+  }
+
+  public boolean getStartForeground() {
+    return prefs.getBoolean("start_foreground", true);
   }
 
   public boolean getStartServiceAtBoot() {
@@ -358,9 +362,9 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
-  public void setStartForeground(boolean value) {
+  public void setInvertUploadDownload(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
-    editor.putBoolean("start_foreground", value);
+    editor.putBoolean("invert_upload_download", value);
     editor.commit();
   }
 
@@ -370,7 +374,13 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
-  public void setStartServiceAtBoot(boolean value) {
+   public void setStartForeground(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("start_foreground", value);
+    editor.commit();
+  }
+
+ public void setStartServiceAtBoot(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("startServiceAtBoot", value);
     editor.commit();
@@ -530,6 +540,13 @@ public class Settings implements OnSharedPreferenceChangeListener {
         MyLog.d("New " + key + " value [" + value + "]");
         NetworkLog.appFragment.roundValues = value;
         NetworkLog.appFragment.refreshAdapter();
+        return;
+      }
+
+      if(key.equals("invert_upload_download")) {
+        boolean value = prefs.getBoolean(key, false);
+        MyLog.d("New " + key + " value [" + value + "]");
+        NetworkLogService.invertUploadDownload = value;
         return;
       }
     }

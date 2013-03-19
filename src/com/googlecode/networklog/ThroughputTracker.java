@@ -113,7 +113,12 @@ public class ThroughputTracker {
 
               if(NetworkLogService.toastBlockedApps.get(value.app.packageName) == null) {
                 showToast = true;
-                throughput = StringUtils.formatToBytes(value.upload * 8) + "bps/" + StringUtils.formatToBytes(value.download * 8) + "bps";
+
+                if(NetworkLogService.invertUploadDownload) {
+                  throughput = StringUtils.formatToBytes(value.download * 8) + "bps/" + StringUtils.formatToBytes(value.upload * 8) + "bps";
+                } else {
+                  throughput = StringUtils.formatToBytes(value.upload * 8) + "bps/" + StringUtils.formatToBytes(value.download * 8) + "bps";
+                }
 
                 if(MyLog.enabled && value.displayed == false) {
                   MyLog.d(value.app.name + " throughput: " + throughput);
@@ -170,7 +175,11 @@ public class ThroughputTracker {
     if(NetworkLogService.instance == null || upload == -1 || download == -1) {
       throughputString = "";
     } else {
-      throughputString = StringUtils.formatToBytes(upload) + "bps/" + StringUtils.formatToBytes(download) + "bps";
+      if(NetworkLogService.invertUploadDownload) {
+        throughputString = StringUtils.formatToBytes(download) + "bps/" + StringUtils.formatToBytes(upload) + "bps";
+      } else {
+        throughputString = StringUtils.formatToBytes(upload) + "bps/" + StringUtils.formatToBytes(download) + "bps";
+      }
 
       if(MyLog.enabled) {
         MyLog.d("Throughput: " + throughputString);
@@ -178,14 +187,26 @@ public class ThroughputTracker {
     }
 
     int icon;
-    if(upload > 0 && download > 0) {
-      icon = R.drawable.up1_down1;
-    } else if(upload > 0 && download == 0) {
-      icon = R.drawable.up1_down0;
-    } else if(upload == 0 && download > 0) {
-      icon = R.drawable.up0_down1;
+    if(NetworkLogService.invertUploadDownload) {
+      if(upload > 0 && download > 0) {
+        icon = R.drawable.up1_down1;
+      } else if(upload > 0 && download == 0) {
+        icon = R.drawable.up0_down1;
+      } else if(upload == 0 && download > 0) {
+        icon = R.drawable.up1_down0;
+      } else {
+        icon = R.drawable.up0_down0;
+      }
     } else {
-      icon = R.drawable.up0_down0;
+      if(upload > 0 && download > 0) {
+        icon = R.drawable.up1_down1;
+      } else if(upload > 0 && download == 0) {
+        icon = R.drawable.up1_down0;
+      } else if(upload == 0 && download > 0) {
+        icon = R.drawable.up0_down1;
+      } else {
+        icon = R.drawable.up0_down0;
+      }
     }
 
     NetworkLogService.updateNotification(icon);

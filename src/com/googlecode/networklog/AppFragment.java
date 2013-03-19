@@ -728,7 +728,12 @@ public class AppFragment extends Fragment {
         item.uploadThroughput = upload;
         item.downloadThroughput = download;
         item.totalThroughput = upload + download;
-        item.throughputString = StringUtils.formatToBytes(upload) + "bps/" + StringUtils.formatToBytes(download) + "bps"; 
+
+        if(NetworkLogService.invertUploadDownload) {
+          item.throughputString = StringUtils.formatToBytes(download) + "bps/" + StringUtils.formatToBytes(upload) + "bps";
+        } else {
+          item.throughputString = StringUtils.formatToBytes(upload) + "bps/" + StringUtils.formatToBytes(download) + "bps";
+        }
 
         index++;
         if(index >= groupDataBuffer.size()) {

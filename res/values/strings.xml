@@ -167,6 +167,8 @@
   <string name="pref_resolve_ports_summary">Resolve known port numbers to service names (Note: Uses internal list; no network queries made)</string>
   <string name="pref_copy_addrs_title">Copy unresolved addresses</string>
   <string name="pref_copy_addrs_summary">When copying to clipboard, use original address/port instead of resolved addresses</string>
+  <string name="pref_invert_upload_download_title">Invert Upload/Download</string>
+  <string name="pref_invert_upload_download_summary">By default, the traffic speeds are shown upload/download; select to have this inverted</string>
   <string name="pref_filter_title">Filter</string>
   <string name="pref_filter_summary">Configure advanced filtering options</string>
   <string name="pref_history_size_title">Load logfile history</string>
