@@ -128,7 +128,6 @@ public class SeekBarPreference extends Preference implements OnSeekBarChangeList
    * @param view
    */
   protected void updateView(View view) {
-
     try {
       RelativeLayout layout = (RelativeLayout)view;
 
@@ -149,6 +148,18 @@ public class SeekBarPreference extends Preference implements OnSeekBarChangeList
       Log.e(TAG, "Error updating seek bar preference", e);
     }
   }
+
+  @Override
+    public void setEnabled(boolean enabled) {
+      super.setEnabled(enabled);
+      mSeekBar.setEnabled(enabled);
+    }
+
+  @Override
+    public void onDependencyChanged(Preference dependency, boolean disableDependent) {
+      super.onDependencyChanged(dependency, disableDependent);
+      mSeekBar.setEnabled(!disableDependent);
+    }
 
   @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {

@@ -21,6 +21,7 @@ import android.util.Log;
 import java.util.ArrayList;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
+import com.robobunny.SeekBarPreference;
 
 public class Preferences extends SherlockPreferenceActivity implements OnPreferenceClickListener, OnPreferenceChangeListener {
   private InstanceData data = null;
@@ -94,7 +95,6 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
       addPreferencesFromResource(R.xml.preferences);
 
       findPreference("filter_dialog").setOnPreferenceClickListener(this);
-      findPreference("notifications_toast").setOnPreferenceClickListener(this);
       findPreference("notifications_toast_apps_dialog").setOnPreferenceClickListener(this);
       findPreference("clear_log").setOnPreferenceClickListener(this);
       findPreference("sort_by").setOnPreferenceChangeListener(this);
@@ -129,6 +129,31 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
             return true;
           }
 
+          if(preference.getKey().equals("notifications_toast")) {
+            Boolean toast_enabled = (Boolean) newValue;
+            ListPreference pref = (ListPreference) findPreference("notifications_toast_position");
+            String value = pref.getValue();
+            SeekBarPreference sbpref = (SeekBarPreference) findPreference("notifications_toast_yoffset");
+
+            if(toast_enabled && (value.equals("1") || value.equals("2"))) {
+              sbpref.setEnabled(true);
+            } else {
+              sbpref.setEnabled(false);
+            }
+          }
+
+          if(preference.getKey().equals("notifications_toast_position")) {
+            String value = (String) newValue;
+            SeekBarPreference sbpref = (SeekBarPreference) findPreference("notifications_toast_yoffset");
+
+            if(value.equals("1") || value.equals("2")) {
+              sbpref.setEnabled(true);
+            } else {
+              sbpref.setEnabled(false);
+            }
+            return true;
+          }
+
           return true;
         }
       };
@@ -147,6 +172,21 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
 
       pref = (ListPreference) findPreference("history_size");
       pref.setOnPreferenceChangeListener(changeListener);
+
+      CheckBoxPreference cbpref = (CheckBoxPreference) findPreference("notifications_toast");
+      cbpref.setOnPreferenceChangeListener(changeListener);
+      boolean toast_enabled = cbpref.isChecked();
+
+      pref = (ListPreference) findPreference("notifications_toast_position");
+      pref.setOnPreferenceChangeListener(changeListener);
+      String value = pref.getValue();
+
+      SeekBarPreference sbpref = (SeekBarPreference) findPreference("notifications_toast_yoffset");
+      if(toast_enabled && (value.equals("1") || value.equals("2"))) {
+        sbpref.setEnabled(true);
+      } else {
+        sbpref.setEnabled(false);
+      }
 
       data = (InstanceData) getLastNonConfigurationInstance();
 
@@ -205,7 +245,6 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
         item.setChecked(true);
         return true;
       }
-
       return true;
     }
 
