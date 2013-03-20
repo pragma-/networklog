@@ -187,26 +187,14 @@ public class ThroughputTracker {
     }
 
     int icon;
-    if(NetworkLogService.invertUploadDownload) {
-      if(upload > 0 && download > 0) {
-        icon = R.drawable.up1_down1;
-      } else if(upload > 0 && download == 0) {
-        icon = R.drawable.up0_down1;
-      } else if(upload == 0 && download > 0) {
-        icon = R.drawable.up1_down0;
-      } else {
-        icon = R.drawable.up0_down0;
-      }
+    if(upload > 0 && download > 0) {
+      icon = R.drawable.up1_down1;
+    } else if(upload > 0 && download == 0) {
+      icon = R.drawable.up1_down0;
+    } else if(upload == 0 && download > 0) {
+      icon = R.drawable.up0_down1;
     } else {
-      if(upload > 0 && download > 0) {
-        icon = R.drawable.up1_down1;
-      } else if(upload > 0 && download == 0) {
-        icon = R.drawable.up1_down0;
-      } else if(upload == 0 && download > 0) {
-        icon = R.drawable.up0_down1;
-      } else {
-        icon = R.drawable.up0_down0;
-      }
+      icon = R.drawable.up0_down0;
     }
 
     NetworkLogService.updateNotification(icon);
