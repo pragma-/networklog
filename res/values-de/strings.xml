@@ -109,6 +109,10 @@
   <string name="select_all">Alle auswählen</string>
   <string name="select_none">Keine auswählen</string>
 
+  <string name="position_top">Oben</string>
+  <string name="position_bottom">Unten</string>
+  <string name="position_default">Standard</string>
+
   <string name="graph_apps_timeline">Apps-Zeitleiste</string>
   <string name="graph_timeline">\u0020Zeitleiste</string>
   <string name="graph_error_nodata_title">Keine Daten für Graph</string>
@@ -163,6 +167,10 @@
   <string name="pref_resolve_ports_summary">Löse bekannte Portnummern zu ihren Dienstnamen auf (Anmerkung: Verwende interne Liste, kein Netzwerk benötigt)</string>
   <string name="pref_copy_addrs_title">Kopiere IP-Adresse</string>
   <string name="pref_copy_addrs_summary">Beim Kopieren IP-Adressen und keine Host- und Dienstnamen kopieren</string>
+  <string name="pref_invert_upload_download_title">Upload/Download vertauschen</string>
+  <string name="pref_invert_upload_download_summary">Vertauscht die Anzeige der Verbindungsgeschwindigkeit von Upload/Download zu Download/Upload</string>
+  <string name="pref_behind_firewall_title">Protokolliere hinter Firewall</string>
+  <string name="pref_behind_firewall_summary">Protokollieren nur Packages, welche die Firewall passiert haben. Andernfalls werden auch Packages protokolliert, welche von der Firewall abgelehnt wurden</string>
   <string name="pref_filter_title">Filter</string>
   <string name="pref_filter_summary">Fortgeschrittene Filteroptionen einstellen</string>
   <string name="pref_history_size_title">Lade Logdateien-History</string>
@@ -182,6 +190,8 @@
   <string name="pref_presort_by_dialog_title">No Data Sort</string>
   <string name="pref_sort_by_title">Sortieren nach</string>
   <string name="pref_sort_by_summary">Auswahl nach was Einträge mit Daten sortiert werden sollen. (Standard: Nach Bytes)</string>
+  <string name="pref_round_values_title">Runde Werte</string>
+  <string name="pref_round_values_summary">Runde die Werte zu den nächsten G/M/K</string>
 
   <string name="pref_log_service">Log Service</string>
   <string name="pref_logfile_title">Logdatei Speicherort</string>
@@ -198,6 +208,10 @@
   <string name="pref_notifications">Verbindungsnotifications</string>
   <string name="pref_toast_title">Pop-up</string>
   <string name="pref_toast_summary">Zeige einen kurzen Pop-up wenn eine App Netzwerkverkehr erzeugt.</string>
+  <string name="pref_toast_position_title">Position</string>
+  <string name="pref_toast_position_summary">Wähle eine Position der Toast-Benachrichtigungen</string>
+  <string name="pref_toast_yoffset_title">Padding</string>
+  <string name="pref_toast_yoffset_summary">Wähle einen Padding für die Toast-Benachrichtigungen</string>
   <string name="pref_toast_duration_title">Anzeigedauer</string>
   <string name="pref_toast_duration_summary">Anzeigedauer für Benachrichtigungen</string>
   <string name="pref_toast_block_apps">Apps blockieren</string>

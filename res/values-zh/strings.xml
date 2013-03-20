@@ -109,6 +109,10 @@
   <string name="select_all">全部选择</string>
   <string name="select_none">取消选择</string>
 
+  <string name="position_top">顶部</string>
+  <string name="position_bottom">底部</string>
+  <string name="position_default">默认</string>
+
   <string name="graph_apps_timeline">分应用的时间线</string>
   <string name="graph_timeline">\u0020时间线</string>
   <string name="graph_error_nodata_title">无图表数据</string>
@@ -163,6 +167,10 @@
   <string name="pref_resolve_ports_summary">解析已知端口号为服务名（注：使用内部清单，不进行网络查询）</string>
   <string name="pref_copy_addrs_title">复制未解析地址</string>
   <string name="pref_copy_addrs_summary">拷贝到剪贴板时，使用原始地址/端口而不是已解析地址。</string>
+  <string name="pref_invert_upload_download_title">反转上传/下载</string>
+  <string name="pref_invert_upload_download_summary">默认传输速度显示为上传/下载，选择后反转显示</string>
+  <string name="pref_behind_firewall_title">防火墙后记录</string>
+  <string name="pref_behind_firewall_summary">选择后，数据包只有在防火墙接受后才记录，否则所有的传输尝试都会被记录</string>
   <string name="pref_filter_title">过滤器</string>
   <string name="pref_filter_summary">配置高级过滤选项</string>
   <string name="pref_history_size_title">载入日志文件时间长度</string>
@@ -182,6 +190,8 @@
   <string name="pref_presort_by_dialog_title">无数据排序</string>
   <string name="pref_sort_by_title">排序方式</string>
   <string name="pref_sort_by_summary">选择有数据的应用记录的排序方式（缺省：按字节数排序）</string>
+  <string name="pref_round_values_title">舍入值</string>
+  <string name="pref_round_values_summary">四舍五入至最近的G/M/K</string>
 
   <string name="pref_log_service">日志服务</string>
   <string name="pref_logfile_title">日志文件存放位置</string>
@@ -198,6 +208,10 @@
   <string name="pref_notifications">连接通知</string>
   <string name="pref_toast_title">弹出式消息条</string>
   <string name="pref_toast_summary">当应用产生数据传输时显示弹出式消息条通知</string>
+  <string name="pref_toast_position_title">位置</string>
+  <string name="pref_toast_position_summary">设定消息条通知的位置</string>
+  <string name="pref_toast_yoffset_title">内边距</string>
+  <string name="pref_toast_yoffset_summary">设定消息条通知的内边距</string>
   <string name="pref_toast_duration_title">持续时间</string>
   <string name="pref_toast_duration_summary">选择弹出式消息条通知的显示时间</string>
   <string name="pref_toast_block_apps">阻止应用</string>
