@@ -22,10 +22,13 @@ import java.util.zip.ZipInputStream;
 
 public class SysUtils {
   public static String iptablesBinary;
+  public static String iptablesMd5;
   public static int iptablesResource;
   public static String grepBinary;
+  public static String grepMd5;
   public static int grepResource;
   public static String nflogBinary;
+  public static String nflogMd5;
   public static int nflogResource;
 
   public static boolean getBinariesIdentifiers() {
@@ -33,31 +36,43 @@ public class SysUtils {
 
     if(cpu_abi.contains("armeabi-v7")) {
       iptablesBinary = "iptables_armv7";
+      iptablesMd5 = "5515873b7ce1617f3d724a3332c2b947";
       iptablesResource = R.raw.iptables_armv7;
       grepBinary = "grep_armv7";
+      grepMd5 = "69d0726f2b314a32fcd906a753deaabb";
       grepResource = R.raw.grep_armv7;
       nflogBinary = "nflog_armv7";
+      nflogMd5 = "34166ed7b3c3b2db136f4946675b4f4b";
       nflogResource = R.raw.nflog_armv7;
     } else if(cpu_abi.contains("armeabi")) {
       iptablesBinary = "iptables_armv5";
+      iptablesMd5 = "50e39f66369344b692084a9563c185d4";
       iptablesResource = R.raw.iptables_armv5;
       grepBinary = "grep_armv5";
+      grepMd5 = "7904ae3e4f310f9a1bf9867cfadb71ef";
       grepResource = R.raw.grep_armv5;
       nflogBinary = "nflog_armv5";
+      nflogMd5 = "145afec82284b71669d45f00a1d974e4";
       nflogResource = R.raw.nflog_armv5;
     } else if(cpu_abi.contains("x86")) {
       iptablesBinary = "iptables_x86";
+      iptablesMd5 = "3e7090f93ae3964c98e16016b742acbc";
       iptablesResource = R.raw.iptables_x86;
       grepBinary = "grep_x86";
+      grepMd5 = "75210f186d666f32a14d843fd1e9fac5";
       grepResource = R.raw.grep_x86;
       nflogBinary = "nflog_x86";
+      nflogMd5 = "b6e4d23cc56cc7a50ccc803cc34f29ef";
       nflogResource = R.raw.nflog_x86;
     } else if(cpu_abi.contains("mips")) {
       iptablesBinary = "iptables_mips";
+      iptablesMd5 = "c208f8f9a6fa8d7b436c069b71299668";
       iptablesResource = R.raw.iptables_mips;
       grepBinary = "grep_mips";
+      grepMd5 = "a29534a420f9eb9cc519088eacf6b7e7";
       grepResource = R.raw.grep_mips;
       nflogBinary = "nflog_mips";
+      nflogMd5 = "9a269468fd700d08a961506aacefa7a4";
       nflogResource = R.raw.nflog_mips;
     } else {
       iptablesBinary = null;
@@ -89,8 +104,20 @@ public class SysUtils {
     return nflogBinary;
   }
 
-  public static boolean installBinary(Context context, String binary, int resource, String path) {
-    if(!new File(path).isFile()) {
+  public static boolean installBinary(Context context, String binary, String md5sum, int resource, String path) {
+    boolean needsInstall = false;
+    File file = new File(path);
+
+    if(file.isFile()) {
+      String hash = MD5Sum.digestFile(file);
+      if(!hash.equals(md5sum)) {
+        needsInstall = true;
+      }
+    } else {
+      needsInstall = true;
+    }
+
+    if(needsInstall) {
       try {
         MyLog.d(binary + " not found: installing to " + path);
 
@@ -131,17 +158,17 @@ public class SysUtils {
     }
 
     String iptablesPath = context.getFilesDir().getAbsolutePath() + File.separator + iptablesBinary;
-    if(!installBinary(context, iptablesBinary, iptablesResource, iptablesPath)) {
+    if(!installBinary(context, iptablesBinary, iptablesMd5, iptablesResource, iptablesPath)) {
       return false;
     }
 
     String grepPath  = context.getFilesDir().getAbsolutePath() + File.separator + grepBinary;
-    if(!installBinary(context, grepBinary, grepResource, grepPath)) {
+    if(!installBinary(context, grepBinary, grepMd5, grepResource, grepPath)) {
       return false;
     }
 
     String nflogPath  = context.getFilesDir().getAbsolutePath() + File.separator + nflogBinary;
-    if(!installBinary(context, nflogBinary, nflogResource, nflogPath)) {
+    if(!installBinary(context, nflogBinary, nflogMd5, nflogResource, nflogPath)) {
       return false;
     }
 
