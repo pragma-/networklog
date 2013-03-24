@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="app_name">Network Log</string>
+
+  <string name="tab_log">Log</string>
+  <string name="tab_apps">Apps</string>
+
+  <string name="app_instructions">Premi per connessioni, Pressione lunga per grafico</string>
+  <string name="app_throughput">Traffico:\u0020</string>
+  <string name="app_packets">Packetti:\u0020</string>
+  <string name="app_bytes">Bytes:\u0020</string>
+
+  <string name="logging_on">Logging attivato</string>
+  <string name="logging_off">Logging disattivato</string>
+  <string name="logging_started">Network logging iniziato</string>
+  <string name="logging_stopped">Network logging finito</string>
+  <string name="logging_active">Logging attivo</string>
+  <string name="logging_inactive">Logging non attivo.</string>
+  <string name="logfile_size">\u0020Dimensione file log:\u0020</string>
+  <string name="logfile_bad">\u0020Errato file log:\u0020</string>
+
+  <string name="hostitem_sent">\u0020\u0020Inviato:\u0020</string>
+  <string name="hostitem_recv">\u0020\u0020Ricevuto:\u0020</string>
+  <string name="hostitem_packets">\u0020pacchetti,\u0020</string>
+  <string name="hostitem_bytes">\u0020bytes\u0020</string>
+
+  <string name="throughput">\u0020Traffico:\u0020</string>
+
+  <string name="confirm_exit_title">Confermare uscita</string>
+  <string name="confirm_exit_text">Sei sicuro di voler uscire?</string>
+  <string name="do_not_show_again">Non visualizzare più</string>
+  <string name="logging_will_stop">Il logging verrà disattivato.</string>
+  <string name="logging_will_continue">Il logging continuerà in background.</string>
+
+  <string name="filter_title">Filtro</string>
+  <string name="filter_instructions">Usa la virgola per separare più keyword\n(Scorri giù per visualizzare altre opzioni sui filtri)</string>
+  <string name="filter_include">Filtro per inclusione:</string>
+  <string name="filter_exclude">Filtro per esclusione:</string>
+  <string name="filter_applies">Applica a:</string>
+  <string name="filter_app_ids">ID app</string>
+  <string name="filter_app_names">Nome app</string>
+  <string name="filter_addresses">Indirizzi</string>
+  <string name="filter_ports">Porte</string>
+  <string name="filter_interfaces">Interfacce</string>
+  <string name="filter_protocols">Protocolli</string>
+  <string name="filter_applied">Filtro:\u0020</string>
+
+  <string name="menu_graph">Grafico</string>
+  <string name="menu_sort">Ordine</string>
+  <string name="menu_by_app_id">ID app</string>
+  <string name="menu_by_name">Nome app</string>
+  <string name="menu_by_throughput">Traffico</string>
+  <string name="menu_by_packets">Pacchetti</string>
+  <string name="menu_by_bytes">Bytes</string>
+  <string name="menu_by_timestamp">Data</string>
+  <string name="menu_filter">Filtro</string>
+  <string name="menu_clearlog">Pulisci</string>
+  <string name="menu_settings">Opzioni</string>
+  <string name="menu_feedback">Segnala Bug/Feedback</string>
+  <string name="menu_exit">Esci</string>
+
+  <string name="copy_ip">Copia IP Address</string>
+  <string name="copy_src_ip">Copia IP sorgente</string>
+  <string name="copy_dst_ip">Copia IP destinazione</string>
+  <string name="show_graph">Mostra Grafico</string>
+
+  <string name="interval_prompt">Intervallo</string>
+  <string name="viewsize_prompt">Finestra temporale</string>
+
+  <string name="duration_2sec">2 secondi</string>
+  <string name="duration_3_5sec">3.5 secondi</string>
+  <string name="duration_7sec">7 secondi</string>
+
+  <string name="range_all">Tutto</string>
+  <string name="range_none">nessuno</string>
+  <string name="range_now">ora</string>
+  <string name="range_1ms">1 ms</string>
+  <string name="range_100ms">100 ms</string>
+  <string name="range_500ms">500 ms</string>
+  <string name="range_1sec">1 secondi</string>
+  <string name="range_30sec">30 secondi</string>
+  <string name="range_1min">1 minuto</string>
+  <string name="range_5min">5 minuti</string>
+  <string name="range_10min">10 minuti</string>
+  <string name="range_15min">15 minuti</string>
+  <string name="range_30min">30 minuti</string>
+  <string name="range_1hour">1 ora</string>
+  <string name="range_2hour">2 ore</string>
+  <string name="range_4hour">4 ore</string>
+  <string name="range_8hour">8 ore</string>
+  <string name="range_12hour">12 ore</string>
+  <string name="range_16hour">16 ore</string>
+  <string name="range_24hour">24 ore</string>
+  <string name="range_48hour">48 ore</string>
+  <string name="range_2day">2 giorni</string>
+  <string name="range_4day">4 giorni</string>
+  <string name="range_1week">1 settimana</string>
+  <string name="range_2week">2 settimane</string>
+  <string name="range_1month">1 mese</string>
+
+  <string name="ok">OK</string>
+  <string name="cancel">Cancella</string>
+  <string name="dismiss">Annulla</string>
+  <string name="reset">Pulisci</string>
+  <string name="done">Fatto</string>
+  <string name="yes">Si</string>
+  <string name="no">No</string>
+
+  <string name="select_all">Seleziona tutto</string>
+  <string name="select_none">Deseleziona tutto</string>
+
+  <string name="position_top">Sopra</string>
+  <string name="position_bottom">Sotto</string>
+  <string name="position_default">Default</string>
+
+  <string name="graph_apps_timeline">Apps Timeline</string>
+  <string name="graph_timeline">\u0020Timeline</string>
+  <string name="graph_error_nodata_title">Nessun dato</string>
+  <string name="graph_error_nodata_text">Nessun grafico da visualizzare a causa della mancanza di dati di log.</string>
+
+  <string name="clear_dialog_title">Pulisci Log</string>
+  <string name="clear_dialog_prompt">Rimuovi record più vecchi di</string>
+  <string name="clear_dialog_button_positive">Pulisci Log</string>
+  <string name="clear_dialog_delete_from_logfile">Cancella record da file di log</string>
+  <string name="clear_progress_message">Pulizia in corso</string>
+
+  <string name="feedback_title">Invia Feedback</string>
+  <string name="feedback_instructions">Inserisci il messaggio con Bug/Feedback:</string>
+  <string name="feedback_attach_log">Allega debug log</string>
+  <string name="feedback_send">Invia</string>
+  <string name="feedback_chooser_title">Invia Bug/Feedback</string>
+  <string name="feedback_error_no_message_title">Nessun messaggio</string>
+  <string name="feedback_error_no_message_text">Per favore inserisci un messaggio, o premi il bottone Annulla.</string>
+  <string name="feedback_error_getting_debug_log">Log di errore</string>
+
+  <string name="loading_apps">Caricamento apps</string>
+
+  <string name="history_load">Carica storico</string>
+  <string name="history_loading">Caricamento storico</string>
+  <string name="history_parsing">Elaborazione storico</string>
+
+  <string name="iptables_error_add_rules">Errore aggiungi regola</string>
+  <string name="iptables_error_remove_rules">Errore rimuovi regola</string>
+  <string name="iptables_error_check_rules">Errore controllo regola</string>
+  <string name="iptables_error_unsupported_title">Iptables non supportato</string>
+  <string name="iptables_error_unsupported_text">Iptables non è supportato da questa versione di Android. Abilita il modulo netfilter nel kernel o installa una versione supportata di Android come CyanogenMod.</string>
+  <string name="iptables_error_missingfeatures_text">Il kernel usato in questa versione di Android manca dei moduli Iptables/netfilter. Carica i moduli richiesti o installa una versione supportata di Android come CyanogenMod.</string>
+
+  <string name="error_default_title">Errore Network Log</string>
+  <string name="error_default_text">Alcuni errori verificati</string>
+  <string name="error_noroot">Network Log richiede permessi di root/superuser</string>
+  <string name="error_openlogfile">Impossibile aprire file di log:\u0020</string>
+  <string name="error_unsupported_system_title">Sistema non supportato</string>
+  <string name="error_unsupported_system_text">Il tipo di CPU \'%s\' non è attualmente supportato. Per piacere invia una segnalazione di Bug/Feedback per richiedere supporto.</string>
+  <string name="error_install_binary_text">Installazione %s errore:\u0020</string>
+
+  <string name="warning">Attenzione</string>
+  <string name="warning_disabling_notification">Disabilitando lo stato di foreground (primo piano) permetterai ad Android di chiudere l'applicazione in qualsiasi momento, ciò potrebbe corrompere il log.</string>
+
+  <string name="coming_soon_title">A breve</string>
+  <string name="coming_soon_text">Spiacente, questa caratteristica non è ancora disponibile.</string>
+
+  <string name="pref_general">Opzioni generali</string>
+  <string name="pref_resolve_hosts_title">Risolvi host</string>
+  <string name="pref_resolve_hosts_summary">Risolve indirizzi IP con hostname DNS (Nota: ciò creerà delle query DNS utilizzando la porta 53)</string>
+  <string name="pref_resolve_ports_title">Risolvi porte</string>
+  <string name="pref_resolve_ports_summary">Risolve porte conosciute con il nome del servizio (Nota: Usa una lista interna; non ci sarà alcuna attività di rete)</string>
+  <string name="pref_copy_addrs_title">Copia indirizzi non risolti</string>
+  <string name="pref_copy_addrs_summary">Al copia/incolla usa indirizzo/porta originali invece di indirizzi risolti</string>
+  <string name="pref_invert_upload_download_title">Inverti Upload/Download</string>
+  <string name="pref_invert_upload_download_summary">La velocità del traffico viene visualizzata come upload/download; seleziona questa voce se vuoi le voci invertite</string>
+  <string name="pref_behind_firewall_title">Log dietro a firewall</string>
+  <string name="pref_behind_firewall_summary">Se selezionato, i pacchetti verranno loggati solo se accettati dal firewall; altrimenti tutti i tentativi di connessione verranno loggati.</string>
+  <string name="pref_filter_title">Filtro</string>
+  <string name="pref_filter_summary">Configurazione avanzate del filtro</string>
+  <string name="pref_history_size_title">Carica storico dal file di log</string>
+  <string name="pref_history_size_summary">Seleziona quanto storico visualizzare, la modifica sarà subito attiva (default: 4 ore)</string>
+  <string name="pref_clearlog_title">Pulisci log</string>
+  <string name="pref_clearlog_summary">Seleziona range temporale per l'eliminazione dal log, la modifica sarà subito attiva</string>
+  <string name="pref_confirm_exit_title">Conferma uscita</string>
+  <string name="pref_confirm_exit_summary">Visualizza finestra per confermare l'uscita quando si usa il bottone "Torna indietro" per uscire</string>
+
+  <string name="pref_log_tab">Sezione Log</string>
+  <string name="pref_max_log_entries_title">Numero massimo di record di log</string>
+  <string name="pref_max_log_entries_summary">Limita numero di record per conservare memoria; i record vecchi verranno eliminati</string>
+
+  <string name="pref_apps_tab">Sezione Apps</string>
+  <string name="pref_presort_by_title">Metodo di ordinamento base</string>
+  <string name="pref_presort_by_summary">Seleziona come ordinare i record inerenti le App che non hanno ancora dati (default: Nome)</string>
+  <string name="pref_presort_by_dialog_title">Nessun dato da ordinare</string>
+  <string name="pref_sort_by_title">Metodo di ordinamento</string>
+  <string name="pref_sort_by_summary">Selezionare come ordinare i record inerenti le App che hanno dati (default: Bytes)</string>
+  <string name="pref_round_values_title">Valori arrotondati</string>
+  <string name="pref_round_values_summary">Valori arrotondati al più vicino G/M/K</string>
+
+  <string name="pref_log_service">Servizio di log</string>
+  <string name="pref_logfile_title">Percordo del file di log</string>
+  <string name="pref_logfile_summary">Seleziona percorso e nome del file di log (di default si chiama networklog.txt e risiederà nella radice dello storage esterno)</string>
+  <string name="pref_atboot_title">Inizia log all'avvio</string>
+  <string name="pref_atboot_summary">Inizia il logging all'avvio del dispositivo</string>
+  <string name="pref_atstart_title">Inizia log all'avvio dell'applicativo</string>
+  <string name="pref_atstart_summary">Inizia il logging all'avvio di questa applicazione</string>
+  <string name="pref_atexit_title">Finisci log all'uscita dall'applicativo</string>
+  <string name="pref_atexit_summary">Finisce il logging alla chiusura di questa applicazione</string>
+  <string name="pref_foreground_title">Avvia in foreground (primo piano)</string>
+  <string name="pref_foreground_summary">Evita che Android chiuda l'applicativo. Disabilitandolo rimuoverà lo stato nella barra delle notifiche.</string>
+
+  <string name="pref_notifications">Notifica connessioni</string>
+  <string name="pref_toast_title">Pop-up</string>
+  <string name="pref_toast_summary">Visualizza notifica quando un app crea delle attività di rete</string>
+  <string name="pref_toast_position_title">Posizione</string>
+  <string name="pref_toast_position_summary">Seleziona la posizione delle notifiche</string>
+  <string name="pref_toast_yoffset_title">Padding</string>
+  <string name="pref_toast_yoffset_summary">Indica il padding per la posizione delle notifiche</string>
+  <string name="pref_toast_duration_title">Durata</string>
+  <string name="pref_toast_duration_summary">Seleziona quanto a lungo dovranno rimanere visibili le notifiche</string>
+  <string name="pref_toast_block_apps">Blocca apps</string>
+  <string name="pref_toast_apps_summary">Seleziona quali app non dovranno avere le notifiche</string>
+
+  <string name="pref_graphs">Opzioni per grafico</string>
+  <string name="pref_interval_title">Intervallo</string>
+  <string name="pref_interval_summary">Indica quanto spesso i dati dovranno essere sommati. Per visualizzare singoli pacchetti, setta ad 1 ms; per Kbps, setta a 1 secondo; per Kb-per-ora setta a 1 ora; ecc...</string>
+  <string name="pref_viewsize_title">Finestra di visualizzazione</string>
+  <string name="pref_viewsize_summary">Indica il range di tempo della finestra di visualizzazione dei dati. Se il range scelto è più largo del range dei dati, la finestra si ridurra al fine di adattarsi.</string>
+
+  <string name="pref_debugging">Opzioni di debug</string>
+  <string name="pref_debug_title">Log extra debug</string>
+  <string name="pref_debug_summary">Stampa informazioni di debug aggiunte verso logcat. Attenzione: potrebbe ridurre le performance.</string>
+</resources>
