@@ -347,18 +347,28 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     
-    while (ret > 0) {
+    while (1) {
+      if (ret == -1) {
+        /* reset ret and skip mnl_cb_run if previous recvfrom had an error */
+        ret = 0;
+      } else {
         ret = mnl_cb_run(buf, ret, 0, portid, log_cb, NULL);
-        if (ret < 0){
-            perror("mnl_cb_run");
-            exit(EXIT_FAILURE);
+        if (ret < 0) {
+          perror("mnl_cb_run");
+          exit(EXIT_FAILURE);
         }
+      }
 
-        ret = mnl_socket_recvfrom(nl, buf, sizeof(buf));
-        if (ret == -1) {
-            perror("mnl_socket_recvfrom");
-            exit(EXIT_FAILURE);
+      ret = mnl_socket_recvfrom(nl, buf, sizeof(buf));
+      if (ret == -1) {
+        if (errno == ENOSPC || errno == ENOBUFS) {
+          /* ignore these (hopefully) recoverable errors */
+          continue;
+        } else {
+          perror("mnl_socket_recvfrom");
+          exit(EXIT_FAILURE);
         }
+      }
     }
 
     mnl_socket_close(nl);
