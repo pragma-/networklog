@@ -16,12 +16,36 @@ import java.security.MessageDigest;
 import java.math.BigInteger;
 
 public class MD5Sum {
+  public static MessageDigest md;
+
+  public static String digestString(String string) {
+    if(string == null) {
+      return "";
+    }
+
+    try {
+      if(md == null) {
+        md = MessageDigest.getInstance("MD5");
+      } else {
+        md.reset();
+      }
+      byte[] digest = md.digest(string.getBytes("UTF-8"));
+      return new BigInteger(1, digest).toString(16);
+    } catch (Exception e) {
+      Log.e("NetworkLog", "Exception getting md5sum for string \"" + string + "\"", e);
+      return "";
+    }
+  }
+
   public static String digestFile(File file) {
-    MessageDigest md;
     InputStream is = null;
 
     try {
-      md = MessageDigest.getInstance("MD5");
+      if(md == null) {
+        md = MessageDigest.getInstance("MD5");
+      } else {
+        md.reset();
+      }
       is = new DigestInputStream(new FileInputStream(file), md);
       byte[] bytes = new byte[8192];
       while(is.read(bytes) > 0) {}
