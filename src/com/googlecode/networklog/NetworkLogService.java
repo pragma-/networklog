@@ -853,7 +853,6 @@ public class NetworkLogService extends Service {
 
       try {
         script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        Log.d("NetworkLog", "script: ps | " + grepPath + " " + binaryPath);
         script.println("ps | " + grepPath + " " + binaryPath);
         script.close();
         script = null;
@@ -1189,7 +1188,7 @@ public class NetworkLogService extends Service {
             lastMd5sum = md5sum;
           } else {
             if(!md5sum.equals(lastMd5sum)) {
-              Log.w("NetworkLog", "Iptables rules changed, reapplying Network Log rules");
+              Log.i("NetworkLog", "Iptables rules changed, reapplying Network Log rules");
               Iptables.removeRules(context);
               Iptables.addRules(context);
               lastMd5sum = MD5Sum.digestString(Iptables.getRules(context));
