@@ -844,26 +844,31 @@ public class NetworkLogService extends Service {
       return;
     }
 
+    String binaryPath = getFilesDir().getAbsolutePath() + File.separator + binary;
+    String grepPath = getFilesDir().getAbsolutePath() + File.separator + SysUtils.getGrepBinary();
+
     synchronized(NetworkLog.SCRIPT) {
       String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
+      PrintWriter script;
 
       try {
-        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        script.println("ps");
+        script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
+        Log.d("NetworkLog", "script: ps | " + grepPath + " " + binaryPath);
+        script.println("ps | " + grepPath + " " + binaryPath);
         script.close();
+        script = null;
       } catch(java.io.IOException e) {
-        e.printStackTrace();
+        Log.e("NetworkLog", "Exception killing logger", e);
+        return;
       }
 
       ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "FindLogger");
       command.start(false);
 
-      int networklog_pid = -1;
-      String string, pid_string, ppid_string, cmd = "";
-      int pid = 0, ppid = 0, token, pos, space;
+      String string, cmd = "";
+      int pid = 0, token, pos, space;
       boolean error = false;
-
-      String binaryPath = getFilesDir().getAbsolutePath() + File.separator + binary;
+      boolean gotKill = false;
 
       while(true) {
         String line = command.readStdoutBlocking();
@@ -895,9 +900,6 @@ public class NetworkLogService extends Service {
               case 1:
                 pid = Integer.parseInt(string);
                 break;
-              case 2:
-                ppid = Integer.parseInt(string);
-                break;
               default:
             }
           } catch(NumberFormatException e) {
@@ -925,33 +927,33 @@ public class NetworkLogService extends Service {
           continue;
         }
 
-        // MyLog.d("cmd: " + cmd + "; pid: " + pid + "; ppid: " + ppid);
+        // MyLog.d("cmd: " + cmd + "; pid: " + pid);
+        if(cmd.contains(binaryPath)) {
+          Log.d("NetworkLog", "Killing tracker " + pid);
+          gotKill = true;
 
-        if(cmd.equals("com.googlecode.networklog")) {
-          networklog_pid = pid;
-          MyLog.d("NetworkLog pid: " + networklog_pid);
-          continue;
-        }
-
-        if(ppid == networklog_pid) {
-          MyLog.d(cmd + " is our child");
-          networklog_pid = pid;
-
-          if(cmd.contains(binaryPath)) {
-            MyLog.d("Killing tracker " + pid);
-
-            try {
-              PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-              script.println("kill " + pid);
-              script.close();
-            } catch(java.io.IOException e) {
-              e.printStackTrace();
+          try {
+            if(script == null) {
+              script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
             }
 
-            new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "KillLogger").start(true);
-            break;
+            script.println("kill " + pid);
+          } catch(Exception e) {
+            Log.e("NetworkLog", "Exception killing logger", e);
+            return;
           }
         }
+      }
+
+      if(gotKill) {
+        try {
+          script.close();
+        } catch (Exception e) {
+          Log.e("NetworkLog", "Exception killing logger", e);
+          return;
+        }
+
+        new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "KillLogger").start(true);
       }
     }
   }
@@ -1009,6 +1011,7 @@ public class NetworkLogService extends Service {
   }
 
   public boolean startLogging() {
+    killLoggerCommand();
     MyLog.d("adding logging rules");
     if(!Iptables.addRules(this)) {
       return false;
