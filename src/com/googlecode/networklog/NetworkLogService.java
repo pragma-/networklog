@@ -1022,6 +1022,7 @@ public class NetworkLogService extends Service {
     new Thread(logger, "NetworkLogger").start();
 
     startWatchingExternalStorage();
+    startWatchingRules();
 
     return true;
   }
@@ -1029,6 +1030,7 @@ public class NetworkLogService extends Service {
   public void stopLogging() {
     Iptables.removeRules(this);
     stopWatchingExternalStorage();
+    stopWatchingRules();
     stopLogger();
     closeLogfile();
     killLoggerCommand();
@@ -1146,6 +1148,66 @@ public class NetworkLogService extends Service {
       unregisterReceiver(mExternalStorageReceiver);
     } catch (Exception e) {
       // ignored
+    }
+  }
+
+  private class RulesWatcher extends Thread {
+    boolean running = false;
+
+    public RulesWatcher() {
+      setName("RulesWatcher");
+    }
+
+    public void stopRunning() {
+      running = false;
+      interrupt();
+    }
+
+    @Override
+      public void run() {
+        String md5sum;
+        String lastMd5sum = null;
+
+        running = true;
+        while(running) {
+          try {
+            Thread.sleep(1000 * 60 * 2);
+          } catch(Exception e) {
+            // ignored
+          }
+
+          if(context == null || running == false) {
+            break;
+          }
+
+          md5sum = MD5Sum.digestString(Iptables.getRules(context));
+
+          if(lastMd5sum == null) {
+            lastMd5sum = md5sum;
+          } else {
+            if(!md5sum.equals(lastMd5sum)) {
+              Log.w("NetworkLog", "Iptables rules changed, reapplying Network Log rules");
+              Iptables.removeRules(context);
+              Iptables.addRules(context);
+              lastMd5sum = MD5Sum.digestString(Iptables.getRules(context));
+            }
+          }
+        }
+      }
+  }
+
+  private static RulesWatcher rulesWatcher;
+
+  void startWatchingRules() {
+    stopWatchingRules();
+    rulesWatcher = new RulesWatcher();
+    rulesWatcher.start();
+  }
+
+  void stopWatchingRules() {
+    if(rulesWatcher != null) {
+      rulesWatcher.stopRunning();
+      rulesWatcher = null;
     }
   }
 }
