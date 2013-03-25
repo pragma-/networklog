@@ -201,7 +201,7 @@ public class SysUtils {
   }
 
   public static void showError(final Context context, final String title, final String message) {
-    MyLog.d("Got error: [" + title + "] [" + message + "]");
+    Log.d("NetworkLog", "Got error: [" + title + "] [" + message + "]");
 
     context.startActivity(new Intent(context, ErrorDialogActivity.class)
         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
