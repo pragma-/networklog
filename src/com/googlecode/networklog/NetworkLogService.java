@@ -180,7 +180,7 @@ public class NetworkLogService extends Service {
   }
 
   public static void updateNotification(String text) {
-    if(instance == null || notification == null) {
+    if(instance == null || context == null || notification == null) {
       return;
     }
 
