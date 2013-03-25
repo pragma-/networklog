@@ -824,7 +824,7 @@ public class NetworkLogService extends Service {
     }
   }
 
-  public void killLogger() {
+  public void killLoggerCommand() {
     if(Iptables.targets == null && Iptables.getTargets(this) == false) {
       return;
     }
@@ -956,13 +956,13 @@ public class NetworkLogService extends Service {
     }
   }
 
-  public boolean startLogging() {
-    MyLog.d("adding logging rules");
-    if(!Iptables.addRules(this)) {
+  public boolean startLoggerCommand() {
+    String binary;
+
+    if(Iptables.targets == null && Iptables.getTargets(this) == false) {
       return false;
     }
 
-    String binary;
     if(Iptables.targets.get("NFLOG") != null) {
       binary = SysUtils.getNflogBinary();
       if(binary == null) {
@@ -974,6 +974,7 @@ public class NetworkLogService extends Service {
         return false;
       }
     } else {
+      Log.e("NetworkLog", "No supported iptables targets available");
       return false;
     }
 
@@ -993,7 +994,7 @@ public class NetworkLogService extends Service {
         e.printStackTrace();
       }
 
-      MyLog.d("Starting iptables log tracker");
+      MyLog.d("Starting iptables logger");
 
       loggerCommand = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "NetworkLogger");
       final String error = loggerCommand.start(false);
@@ -1001,9 +1002,21 @@ public class NetworkLogService extends Service {
       if(error != null) {
         SysUtils.showError(this, getString(R.string.error_default_title), error);
         return false;
+      } else {
+        return true;
       }
     }
+  }
 
+  public boolean startLogging() {
+    MyLog.d("adding logging rules");
+    if(!Iptables.addRules(this)) {
+      return false;
+    }
+
+    if(!startLoggerCommand()) {
+      return false;
+    }
 
     logger = new NetworkLogger();
     new Thread(logger, "NetworkLogger").start();
@@ -1018,7 +1031,7 @@ public class NetworkLogService extends Service {
     stopWatchingExternalStorage();
     stopLogger();
     closeLogfile();
-    killLogger();
+    killLoggerCommand();
   }
 
   public class NetworkLogger implements Runnable {
@@ -1029,38 +1042,47 @@ public class NetworkLogService extends Service {
     }
 
     public void run() {
-      MyLog.d("NetworkLogger " + this + " starting");
+      Log.d("NetworkLog", "Network logger " + this + " starting");
       String result;
       running = true;
 
-      while(running && loggerCommand.checkForExit() == false) {
-        if(loggerCommand.stdoutAvailable()) {
-          result = loggerCommand.readStdout();
-        } else {
-          try {
-            Thread.sleep(500);
-          }
-          catch(Exception e) {
-            Log.d("NetworkLog", "NetworkLogger exception while sleeping", e);
+      while(true) {
+        while(running && loggerCommand.checkForExit() == false) {
+          if(loggerCommand.stdoutAvailable()) {
+            result = loggerCommand.readStdout();
+          } else {
+            try {
+              Thread.sleep(500);
+            }
+            catch(Exception e) {
+              Log.d("NetworkLog", "NetworkLogger exception while sleeping", e);
+            }
+
+            continue;
           }
 
-          continue;
+          if(running == false) {
+            break;
+          }
+
+          if(result == null) {
+            Log.d("NetworkLog", "Network logger " + this + " read null; exiting");
+            break;
+          }
+
+          parseResult(result);
         }
 
-        if(running == false) {
+        if(running != false) {
+          Log.d("NetworkLog", "Network logger " + this + " terminated unexpectedly, restarting");
+          if(!startLoggerCommand()) {
+            running = false;
+          }
+        } else {
+          Log.d("NetworkLog", "Network logger " + this + " reached end of loop; exiting");
           break;
         }
-
-        if(result == null) {
-          MyLog.d("result == null");
-          MyLog.d("NetworkLogger " + this + " exiting [returned null]");
-          return;
-        }
-
-        parseResult(result);
       }
-
-      MyLog.d("NetworkLogger " + this + " exiting [end of loop]");
     }
   }
 
