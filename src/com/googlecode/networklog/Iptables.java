@@ -220,10 +220,14 @@ public class Iptables {
     }
   }
 
-  public static boolean checkRules(Context context) {
+  public static String getRules(Context context) {
+    return getRules(context, false);
+  }
+
+  public static String getRules(Context context, boolean verbose) {
     String iptablesBinary = SysUtils.getIptablesBinary();
     if(iptablesBinary == null) {
-      return false;
+      return null;
     }
 
     String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + iptablesBinary;
@@ -233,7 +237,12 @@ public class Iptables {
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        script.println(iptables + " -L -v");
+        if(verbose) {
+          script.println(iptables + " -L -v");
+        } else {
+          script.println(iptables + " -L");
+        }
+
         script.flush();
         script.close();
       } catch(java.io.IOException e) {
@@ -245,7 +254,7 @@ public class Iptables {
 
       if(error != null) {
         SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), error);
-        return false;
+        return null;
       }
 
       StringBuilder result = new StringBuilder();
@@ -261,18 +270,26 @@ public class Iptables {
       command.checkForExit();
       if(command.exit != 0) {
         SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), result.toString());
-        return false;
+        return null;
       }
 
-      MyLog.d("checkRules result: [" + result + "]");
-
-      if(result.indexOf("Perhaps iptables or your kernel needs to be upgraded", 0) != -1) {
-        Resources res = context.getResources();
-        SysUtils.showError(context, res.getString(R.string.iptables_error_unsupported_title), res.getString(R.string.iptables_error_unsupported_text));
-        return false;
-      }
-
-      return result.indexOf("{NL}", 0) == -1 ? false : true;
+      return result.toString();
     }
+  }
+
+  public static boolean checkRules(Context context) {
+    String rules = getRules(context, true);
+
+    if(rules == null) {
+      return false;
+    }
+
+    if(rules.indexOf("Perhaps iptables or your kernel needs to be upgraded", 0) != -1) {
+      Resources res = context.getResources();
+      SysUtils.showError(context, res.getString(R.string.iptables_error_unsupported_title), res.getString(R.string.iptables_error_unsupported_text));
+      return false;
+    }
+
+    return rules.indexOf("{NL}", 0) == -1 ? false : true;
   }
 }
