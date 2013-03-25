@@ -31,6 +31,7 @@
 
 char *netlog_if_indextoname (unsigned int ifindex, char *ifname);
 void free_net_devices(void);
+void cleanup(void);
 
 #define MAX_NETDEVICES 32
 static char *devices[MAX_NETDEVICES] = {0};
@@ -121,14 +122,12 @@ static inline char *get_net_device_name_by_index(int ifindex) {
         devices[ifindex] = malloc(IFNAMSIZ);
         if(!devices[ifindex]) {
             perror("malloc");
-            free_net_devices();
             exit(EXIT_FAILURE);
         }
 
         netlog_if_indextoname(ifindex, devices[ifindex]);
         if(!devices[ifindex]) {
             perror("if_indextoname");
-            free_net_devices();
             exit(EXIT_FAILURE);
         }
     }
@@ -287,13 +286,22 @@ nflog_build_cfg_params(char *buf, uint8_t mode, int range, int qnum)
     return nlh;
 }
 
+struct mnl_socket *nl = 0;
+
+void cleanup(void) {
+  if(nl != 0)
+    mnl_socket_close(nl);
+  free_net_devices();
+}
+
 int main(int argc, char *argv[])
 {
-    struct mnl_socket *nl;
     char buf[MNL_SOCKET_BUFFER_SIZE];
     struct nlmsghdr *nlh;
     int ret;
     unsigned int portid, qnum;
+
+    atexit(cleanup);
 
     if (argc != 2) {
         printf("Usage: %s [queue_num]\n", argv[0]);
@@ -343,8 +351,12 @@ int main(int argc, char *argv[])
 
     ret = mnl_socket_recvfrom(nl, buf, sizeof(buf));
     if (ret == -1) {
-        perror("mnl_socket_recvfrom");
-        exit(EXIT_FAILURE);
+        if(errno == ENOSPC || errno == ENOBUFS)  {
+          /* ignore these (hopefully) recoverable errors */
+        } else {
+          perror("mnl_socket_recvfrom");
+          exit(EXIT_FAILURE);
+        }
     }
     
     while (1) {
@@ -371,7 +383,5 @@ int main(int argc, char *argv[])
       }
     }
 
-    mnl_socket_close(nl);
-    free_net_devices();
     return 0;
 }
