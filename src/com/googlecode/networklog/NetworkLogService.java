@@ -1030,9 +1030,9 @@ public class NetworkLogService extends Service {
   }
 
   public void stopLogging() {
+    stopWatchingRules();
     Iptables.removeRules(this);
     stopWatchingExternalStorage();
-    stopWatchingRules();
     stopLogger();
     closeLogfile();
     killLoggerCommand();
