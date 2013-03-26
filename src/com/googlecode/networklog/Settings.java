@@ -150,7 +150,21 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return prefs.getBoolean("filter_by_protocol_exclude", false);
   }
 
+  public int getUpdateMaxLogEntries() {
+    return prefs.getInt("update_max_log_entries", 0);
+  }
+
   public long getMaxLogEntries() {
+    int updateMaxLogEntries = getUpdateMaxLogEntries();
+
+    if(updateMaxLogEntries == 0) {
+      setUpdateMaxLogEntries(1);
+
+      if(getMaxLogEntries() > 75000) {
+        setMaxLogEntries(75000);
+      }
+    }
+
     return Long.parseLong(prefs.getString("max_log_entries", "75000"));
   }
 
@@ -299,6 +313,12 @@ public class Settings implements OnSharedPreferenceChangeListener {
   public void setFilterProtocolExclude(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("filter_by_protocol_exclude", value);
+    editor.commit();
+  }
+
+  public void setUpdateMaxLogEntries(int value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putInt("update_max_log_entries", value);
     editor.commit();
   }
 
