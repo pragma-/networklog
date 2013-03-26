@@ -1078,7 +1078,12 @@ public class NetworkLogService extends Service {
         }
 
         if(running != false) {
-          Log.d("NetworkLog", "Network logger " + this + " terminated unexpectedly, restarting");
+          Log.d("NetworkLog", "Network logger " + this + " terminated unexpectedly, restarting in 10 seconds");
+          try {
+            Thread.sleep(10000);
+          } catch (Exception e) {
+            // ignored
+          }
           if(!startLoggerCommand()) {
             running = false;
           }
