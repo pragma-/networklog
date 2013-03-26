@@ -54,6 +54,14 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return prefs.getBoolean("invert_upload_download", false);
   }
 
+  public boolean getWatchRules() {
+    return prefs.getBoolean("watch_rules", false);
+  }
+
+  public int getWatchRulesTimeout() {
+    return Integer.parseInt(prefs.getString("watch_rules_timeout", "120000"));
+  }
+
   public boolean getBehindFirewall() {
     return prefs.getBoolean("behind_firewall", false);
   }
@@ -394,6 +402,18 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
+  public void setWatchRules(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("watch_rules", value);
+    editor.commit();
+  }
+
+  public void setWatchRulesTimeout(int value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putString("watch_rules_timeout", String.valueOf(value));
+    editor.commit();
+  }
+
   public void setBehindFirewall(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("behind_firewall", value);
@@ -579,6 +599,26 @@ public class Settings implements OnSharedPreferenceChangeListener {
         boolean value = prefs.getBoolean(key, false);
         MyLog.d("New " + key + " value [" + value + "]");
         NetworkLogService.invertUploadDownload = value;
+        return;
+      }
+
+      if(key.equals("watch_rules")) {
+        boolean value = prefs.getBoolean(key, false);
+        MyLog.d("New " + key + " value [" + value + "]");
+        NetworkLogService.watchRules = value;
+        if(NetworkLogService.instance != null) {
+          NetworkLogService.instance.startWatchingRules();
+        }
+        return;
+      }
+
+      if(key.equals("watch_rules_timeout")) {
+        int value = Integer.parseInt(prefs.getString(key, "120000"));
+        MyLog.d("New " + key + " value [" + value + "]");
+        NetworkLogService.watchRulesTimeout = value;
+        if(NetworkLogService.rulesWatcher != null) {
+          NetworkLogService.rulesWatcher.interrupt();
+        }
         return;
       }
 

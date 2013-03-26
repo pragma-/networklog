@@ -65,6 +65,8 @@ public class NetworkLogService extends Service {
   public static HashMap<String, String> toastBlockedApps;
   public static boolean invertUploadDownload;
   public static boolean behindFirewall;
+  public static boolean watchRules;
+  public static int watchRulesTimeout;
 
   private class IncomingHandler extends Handler {
     private Context context;
@@ -304,6 +306,8 @@ public class NetworkLogService extends Service {
       toastBlockedApps = SelectToastApps.loadBlockedApps(this);
       invertUploadDownload = NetworkLog.settings.getInvertUploadDownload();
       behindFirewall = NetworkLog.settings.getBehindFirewall();
+      watchRules = NetworkLog.settings.getWatchRules();
+      watchRulesTimeout = NetworkLog.settings.getWatchRulesTimeout();
 
       updateLogfileString();
       ThroughputTracker.startUpdater();
@@ -1158,7 +1162,7 @@ public class NetworkLogService extends Service {
     }
   }
 
-  private class RulesWatcher extends Thread {
+  public class RulesWatcher extends Thread {
     boolean running = false;
 
     public RulesWatcher() {
@@ -1178,7 +1182,7 @@ public class NetworkLogService extends Service {
         running = true;
         while(running) {
           try {
-            Thread.sleep(1000 * 60 * 2);
+            Thread.sleep(watchRulesTimeout);
           } catch(Exception e) {
             // ignored
           }
@@ -1203,12 +1207,14 @@ public class NetworkLogService extends Service {
       }
   }
 
-  private static RulesWatcher rulesWatcher;
+  public static RulesWatcher rulesWatcher;
 
   void startWatchingRules() {
     stopWatchingRules();
-    rulesWatcher = new RulesWatcher();
-    rulesWatcher.start();
+    if(watchRules) {
+      rulesWatcher = new RulesWatcher();
+      rulesWatcher.start();
+    }
   }
 
   void stopWatchingRules() {

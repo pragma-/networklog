@@ -157,4 +157,24 @@
     <item>3500</item>
     <item>7000</item>
   </string-array>
+
+  <string-array name="watch_rules_timeout_entries">
+    <item>@string/range_30sec</item>
+    <item>@string/range_1min</item>
+    <item>@string/range_2min</item>
+    <item>@string/range_5min</item>
+    <item>@string/range_15min</item>
+    <item>@string/range_30min</item>
+    <item>@string/range_1hour</item>
+  </string-array>
+
+  <string-array name="watch_rules_timeout_values">
+    <item>30000</item>
+    <item>60000</item>
+    <item>120000</item>
+    <item>300000</item>
+    <item>900000</item>
+    <item>1800000</item>
+    <item>3600000</item>
+  </string-array>
 </resources>

@@ -80,6 +80,7 @@
   <string name="range_1sec">1 secondi</string>
   <string name="range_30sec">30 secondi</string>
   <string name="range_1min">1 minuto</string>
+  <string name="range_2min">2 minuti</string>
   <string name="range_5min">5 minuti</string>
   <string name="range_10min">10 minuti</string>
   <string name="range_15min">15 minuti</string>

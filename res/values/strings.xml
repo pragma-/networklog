@@ -80,6 +80,7 @@
   <string name="range_1sec">1 second</string>
   <string name="range_30sec">30 seconds</string>
   <string name="range_1min">1 minute</string>
+  <string name="range_2min">2 minutes</string>
   <string name="range_5min">5 minutes</string>
   <string name="range_10min">10 minutes</string>
   <string name="range_15min">15 minutes</string>
@@ -196,6 +197,10 @@
   <string name="pref_log_service">Log Service</string>
   <string name="pref_logfile_title">Log file location</string>
   <string name="pref_logfile_summary">Set path and filename of the log file (defaults to networklog.txt at root of external storage)</string>
+  <string name="pref_watch_rules_title">Iptables watchdog</string>
+  <string name="pref_watch_rules_summary">Reapply logging rules to new iptables rules if any modifications in rules occur (ensures logging rules are not removed by other apps)</string>
+  <string name="pref_watch_rules_timeout_title">Check rules interval</string>
+  <string name="pref_watch_rules_timeout_summary">Select how often to check iptables rules for modifications</string>
   <string name="pref_atboot_title">Start log at boot</string>
   <string name="pref_atboot_summary">Start logging when device boots up</string>
   <string name="pref_atstart_title">Start log at app-start</string>

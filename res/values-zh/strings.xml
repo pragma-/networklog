@@ -80,6 +80,7 @@
   <string name="range_1sec">1秒</string>
   <string name="range_30sec">30秒</string>
   <string name="range_1min">1分钟</string>
+  <string name="range_2min">2分钟</string>
   <string name="range_5min">5分钟</string>
   <string name="range_10min">10分钟</string>
   <string name="range_15min">15分钟</string>
