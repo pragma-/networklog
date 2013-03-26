@@ -246,10 +246,10 @@ public class Iptables {
         script.flush();
         script.close();
       } catch(java.io.IOException e) {
-        Log.e("NetworkLog", "checkRules error", e);
+        Log.e("NetworkLog", "getRules error", e);
       }
 
-      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "checkRules");
+      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "getRules");
       String error = command.start(false);
 
       if(error != null) {
