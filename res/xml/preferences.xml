@@ -56,7 +56,7 @@
     <PreferenceCategory
       android:title="@string/pref_log_tab">
       <EditTextPreference
-        android:defaultValue="150000"
+        android:defaultValue="75000"
         android:numeric="integer"
         android:key="max_log_entries"
         android:title="@string/pref_max_log_entries_title"
