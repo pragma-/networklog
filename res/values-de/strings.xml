@@ -197,6 +197,10 @@
   <string name="pref_log_service">Log Service</string>
   <string name="pref_logfile_title">Logdatei Speicherort</string>
   <string name="pref_logfile_summary">Lege einen Pfad und Dateinamen für die Logdatei fest. (Standard: networklog.txt im externen Speicher)</string>
+  <string name="pref_watch_rules_title">Iptables Watchdog</string>
+  <string name="pref_watch_rules_summary">Wende Protokollierungsregeln auf neue Iptable-Regeln bei Änderungen an (somit können diese Regeln nicht von anderen Apps entfernt werden)</string>
+  <string name="pref_watch_rules_timeout_title">Überprüfungsinterval</string>
+  <string name="pref_watch_rules_timeout_summary">Wähle aus, wie oft Iptables-Regeln auf Änderungen geprüft werden</string> 
   <string name="pref_atboot_title">Protokollieren nach Hochfahren</string>
   <string name="pref_atboot_summary">Starte Protokollierung, wenn das Gerät hochgefahren ist automatisch.</string>
   <string name="pref_atstart_title">Prtotokollierung für bestimmte Apps</string>
