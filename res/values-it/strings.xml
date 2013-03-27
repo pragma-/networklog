@@ -197,6 +197,10 @@
   <string name="pref_log_service">Servizio di log</string>
   <string name="pref_logfile_title">Percordo del file di log</string>
   <string name="pref_logfile_summary">Seleziona percorso e nome del file di log (di default si chiama networklog.txt e risiederà nella radice dello storage esterno)</string>
+  <string name="pref_watch_rules_title">Iptables watchdog</string>
+  <string name="pref_watch_rules_summary">Riapplica le regole di logging come nuove regole di iptables se si verificano eventuali modifiche (ciò garantisce che le regole non vengano rimosse da altre applicazioni)</string>
+  <string name="pref_watch_rules_timeout_title">Intervallo controllo regole</string>
+  <string name="pref_watch_rules_timeout_summary">Seleziona ogni quanto controllare le regole iptables dalle modifiche</string>
   <string name="pref_atboot_title">Inizia log all\'avvio</string>
   <string name="pref_atboot_summary">Inizia il logging all\'avvio del dispositivo</string>
   <string name="pref_atstart_title">Inizia log all\'avvio dell\'applicativo</string>

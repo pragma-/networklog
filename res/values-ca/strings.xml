@@ -169,6 +169,10 @@
   <string name="pref_log_service">Servei de registre</string>
   <string name="pref_logfile_title">Ubicació de l\'arxiu de registre</string>
   <string name="pref_logfile_summary">Establir ruta i nom de l\'arxiu de registre (per defecte, networklog.txt a la carpeta arrel de l\'emmagatzematge extern)</string>
+  <string name="pref_watch_rules_title">Inspector de taules IP</string>
+  <string name="pref_watch_rules_summary">Reapliqueu normes de registre a les noves normes de taules IP si cap modificació a les normes fos detectada (assegura que les normes de registre no sòn eliminades per altres aplicacions)</string>
+  <string name="pref_watch_rules_timeout_title">Interval de la comprovació de normes</string>
+  <string name="pref_watch_rules_timeout_summary">Sel•leccioneu amb quina frequència es comprova la modificació de les normes de les taules IP</string>
   <string name="pref_atboot_title">Iniciar el registre a l\'arrencada</string>
   <string name="pref_atboot_summary">Inicia el registre quan el dispositiu engegui</string>
   <string name="pref_atstart_title">Inicia el registre quan s\'iniciï l\'aplicació</string>
