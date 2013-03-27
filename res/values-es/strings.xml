@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="app_name">Network Log</string>
+
+  <string name="tab_log">Log</string>
+  <string name="tab_apps">Apps</string>
+
+  <string name="app_instructions">Tocar para conexiones, mantener para gráfica</string>
+  <string name="app_throughput">Tráfico:\u0020</string>
+  <string name="app_packets">Paquetes:\u0020</string>
+  <string name="app_bytes">Bytes:\u0020</string>
+
+  <string name="logging_on">Registro On</string>
+  <string name="logging_off">Registro Off</string>
+  <string name="logging_started">Registro de red comenzado</string>
+  <string name="logging_stopped">Registro de red finalizado</string>
+  <string name="logging_active">Registro activo</string>
+  <string name="logging_inactive">Registro inactivo</string>
+  <string name="logfile_size">\u0020Logfile size:\u0020</string>
+  <string name="logfile_bad">\u0020Bad logfile:\u0020</string>
+
+  <string name="hostitem_sent">\u0020\u0020Sent:\u0020</string>
+  <string name="hostitem_recv">\u0020\u0020Recv:\u0020</string>
+  <string name="hostitem_packets">\u0020packets,\u0020</string>
+  <string name="hostitem_bytes">\u0020bytes\u0020</string>
+
+  <string name="throughput">\u0020Traffic:\u0020</string>
+
+  <string name="confirm_exit_title">Confirmar salida</string>
+  <string name="confirm_exit_text">Seguro que quieres salir?</string>
+  <string name="do_not_show_again">No mostrar otra vez</string>
+  <string name="logging_will_stop">El registro finalizará.</string>
+  <string name="logging_will_continue">El registro continuará como servicio en segundo plano.</string>
+
+  <string name="filter_title">Filtro</string>
+  <string name="filter_instructions">Usa coma para separar varias palabras clave\n(Deslizar hacia abajo para más opciones de filtro)</string>
+  <string name="filter_include">Incluir filtro:</string>
+  <string name="filter_exclude">Excluir filtro:</string>
+  <string name="filter_applies">Aplicar a:</string>
+  <string name="filter_app_ids">IDs de App</string>
+  <string name="filter_app_names">Nombres de App</string>
+  <string name="filter_addresses">Direcciones</string>
+  <string name="filter_ports">Puertos</string>
+  <string name="filter_interfaces">Interfaces</string>
+  <string name="filter_protocols">Protocolos</string>
+  <string name="filter_applied">Filtrado:\u0020</string>
+
+  <string name="menu_graph">Gráficas</string>
+  <string name="menu_sort">Ordenar</string>
+  <string name="menu_by_app_id">Por ID de App</string>
+  <string name="menu_by_name">Por Nombre</string>
+  <string name="menu_by_throughput">Por Tráfico</string>
+  <string name="menu_by_packets">Por Paquetes</string>
+  <string name="menu_by_bytes">Por Bytes</string>
+  <string name="menu_by_timestamp">Por fecha</string>
+  <string name="menu_filter">Filtro</string>
+  <string name="menu_clearlog">Borrar</string>
+  <string name="menu_settings">Ajustes</string>
+  <string name="menu_feedback">Informar de error/Feedback</string>
+  <string name="menu_exit">Salir</string>
+
+  <string name="copy_ip">Copiar Dirección IP</string>
+  <string name="copy_src_ip">Copiar IP Origen</string>
+  <string name="copy_dst_ip">Copiar IP Destino</string>
+  <string name="show_graph">Mostrar Gráfica</string>
+
+  <string name="interval_prompt">Fijar Intervalo</string>
+  <string name="viewsize_prompt">Fijar Tamaño de Vista</string>
+
+  <string name="duration_2sec">2 segundos</string>
+  <string name="duration_3_5sec">3.5 segundos</string>
+  <string name="duration_7sec">7 segundos</string>
+
+  <string name="range_all">todo</string>
+  <string name="range_none">ninguno</string>
+  <string name="range_now">ahora</string>
+  <string name="range_1ms">1 ms</string>
+  <string name="range_100ms">100 ms</string>
+  <string name="range_500ms">500 ms</string>
+  <string name="range_1sec">1 segundo</string>
+  <string name="range_30sec">30 segundos</string>
+  <string name="range_1min">1 minuto</string>
+  <string name="range_2min">2 minutos</string>
+  <string name="range_5min">5 minutos</string>
+  <string name="range_10min">10 minutos</string>
+  <string name="range_15min">15 minutos</string>
+  <string name="range_30min">30 minutos</string>
+  <string name="range_1hour">1 hora</string>
+  <string name="range_2hour">2 hora</string>
+  <string name="range_4hour">4 horas</string>
+  <string name="range_8hour">8 horas</string>
+  <string name="range_12hour">12 horas</string>
+  <string name="range_16hour">16 horas</string>
+  <string name="range_24hour">24 horas</string>
+  <string name="range_48hour">48 horas</string>
+  <string name="range_2day">2 dias</string>
+  <string name="range_4day">4 dias</string>
+  <string name="range_1week">1 semana</string>
+  <string name="range_2week">2 semanas</string>
+  <string name="range_1month">1 mes</string>
+
+  <string name="ok">OK</string>
+  <string name="cancel">Cancelar</string>
+  <string name="dismiss">Descartar</string>
+  <string name="reset">Reset</string>
+  <string name="done">Hecho</string>
+  <string name="yes">Si</string>
+  <string name="no">No</string>
+
+  <string name="select_all">Seleccionar todo</string>
+  <string name="select_none">Seleccionar nada</string>
+
+  <string name="position_top">Arriba</string>
+  <string name="position_bottom">Abajo</string>
+  <string name="position_default">Por defecto</string>
+
+  <string name="graph_apps_timeline">Apps Timeline</string>
+  <string name="graph_timeline">\u0020Timeline</string>
+  <string name="graph_error_nodata_title">Sin gráfica de datos</string>
+  <string name="graph_error_nodata_text">No hay gráfica que mostrar porque no hay entradas en el registro de red.</string>
+
+  <string name="clear_dialog_title">Borrar registro</string>
+  <string name="clear_dialog_prompt">Qitar entradas más antiguas que</string>
+  <string name="clear_dialog_button_positive">Borrar registro</string>
+  <string name="clear_dialog_delete_from_logfile">Borrar entradas del registro</string>
+  <string name="clear_progress_message">Borrando registro</string>
+
+  <string name="feedback_title">Enviar Opinión</string>
+  <string name="feedback_instructions">Escribir mensaje para reportar error/opinión:</string>
+  <string name="feedback_attach_log">Adjuntar registro de errores</string>
+  <string name="feedback_send">Enviar</string>
+  <string name="feedback_chooser_title">Enviar reporte de errores/Opinión</string>
+  <string name="feedback_error_no_message_title">Sin mensaje</string>
+  <string name="feedback_error_no_message_text">Por favor, escribe un mensaje o pulsa en botón cancelar.</string>
+  <string name="feedback_error_getting_debug_log">Error obteniendo el registro de errores</string>
+
+  <string name="loading_apps">Cargando apps</string>
+
+  <string name="history_load">Cargar historial</string>
+  <string name="history_loading">Cargando historial</string>
+  <string name="history_parsing">Analizando historial</string>
+
+  <string name="iptables_error_add_rules">Añadir error de normas</string>
+  <string name="iptables_error_remove_rules">Quitar error de normas</string>
+  <string name="iptables_error_check_rules">Comprobar error de normas</string>
+  <string name="iptables_error_unsupported_title">Iptables no soportada</string>
+  <string name="iptables_error_unsupported_text">Iptables no está soportada por esta versión de Android. Habilita el módulo de filtro de red en el kernel o instala una versión soportada de Android, como CyanogenMod.</string>
+  <string name="iptables_error_missingfeatures_text">El Kernel usado por esta versión de Android no tiene los módulos iptables/netfilter requeridos. Cargue los módulos requeridos o instale una versión de Android como CyanogenMod.</string>
+
+  <string name="error_default_title">Error de Registro de Red</string>
+  <string name="error_default_text">Ha ocurrido un error</string>
+  <string name="error_noroot">El registro de red requiere acceso root/superusuario</string>
+  <string name="error_openlogfile">Fallo al abrir archivo de registro:\u0020</string>
+  <string name="error_unsupported_system_title">Sistema no soportado</string>
+  <string name="error_unsupported_system_text">El tipo de CPU \'%s\' no está soportado actualmente. Por favor, use la opción reporte de errores/opinión para solicitar soporte.</string>
+  <string name="error_install_binary_text">Error al instalar %s:\u0020</string>
+
+  <string name="warning">Aviso</string>
+  <string name="warning_disabling_notification">Deshabilitando la notificación/proceso en primer plano, permitirá a Android finalizar este servicio en cualquier momento, lo que interrumpirá el registro.</string>
+
+  <string name="coming_soon_title">Proximamente</string>
+  <string name="coming_soon_text">Lo siento, esta caracteristica no está diponible aún.</string>
+
+  <string name="pref_general">Opciones Generales</string>
+  <string name="pref_resolve_hosts_title">Resolver hosts</string>
+  <string name="pref_resolve_hosts_summary">Resolver dirección IP para los nombres de dominio DNS (Nota: hace consultas DNS de la red en el puerto 53)</string>
+  <string name="pref_resolve_ports_title">Resolve puertos</string>
+  <string name="pref_resolve_ports_summary">Resolver los números de puerto conocidos a nombres de servicio (Nota: Usa listado interno; no efectua consultas a la red)</string>
+  <string name="pref_copy_addrs_title">Copiar direcciones sin resolver</string>
+  <string name="pref_copy_addrs_summary">Cuando se copia al portapapeles, usa la dirección/puerto original en vez resolver las direcciones</string>
+  <string name="pref_invert_upload_download_title">Invertir Subida/Bajada</string>
+  <string name="pref_invert_upload_download_summary">Por defecto, la velocidad del tráfico se muestra como subida/bajada; seleccionar para invertir estos valores</string>
+  <string name="pref_behind_firewall_title">Registro a travez de firewall</string>
+  <string name="pref_behind_firewall_summary">Si está seleccionado, los paquetes se registraran solo después de ser aceptados por el firewall; de otra forma, todos los intentos de transmisión son registrados</string>
+  <string name="pref_filter_title">Filtro</string>
+  <string name="pref_filter_summary">Configurar opciones advanzadas de filtrado</string>
+  <string name="pref_history_size_title">Cargar historial del archivo de registro</string>
+  <string name="pref_history_size_summary">Seleccionar cantidad de historial a cargar, efectivo inmediatamente y al inicio de la aplicación (por defecto: 4 horass)</string>
+  <string name="pref_clearlog_title">Borrar registro</string>
+  <string name="pref_clearlog_summary">Seleccionar el rango de tiempo a borrardel registro, efectivo de inmediato</string>
+  <string name="pref_confirm_exit_title">Confirmar salida</string>
+  <string name="pref_confirm_exit_summary">Muestra diálogo para confirmar salida cuando se usa el botón atras para salir</string>
+
+  <string name="pref_log_tab">Pestaña Registro</string>
+  <string name="pref_max_log_entries_title">Entradas máximas a registrar</string>
+  <string name="pref_max_log_entries_summary">Limita el número de entradas para conservar memoria; las entradas más antiguas seran recortadas</string>
+
+  <string name="pref_apps_tab">Pestaña Apps</string>
+  <string name="pref_presort_by_title">Método de orden de base</string>
+  <string name="pref_presort_by_summary">Selecciona como ordenar las entradas de aplicación que no tienen aún datos (por defecto: Por nombre)</string>
+  <string name="pref_presort_by_dialog_title">Sin Datos Clasificados</string>
+  <string name="pref_sort_by_title">Método de clasificación</string>
+  <string name="pref_sort_by_summary">Selecciona como ordenar las entradas de aplicación que tienen datos (por defecto: Por bytes)</string>
+  <string name="pref_round_values_title">Redondear valores</string>
+  <string name="pref_round_values_summary">Redondear valores al más cercano G/M/K</string>
+
+  <string name="pref_log_service">Servicio de Registro</string>
+  <string name="pref_logfile_title">Localización del fichero de registro</string>
+  <string name="pref_logfile_summary">Fija la ruta y el nombre del archivo de registro (por defecto networklog.txt en la raiz del almacenamiento externo)</string>
+  <string name="pref_atboot_title">Empezar registro en el arranque</string>
+  <string name="pref_atboot_summary">Empieza el registro cuando el dispositivo arranca</string>
+  <string name="pref_atstart_title">Empezar el registro al inicio de la aplicación</string>
+  <string name="pref_atstart_summary">Empieza el registro cuando se inicia esta aplicación</string>
+  <string name="pref_atexit_title">Parar el registro al salir de la aplicación</string>
+  <string name="pref_atexit_summary">Para el registro al salir de esta aplicación</string>
+  <string name="pref_foreground_title">Empezar en primer plano</string>
+  <string name="pref_foreground_summary">Previene que Android finalice el servicio. Deshabilitando esto eliminará la notificación en la barra de tareas</string>
+
+  <string name="pref_notifications">Notificaciones de Conexión</string>
+  <string name="pref_toast_title">Ventana emergente</string>
+  <string name="pref_toast_summary">Muestra una notificación en ventana emergente cuando una apicación efectua una transmisión de red</string>
+  <string name="pref_toast_position_title">Posición</string>
+  <string name="pref_toast_position_summary">Selecciona como coloca la ventana de notification emergente</string>
+  <string name="pref_toast_yoffset_title">Rellenar</string>
+  <string name="pref_toast_yoffset_summary">Selecciona relleno para la posición de la notificación</string>
+  <string name="pref_toast_duration_title">Duración</string>
+  <string name="pref_toast_duration_summary">Selecciona cuanto tiempo debe permanecer visible la notificación emergente</string>
+  <string name="pref_toast_block_apps">Bloquear aplicaciones</string>
+  <string name="pref_toast_apps_summary">Selecciona que aplicaciones no deben tener notificaciones emergentes</string>
+
+  <string name="pref_graphs">Opciones de Gráfica</string>
+  <string name="pref_interval_title">Intervalo</string>
+  <string name="pref_interval_summary">Selecciona con que frecuencia los datos son añadidos. Para ver paquetes individuales, fijar en 1 ms; para Kbps, fijar en 1 second; para Kb-por-hora fijar en 1 hora; etc</string>
+  <string name="pref_viewsize_title">Tamaño de Vista</string>
+  <string name="pref_viewsize_summary">Selecciona el rango de tiempo de datos visible. Si el rango seleccionado es mayor que el rango de datos, el tamaño de visualización se ajustará para coincidir con el dato</string>
+
+  <string name="pref_debugging">Opciones de Depuración</string>
+  <string name="pref_debug_title">Registrar salida extra de depuración</string>
+  <string name="pref_debug_summary">Imprime una salida detallada de depuración para Logcat. Advertencia: puede disminuir el rendimiento si está habilitado</string>
+</resources>
