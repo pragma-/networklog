@@ -45,6 +45,11 @@ public class ThroughputTracker {
         throughputMap.put(appEntry.packageName, throughput);
       }
 
+      if(throughput.displayed == true) {
+        throughput.download = 0;
+        throughput.upload = 0;
+      }
+
       if(entry.in != null && entry.in.length() > 0) {
         throughput.download += entry.len;
         throughput.address = entry.src + ":" + entry.spt;
@@ -87,6 +92,8 @@ public class ThroughputTracker {
               resetMap.clear();
             }
             updateThroughput(0, 0);
+            totalUpload = 0;
+            totalDownload = 0;
           }
 
           if(!throughputMap.isEmpty()) {
@@ -137,8 +144,9 @@ public class ThroughputTracker {
 
             if(showToast) {
               NetworkLogService.showToast(toastString);
-              updateThroughput(totalUpload * 8, totalDownload * 8);
             }
+
+            updateThroughput(totalUpload * 8, totalDownload * 8);
 
             totalUpload = 0;
             totalDownload = 0;
