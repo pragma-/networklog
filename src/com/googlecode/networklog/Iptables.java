@@ -19,6 +19,59 @@ import java.util.HashMap;
 public class Iptables {
   public static HashMap<String, String> targets;
 
+  public static boolean getTargets(Context context) {
+    String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
+    String grepBinary = SysUtils.getGrepBinary();
+
+    if(grepBinary == null) {
+      return false;
+    }
+
+    String grep  = context.getFilesDir().getAbsolutePath() + File.separator + grepBinary;
+
+    synchronized(NetworkLog.SCRIPT) {
+      try {
+        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
+        script.println(grep + " \\.\\* /proc/net/ip_tables_targets");
+        script.flush();
+        script.close();
+      } catch(java.io.IOException e) {
+        Log.e("NetworkLog", "getTargets error", e);
+      }
+
+      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "getTargets");
+      String error = command.start(false);
+
+      if(error != null) {
+        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), error);
+        return false;
+      }
+
+      targets = new HashMap<String, String>();
+
+      StringBuilder result = new StringBuilder();
+      String line;
+      while(true) {
+        line = command.readStdoutBlocking();
+        if(line == null) {
+          break;
+        }
+        line = line.trim();
+        targets.put(line, line);
+        result.append(line);
+      }
+
+      command.checkForExit();
+      if(command.exit != 0) {
+        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), result.toString());
+        return false;
+      }
+
+      MyLog.d("getTargets result: [" + result + "]");
+      return true;
+    }
+  }
+
   public static boolean addRules(Context context) {
     String iptablesBinary = SysUtils.getIptablesBinary();
     if(iptablesBinary == null) {
@@ -165,59 +218,6 @@ public class Iptables {
     }
 
     return true;
-  }
-
-  public static boolean getTargets(Context context) {
-    String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
-    String grepBinary = SysUtils.getGrepBinary();
-
-    if(grepBinary == null) {
-      return false;
-    }
-
-    String grep  = context.getFilesDir().getAbsolutePath() + File.separator + grepBinary;
-
-    synchronized(NetworkLog.SCRIPT) {
-      try {
-        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        script.println(grep + " \\.\\* /proc/net/ip_tables_targets");
-        script.flush();
-        script.close();
-      } catch(java.io.IOException e) {
-        Log.e("NetworkLog", "getTargets error", e);
-      }
-
-      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "getTargets");
-      String error = command.start(false);
-
-      if(error != null) {
-        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), error);
-        return false;
-      }
-
-      targets = new HashMap<String, String>();
-
-      StringBuilder result = new StringBuilder();
-      String line;
-      while(true) {
-        line = command.readStdoutBlocking();
-        if(line == null) {
-          break;
-        }
-        line = line.trim();
-        targets.put(line, line);
-        result.append(line);
-      }
-
-      command.checkForExit();
-      if(command.exit != 0) {
-        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), result.toString());
-        return false;
-      }
-
-      MyLog.d("getTargets result: [" + result + "]");
-      return true;
-    }
   }
 
   public static String getRules(Context context) {
