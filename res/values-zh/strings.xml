@@ -197,6 +197,10 @@
   <string name="pref_log_service">日志服务</string>
   <string name="pref_logfile_title">日志文件存放位置</string>
   <string name="pref_logfile_summary">设置日志文件的存放路径和文件名（缺省保存为外置存储根目录中networklog.txt文件）</string>
+  <string name="pref_watch_rules_title">监视iptables</string>
+  <string name="pref_watch_rules_summary">如果记录规则被改动，则在新的iptables规则上重新应用记录规则以保证记录规则不被其它应用移除。</string>
+  <string name="pref_watch_rules_timeout_title">检查间隔</string>
+  <string name="pref_watch_rules_timeout_summary">选择检查iptables规则变化的频度</string>
   <string name="pref_atboot_title">启动时开始记录</string>
   <string name="pref_atboot_summary">设备启动时开始记录</string>
   <string name="pref_atstart_title">应用启动时开始记录</string>
