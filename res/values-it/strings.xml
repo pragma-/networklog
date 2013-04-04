@@ -7,7 +7,7 @@
 
   <string name="app_instructions">Premi per connessioni, Pressione lunga per grafico</string>
   <string name="app_throughput">Traffico:\u0020</string>
-  <string name="app_packets">Packetti:\u0020</string>
+  <string name="app_packets">Pacchetti:\u0020</string>
   <string name="app_bytes">Bytes:\u0020</string>
 
   <string name="logging_on">Logging attivato</string>
@@ -195,7 +195,7 @@
   <string name="pref_round_values_summary">Valori arrotondati al più vicino G/M/K</string>
 
   <string name="pref_log_service">Servizio di log</string>
-  <string name="pref_logfile_title">Percordo del file di log</string>
+  <string name="pref_logfile_title">Percorso del file di log</string>
   <string name="pref_logfile_summary">Seleziona percorso e nome del file di log (di default si chiama networklog.txt e risiederà nella radice dello storage esterno)</string>
   <string name="pref_watch_rules_title">Iptables watchdog</string>
   <string name="pref_watch_rules_summary">Riapplica le regole di logging come nuove regole di iptables se si verificano eventuali modifiche (ciò garantisce che le regole non vengano rimosse da altre applicazioni)</string>
@@ -224,9 +224,9 @@
 
   <string name="pref_graphs">Opzioni per grafico</string>
   <string name="pref_interval_title">Intervallo</string>
-  <string name="pref_interval_summary">Indica quanto spesso i dati dovranno essere sommati. Per visualizzare singoli pacchetti, setta ad 1 ms; per Kbps, setta a 1 secondo; per Kb-per-ora setta a 1 ora; ecc...</string>
+  <string name="pref_interval_summary">Indica quanto spesso i dati dovranno essere sommati. Per visualizzare singoli pacchetti, setta ad 1 ms; per Kbps, setta a 1 secondo; per Kb/ora setta a 1 ora; ecc...</string>
   <string name="pref_viewsize_title">Finestra di visualizzazione</string>
-  <string name="pref_viewsize_summary">Indica il range di tempo della finestra di visualizzazione dei dati. Se il range scelto è più largo del range dei dati, la finestra si ridurra al fine di adattarsi.</string>
+  <string name="pref_viewsize_summary">Indica il range di tempo della finestra di visualizzazione dei dati. Se il range scelto è più largo del range dei dati, la finestra si ridurrà al fine di adattarsi.</string>
 
   <string name="pref_debugging">Opzioni di debug</string>
   <string name="pref_debug_title">Log extra debug</string>
