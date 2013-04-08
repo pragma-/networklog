@@ -715,13 +715,13 @@ public class AppFragment extends Fragment {
     synchronized(groupDataBuffer) {
       for(GroupItem item : groupDataBuffer) {
         if(NetworkLogService.throughputBps) {
-          item.uploadThroughput *= 8;
-          item.downloadThroughput *= 8;
-          item.totalThroughput *= 8;
+          item.uploadThroughput *= Byte.SIZE;
+          item.downloadThroughput *= Byte.SIZE;
+          item.totalThroughput *= Byte.SIZE;
         } else {
-          item.uploadThroughput /= 8;
-          item.downloadThroughput /= 8;
-          item.totalThroughput /= 8;
+          item.uploadThroughput /= Byte.SIZE;
+          item.downloadThroughput /= Byte.SIZE;
+          item.totalThroughput /= Byte.SIZE;
         }
 
         if(NetworkLogService.invertUploadDownload) {

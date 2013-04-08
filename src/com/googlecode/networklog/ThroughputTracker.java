@@ -52,14 +52,14 @@ public class ThroughputTracker {
 
       if(entry.in != null && entry.in.length() > 0) {
         if(NetworkLogService.throughputBps) {
-          throughput.download += entry.len * 8;
+          throughput.download += entry.len * Byte.SIZE;
         } else {
           throughput.download += entry.len;
         }
         throughput.address = entry.src + ":" + entry.spt;
       } else {
         if(NetworkLogService.throughputBps) {
-          throughput.upload += entry.len * 8;
+          throughput.upload += entry.len * Byte.SIZE;
         } else {
           throughput.upload += entry.len;
         }
@@ -224,21 +224,21 @@ public class ThroughputTracker {
         for(ThroughputData item : throughputMap.values()) {
           if(item.displayed == false) {
             if(NetworkLogService.throughputBps) {
-              item.upload *= 8;
-              item.download *= 8;
+              item.upload *= Byte.SIZE;
+              item.download *= Byte.SIZE;
             } else {
-              item.upload /= 8;
-              item.download /= 8;
+              item.upload /= Byte.SIZE;
+              item.download /= Byte.SIZE;
             }
           }
         }
 
         if(NetworkLogService.throughputBps) {
-          updater.totalUpload *= 8;
-          updater.totalDownload *= 8;
+          updater.totalUpload *= Byte.SIZE;
+          updater.totalDownload *= Byte.SIZE;
         } else {
-          updater.totalUpload /= 8;
-          updater.totalDownload /= 8;
+          updater.totalUpload /= Byte.SIZE;
+          updater.totalDownload /= Byte.SIZE;
         }
 
         updateThroughput(updater.totalUpload, updater.totalDownload);
