@@ -66,6 +66,10 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return prefs.getBoolean("behind_firewall", false);
   }
 
+  public boolean getThroughputBps() {
+    return prefs.getBoolean("throughput_bps", true);
+  }
+
   public boolean getRoundValues() {
     return prefs.getBoolean("round_values", true);
   }
@@ -420,6 +424,12 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
+  public void setThroughputBps(boolean value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("throughput_bps", value);
+    editor.commit();
+  }
+
   public void setRoundValues(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("round_values", value);
@@ -630,6 +640,14 @@ public class Settings implements OnSharedPreferenceChangeListener {
           Iptables.removeRules(context);
           Iptables.addRules(context);
         }
+        return;
+      }
+
+      if(key.equals("throughput_bps")) {
+        boolean value = prefs.getBoolean(key, true);
+        MyLog.d("New " + key + " value [" + value + "]");
+        NetworkLogService.throughputBps = value;
+        ThroughputTracker.updateThroughputBps();
         return;
       }
     }

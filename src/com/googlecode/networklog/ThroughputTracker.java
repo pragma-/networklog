@@ -51,10 +51,18 @@ public class ThroughputTracker {
       }
 
       if(entry.in != null && entry.in.length() > 0) {
-        throughput.download += entry.len;
+        if(NetworkLogService.throughputBps) {
+          throughput.download += entry.len * 8;
+        } else {
+          throughput.download += entry.len;
+        }
         throughput.address = entry.src + ":" + entry.spt;
       } else {
-        throughput.upload += entry.len;
+        if(NetworkLogService.throughputBps) {
+          throughput.upload += entry.len * 8;
+        } else {
+          throughput.upload += entry.len;
+        }
         throughput.address = entry.dst + ":" + entry.dpt;
       }
 
@@ -113,7 +121,7 @@ public class ThroughputTracker {
                 totalDownload += value.download;
 
                 if(NetworkLog.appFragment != null) {
-                  NetworkLog.appFragment.updateAppThroughput(value.app.uid, value.upload * 8, value.download * 8);
+                  NetworkLog.appFragment.updateAppThroughput(value.app.uid, value.upload, value.download);
                   resetMap.put(value.app.packageName, value);
                 }
               }
@@ -122,9 +130,9 @@ public class ThroughputTracker {
                 showToast = true;
 
                 if(NetworkLogService.invertUploadDownload) {
-                  throughput = StringUtils.formatToBytes(value.download * 8) + "bps/" + StringUtils.formatToBytes(value.upload * 8) + "bps";
+                  throughput = StringUtils.formatToBytes(value.download) + (NetworkLogService.throughputBps ? "bps/" : "B/")  + StringUtils.formatToBytes(value.upload) + (NetworkLogService.throughputBps ? "bps" : "B");
                 } else {
-                  throughput = StringUtils.formatToBytes(value.upload * 8) + "bps/" + StringUtils.formatToBytes(value.download * 8) + "bps";
+                  throughput = StringUtils.formatToBytes(value.upload) + (NetworkLogService.throughputBps ? "bps/" : "B/") + StringUtils.formatToBytes(value.download) + (NetworkLogService.throughputBps ? "bps" : "B");
                 }
 
                 if(MyLog.enabled && value.displayed == false) {
@@ -146,7 +154,7 @@ public class ThroughputTracker {
               NetworkLogService.showToast(toastString);
             }
 
-            updateThroughput(totalUpload * 8, totalDownload * 8);
+            updateThroughput(totalUpload, totalDownload);
 
             totalUpload = 0;
             totalDownload = 0;
@@ -177,6 +185,7 @@ public class ThroughputTracker {
 
     updateThroughput(-1, -1);
     updater.stop();
+    updater = null;
   }
 
   public static void updateThroughput(long upload, long download) {
@@ -184,9 +193,9 @@ public class ThroughputTracker {
       throughputString = "";
     } else {
       if(NetworkLogService.invertUploadDownload) {
-        throughputString = StringUtils.formatToBytes(download) + "bps/" + StringUtils.formatToBytes(upload) + "bps";
+        throughputString = StringUtils.formatToBytes(download) + (NetworkLogService.throughputBps ? "bps/" : "B/") + StringUtils.formatToBytes(upload) + (NetworkLogService.throughputBps ? "bps" : "B");
       } else {
-        throughputString = StringUtils.formatToBytes(upload) + "bps/" + StringUtils.formatToBytes(download) + "bps";
+        throughputString = StringUtils.formatToBytes(upload) + (NetworkLogService.throughputBps ? "bps/" : "B/") + StringUtils.formatToBytes(download) + (NetworkLogService.throughputBps ? "bps" : "B");
       }
 
       if(MyLog.enabled) {
@@ -207,5 +216,37 @@ public class ThroughputTracker {
 
     NetworkLogService.updateNotification(icon);
     NetworkLog.updateStatus(icon);
+  }
+
+  public static void updateThroughputBps() {
+    if(updater != null) {
+      synchronized(throughputMap) {
+        for(ThroughputData item : throughputMap.values()) {
+          if(item.displayed == false) {
+            if(NetworkLogService.throughputBps) {
+              item.upload *= 8;
+              item.download *= 8;
+            } else {
+              item.upload /= 8;
+              item.download /= 8;
+            }
+          }
+        }
+
+        if(NetworkLogService.throughputBps) {
+          updater.totalUpload *= 8;
+          updater.totalDownload *= 8;
+        } else {
+          updater.totalUpload /= 8;
+          updater.totalDownload /= 8;
+        }
+
+        updateThroughput(updater.totalUpload, updater.totalDownload);
+      }
+    }
+
+    if(NetworkLog.appFragment != null) {
+      NetworkLog.appFragment.updateAppThroughputBps();
+    }
   }
 }

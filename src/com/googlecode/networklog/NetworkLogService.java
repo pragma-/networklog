@@ -67,6 +67,7 @@ public class NetworkLogService extends Service {
   public static boolean behindFirewall;
   public static boolean watchRules;
   public static int watchRulesTimeout;
+  public static boolean throughputBps;
 
   private class IncomingHandler extends Handler {
     private Context context;
@@ -308,6 +309,7 @@ public class NetworkLogService extends Service {
       behindFirewall = NetworkLog.settings.getBehindFirewall();
       watchRules = NetworkLog.settings.getWatchRules();
       watchRulesTimeout = NetworkLog.settings.getWatchRulesTimeout();
+      throughputBps = NetworkLog.settings.getThroughputBps();
 
       updateLogfileString();
       ThroughputTracker.startUpdater();

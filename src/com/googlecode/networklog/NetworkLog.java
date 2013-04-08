@@ -280,6 +280,8 @@ public class NetworkLog extends SherlockFragmentActivity {
 
     startServiceAtStart = settings.getStartServiceAtStart();
     stopServiceAtExit = settings.getStopServiceAtExit();
+
+    NetworkLogService.throughputBps = settings.getThroughputBps();
   }
 
   private static class MyFragmentPagerAdapter extends FragmentPagerAdapter implements TitleProvider {

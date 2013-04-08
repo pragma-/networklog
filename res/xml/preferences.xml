@@ -28,6 +28,11 @@
         android:key="behind_firewall"
         android:title="@string/pref_behind_firewall_title"
         android:summary="@string/pref_behind_firewall_summary" />
+      <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="throughput_bps"
+        android:title="@string/pref_throughput_bps_title"
+        android:summary="@string/pref_throughput_bps_summary" />
       <Preference
         android:persistent="false"
         android:key="filter_dialog"

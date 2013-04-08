@@ -86,7 +86,7 @@ public class AppFragment extends Fragment {
     protected long uploadThroughput;
     protected long downloadThroughput;
     protected long totalThroughput;
-    protected String throughputString = "0bps/0bps";
+    protected String throughputString;
     protected long totalPackets;
     protected long totalBytes;
     protected long lastTimestamp;
@@ -400,6 +400,11 @@ public class AppFragment extends Fragment {
             item.lastTimestamp = 0;
             item.childrenData = new HashMap<String, ChildItem>();
             item.childrenDataFiltered = new HashMap<String, ChildItem>();
+            if(NetworkLogService.throughputBps) {
+              item.throughputString = "0bps/0bps";
+            } else {
+              item.throughputString = "0B/0B";
+            }
             groupData.add(item);
             groupDataBuffer.add(item);
           }
@@ -702,6 +707,34 @@ public class AppFragment extends Fragment {
     return lastGetItemByAppUidIndex;
   }
 
+  public void updateAppThroughputBps() {
+    if(groupDataBuffer == null) {
+      return;
+    }
+
+    synchronized(groupDataBuffer) {
+      for(GroupItem item : groupDataBuffer) {
+        if(NetworkLogService.throughputBps) {
+          item.uploadThroughput *= 8;
+          item.downloadThroughput *= 8;
+          item.totalThroughput *= 8;
+        } else {
+          item.uploadThroughput /= 8;
+          item.downloadThroughput /= 8;
+          item.totalThroughput /= 8;
+        }
+
+        if(NetworkLogService.invertUploadDownload) {
+          item.throughputString = StringUtils.formatToBytes(item.downloadThroughput) + (NetworkLogService.throughputBps ? "bps/" : "B/") + StringUtils.formatToBytes(item.uploadThroughput) + (NetworkLogService.throughputBps ? "bps" : "B");
+        } else {
+          item.throughputString = StringUtils.formatToBytes(item.uploadThroughput) + (NetworkLogService.throughputBps ? "bps/" : "B/") + StringUtils.formatToBytes(item.downloadThroughput) + (NetworkLogService.throughputBps ? "bps" : "B");
+        }
+      }
+
+      refreshAdapter();
+    }
+  }
+
   public void updateAppThroughput(int uid, long upload, long download) {
     if(groupDataBuffer == null) {
       return;
@@ -730,9 +763,9 @@ public class AppFragment extends Fragment {
         item.totalThroughput = upload + download;
 
         if(NetworkLogService.invertUploadDownload) {
-          item.throughputString = StringUtils.formatToBytes(download) + "bps/" + StringUtils.formatToBytes(upload) + "bps";
+          item.throughputString = StringUtils.formatToBytes(download) + (NetworkLogService.throughputBps ? "bps/" : "B/") + StringUtils.formatToBytes(upload) + (NetworkLogService.throughputBps ? "bps" : "B");
         } else {
-          item.throughputString = StringUtils.formatToBytes(upload) + "bps/" + StringUtils.formatToBytes(download) + "bps";
+          item.throughputString = StringUtils.formatToBytes(upload) + (NetworkLogService.throughputBps ? "bps/" : "B/") + StringUtils.formatToBytes(download) + (NetworkLogService.throughputBps ? "bps" : "B");
         }
 
         index++;
