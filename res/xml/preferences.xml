@@ -149,6 +149,13 @@
         android:key="notifications_toast"
         android:title="@string/pref_toast_title"
         android:summary="@string/pref_toast_summary" />
+      <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="notifications_toast_show_address"
+        android:title="@string/pref_toast_show_address_title"
+        android:summary="@string/pref_toast_show_address_summary"
+        android:dependency="notifications_toast"
+        android:layout="?android:attr/preferenceLayoutChild" />
       <ListPreference
         android:defaultValue="-1"
         android:key="notifications_toast_position"

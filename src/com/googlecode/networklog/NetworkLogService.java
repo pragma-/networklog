@@ -62,6 +62,7 @@ public class NetworkLogService extends Service {
   public static int toastPosition;
   public static int toastDefaultYOffset;
   public static int toastYOffset;
+  public static boolean toastShowAddress;
   public static HashMap<String, String> toastBlockedApps;
   public static boolean invertUploadDownload;
   public static boolean behindFirewall;
@@ -304,6 +305,7 @@ public class NetworkLogService extends Service {
       toastDuration = NetworkLog.settings.getToastNotificationsDuration();
       toastPosition = NetworkLog.settings.getToastNotificationsPosition();
       toastYOffset = NetworkLog.settings.getToastNotificationsYOffset();
+      toastShowAddress = NetworkLog.settings.getToastNotificationsShowAddress();
       toastBlockedApps = SelectToastApps.loadBlockedApps(this);
       invertUploadDownload = NetworkLog.settings.getInvertUploadDownload();
       behindFirewall = NetworkLog.settings.getBehindFirewall();

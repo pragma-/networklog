@@ -139,7 +139,12 @@ public class ThroughputTracker {
                   MyLog.d(value.app.name + " throughput: " + throughput);
                 }
 
-                toastString.append(newline + "<b>" +  value.app.name + "</b>: <u>" + value.address + "</u> <i>" + throughput + "</i>");
+                if(NetworkLogService.toastShowAddress) {
+                  toastString.append(newline + "<b>" +  value.app.name + "</b>: <u>" + value.address + "</u> <i>" + throughput + "</i>");
+                } else {
+                  toastString.append(newline + "<b>" +  value.app.name + "</b>: " + throughput);
+                }
+
                 newline = "<br>";
               }
 

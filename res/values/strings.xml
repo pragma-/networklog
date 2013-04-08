@@ -215,6 +215,8 @@
   <string name="pref_notifications">Connection Notifications</string>
   <string name="pref_toast_title">Toast pop-up</string>
   <string name="pref_toast_summary">Display toast notification when an app makes a network transmission</string>
+  <string name="pref_toast_show_address_title">Show address</string>
+  <string name="pref_toast_show_address_summary">Include the IP address in the toast notification</string>
   <string name="pref_toast_position_title">Position</string>
   <string name="pref_toast_position_summary">Select how to position the toast notification</string>
   <string name="pref_toast_yoffset_title">Padding</string>
