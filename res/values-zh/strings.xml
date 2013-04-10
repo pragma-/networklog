@@ -215,6 +215,10 @@
   <string name="pref_toast_summary">当应用产生数据传输时显示弹出式消息条通知</string>
   <string name="pref_toast_position_title">位置</string>
   <string name="pref_toast_position_summary">设定消息条通知的位置</string>
+  <string name="pref_toast_show_address_title">显示IP地址</string>
+  <string name="pref_toast_show_address_summary">消息条显示IP地址</string>
+  <string name="pref_throughput_bps_title">传输速度显示为比特/秒</string>
+  <string name="pref_throughput_bps_summary">选定后传输速度显示为比特/秒(bits/s)，否则显示为字节/秒(bytes/s)。</string>
   <string name="pref_toast_yoffset_title">内边距</string>
   <string name="pref_toast_yoffset_summary">设定消息条通知的内边距</string>
   <string name="pref_toast_duration_title">持续时间</string>
