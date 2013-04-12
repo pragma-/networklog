@@ -172,6 +172,8 @@
   <string name="pref_invert_upload_download_summary">Por defecto, la velocidad del tráfico se muestra como subida/bajada; seleccionar para invertir estos valores</string>
   <string name="pref_behind_firewall_title">Registro a travez de firewall</string>
   <string name="pref_behind_firewall_summary">Si está seleccionado, los paquetes se registraran solo después de ser aceptados por el firewall; de otra forma, todos los intentos de transmisión son registrados</string>
+  <string name="pref_throughput_bps_title">Mostrar tráfico en bits por segundo</string>
+  <string name="pref_throughput_bps_summary">Cuando está seleccionado, las velocidades de transmisión son expresadas en bits por segundo; en caso contrario, en bytes por segundo</string>
   <string name="pref_filter_title">Filtro</string>
   <string name="pref_filter_summary">Configurar opciones advanzadas de filtrado</string>
   <string name="pref_history_size_title">Cargar historial del archivo de registro</string>
@@ -197,6 +199,10 @@
   <string name="pref_log_service">Servicio de Registro</string>
   <string name="pref_logfile_title">Localización del fichero de registro</string>
   <string name="pref_logfile_summary">Fija la ruta y el nombre del archivo de registro (por defecto networklog.txt en la raiz del almacenamiento externo)</string>
+  <string name="pref_watch_rules_title">Inspector de tablas IP</string>
+  <string name="pref_watch_rules_summary">Reaplicar normas de registro a las nuevas normas de tablas IP si se detectara alguna modificación en las normas (asegura que las normas de registro no son eliminadas por otras aplicaciones)</string>
+  <string name="pref_watch_rules_timeout_title">Intervalo de la comprobación de normas</string>
+  <string name="pref_watch_rules_timeout_summary">Seleccione con qué frecuencia se comprueba la modificación de las normas de las tablas IP</string>
   <string name="pref_atboot_title">Empezar registro en el arranque</string>
   <string name="pref_atboot_summary">Empieza el registro cuando el dispositivo arranca</string>
   <string name="pref_atstart_title">Empezar el registro al inicio de la aplicación</string>
@@ -209,6 +215,8 @@
   <string name="pref_notifications">Notificaciones de Conexión</string>
   <string name="pref_toast_title">Ventana emergente</string>
   <string name="pref_toast_summary">Muestra una notificación en ventana emergente cuando una apicación efectua una transmisión de red</string>
+  <string name="pref_toast_show_address_title">Mostrar dirección</string>
+  <string name="pref_toast_show_address_summary">Incluir la dirección IP en la notificación de conexión</string>
   <string name="pref_toast_position_title">Posición</string>
   <string name="pref_toast_position_summary">Selecciona como coloca la ventana de notification emergente</string>
   <string name="pref_toast_yoffset_title">Rellenar</string>
