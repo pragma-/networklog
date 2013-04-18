@@ -434,6 +434,10 @@ public class LogFragment extends Fragment {
   }
 
   public void pruneLogEntries() {
+    if(listData == null || listDataBuffer == null || listDataUnfiltered == null) {
+      return;
+    }
+
     synchronized(listDataBuffer) {
       while(listDataBuffer.size() > maxLogEntries) {
         listDataBuffer.removeFirst();
