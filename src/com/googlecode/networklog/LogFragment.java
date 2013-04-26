@@ -433,6 +433,51 @@ public class LogFragment extends Fragment {
     });
   }
 
+  public void removeApp(String packageName) {
+    if(listData == null || listDataBuffer == null || listDataUnfiltered == null) {
+      return;
+    }
+
+    synchronized(listDataBuffer) {
+      synchronized(listDataUnfiltered) {
+        synchronized(listData) {
+          ListItem item;
+          Iterator<ListItem> iterator;
+
+          iterator = listDataBuffer.iterator();
+          while(iterator.hasNext()) {
+            item = iterator.next();
+            if(item.app.packageName.equals(packageName)) {
+              iterator.remove();
+            }
+          }
+
+          iterator = listDataUnfiltered.iterator();
+          while(iterator.hasNext()) {
+            item = iterator.next();
+            if(item.app.packageName.equals(packageName)) {
+              iterator.remove();
+            }
+          }
+
+          iterator = listData.iterator();
+          while(iterator.hasNext()) {
+            item = iterator.next();
+            if(item.app.packageName.equals(packageName)) {
+              iterator.remove();
+            }
+          }
+        }
+      }
+    }
+
+    if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0) {
+      setFilter("");
+    } else {
+      refreshAdapter();
+    }
+  }
+
   public void pruneLogEntries() {
     if(listData == null || listDataBuffer == null || listDataUnfiltered == null) {
       return;
@@ -454,8 +499,9 @@ public class LogFragment extends Fragment {
       while(listData.size() > maxLogEntries) {
         listData.removeFirst();
       }
-      refreshAdapter();
     }
+
+    refreshAdapter();
   }
 
   public void stopUpdater() {

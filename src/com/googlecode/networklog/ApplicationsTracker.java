@@ -6,12 +6,17 @@
 
 package com.googlecode.networklog;
 
+import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ApplicationInfo;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
-import android.app.ProgressDialog;
+import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.ImageView;
@@ -24,6 +29,7 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class ApplicationsTracker {
   public static ArrayList<AppEntry> installedApps;
@@ -162,13 +168,156 @@ public class ApplicationsTracker {
     return loading_icon;
   }
 
+  public static class PackageIntentReceiver extends BroadcastReceiver {
+    final Context context;
+
+    public PackageIntentReceiver(Context context) {
+      this.context = context;
+
+      // Register for events related to package installation.
+      IntentFilter filter = new IntentFilter(Intent.ACTION_PACKAGE_ADDED);
+      filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+      filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+      filter.addDataScheme("package");
+      context.registerReceiver(this, filter);
+
+      // Register for events related to sdcard installation.
+      IntentFilter sdFilter = new IntentFilter();
+      sdFilter.addAction(Intent.ACTION_EXTERNAL_APPLICATIONS_AVAILABLE);
+      sdFilter.addAction(Intent.ACTION_EXTERNAL_APPLICATIONS_UNAVAILABLE);
+      context.registerReceiver(this, sdFilter);
+    }
+
+    @Override public void onReceive(Context context, Intent intent) {
+      String action = intent.getAction();
+      Log.d("NetworkLog", "Received package broadcast: " + action);
+
+      if(Intent.ACTION_PACKAGE_ADDED.equals(action)) {
+        Uri uri = intent.getData();
+        String packageName = uri != null ? uri.getSchemeSpecificPart() : null;
+        Bundle b = intent.getExtras();
+        int uid = b.getInt(Intent.EXTRA_UID);
+        boolean replacing = b.getBoolean(Intent.EXTRA_REPLACING);
+        Log.d("NetworkLog", "Package added: " + packageName + " " + uid + "; replacing: " + replacing);
+
+        addApp(context, packageName);
+      }
+
+      if(Intent.ACTION_PACKAGE_REMOVED.equals(action)) {
+        Uri uri = intent.getData();
+        String packageName = uri != null ? uri.getSchemeSpecificPart() : null;
+        Bundle b = intent.getExtras();
+        int uid = b.getInt(Intent.EXTRA_UID);
+        boolean replacing = b.getBoolean(Intent.EXTRA_REPLACING);
+        Log.d("NetworkLog", "Package removed: " + packageName + " " + uid + "; replacing: " + replacing);
+
+        if(replacing == false) {
+          removeApp(packageName);
+        }
+      }
+
+      if(Intent.ACTION_PACKAGE_CHANGED.equals(action)) {
+        Uri uri = intent.getData();
+        String packageName = uri != null ? uri.getSchemeSpecificPart() : null;
+        Bundle b = intent.getExtras();
+        int uid = b.getInt(Intent.EXTRA_UID);
+        Log.d("NetworkLog", "Package changed: " + packageName + " " + uid);
+      }
+    }
+  }
+
+  public static PackageIntentReceiver packageIntentReceiver = null;
+
+  public static void startWatchingPackages(Context context) {
+    stopWatchingPackages();
+    Log.d("NetworkLog", "Now listening for package broadcasts");
+    packageIntentReceiver = new PackageIntentReceiver(context);
+  }
+
+  public static void stopWatchingPackages() {
+    if(packageIntentReceiver != null) {
+      try {
+        Log.d("NetworkLog", "Stopped listening for package broadcasts");
+        packageIntentReceiver.context.unregisterReceiver(packageIntentReceiver);
+        packageIntentReceiver = null;
+      } catch (Exception e) {
+        Log.d("NetworkLog", "Caught exception while unregistering package receiver: ", e);
+      }
+    }
+  }
+
+  public static void removeApp(String packageName) {
+    AppEntry app;
+
+    for(Iterator<AppEntry> iterator = installedApps.iterator(); iterator.hasNext();) {
+      app = iterator.next();
+      if(app.packageName.equals(packageName)) {
+        iterator.remove();
+        break;
+      }
+    }
+
+    for(Iterator<AppEntry> iterator = uidMap.values().iterator(); iterator.hasNext();) {
+      app = iterator.next();
+      if(app.packageName.equals(packageName)) {
+        iterator.remove();
+        break;
+      }
+    }
+
+    packageMap.remove(packageName);
+    iconMap.remove(packageName);
+
+    if(NetworkLog.logFragment != null) {
+      NetworkLog.logFragment.removeApp(packageName);
+    }
+
+    if(NetworkLog.appFragment != null) {
+      NetworkLog.appFragment.removeApp(packageName);
+    }
+  }
+
+  public static void addApp(Context context, String packageName) {
+    boolean newApp = false;
+
+    if(pm == null) {
+      pm = context.getPackageManager();
+    }
+
+    try {
+      ApplicationInfo appInfo = pm.getApplicationInfo(packageName, 0);
+
+      AppEntry app = packageMap.get(packageName);
+
+      if(app == null) {
+        app = new AppEntry();
+        newApp = true;
+      }
+
+      app.name = StringPool.get(pm.getApplicationLabel(appInfo).toString());
+      app.nameLowerCase = StringPool.get(StringPool.getLowerCase(app.name));
+      app.uid = appInfo.uid;
+      app.uidString = StringPool.get(String.valueOf(app.uid));
+      app.packageName = StringPool.get(appInfo.packageName);
+
+      if(newApp) {
+        installedApps.add(app);
+        packageMap.put(app.packageName, app);
+        uidMap.put(app.uidString, app);
+      }
+
+      if(newApp && NetworkLog.appFragment != null) {
+        NetworkLog.appFragment.addApp(app);
+      }
+    } catch (PackageManager.NameNotFoundException nfe) {
+      Log.e("NetworkLog", "AppTracker addApp NameNotFoundException caught:", nfe);
+    }
+  }
+
   public static void getInstalledApps(final Context context, final Handler handler) {
     MyLog.d("Loading installed apps");
 
-    if(installedApps != null) {
-      MyLog.d("Installed apps already loaded");
-      return;
-    }
+    startWatchingPackages(context);
 
     synchronized(installedAppsLock) {
       if(NetworkLog.data == null) {
@@ -237,9 +386,9 @@ public class ApplicationsTracker {
         }
 
         int uid = app.uid;
-        String sUid = Integer.toString(uid);
+        String uidString = Integer.toString(uid);
 
-        AppEntry entryHash = uidMap.get(sUid);
+        AppEntry entryHash = uidMap.get(uidString);
 
         AppEntry entry = new AppEntry();
 
@@ -255,7 +404,7 @@ public class ApplicationsTracker {
         if(entryHash != null) {
           entryHash.name.concat("; " + entry.name);
         } else {
-          uidMap.put(sUid, entry);
+          uidMap.put(uidString, entry);
         }
       }
 

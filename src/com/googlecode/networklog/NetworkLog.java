@@ -461,6 +461,9 @@ public class NetworkLog extends SherlockFragmentActivity {
         state = NetworkLog.State.EXITING;
         if(stopServiceAtExit) {
           stopService();
+          ApplicationsTracker.stopWatchingPackages();
+        } else if(NetworkLogService.instance == null) {
+          ApplicationsTracker.stopWatchingPackages();
         }
       } else {
         // changing configuration

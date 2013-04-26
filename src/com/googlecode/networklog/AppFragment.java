@@ -382,6 +382,92 @@ public class AppFragment extends Fragment {
     }
   }
 
+  public void addApp(ApplicationsTracker.AppEntry app) {
+    if(groupDataBuffer == null) {
+      return;
+    }
+
+    synchronized(groupDataBuffer) {
+      GroupItem item = null;
+
+      for(GroupItem i : groupDataBuffer) {
+        if(i.app.packageName.equals(app.packageName)) {
+          item = i;
+          break;
+        }
+      }
+
+      if(item == null) {
+        item = new GroupItem();
+        item.app = app;
+        item.lastTimestamp = 0;
+        item.childrenData = new HashMap<String, ChildItem>();
+        item.childrenDataFiltered = new HashMap<String, ChildItem>();
+
+        if(NetworkLogService.throughputBps) {
+          item.throughputString = "0bps/0bps";
+        } else {
+          item.throughputString = "0B/0B";
+        }
+
+        groupData.add(item);
+        groupDataBuffer.add(item);
+      } else {
+        item.app = app;
+      }
+
+      // groupDataBuffer must always be sorted by UID for binary search
+      Collections.sort(groupDataBuffer, new SortAppsByUid());
+      lastGetItemByAppUidIndex = -1;
+    }
+
+    if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0) {
+      setFilter("");
+    } else {
+      refreshAdapter();
+    }
+  }
+
+  public void removeApp(String packageName) {
+    if(groupData == null || groupDataBuffer == null) {
+      return;
+    }
+
+    synchronized(groupData) {
+      GroupItem item;
+      Iterator<GroupItem> iterator = groupData.iterator();
+      while(iterator.hasNext()) {
+        item = iterator.next();
+        if(item.app.packageName.equals(packageName)) {
+          item.childrenData.clear();
+          item.childrenDataFiltered.clear();
+          iterator.remove();
+        }
+      }
+    }
+
+    synchronized(groupDataBuffer) {
+      GroupItem item;
+      Iterator<GroupItem> iterator = groupDataBuffer.iterator();
+      while(iterator.hasNext()) {
+        item = iterator.next();
+        if(item.app.packageName.equals(packageName)) {
+          item.childrenData.clear();
+          item.childrenDataFiltered.clear();
+          iterator.remove();
+        }
+      }
+    }
+
+    lastGetItemByAppUidIndex = -1;
+
+    if(NetworkLog.filterTextInclude.length() > 0 || NetworkLog.filterTextExclude.length() > 0) {
+      setFilter("");
+    } else {
+      refreshAdapter();
+    }
+  }
+
   protected void getInstalledApps(final boolean refresh) {
     synchronized(groupDataBuffer) {
       synchronized(groupData) {
