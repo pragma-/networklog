@@ -119,6 +119,8 @@
   <string name="graph_error_nodata_title">No graph data</string>
   <string name="graph_error_nodata_text">There is no graph to show because there are no network log entries.</string>
 
+  <string name="sample_toast_message">Sample toast message&lt;br&gt;Padding: %d</string>
+
   <string name="clear_dialog_title">Clear Log</string>
   <string name="clear_dialog_prompt">Remove entries older than</string>
   <string name="clear_dialog_button_positive">Clear log</string>

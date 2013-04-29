@@ -28,6 +28,7 @@ import android.app.PendingIntent;
 import android.os.RemoteException;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
+import android.graphics.drawable.GradientDrawable;
 
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -201,21 +202,24 @@ public class NetworkLogService extends Service {
 
   private static Runnable showOnlyToastRunnable;
   private static Runnable showToastRunnable;
+  private static View toastLayout;
 
-  public static void showToast(final CharSequence text) {
-    if(context == null || handler == null || toastEnabled == false) {
-      return;
-    }
-
+  public static void showToast(final Context context, final Handler handler, final CharSequence text, final boolean cancel) {
     if(showToastRunnable == null) {
       showToastRunnable = new Runnable() {
         public void run() {
-          if(toast == null) {
-            View layout = ((LayoutInflater)context.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_toast, null);
-            toastTextView = (TextView) layout.findViewById(R.id.toasttext);
+          if(cancel && toast != null) {
+            toast.cancel();
+          }
+
+          if(cancel || toast == null) {
+            if(toastLayout == null) {
+              toastLayout = ((LayoutInflater)context.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_toast, null);
+              toastTextView = (TextView) toastLayout.findViewById(R.id.toasttext);
+            }
             toast = new Toast(context);
             toastDefaultYOffset = toast.getYOffset();
-            toast.setView(layout);
+            toast.setView(toastLayout);
           }
 
           switch(toastDuration) {
@@ -259,6 +263,14 @@ public class NetworkLogService extends Service {
 
     toastText = text;
     handler.post(showToastRunnable);
+  }
+
+  public static void showToast(final CharSequence text) {
+    if(context == null || handler == null || toastEnabled == false) {
+      return;
+    }
+
+    showToast(context, handler, text, false);
   }
 
   public boolean hasRoot() {

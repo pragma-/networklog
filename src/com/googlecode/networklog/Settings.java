@@ -597,6 +597,11 @@ public class Settings implements OnSharedPreferenceChangeListener {
         int value = Integer.parseInt(prefs.getString(key, "-1"));
         MyLog.d("New " + key + " value [" + value + "]");
         NetworkLogService.toastPosition = value;
+        if(NetworkLog.context != null && NetworkLog.handler != null) {
+          String msg = String.format(NetworkLog.context.getResources().getString(R.string.sample_toast_message),
+              NetworkLogService.toastYOffset);
+          NetworkLogService.showToast(NetworkLog.context, NetworkLog.handler, msg, true);
+        }
         return;
       }
 
@@ -604,6 +609,11 @@ public class Settings implements OnSharedPreferenceChangeListener {
         int value = prefs.getInt(key, 0);
         MyLog.d("New " + key + " value [" + value + "]");
         NetworkLogService.toastYOffset = value;
+        if(NetworkLog.context != null && NetworkLog.handler != null) {
+          String msg = String.format(NetworkLog.context.getResources().getString(R.string.sample_toast_message),
+              NetworkLogService.toastYOffset);
+          NetworkLogService.showToast(NetworkLog.context, NetworkLog.handler, msg, true);
+        }
         return;
       }
 

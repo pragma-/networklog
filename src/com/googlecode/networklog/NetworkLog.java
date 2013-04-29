@@ -108,7 +108,7 @@ public class NetworkLog extends SherlockFragmentActivity {
   public static Messenger messenger = null;
   public static boolean isBound = false;
 
-  public static Context networklogContext;
+  public static Context context;
   public static Menu menu;
 
   public static ServiceConnection connection = new ServiceConnection() {
@@ -282,6 +282,12 @@ public class NetworkLog extends SherlockFragmentActivity {
     stopServiceAtExit = settings.getStopServiceAtExit();
 
     NetworkLogService.throughputBps = settings.getThroughputBps();
+    NetworkLogService.toastEnabled = settings.getToastNotifications();
+    NetworkLogService.toastDuration = settings.getToastNotificationsDuration();
+    NetworkLogService.toastPosition = settings.getToastNotificationsPosition();
+    NetworkLogService.toastYOffset = settings.getToastNotificationsYOffset();
+    NetworkLogService.toastShowAddress = settings.getToastNotificationsShowAddress();
+    NetworkLogService.toastBlockedApps = SelectToastApps.loadBlockedApps(this);
   }
 
   private static class MyFragmentPagerAdapter extends FragmentPagerAdapter implements TitleProvider {
@@ -332,7 +338,7 @@ public class NetworkLog extends SherlockFragmentActivity {
       super.onCreate(savedInstanceState);
       MyLog.d("NetworkLog started");
 
-      networklogContext = this;
+      context = this;
 
       loadSettings();
       getLocalIpAddresses();
@@ -792,12 +798,12 @@ public class NetworkLog extends SherlockFragmentActivity {
   }
 
   public static void updateStatusText() {
-    if(networklogContext == null || statusText == null) {
+    if(context == null || statusText == null) {
       return;
     }
 
     StringBuilder sb = new StringBuilder();
-    Resources res = networklogContext.getResources();
+    Resources res = context.getResources();
 
     if(filterTextInclude.length() > 0 || filterTextExclude.length() > 0) {
       sb.append(res.getString(R.string.filter_applied));
@@ -818,12 +824,12 @@ public class NetworkLog extends SherlockFragmentActivity {
     }
 
     if(NetworkLogService.logfileString.length() > 0) {
-      sb.append(networklogContext.getResources().getString(R.string.logfile_size));
+      sb.append(context.getResources().getString(R.string.logfile_size));
       sb.append(NetworkLogService.logfileString);
     }
 
     if(serviceRunning && ThroughputTracker.throughputString.length() > 0) {
-      sb.append(networklogContext.getResources().getString(R.string.throughput));
+      sb.append(context.getResources().getString(R.string.throughput));
       sb.append(ThroughputTracker.throughputString);
     }
 
