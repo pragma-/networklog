@@ -196,6 +196,10 @@
   <string name="pref_toast_duration_summary">Sel·leccioneu quant de temps restarà visible la notificació emergent</string>
   <string name="pref_toast_block_apps">Bloquejar aplicacions</string>
   <string name="pref_toast_apps_summary">Sel·leccioneu quines aplicacions no tindran notificacions emergents</string>
+  <string name="sample_toast_message">Notificació d\'exemple&lt;br&gt;Farciment: %1$d&lt;br&gt;Opacitat: %2$d</string>
+  <string name="pref_toast_opacity_title">Opacitat</string>
+  <string name="pref_toast_opacity_summary">Establir opacitat per notificacions</string>
+
   <string name="pref_graphs">Opcions de la gràfica</string>
   <string name="pref_interval_title">Interval</string>
   <string name="pref_interval_summary">Estableix cada quant se sumen les dades. Per veure paquets individuals, establir a 1 ms; per Kbps establir a 1 segon; per Kb/h establir a 1 hora, etc.</string>

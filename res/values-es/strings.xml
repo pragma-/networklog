@@ -225,6 +225,9 @@
   <string name="pref_toast_duration_summary">Selecciona cuanto tiempo debe permanecer visible la notificación emergente</string>
   <string name="pref_toast_block_apps">Bloquear aplicaciones</string>
   <string name="pref_toast_apps_summary">Selecciona que aplicaciones no deben tener notificaciones emergentes</string>
+  <string name="sample_toast_message">Notificación de ejemplo&lt;br&gt;Relleno: %1$d&lt;br&gt;Opacidad: %2$d</string>
+  <string name="pref_toast_opacity_title">Opacidad</string>
+  <string name="pref_toast_opacity_summary">Establecer opacidad para notificaciones</string>
 
   <string name="pref_graphs">Opciones de Gráfica</string>
   <string name="pref_interval_title">Intervalo</string>

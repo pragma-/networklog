@@ -225,6 +225,9 @@
   <string name="pref_toast_duration_summary">Anzeigedauer für Benachrichtigungen</string>
   <string name="pref_toast_block_apps">Apps blockieren</string>
   <string name="pref_toast_apps_summary">Wähle aus, welche Apps keine Benachrichtigungen haben sollen.</string>
+  <string name="sample_toast_message">Beispiel Benachrichtigung&lt;br&gt;Padding: %1$d&lt;br&gt;Deckkraft: %2$d</string>
+  <string name="pref_toast_opacity_title">Deckkraft</string>
+  <string name="pref_toast_opacity_summary">Setzte die Deckkraft der Toast Benachrichtigung.</string>
 
   <string name="pref_graphs">Graph Optionen</string>
   <string name="pref_interval_title">Intervall</string>
