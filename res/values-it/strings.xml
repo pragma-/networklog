@@ -223,6 +223,9 @@
   <string name="pref_toast_apps_summary">Seleziona quali app non dovranno avere le notifiche</string>
   <string name="pref_toast_show_address_title">Mostra indirizzo</string>
   <string name="pref_toast_show_address_summary">Includi indirizzo IP nella notifica</string>
+  <string name="sample_toast_message">Pop-up con messaggio di esempio&lt;br&gt;Padding: %1$d&lt;br&gt;Trasparenza: %2$d</string>
+  <string name="pref_toast_opacity_title">Trasparenza</string>
+  <string name="pref_toast_opacity_summary">Indica la trasparenza delle notifiche</string>
 
   <string name="pref_graphs">Opzioni per grafico</string>
   <string name="pref_interval_title">Intervallo</string>
