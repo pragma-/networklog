@@ -119,7 +119,7 @@
   <string name="graph_error_nodata_title">No graph data</string>
   <string name="graph_error_nodata_text">There is no graph to show because there are no network log entries.</string>
 
-  <string name="sample_toast_message">Sample toast message&lt;br&gt;Padding: %d</string>
+  <string name="sample_toast_message">Sample toast message&lt;br&gt;Padding: %1$d&lt;br&gt;Opacity: %2$d</string>
 
   <string name="clear_dialog_title">Clear Log</string>
   <string name="clear_dialog_prompt">Remove entries older than</string>
@@ -223,6 +223,8 @@
   <string name="pref_toast_position_summary">Select how to position the toast notification</string>
   <string name="pref_toast_yoffset_title">Padding</string>
   <string name="pref_toast_yoffset_summary">Set padding for toast notification position</string>
+  <string name="pref_toast_opacity_title">Opacity</string>
+  <string name="pref_toast_opacity_summary">Set opacity for toast notifications</string>
   <string name="pref_toast_duration_title">Duration</string>
   <string name="pref_toast_duration_summary">Select how long toast notification should remain visible</string>
   <string name="pref_toast_block_apps">Block apps</string>

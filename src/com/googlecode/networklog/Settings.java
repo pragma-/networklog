@@ -212,6 +212,10 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return prefs.getInt("notifications_toast_yoffset", 0);
   }
 
+  public int getToastNotificationsOpacity() {
+    return prefs.getInt("notifications_toast_opacity", 119);
+  }
+
   public boolean getToastNotificationsShowAddress() {
     return prefs.getBoolean("notifications_toast_show_address", true);
   }
@@ -392,6 +396,12 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
+  public void setToastNotificationsOpacity(int value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putInt("notifications_toast_opacity", value);
+    editor.commit();
+  }
+
   public void setToastNotificationsShowAddress(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("notifications_toast_show_address", value);
@@ -486,6 +496,14 @@ public class Settings implements OnSharedPreferenceChangeListener {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putString("logfile", value);
     editor.commit();
+  }
+
+  public void showSampleToast() {
+    if(NetworkLog.context != null && NetworkLog.handler != null) {
+      String msg = String.format(NetworkLog.context.getResources().getString(R.string.sample_toast_message),
+          NetworkLogService.toastYOffset, NetworkLogService.toastOpacity);
+      NetworkLogService.showToast(NetworkLog.context, NetworkLog.handler, msg, true);
+    }
   }
 
   @Override
@@ -590,6 +608,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
         int value = Integer.parseInt(prefs.getString(key, "3500"));
         MyLog.d("New " + key + " value [" + value + "]");
         NetworkLogService.toastDuration = value;
+        showSampleToast();
         return;
       }
 
@@ -597,11 +616,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
         int value = Integer.parseInt(prefs.getString(key, "-1"));
         MyLog.d("New " + key + " value [" + value + "]");
         NetworkLogService.toastPosition = value;
-        if(NetworkLog.context != null && NetworkLog.handler != null) {
-          String msg = String.format(NetworkLog.context.getResources().getString(R.string.sample_toast_message),
-              NetworkLogService.toastYOffset);
-          NetworkLogService.showToast(NetworkLog.context, NetworkLog.handler, msg, true);
-        }
+        showSampleToast();
         return;
       }
 
@@ -609,11 +624,15 @@ public class Settings implements OnSharedPreferenceChangeListener {
         int value = prefs.getInt(key, 0);
         MyLog.d("New " + key + " value [" + value + "]");
         NetworkLogService.toastYOffset = value;
-        if(NetworkLog.context != null && NetworkLog.handler != null) {
-          String msg = String.format(NetworkLog.context.getResources().getString(R.string.sample_toast_message),
-              NetworkLogService.toastYOffset);
-          NetworkLogService.showToast(NetworkLog.context, NetworkLog.handler, msg, true);
-        }
+        showSampleToast();
+        return;
+      }
+
+      if(key.equals("notifications_toast_opacity")) {
+        int value = prefs.getInt(key, 119);
+        MyLog.d("New " + key + " value [" + value + "]");
+        NetworkLogService.toastOpacity = value;
+        showSampleToast();
         return;
       }
 

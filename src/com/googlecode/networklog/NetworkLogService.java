@@ -63,6 +63,7 @@ public class NetworkLogService extends Service {
   public static int toastPosition;
   public static int toastDefaultYOffset;
   public static int toastYOffset;
+  public static int toastOpacity;
   public static boolean toastShowAddress;
   public static HashMap<String, String> toastBlockedApps;
   public static boolean invertUploadDownload;
@@ -200,13 +201,17 @@ public class NetworkLogService extends Service {
     }
   }
 
+  private static abstract class CancelableRunnable implements Runnable {
+    public boolean cancel;
+  }
+
   private static Runnable showOnlyToastRunnable;
-  private static Runnable showToastRunnable;
+  private static CancelableRunnable showToastRunnable;
   private static View toastLayout;
 
-  public static void showToast(final Context context, final Handler handler, final CharSequence text, final boolean cancel) {
+  public static void showToast(final Context context, final Handler handler, final CharSequence text, boolean cancel) {
     if(showToastRunnable == null) {
-      showToastRunnable = new Runnable() {
+      showToastRunnable = new CancelableRunnable() {
         public void run() {
           if(cancel && toast != null) {
             toast.cancel();
@@ -219,6 +224,8 @@ public class NetworkLogService extends Service {
             }
             toast = new Toast(context);
             toastDefaultYOffset = toast.getYOffset();
+            GradientDrawable background = (GradientDrawable) toastLayout.getBackground();
+            background.setColor(toastOpacity << 24);
             toast.setView(toastLayout);
           }
 
@@ -261,6 +268,7 @@ public class NetworkLogService extends Service {
       };
     }
 
+    showToastRunnable.cancel = cancel;
     toastText = text;
     handler.post(showToastRunnable);
   }
@@ -317,6 +325,7 @@ public class NetworkLogService extends Service {
       toastDuration = NetworkLog.settings.getToastNotificationsDuration();
       toastPosition = NetworkLog.settings.getToastNotificationsPosition();
       toastYOffset = NetworkLog.settings.getToastNotificationsYOffset();
+      toastOpacity = NetworkLog.settings.getToastNotificationsOpacity();
       toastShowAddress = NetworkLog.settings.getToastNotificationsShowAddress();
       toastBlockedApps = SelectToastApps.loadBlockedApps(this);
       invertUploadDownload = NetworkLog.settings.getInvertUploadDownload();

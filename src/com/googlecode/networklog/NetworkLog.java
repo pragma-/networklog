@@ -286,6 +286,7 @@ public class NetworkLog extends SherlockFragmentActivity {
     NetworkLogService.toastDuration = settings.getToastNotificationsDuration();
     NetworkLogService.toastPosition = settings.getToastNotificationsPosition();
     NetworkLogService.toastYOffset = settings.getToastNotificationsYOffset();
+    NetworkLogService.toastOpacity = settings.getToastNotificationsOpacity();
     NetworkLogService.toastShowAddress = settings.getToastNotificationsShowAddress();
     NetworkLogService.toastBlockedApps = SelectToastApps.loadBlockedApps(this);
   }

@@ -173,6 +173,13 @@
         android:defaultValue="0"
         android:max="1080"
         android:layout="?android:attr/preferenceLayoutChild" />
+      <com.robobunny.SeekBarPreference
+        android:key="notifications_toast_opacity"
+        android:title="@string/pref_toast_opacity_title"
+        android:summary="@string/pref_toast_opacity_summary"
+        android:defaultValue="119"
+        android:max="255"
+        android:layout="?android:attr/preferenceLayoutChild" />
       <ListPreference
         android:defaultValue="3500"
         android:key="notifications_toast_duration"
