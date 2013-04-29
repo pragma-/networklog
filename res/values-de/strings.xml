@@ -172,6 +172,8 @@
   <string name="pref_invert_upload_download_summary">Vertauscht die Anzeige der Verbindungsgeschwindigkeit von Upload/Download zu Download/Upload</string>
   <string name="pref_behind_firewall_title">Protokolliere hinter Firewall</string>
   <string name="pref_behind_firewall_summary">Protokollieren nur Packages, welche die Firewall passiert haben. Andernfalls werden auch Packages protokolliert, welche von der Firewall abgelehnt wurden</string>
+  <string name="pref_throughput_bps_title">Bits-per-second verwenden</string>
+  <string name="pref_throughput_bps_summary">Zeige Übertragungsgeschwindigkeit als Bits-per-second anstatt Bytes-per-second</string>
   <string name="pref_filter_title">Filter</string>
   <string name="pref_filter_summary">Fortgeschrittene Filteroptionen einstellen</string>
   <string name="pref_history_size_title">Lade Logdateien-History</string>
@@ -213,6 +215,8 @@
   <string name="pref_notifications">Verbindungsnotifications</string>
   <string name="pref_toast_title">Pop-up</string>
   <string name="pref_toast_summary">Zeige einen kurzen Pop-up wenn eine App Netzwerkverkehr erzeugt.</string>
+  <string name="pref_toast_show_address_title">IP anzeigen</string>
+  <string name="pref_toast_show_address_summary">IP-Adresse in Toast-Benachrichtigungen anzeigen.</string>
   <string name="pref_toast_position_title">Position</string>
   <string name="pref_toast_position_summary">Wähle eine Position der Toast-Benachrichtigungen</string>
   <string name="pref_toast_yoffset_title">Padding</string>
