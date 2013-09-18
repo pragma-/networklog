@@ -366,8 +366,8 @@ public class AppFragment extends Fragment {
 
     adapter.notifyDataSetChanged();
 
-    if(MyLog.enabled) {
-      MyLog.d("Refreshed AppFragment adapter");
+    if(MyLog.enabled && MyLog.level >= 5) {
+      MyLog.d(5, "Refreshed AppFragment adapter");
     }
 
     listView.setSelectionFromTop(index, top);
@@ -904,8 +904,8 @@ public class AppFragment extends Fragment {
   private ChildItem newLogChild;
 
   public void onNewLogEntry(final LogEntry entry) {
-    if(MyLog.enabled) {
-      MyLog.d("AppFragment: NewLogEntry: [" + entry.uid + "] in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
+    if(MyLog.enabled && MyLog.level >= 6) {
+      MyLog.d(6, "AppFragment: NewLogEntry: [" + entry.uid + "] in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + " [" + entry.len + "]");
     }
 
     if(groupDataBuffer == null) {
@@ -981,8 +981,8 @@ public class AppFragment extends Fragment {
             newLogChild.receivedBytes += entry.len;
             newLogChild.receivedTimestamp = entry.timestamp;
 
-            if(MyLog.enabled) {
-              MyLog.d("Added received packet index=" + index + " in=" + entry.in + " out=" + entry.out + " proto=" + entry.proto + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + newLogChild.receivedPackets + "; bytes: " + newLogChild.receivedBytes);
+            if(MyLog.enabled && MyLog.level >= 8) {
+              MyLog.d(8, "Added received packet index=" + index + " in=" + entry.in + " out=" + entry.out + " proto=" + entry.proto + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + newLogChild.receivedPackets + "; bytes: " + newLogChild.receivedBytes);
             }
 
             newLogChild.receivedPort = entry.spt;
@@ -1010,8 +1010,8 @@ public class AppFragment extends Fragment {
             newLogChild.sentBytes += entry.len;
             newLogChild.sentTimestamp = entry.timestamp;
 
-            if(MyLog.enabled) {
-              MyLog.d("Added sent packet index=" + index + " in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + newLogChild.sentPackets + "; bytes: " + newLogChild.sentBytes);
+            if(MyLog.enabled && MyLog.level >= 8) {
+              MyLog.d(8, "Added sent packet index=" + index + " in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " --> " + entry.dst + ":" + entry.dpt + "; total: " + newLogChild.sentPackets + "; bytes: " + newLogChild.sentBytes);
             }
 
             newLogChild.receivedPort = entry.spt;
@@ -1054,8 +1054,8 @@ public class AppFragment extends Fragment {
       }
 
       synchronized(groupData) {
-        if(MyLog.enabled) {
-          MyLog.d("AppFragmentListUpdater enter");
+        if(MyLog.enabled && MyLog.level >= 4) {
+          MyLog.d(4, "AppFragmentListUpdater enter");
         }
 
         if(groupDataBufferIsDirty) {
@@ -1073,8 +1073,8 @@ public class AppFragment extends Fragment {
       groupDataBufferIsDirty = false;
       needsRefresh = false;
 
-      if(MyLog.enabled) {
-        MyLog.d("AppFragmentListUpdater exit");
+      if(MyLog.enabled && MyLog.level >= 4) {
+        MyLog.d(4, "AppFragmentListUpdater exit");
       }
     }
   };

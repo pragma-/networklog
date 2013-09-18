@@ -141,13 +141,15 @@ public class NetworkLog extends SherlockFragmentActivity {
   class IncomingHandler extends Handler {
     @Override
       public void handleMessage(Message msg) {
-        MyLog.d("[client] Received message: " + msg);
+        if(MyLog.enabled && MyLog.level >= 2) {
+          MyLog.d(2, "[client] Received message: " + msg);
+        }
 
         switch(msg.what) {
           case NetworkLogService.MSG_BROADCAST_LOG_ENTRY:
             entry = (LogEntry) msg.obj;
-            if(MyLog.enabled) {
-              MyLog.d("Received entry: " + entry);
+            if(MyLog.enabled && MyLog.level >= 2) {
+              MyLog.d(2, "Received entry: " + entry);
             }
             logFragment.onNewLogEntry(entry);
             appFragment.onNewLogEntry(entry);
@@ -856,7 +858,7 @@ public class NetworkLog extends SherlockFragmentActivity {
     boolean running = false;
     Runnable runner = new Runnable() {
       public void run() {
-        MyLog.d("Updating statusText");
+        MyLog.d(2, "Updating statusText");
         NetworkLogService.updateLogfileString();
         updateStatusText();
       }

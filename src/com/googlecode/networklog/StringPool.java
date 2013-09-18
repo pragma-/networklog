@@ -54,8 +54,8 @@ public class StringPool {
       pool.put(newString, newString);
       poolSize++;
 
-      if(MyLog.enabled) {
-        MyLog.d("[StringPool] new addition [" + newString + "]; pool size: " + poolSize);
+      if(MyLog.enabled && MyLog.level >= 8) {
+        MyLog.d(8, "[StringPool] new addition [" + newString + "]; pool size: " + poolSize);
       }
 
       if (poolSize >= maxPoolSize) {
@@ -84,8 +84,8 @@ public class StringPool {
       lowercasePool.put(string, newString);
       lowercasePoolSize++;
 
-      if(MyLog.enabled) {
-        MyLog.d("[StringPool] new lowercase addition [" + newString + "]; pool size: " + lowercasePoolSize);
+      if(MyLog.enabled && MyLog.level >= 8) {
+        MyLog.d(8, "[StringPool] new lowercase addition [" + newString + "]; pool size: " + lowercasePoolSize);
       }
 
       if (lowercasePoolSize >= maxPoolSize) {
@@ -114,8 +114,8 @@ public class StringPool {
       integerPool.put(integer, newString);
       integerPoolSize++;
 
-      if(MyLog.enabled) {
-        MyLog.d("[StringPool] new integer addition [" + newString + "]; pool size: " + integerPoolSize);
+      if(MyLog.enabled && MyLog.level >= 8) {
+        MyLog.d(8, "[StringPool] new integer addition [" + newString + "]; pool size: " + integerPoolSize);
       }
 
       if (integerPoolSize >= maxPoolSize) {

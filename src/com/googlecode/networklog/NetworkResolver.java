@@ -355,7 +355,9 @@ public class NetworkResolver {
       new Thread(new Runnable() {
         public void run() {
           try {
-            MyLog.d("Resolving " + address);
+            if(MyLog.enabled && MyLog.level >= 1) {
+              MyLog.d(1, "Resolving " + address);
+            }
 
             InetAddress inetAddress = InetAddress.getByName(address);
             String resolved = inetAddress.getHostName();
@@ -368,7 +370,10 @@ public class NetworkResolver {
               resolvingHostMap.remove(address);
             }
 
-            MyLog.d("Resolved " + address + " to " + resolved);
+            if(MyLog.enabled && MyLog.level >= 1) {
+              MyLog.d(1, "Resolved " + address + " to " + resolved);
+            }
+
             synchronized(hostUpdatersMap) {
               ArrayList<NetworkResolverUpdater> updaters = hostUpdatersMap.get(address);
               if(updaters != null) {

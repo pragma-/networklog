@@ -110,8 +110,8 @@ public class LogFragment extends Fragment {
 
     adapter.notifyDataSetChanged();
 
-    if(MyLog.enabled) {
-      MyLog.d("Refreshed LogFragment adapter");
+    if(MyLog.enabled && MyLog.level >= 5) {
+      MyLog.d(5, "Refreshed LogFragment adapter");
     }
   }
 
@@ -358,8 +358,8 @@ public class LogFragment extends Fragment {
     item.len = entry.len;
     item.timestamp = entry.timestamp;
 
-    if(MyLog.enabled) {
-      MyLog.d("LogFragment: NewLogEntry: [" + item.app.uidString + "] in=" + item.in + " out=" + item.out + " " + item.srcAddr + ":" + item.srcPort + " --> " + item.dstAddr + ":" + item.dstPort + " proto=" + item.proto + " len=" + item.len);
+    if(MyLog.enabled && MyLog.level >= 6) {
+      MyLog.d(6, "LogFragment: NewLogEntry: [" + item.app.uidString + "] in=" + item.in + " out=" + item.out + " " + item.srcAddr + ":" + item.srcPort + " --> " + item.dstAddr + ":" + item.dstPort + " proto=" + item.proto + " len=" + item.len);
     }
 
     synchronized(listDataBuffer) {
@@ -514,8 +514,8 @@ public class LogFragment extends Fragment {
 
   Runnable updaterRunner = new Runnable() {
     public void run() {
-      if(MyLog.enabled) {
-        MyLog.d("LogFragmentUpdater enter");
+      if(MyLog.enabled && MyLog.level >= 4) {
+        MyLog.d(4, "LogFragmentUpdater enter");
       }
 
       if(listDataBuffer == null || listData == null || listDataUnfiltered == null) {
@@ -567,8 +567,8 @@ public class LogFragment extends Fragment {
       refreshAdapter();
       long elapsed = System.currentTimeMillis() - start;
 
-      if(MyLog.enabled) {
-        MyLog.d("LogFragmentUpdater exit: added " + i + " items -- elapsed: " + elapsed);
+      if(MyLog.enabled && MyLog.level >= 4) {
+        MyLog.d(4, "LogFragmentUpdater exit: added " + i + " items -- elapsed: " + elapsed);
       }
 
       if(appFragmentNeedsRebuild) {

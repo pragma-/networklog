@@ -61,8 +61,8 @@ public class ShellCommand {
   public void waitForExit() {
     while(checkForExit() == false) {
       if(stdoutAvailable()) {
-        if(MyLog.enabled) {
-          MyLog.d("ShellCommand waitForExit [" + tag + "] discarding read: " + readStdout());
+        if(MyLog.enabled && MyLog.level >= 3) {
+          MyLog.d(3, "ShellCommand waitForExit [" + tag + "] discarding read: " + readStdout());
         }
       } else {
         try {
@@ -116,8 +116,8 @@ public class ShellCommand {
   }
 
   public String readStdoutBlocking() {
-    if(MyLog.enabled) {
-      MyLog.d("readStdoutBlocking [" + tag + "]");
+    if(MyLog.enabled && MyLog.level >= 3) {
+      MyLog.d(3, "readStdoutBlocking [" + tag + "]");
     }
     String line;
 
@@ -132,8 +132,8 @@ public class ShellCommand {
       return null;
     }
 
-    if(MyLog.enabled) {
-      MyLog.d("readStdoutBlocking [" + tag + "] return [" + line + "]");
+    if(MyLog.enabled && MyLog.level >= 3) {
+      MyLog.d(3, "readStdoutBlocking [" + tag + "] return [" + line + "]");
     }
 
     if(line == null) {
@@ -145,8 +145,8 @@ public class ShellCommand {
   }
 
   public String readStdout() {
-    if(MyLog.enabled) {
-      MyLog.d("readStdout [" + tag + "]");
+    if(MyLog.enabled && MyLog.level >= 3) {
+      MyLog.d(3, "readStdout [" + tag + "]");
     }
 
     if(stdout == null) {
@@ -156,8 +156,8 @@ public class ShellCommand {
     try {
       if(stdout.ready()) {
         String line = stdout.readLine();
-        if(MyLog.enabled) {
-          MyLog.d("read line: [" + line + "]");
+        if(MyLog.enabled && MyLog.level >= 3) {
+          MyLog.d(3, "read line: [" + line + "]");
         }
 
         if(line == null) {

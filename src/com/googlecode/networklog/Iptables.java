@@ -277,6 +277,10 @@ public class Iptables {
         return null;
       }
 
+      if(MyLog.enabled) {
+        MyLog.d("getRules result: [" + result.toString() + "]");
+      }
+
       return result.toString();
     }
   }

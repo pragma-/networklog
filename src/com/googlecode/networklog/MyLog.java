@@ -10,14 +10,23 @@ import android.util.Log;
 
 public class MyLog {
   public static boolean enabled = true;
+  public static int level = 0;
   public static String tag = "NetworkLog";
 
   public static void d(String msg) {
-    d(tag, msg);
+    d(0, tag, msg);
   }
 
   public static void d(String tag, String msg) {
-    if(!enabled) {
+    d(0, tag, msg);
+  }
+
+  public static void d(int level, String msg) {
+    d(level, tag, msg);
+  }
+
+  public static void d(int level, String tag, String msg) {
+    if(!enabled || level > MyLog.level) {
       return;
     }
 

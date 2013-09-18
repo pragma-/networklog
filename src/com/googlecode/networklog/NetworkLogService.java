@@ -438,16 +438,16 @@ public class NetworkLogService extends Service {
     for(NetStat.Connection connection : connections) {
       String mapKey = connection.src + ":" + connection.spt + " -> " + connection.dst + ":" + connection.dpt;
 
-      if(MyLog.enabled) {
-        MyLog.d("[netstat src-dst] New entry " + connection.uid + " for [" + mapKey + "]");
+      if(MyLog.enabled && MyLog.level >= 5) {
+        MyLog.d(5, "[netstat src-dst] New entry " + connection.uid + " for [" + mapKey + "]");
       }
 
       logEntriesMap.put(mapKey, Integer.valueOf(connection.uid));
 
       mapKey = connection.dst + ":" + connection.dpt + " -> " + connection.src + ":" + connection.spt;
 
-      if(MyLog.enabled) {
-        MyLog.d("[netstat dst-src] New entry " + connection.uid + " for [" + mapKey + "]");
+      if(MyLog.enabled && MyLog.level >= 5) {
+        MyLog.d(5, "[netstat dst-src] New entry " + connection.uid + " for [" + mapKey + "]");
       }
 
       logEntriesMap.put(mapKey, Integer.valueOf(connection.uid));
@@ -455,8 +455,8 @@ public class NetworkLogService extends Service {
   }
 
   public void parseResult(String result) {
-    if(MyLog.enabled) {
-      MyLog.d("--------------- parsing network entry --------------");
+    if(MyLog.enabled && MyLog.level >= 10) {
+      MyLog.d(10, "--------------- parsing network entry --------------");
     }
     int pos = 0, lastpos, thisEntry, nextEntry, newline, space;
     String in, out, src, dst, proto, uidString;
@@ -464,8 +464,8 @@ public class NetworkLogService extends Service {
     parser.setLine(result.toCharArray(), result.length() - 1);
 
     while((pos = result.indexOf("{NL}", pos)) > -1) {
-      if(MyLog.enabled) {
-        MyLog.d("---- got {NL} at " + pos + " ----");
+      if(MyLog.enabled && MyLog.level >= 10) {
+        MyLog.d(10, "---- got {NL} at " + pos + " ----");
       }
 
       pos += "{NL}".length(); // skip past "{NL}"
@@ -658,15 +658,15 @@ public class NetworkLogService extends Service {
         continue;
       }
 
-      if(MyLog.enabled) {
-        MyLog.d("Setting map key: src=[" + src + "] spt=" + spt + " dst=[" + dst + "] dpt=" + dpt);
+      if(MyLog.enabled && MyLog.level >= 9) {
+        MyLog.d(9, "Setting map key: src=[" + src + "] spt=" + spt + " dst=[" + dst + "] dpt=" + dpt);
       }
 
       String srcDstMapKey = src + ":" + spt + "->" + dst + ":" + dpt;
       String dstSrcMapKey = dst + ":" + dpt + "->" + src + ":" + spt;
 
-      if(MyLog.enabled) {
-        MyLog.d("Checking entry for " + uid + " " + srcDstMapKey + " and " + dstSrcMapKey);
+      if(MyLog.enabled && MyLog.level >= 10) {
+        MyLog.d(10, "Checking entry for " + uid + " " + srcDstMapKey + " and " + dstSrcMapKey);
       }
 
       Integer srcDstMapUid = logEntriesMap.get(srcDstMapKey);
@@ -674,14 +674,14 @@ public class NetworkLogService extends Service {
 
       if(uid < 0) {
         // Unknown uid, retrieve from entries map
-        if(MyLog.enabled) {
-          MyLog.d("Unknown uid");
+        if(MyLog.enabled && MyLog.level >= 9) {
+          MyLog.d(9, "Unknown uid");
         }
 
         if(srcDstMapUid == null || dstSrcMapUid == null) {
           // refresh netstat and try again
-          if(MyLog.enabled) {
-            MyLog.d("Refreshing netstat ...");
+          if(MyLog.enabled && MyLog.level >= 9) {
+            MyLog.d(9, "Refreshing netstat ...");
           }
           initEntriesMap();
           srcDstMapUid = logEntriesMap.get(srcDstMapKey);
@@ -689,80 +689,80 @@ public class NetworkLogService extends Service {
         }
 
         if(srcDstMapUid == null) {
-          if(MyLog.enabled) {
-            MyLog.d("[src-dst] No entry uid for " + uid + " [" + srcDstMapKey + "]");
+          if(MyLog.enabled && MyLog.level >= 9) {
+            MyLog.d(9, "[src-dst] No entry uid for " + uid + " [" + srcDstMapKey + "]");
           }
 
           if(uid == -1) {
             if(dstSrcMapUid != null) {
-              if(MyLog.enabled) {
-                MyLog.d("[dst-src] Reassigning kernel packet -1 to " + dstSrcMapUid);
+              if(MyLog.enabled && MyLog.level >= 9) {
+                MyLog.d(9, "[dst-src] Reassigning kernel packet -1 to " + dstSrcMapUid);
               }
               uid = dstSrcMapUid;
               uidString = StringPool.get(dstSrcMapUid);
             } else {
-              if(MyLog.enabled) {
-                MyLog.d("[src-dst] New kernel entry -1 for [" + srcDstMapKey + "]");
+              if(MyLog.enabled && MyLog.level >= 9) {
+                MyLog.d(9, "[src-dst] New kernel entry -1 for [" + srcDstMapKey + "]");
               }
               srcDstMapUid = uid;
               logEntriesMap.put(srcDstMapKey, srcDstMapUid);
             }
           } else {
-            if(MyLog.enabled) {
-              MyLog.d("[src-dst] New entry " + uid + " for [" + srcDstMapKey + "]");
+            if(MyLog.enabled && MyLog.level >= 9) {
+              MyLog.d(9, "[src-dst] New entry " + uid + " for [" + srcDstMapKey + "]");
             }
             srcDstMapUid = uid;
             logEntriesMap.put(srcDstMapKey, srcDstMapUid);
           }
         } else {
-          if(MyLog.enabled) {
-            MyLog.d("[src-dst] Found entry uid " + srcDstMapUid + " for " + uid + " [" + srcDstMapKey + "]");
+          if(MyLog.enabled && MyLog.level >= 9) {
+            MyLog.d(9, "[src-dst] Found entry uid " + srcDstMapUid + " for " + uid + " [" + srcDstMapKey + "]");
           }
           uid = srcDstMapUid;
           uidString = StringPool.get(srcDstMapUid);
         }
 
         if(dstSrcMapUid == null) {
-          if(MyLog.enabled) {
-            MyLog.d("[dst-src] No entry uid for " + uid + " [" + dstSrcMapKey + "]");
+          if(MyLog.enabled && MyLog.level >= 9) {
+            MyLog.d(9, "[dst-src] No entry uid for " + uid + " [" + dstSrcMapKey + "]");
           }
 
           if(uid == -1) {
             if(srcDstMapUid != null) {
-              if(MyLog.enabled) {
-                MyLog.d("[src-dst] Reassigning kernel packet -1 to " + srcDstMapUid);
+              if(MyLog.enabled && MyLog.level >= 9) {
+                MyLog.d(9, "[src-dst] Reassigning kernel packet -1 to " + srcDstMapUid);
               }
               uid = srcDstMapUid;
               uidString = StringPool.get(srcDstMapUid);
             } else {
-              if(MyLog.enabled) {
-                MyLog.d("[dst-src] New kernel entry -1 for [" + dstSrcMapKey + "]");
+              if(MyLog.enabled && MyLog.level >= 9) {
+                MyLog.d(9, "[dst-src] New kernel entry -1 for [" + dstSrcMapKey + "]");
               }
               dstSrcMapUid = uid;
               logEntriesMap.put(dstSrcMapKey, dstSrcMapUid);
             }
           } else {
-            if(MyLog.enabled) {
-              MyLog.d("[dst-src] New entry " + uid + " for [" + dstSrcMapKey + "]");
+            if(MyLog.enabled && MyLog.level >= 9) {
+              MyLog.d(9, "[dst-src] New entry " + uid + " for [" + dstSrcMapKey + "]");
             }
             dstSrcMapUid = uid;
             logEntriesMap.put(dstSrcMapKey, dstSrcMapUid);
           }
         } else {
-          if(MyLog.enabled) {
-            MyLog.d("[dst-src] Found entry uid " + dstSrcMapUid + " for " + uid + " [" + dstSrcMapKey + "]");
+          if(MyLog.enabled && MyLog.level >= 9) {
+            MyLog.d(9, "[dst-src] Found entry uid " + dstSrcMapUid + " for " + uid + " [" + dstSrcMapKey + "]");
           }
           uid = dstSrcMapUid;
           uidString = StringPool.get(dstSrcMapUid);
         }
       } else {
-        if(MyLog.enabled) {
-          MyLog.d("Known uid");
+        if(MyLog.enabled && MyLog.level >= 9) {
+          MyLog.d(9, "Known uid");
         }
 
         if(srcDstMapUid == null || dstSrcMapUid == null || srcDstMapUid != uid || dstSrcMapUid != uid) {
-          if(MyLog.enabled) {
-            MyLog.d("Updating uid " + uid + " to netstat map for " + srcDstMapKey + " and " + dstSrcMapKey);
+          if(MyLog.enabled && MyLog.level >= 9) {
+            MyLog.d(9, "Updating uid " + uid + " to netstat map for " + srcDstMapKey + " and " + dstSrcMapKey);
           }
           logEntriesMap.put(srcDstMapKey, uid);
           logEntriesMap.put(dstSrcMapKey, uid);
@@ -782,8 +782,8 @@ public class NetworkLogService extends Service {
       entry.len = len;
       entry.timestamp = System.currentTimeMillis();
 
-      if(MyLog.enabled) {
-        MyLog.d("+++ entry: (" + entry.uid + ") in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " -> " + entry.dst + ":" + entry.dpt + " proto=" + entry.proto + " len=" + entry.len);
+      if(MyLog.enabled && MyLog.level >= 10) {
+        MyLog.d(10, "+++ entry: (" + entry.uid + ") in=" + entry.in + " out=" + entry.out + " " + entry.src + ":" + entry.spt + " -> " + entry.dst + ":" + entry.dpt + " proto=" + entry.proto + " len=" + entry.len);
       }
 
       notifyNewEntry(entry);
@@ -820,14 +820,14 @@ public class NetworkLogService extends Service {
       logWriter.println(entry.timestamp + "," + entry.in + "," + entry.out + "," + entry.uid + "," + entry.src + "," + entry.spt + "," + entry.dst + "," + entry.dpt + "," + entry.len + "," + entry.proto);
     }
 
-    if(MyLog.enabled) {
-      MyLog.d("[service] notifyNewEntry: clients: " + clients.size());
+    if(MyLog.enabled && MyLog.level >= 5) {
+      MyLog.d(5, "[service] notifyNewEntry: clients: " + clients.size());
     }
 
     for(int i = clients.size() - 1; i >= 0; i--) {
       try {
-        if(MyLog.enabled) {
-          MyLog.d("[service] Sending entry to " + clients.get(i));
+        if(MyLog.enabled && MyLog.level >= 5) {
+          MyLog.d(5, "[service] Sending entry to " + clients.get(i));
         }
         clients.get(i).send(Message.obtain(null, MSG_BROADCAST_LOG_ENTRY, entry));
       } catch(RemoteException e) {

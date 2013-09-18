@@ -36,8 +36,8 @@ public class FastParser {
   }
 
   public void setLine(char[] line, int len) {
-    if(MyLog.enabled) {
-      MyLog.d("setLine line: [" + new String(line, 0, len) + "] len: " + len);
+    if(MyLog.enabled && MyLog.level >= 6) {
+      MyLog.d(6, "setLine line: [" + new String(line, 0, len) + "] len: " + len);
     }
     this.line = line;
     this.len = len;

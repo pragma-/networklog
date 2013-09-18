@@ -135,7 +135,10 @@ public class ApplicationsTracker {
       return cached_icon;
     }
 
-    MyLog.d("Loading icon for " + item);
+    if(MyLog.enabled && MyLog.level >= 3) {
+      MyLog.d(3, "Loading icon for " + item);
+    }
+
     new Thread(new Runnable() {
       public void run() {
         try {

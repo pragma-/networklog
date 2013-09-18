@@ -80,15 +80,15 @@ public class NetStat {
 
       while((line = in.readLine()) != null) {
         line = line.trim();
-        if(MyLog.enabled) {
-          MyLog.d("Netstat: " + line);
+        if(MyLog.enabled && MyLog.level >= 5) {
+          MyLog.d(5, "Netstat: " + line);
         }
         String[] fields = line.split("\\s+", 10);
         int fieldn = 0;
 
-        if(MyLog.enabled) {
+        if(MyLog.enabled && MyLog.level >= 9) {
           for(String field : fields) {
-            MyLog.d("Field " + (fieldn++) + ": [" + field + "]");
+            MyLog.d(9, "Field " + (fieldn++) + ": [" + field + "]");
           }
         }
 
@@ -116,15 +116,15 @@ public class NetStat {
 
       while((line = in.readLine()) != null) {
         line = line.trim();
-        if(MyLog.enabled) {
-          MyLog.d("Netstat: " + line);
+        if(MyLog.enabled && MyLog.level >= 5) {
+          MyLog.d(5, "Netstat: " + line);
         }
         String[] fields = line.split("\\s+", 10);
         int fieldn = 0;
 
-        if(MyLog.enabled) {
+        if(MyLog.enabled && MyLog.level >= 9) {
           for(String field : fields) {
-            MyLog.d("Field " + (fieldn++) + ": [" + field + "]");
+            MyLog.d(9, "Field " + (fieldn++) + ": [" + field + "]");
           }
         }
 
@@ -152,15 +152,15 @@ public class NetStat {
 
       while((line = in.readLine()) != null) {
         line = line.trim();
-        if(MyLog.enabled) {
-          MyLog.d("Netstat: " + line);
+        if(MyLog.enabled && MyLog.level >= 5) {
+          MyLog.d(5, "Netstat: " + line);
         }
         String[] fields = line.split("\\s+", 10);
         int fieldn = 0;
 
-        if(MyLog.enabled) {
+        if(MyLog.enabled && MyLog.level >= 9) {
           for(String field : fields) {
-            MyLog.d("Field " + (fieldn++) + ": [" + field + "]");
+            MyLog.d(9, "Field " + (fieldn++) + ": [" + field + "]");
           }
         }
 
@@ -188,15 +188,15 @@ public class NetStat {
 
       while((line = in.readLine()) != null) {
         line = line.trim();
-        if(MyLog.enabled) {
-          MyLog.d("Netstat: " + line);
+        if(MyLog.enabled && MyLog.level >= 5) {
+          MyLog.d(5, "Netstat: " + line);
         }
         String[] fields = line.split("\\s+", 10);
         int fieldn = 0;
 
-        if(MyLog.enabled) {
+        if(MyLog.enabled && MyLog.level >= 9) {
           for(String field : fields) {
-            MyLog.d("Field " + (fieldn++) + ": [" + field + "]");
+            MyLog.d(9, "Field " + (fieldn++) + ": [" + field + "]");
           }
         }
 
