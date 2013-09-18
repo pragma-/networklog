@@ -177,6 +177,7 @@
         android:key="notifications_toast_opacity"
         android:title="@string/pref_toast_opacity_title"
         android:summary="@string/pref_toast_opacity_summary"
+        android:dependency="notifications_toast"
         android:defaultValue="119"
         android:max="255"
         android:layout="?android:attr/preferenceLayoutChild" />
