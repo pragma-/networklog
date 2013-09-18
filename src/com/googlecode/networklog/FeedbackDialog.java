@@ -146,10 +146,10 @@ public class FeedbackDialog
       script.close();
 
       ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "generateLogcat");
-      String error = command.start(true);
+      command.start(true);
 
-      if(error != null) {
-        throw new Exception(error);
+      if(command.error != null) {
+        throw new Exception(command.error);
       }
     }
     return logcat;

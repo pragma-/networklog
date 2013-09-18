@@ -40,10 +40,10 @@ public class Iptables {
       }
 
       ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "getTargets");
-      String error = command.start(false);
+      command.start(false);
 
-      if(error != null) {
-        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), error);
+      if(command.error != null) {
+        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), command.error);
         return false;
       }
 
@@ -61,8 +61,9 @@ public class Iptables {
         result.append(line);
       }
 
-      command.checkForExit();
-      if(command.exit != 0) {
+      command.waitForExit();
+      if(command.exitval != 0) {
+        Log.e("NetworkLog", "Bad exit for getTargets (exit " + command.exitval + ")");
         SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), result.toString());
         return false;
       }
@@ -124,10 +125,10 @@ public class Iptables {
       }
 
       ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "addRules");
-      String error = command.start(false);
+      command.start(false);
 
-      if(error != null) {
-        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_add_rules), error);
+      if(command.error != null) {
+        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_add_rules), command.error);
         return false;
       }
 
@@ -141,8 +142,9 @@ public class Iptables {
         result.append(line);
       }
 
-      command.checkForExit();
-      if(command.exit != 0) {
+      command.waitForExit();
+      if(command.exitval != 0) {
+        Log.e("NetworkLog", "Bad exit for addRules (exit " + command.exitval + ")");
         SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_add_rules), result.toString());
         return false;
       }
@@ -201,17 +203,18 @@ public class Iptables {
           Log.e("NetworkLog", "removeRules error", e);
         }
 
-        String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "removeRules").start(true);
+        ShellCommand cmd = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "removeRules");
+        cmd.start(true);
 
-        if(error != null) {
-          SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_remove_rules), error);
+        if(cmd.error != null) {
+          SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_remove_rules), cmd.error);
           return false;
         }
 
         tries++;
 
         if(tries > 3) {
-          MyLog.d("Too many attempts to remove rules, moving along...");
+          Log.w("NetworkLog", "Too many attempts to remove rules, moving along...");
           return false;
         }
       }
@@ -250,10 +253,10 @@ public class Iptables {
       }
 
       ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "getRules");
-      String error = command.start(false);
+      command.start(false);
 
-      if(error != null) {
-        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), error);
+      if(command.error != null) {
+        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), command.error);
         return null;
       }
 
@@ -267,8 +270,9 @@ public class Iptables {
         result.append(line);
       }
 
-      command.checkForExit();
-      if(command.exit != 0) {
+      command.waitForExit();
+      if(command.exitval != 0) {
+        Log.e("NetworkLog", "Bad exit for getRules (exit " + command.exitval + ")");
         SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), result.toString());
         return null;
       }

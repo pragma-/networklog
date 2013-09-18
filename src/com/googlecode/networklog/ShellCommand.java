@@ -21,7 +21,8 @@ public class ShellCommand {
   String tag = "";
   Process process;
   BufferedReader stdout;
-  public int exit;
+  public String error;
+  public int exitval;
 
   public ShellCommand(String[] command, String tag) {
     this(command);
@@ -33,8 +34,11 @@ public class ShellCommand {
     rt = Runtime.getRuntime();
   }
 
-  public String start(boolean waitForExit) {
+  public void start(boolean waitForExit) {
     MyLog.d("ShellCommand: starting [" + tag + "] " + Arrays.toString(command));
+
+    exitval = -1;
+    error = null;
 
     try {
       process = new ProcessBuilder()
@@ -45,13 +49,13 @@ public class ShellCommand {
       stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
     } catch(Exception e) {
       Log.e("NetworkLog", "Failure starting shell command [" + tag + "]", e);
-      return e.getCause().getMessage();
+      error = e.getCause().getMessage();
+      return;
     }
 
     if(waitForExit) {
       waitForExit();
     }
-    return null;
   }
 
   public void waitForExit() {
@@ -87,9 +91,9 @@ public class ShellCommand {
 
   public boolean checkForExit() {
     try {
-      exit = process.exitValue();
-      MyLog.d("ShellCommand exited: [" + tag + "] exit " + exit);
-    } catch(Exception IllegalThreadStateException) {
+      exitval = process.exitValue();
+      MyLog.d("ShellCommand exited: [" + tag + "] exit " + exitval);
+    } catch(IllegalThreadStateException e) {
       return false;
     }
 

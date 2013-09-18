@@ -1027,10 +1027,10 @@ public class NetworkLogService extends Service {
       MyLog.d("Starting iptables logger");
 
       loggerCommand = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "NetworkLogger");
-      final String error = loggerCommand.start(false);
+      loggerCommand.start(false);
 
-      if(error != null) {
-        SysUtils.showError(this, getString(R.string.error_default_title), error);
+      if(loggerCommand.error != null) {
+        SysUtils.showError(this, getString(R.string.error_default_title), loggerCommand.error);
         return false;
       } else {
         return true;

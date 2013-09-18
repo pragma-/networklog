@@ -108,12 +108,17 @@ public class SysUtils {
     boolean needsInstall = false;
     File file = new File(path);
 
+    MyLog.d("Checking for " + binary + " with md5sum " + md5sum);
+
     if(file.isFile()) {
+
       String hash = MD5Sum.digestFile(file);
       if(!hash.equals(md5sum)) {
         needsInstall = true;
       }
+      MyLog.d(binary + " found with md5sum " + hash + "; needsInstall: " + needsInstall);
     } else {
+      MyLog.d(binary + " does not exist.");
       needsInstall = true;
     }
 
@@ -186,15 +191,20 @@ public class SysUtils {
         script.close();
       } catch(java.io.IOException e) {
         Log.e("NetworkLog", "Check root error", e);
+        return false;
       }
 
-      String error = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "checkRoot").start(true);
+      ShellCommand cmd = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "checkRoot");
+      cmd.start(true);
 
-      if(error != null) {
-        Log.d("[NetworkLog]", "Failed check root: " + error);
+      if(cmd.error != null) {
+        Log.e("NetworkLog", "Failed check root (exit " + cmd.exitval + "): " + cmd.error);
+        return false;
+      } else if(cmd.exitval != 0) {
+        Log.e("NetworkLog", "Failed check root (exit " + cmd.exitval + ")");
         return false;
       } else {
-        Log.d("[NetworkLog]", "Check root passed");
+        Log.e("NetworkLog", "Check root passed");
         return true;
       }
     }
