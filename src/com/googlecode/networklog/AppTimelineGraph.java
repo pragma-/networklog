@@ -47,6 +47,7 @@ public class AppTimelineGraph extends GraphActivity
       if(index < 0) {
         // alert dialog
         finish();
+        return;
       }
 
       AppFragment.GroupItem item = NetworkLog.appFragment.groupDataBuffer.get(index);
@@ -78,6 +79,7 @@ public class AppTimelineGraph extends GraphActivity
       if(NetworkLog.logFragment == null || NetworkLog.logFragment.listData == null || NetworkLog.logFragment.listData.size() == 0) {
         SysUtils.showError(this, getString(R.string.graph_error_nodata_title), getString(R.string.graph_error_nodata_text));
         finish();
+        return;
       }
 
       synchronized(NetworkLog.logFragment.listData) {
@@ -125,6 +127,7 @@ public class AppTimelineGraph extends GraphActivity
       if(hostMap.size() == 0) {
         SysUtils.showError(this, getString(R.string.graph_error_nodata_title), getString(R.string.graph_error_nodata_text));
         finish();
+        return;
       }
 
       int color = 0;
