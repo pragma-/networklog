@@ -165,7 +165,7 @@ public class FeedbackDialog
     } catch (android.content.pm.PackageManager.NameNotFoundException e) {
       msg.append("\n\nNetworkLog unknown version");
     }
-    msg.append("\nAndroid " + Build.VERSION.RELEASE);
+    msg.append("\nAndroid " + Build.VERSION.RELEASE + (SysUtils.checkRoot(context) ? " rooted" : ""));
     msg.append("\nDevice " + Build.MANUFACTURER + " " + Build.MODEL + " " + Build.PRODUCT + " " + Build.BRAND);
     msg.append("\nKernel " + System.getProperty("os.version"));
     msg.append("\n" + Build.DISPLAY);
