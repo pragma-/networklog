@@ -111,7 +111,6 @@ public class SysUtils {
     MyLog.d("Checking for " + binary + " with md5sum " + md5sum);
 
     if(file.isFile()) {
-
       String hash = MD5Sum.digestFile(file);
       if(!hash.equals(md5sum)) {
         needsInstall = true;
