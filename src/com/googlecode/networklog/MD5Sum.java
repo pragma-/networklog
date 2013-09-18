@@ -13,10 +13,19 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
-import java.math.BigInteger;
 
 public class MD5Sum {
   public static MessageDigest md;
+
+  private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
+  public static String toHex(byte[] data) {
+    char[] chars = new char[data.length * 2];
+    for (int i = 0; i < data.length; i++) {
+      chars[i * 2] = HEX_DIGITS[(data[i] >> 4) & 0xf];
+      chars[i * 2 + 1] = HEX_DIGITS[data[i] & 0xf];
+    }
+    return new String(chars);
+  }
 
   public static String digestString(String string) {
     if(string == null) {
@@ -29,8 +38,7 @@ public class MD5Sum {
       } else {
         md.reset();
       }
-      byte[] digest = md.digest(string.getBytes("UTF-8"));
-      return new BigInteger(1, digest).toString(16);
+      return toHex(md.digest());
     } catch (Exception e) {
       Log.e("NetworkLog", "Exception getting md5sum for string \"" + string + "\"", e);
       return "";
@@ -66,7 +74,6 @@ public class MD5Sum {
       }
     }
 
-    byte[] digest = md.digest();
-    return new BigInteger(1, digest).toString(16);
+    return toHex(md.digest());
   }
 }
