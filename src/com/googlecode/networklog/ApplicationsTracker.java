@@ -87,7 +87,7 @@ public class ApplicationsTracker {
         isDirty = false;
         inputStream.close();
       } catch (Exception e) {
-        Log.d("[NetworkLog]", "Exception loading app cache", e);
+        Log.w("NetworkLog", "Exception loading app cache", e);
         labelCache = new HashMap<String, String>();
       }
     }
@@ -104,7 +104,7 @@ public class ApplicationsTracker {
         outputStream.flush();
         outputStream.close();
       } catch (Exception e) {
-        Log.d("[NetworkLog]", "Exception saving app cache" , e);
+        Log.w("NetworkLog", "Exception saving app cache" , e);
       }
     }
   }
