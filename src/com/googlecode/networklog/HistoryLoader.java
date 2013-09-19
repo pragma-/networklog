@@ -72,14 +72,14 @@ public class HistoryLoader {
         return;
       }
 
-      NetworkLog.logFragment.stopUpdater();
-      NetworkLog.logFragment.setDoNotRefresh(true);
-      NetworkLog.appFragment.stopUpdater();
-      NetworkLog.appFragment.setDoNotRefresh(true);
-
       final Context context_final = context;
       new Thread(new Runnable() {
         public void run() {
+          NetworkLog.logFragment.stopUpdater();
+          NetworkLog.logFragment.setDoNotRefresh(true);
+          NetworkLog.appFragment.stopUpdater();
+          NetworkLog.appFragment.setDoNotRefresh(true);
+
           LogEntry entry;
           dialog_max = (int)(length - starting_pos);
           dialog_progress = 0;
