@@ -449,14 +449,14 @@ public class NetworkLog extends SherlockFragmentActivity {
     public void onResume()
     {
       super.onResume();
-      MyLog.d("onResume()");
+      MyLog.d("NetworkLog onResume");
     }
 
   @Override
     public void onPause()
     {
       super.onPause();
-      MyLog.d("onPause()");
+      MyLog.d("NetworkLog onPause");
     }
 
   @Override
