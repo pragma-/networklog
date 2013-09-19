@@ -218,11 +218,11 @@ public class NetworkLogService extends Service {
           }
 
           if(cancel || toast == null) {
-            if(toastLayout == null) {
-              toastLayout = ((LayoutInflater)context.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_toast, null);
-              toastTextView = (TextView) toastLayout.findViewById(R.id.toasttext);
+            toastLayout = ((LayoutInflater)context.getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_toast, null);
+            toastTextView = (TextView) toastLayout.findViewById(R.id.toasttext);
+            if(android.os.Build.VERSION.SDK_INT > 10 || toast == null) {
+              toast = new Toast(context);
             }
-            toast = new Toast(context);
             toastDefaultYOffset = toast.getYOffset();
             GradientDrawable background = (GradientDrawable) toastLayout.getBackground();
             background.setColor(toastOpacity << 24);
