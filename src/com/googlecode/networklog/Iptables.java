@@ -58,7 +58,7 @@ public class Iptables {
         }
         line = line.trim();
         targets.put(line, line);
-        result.append(line);
+        result.append(line).append(" ");;
       }
 
       command.waitForExit();
