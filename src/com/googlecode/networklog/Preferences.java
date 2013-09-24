@@ -111,11 +111,15 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
 
       final Context context = this;
       OnPreferenceChangeListener changeListener = new OnPreferenceChangeListener() {
-        public boolean onPreferenceChange(Preference preference, Object newValue) {
+        public boolean onPreferenceChange(Preference preference, final Object newValue) {
           if(preference.getKey().equals("history_size")) {
             NetworkLog.appFragment.clear();
             NetworkLog.logFragment.clear();
-            NetworkLog.history.loadEntriesFromFile(context, (String)newValue);
+            new Thread(new Runnable() {
+              public void run() {
+                NetworkLog.history.loadEntriesFromFile(context, (String)newValue);
+              }
+            }).start();
             return true;
           }
 
