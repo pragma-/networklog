@@ -10,6 +10,7 @@ import android.util.Log;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import java.util.concurrent.FutureTask;
 
 public class HistoryLoader {
   static boolean canceled = false;
@@ -19,30 +20,31 @@ public class HistoryLoader {
 
   static ProgressDialog dialog = null;
 
-  public void createProgressDialog(final Context context) {
-    NetworkLog.handler.post(new Runnable() {
+  public FutureTask createProgressDialog(final Context context) {
+    FutureTask futureTask = new FutureTask(new Runnable() {
       public void run() {
-        synchronized(this) {
-          dialog = new ProgressDialog(context);
-          dialog.setIndeterminate(false);
-          dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-          dialog.setMax(dialog_max);
-          dialog.setCancelable(false);
-          dialog.setTitle("");
-          dialog.setMessage(context.getResources().getString(R.string.history_loading));
+        dialog = new ProgressDialog(context);
+        dialog.setIndeterminate(false);
+        dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        dialog.setMax(dialog_max);
+        dialog.setCancelable(false);
+        dialog.setTitle("");
+        dialog.setMessage(context.getResources().getString(R.string.history_loading));
 
-          dialog.setButton(DialogInterface.BUTTON_NEUTRAL, context.getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-              canceled = true;
-            }
-          });
+        dialog.setButton(DialogInterface.BUTTON_NEUTRAL, context.getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+          public void onClick(DialogInterface dialog, int which) {
+            canceled = true;
+          }
+        });
 
-          dialog.show();
-          dialog.setProgress(dialog_progress);
-          dialog_showing = true;
-        }
+        dialog.show();
+        dialog.setProgress(dialog_progress);
+        dialog_showing = true;
       }
-    });
+    }, null);
+
+    NetworkLog.handler.post(futureTask);
+    return futureTask;
   }
 
   public void loadEntriesFromFile(final Context context, final String historySize) {
@@ -52,7 +54,7 @@ public class HistoryLoader {
     try {
       long history_size = Long.parseLong(historySize);
 
-      MyLog.d("History size: " + history_size);
+      MyLog.d("[HistoryLoader] History size: " + history_size);
 
       if(history_size == 0) {
         return;
@@ -72,7 +74,12 @@ public class HistoryLoader {
         return;
       }
 
-      final Context context_final = context;
+      dialog_max = (int)(length - starting_pos);
+      dialog_progress = 0;
+      
+      FutureTask createDialog = createProgressDialog(context);
+      createDialog.get(); // wait until createDialog task completes (ensure dialog is created and shown before continuing)
+
       new Thread(new Runnable() {
         public void run() {
           NetworkLog.logFragment.stopUpdater();
@@ -81,16 +88,13 @@ public class HistoryLoader {
           NetworkLog.appFragment.setDoNotRefresh(true);
 
           LogEntry entry;
-          dialog_max = (int)(length - starting_pos);
-          dialog_progress = 0;
-          createProgressDialog(context_final);
           long processed_so_far = 0;
           long next_progress_increment = 0;
 
           long progress_increment_size = (long)((length - starting_pos) * 0.01);
           next_progress_increment = progress_increment_size;
 
-          MyLog.d("[history] increment size: " + progress_increment_size);
+          MyLog.d("[HistoryLoader] increment size: " + progress_increment_size);
 
           final long start = System.currentTimeMillis();
           // android.os.Debug.startMethodTracing("networklog", 32 * 1024 * 1024);
@@ -101,7 +105,7 @@ public class HistoryLoader {
 
               if(entry == null) {
                 // end of file
-                MyLog.d("[history] Reached end of file");
+                MyLog.d("[HistoryLoader] Reached end of file");
                 break;
               }
 
@@ -126,8 +130,10 @@ public class HistoryLoader {
 
             NetworkLog.handler.post(new Runnable() {
               public void run() {
-                dialog.setMessage(context.getResources().getString(R.string.history_parsing));
-                dialog.setIndeterminate(true);
+                if(dialog != null) {
+                  dialog.setMessage(context.getResources().getString(R.string.history_parsing));
+                  dialog.setIndeterminate(true);
+                }
 
                 long elapsed = System.currentTimeMillis() - start;
                 Log.d("NetworkLog", "Load file elapsed: " + elapsed);
@@ -145,12 +151,12 @@ public class HistoryLoader {
                 elapsed = System.currentTimeMillis() - start;
                 Log.d("NetworkLog", "Load history elapsed: " + elapsed);
 
-                MyLog.d("[history] Dismissing progress dialog");
+                MyLog.d("[HistoryLoader] Dismissing progress dialog");
                 if(dialog_showing) {
                   dialog_showing = false;
 
                   if(dialog != null) {
-                    MyLog.d("[history] Dismissed progress dialog");
+                    MyLog.d("[HistoryLoader] Dismissed progress dialog");
                     dialog.dismiss();
                     dialog = null;
                   }
