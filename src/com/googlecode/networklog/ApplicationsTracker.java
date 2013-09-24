@@ -318,7 +318,7 @@ public class ApplicationsTracker {
   }
 
   public static void getInstalledApps(final Context context, final Handler handler) {
-    MyLog.d("Loading installed apps");
+    MyLog.d("[LoadApps] Loading installed apps");
 
     startWatchingPackages(context);
 
@@ -347,7 +347,7 @@ public class ApplicationsTracker {
       if(handler != null) {
         handler.post(new Runnable() {
           public void run() {
-            MyLog.d("Showing progress dialog; size: " + appCount);
+            MyLog.d("[LoadApps] Showing progress dialog; size: " + appCount);
 
             synchronized(dialogLock) {
               dialog = new ProgressDialog(context);
@@ -371,7 +371,7 @@ public class ApplicationsTracker {
         MyLog.d("Processing app " + app);
 
         if(NetworkLog.initRunner != null && NetworkLog.initRunner.running == false) {
-          MyLog.d("[ApplicationsTracker] Initialization aborted");
+          MyLog.d("[LoadApps] Initialization aborted");
           return;
         }
 
@@ -461,7 +461,7 @@ public class ApplicationsTracker {
       if(handler != null) {
         handler.post(new Runnable() {
           public void run() {
-            MyLog.d("Dismissing dialog");
+            MyLog.d("[LoadApps] Dismissing dialog");
 
             synchronized(dialogLock) {
               if(dialog != null) {
@@ -472,7 +472,7 @@ public class ApplicationsTracker {
           }
         });
       }
-      MyLog.d("Done getting installed apps");
+      MyLog.d("[LoadApps] Done getting installed apps");
     }
   }
 }
