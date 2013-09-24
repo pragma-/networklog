@@ -28,6 +28,7 @@ import java.lang.Runnable;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.concurrent.FutureTask;
 
 public class ClearLog
 {
@@ -37,8 +38,8 @@ public class ClearLog
   int progress = 0;
   int progress_max = 0;
 
-  public void showProgressDialog(final Context context) {
-    NetworkLog.handler.post(new Runnable() {
+  public FutureTask showProgressDialog(final Context context) {
+    FutureTask futureTask = new FutureTask(new Runnable() {
       public void run() {
         progressDialog = new ProgressDialog(context);
 
@@ -56,7 +57,10 @@ public class ClearLog
         progressDialog.setProgress(progress);
         progressDialog.show();
       }
-    });
+    }, null);
+
+    NetworkLog.handler.post(futureTask);
+    return futureTask;
   }
 
   public void clearLogFileEntriesOlderThan(final Context context, final long timerange) {
@@ -139,7 +143,12 @@ public class ClearLog
 
         progress_max = 0;
         progress = 0;
-        showProgressDialog(context);
+        FutureTask showDialog = showProgressDialog(context);
+        try {
+          showDialog.get(); // wait for task to complete
+        } catch (Exception e) {
+          // do nothing
+        }
 
         NetworkLog.logFragment.clearLogEntriesOlderThan(timerange);
         NetworkLog.appFragment.rebuildLogEntries();
