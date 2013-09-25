@@ -127,9 +127,17 @@ public class FeedbackDialog
     }
 
     String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + iptablesBinary;
+    boolean hasRoot = SysUtils.checkRoot(context);
 
     synchronized(NetworkLog.SCRIPT) {
-      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
+      String scriptFile;
+
+      if(hasRoot) {
+        scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
+      } else {
+        scriptFile = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
+      }
+
       PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
       script.println("logcat -d -v time > " + logcat.getAbsolutePath());
       script.println("echo === uname: &>> " + logcat.getAbsolutePath());
@@ -142,11 +150,21 @@ public class FeedbackDialog
       script.println("cat /proc/net/ip_tables_targets &>> " + logcat.getAbsolutePath());
       script.println("echo === iptables: &>> " + logcat.getAbsolutePath());
       script.println(iptables + " -L -v &>> " + logcat.getAbsolutePath());
+
       script.flush();
       script.close();
 
-      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "generateLogcat");
+      ShellCommand command;
+      if(hasRoot) {
+        command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "generateLogcat");
+      } else {
+        command = new ShellCommand(new String[] { "sh", scriptFile }, "generateLogcat");
+      }
       command.start(true);
+
+      if(!hasRoot) {
+        new File(scriptFile).delete();
+      }
 
       if(command.error != null) {
         throw new Exception(command.error);
