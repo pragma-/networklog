@@ -130,13 +130,7 @@ public class FeedbackDialog
     boolean hasRoot = SysUtils.checkRoot(context);
 
     synchronized(NetworkLog.SCRIPT) {
-      String scriptFile;
-
-      if(hasRoot) {
-        scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
-      } else {
-        scriptFile = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
-      }
+      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
 
       PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
       script.println("logcat -d -v time > " + logcat.getAbsolutePath());
@@ -161,10 +155,6 @@ public class FeedbackDialog
         command = new ShellCommand(new String[] { "sh", scriptFile }, "generateLogcat");
       }
       command.start(true);
-
-      if(!hasRoot) {
-        new File(scriptFile).delete();
-      }
 
       if(command.error != null) {
         throw new Exception(command.error);
