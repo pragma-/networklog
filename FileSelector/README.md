@@ -26,58 +26,58 @@ features by pragma78@gmail.com for https://github.com/pragma-/networklog.
 Example
 =======
 
-package com.samsung.sprc.fileselector;
+    package com.samsung.sprc.fileselector;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.Toast;
+    import android.app.Activity;
+    import android.os.Bundle;
+    import android.view.View;
+    import android.view.View.OnClickListener;
+    import android.widget.Button;
+    import android.widget.Toast;
 
-public class FileSelectorActivity extends Activity {
+    public class FileSelectorActivity extends Activity {
 
-  private Button mLoadButton;
+      private Button mLoadButton;
 
-  private Button mSaveButton;
+      private Button mSaveButton;
 
-  /** Sample filters array */
-  final String[] mFileFilter = { "*.*", ".jpeg", ".txt", ".png" };
+      /** Sample filters array */
+      final String[] mFileFilter = { "*.*", ".jpeg", ".txt", ".png" };
 
-  @Override
-    public void onCreate(final Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-      setContentView(R.layout.main);
+      @Override
+        public void onCreate(final Bundle savedInstanceState) {
+          super.onCreate(savedInstanceState);
+          setContentView(R.layout.main);
 
-      mLoadButton = (Button) findViewById(R.id.fs_button_load);
-      mSaveButton = (Button) findViewById(R.id.fs_button_save);
+          mLoadButton = (Button) findViewById(R.id.fs_button_load);
+          mSaveButton = (Button) findViewById(R.id.fs_button_save);
 
-      mLoadButton.setOnClickListener(new OnClickListener() {
-        @Override
-        public void onClick(final View v) {
-          new FileSelector(FileSelectorActivity.this, FileOperation.LOAD, mLoadFileListener, mFileFilter).show();
+          mLoadButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+              new FileSelector(FileSelectorActivity.this, FileOperation.LOAD, mLoadFileListener, mFileFilter).show();
+            }
+          });
+
+          mSaveButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+              new FileSelector(FileSelectorActivity.this, FileOperation.SAVE, mSaveFileListener, mFileFilter).show();
+            }
+          });
         }
-      });
 
-      mSaveButton.setOnClickListener(new OnClickListener() {
+      OnHandleFileListener mLoadFileListener = new OnHandleFileListener() {
         @Override
-        public void onClick(final View v) {
-          new FileSelector(FileSelectorActivity.this, FileOperation.SAVE, mSaveFileListener, mFileFilter).show();
-        }
-      });
+          public void handleFile(final String filePath) {
+            Toast.makeText(FileSelectorActivity.this, "Load: " + filePath, Toast.LENGTH_SHORT).show();
+          }
+      };
+
+      OnHandleFileListener mSaveFileListener = new OnHandleFileListener() {
+        @Override
+          public void handleFile(final String filePath) {
+            Toast.makeText(FileSelectorActivity.this, "Save: " + filePath, Toast.LENGTH_SHORT).show();
+          }
+      };
     }
-
-  OnHandleFileListener mLoadFileListener = new OnHandleFileListener() {
-    @Override
-      public void handleFile(final String filePath) {
-        Toast.makeText(FileSelectorActivity.this, "Load: " + filePath, Toast.LENGTH_SHORT).show();
-      }
-  };
-
-  OnHandleFileListener mSaveFileListener = new OnHandleFileListener() {
-    @Override
-      public void handleFile(final String filePath) {
-        Toast.makeText(FileSelectorActivity.this, "Save: " + filePath, Toast.LENGTH_SHORT).show();
-      }
-  };
-}
