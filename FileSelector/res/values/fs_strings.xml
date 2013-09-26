@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="fs_enterFileName">Enter file name:</string>
+  <string name="fs_saveButtonText">Save</string>
+  <string name="fs_cancelButtonText">Cancel</string>
+  <string name="fs_cannotSaveFileMessage">Cannot save file</string>
+  <string name="fs_fileNameFirstMessage">Please enter the file name first</string>
+  <string name="fs_okButtonText">OK</string>
+  <string name="fs_loadButtonText">Open</string>
+  <string name="fs_accessDenied">Access denied</string>
+  <string name="fs_missingFile">No such file</string>
+  <string name="fs_newFolderButtonText">New folder</string>
+  <string name="fs_newFolderDialogMessage">Create new folder</string>
+  <string name="fs_createButtonText">Create</string>
+  <string name="fs_folderCreationOk">Folder created sucessfully</string>
+  <string name="fs_folderCreationError">Error while creating folder</string>
+  <string name="fs_information">Information</string>
+</resources>
