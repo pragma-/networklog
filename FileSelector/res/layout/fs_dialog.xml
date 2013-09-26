@@ -1,18 +1,13 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/fs_saveFileDialog"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" >
-    <ListView
-        android:id="@+id/fs_fileList"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.5"
-        android:padding="10dp" />
     <ScrollView 
+                android:id="@+id/fs_scrollview"
+                android:layout_alignParentBottom="true"
        		android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"
-	        android:layout_weight="0.5">
+                android:layout_height="wrap_content">
 	    <LinearLayout
 	        android:id="@+id/fs_fileLinearLayout2"
 	        android:layout_width="fill_parent"
@@ -66,4 +61,10 @@
 		            android:layout_height="wrap_content" />
 	    </LinearLayout>
     </ScrollView>
-</LinearLayout>
+    <ListView
+        android:id="@+id/fs_fileList"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@id/fs_scrollview"
+        android:padding="10dp" />
+</RelativeLayout>
