@@ -35,6 +35,9 @@ public class FileSelector {
   /** TextView to show current path */
   private TextView mCurrentPathTextView;
 
+  /** EditText for filename or path entry */
+  private EditText mEditText;
+
   /** Button to save/load file */
   private Button mSaveLoadButton;
   /** Cancel Button - close dialog */
@@ -50,6 +53,11 @@ public class FileSelector {
    * dialog.
    */
   private File mCurrentLocation;
+
+  /**
+   * Default filename placed in EditText field
+   */
+  private String mDefaultFileName;
 
   /**
    * The file selector dialog.
@@ -70,11 +78,15 @@ public class FileSelector {
    *            LOAD - to load file / SAVE - to save file
    * @param onHandleFileListener
    *            Notified after pressing the save or load button.
+   * @param defaultFileName
+   *            Default filename placed in EditText field
+   *            Set to null for none
    * @param fileFilters
    *            Array with filters
    */
   public FileSelector(final Context context, final FileOperation operation,
-      final OnHandleFileListener onHandleFileListener, final String[] fileFilters) {
+      final OnHandleFileListener onHandleFileListener, final String defaultFileName, 
+      final String[] fileFilters) {
     mContext = context;
     mOnHandleFileListener = onHandleFileListener;
 
@@ -96,6 +108,11 @@ public class FileSelector {
 
     mCurrentPathTextView = (TextView) mDialog.findViewById(R.id.fs_currentPath);
     mCurrentPathTextView.setText(mCurrentLocation.getAbsolutePath());
+
+    mDefaultFileName = defaultFileName == null ? "" : defaultFileName;
+    mEditText = (EditText) mDialog.findViewById(R.id.fs_fileName);
+    mEditText.setText(mDefaultFileName);
+    mEditText.selectAll();
 
     prepareFilterSpinner(fileFilters);
     prepareFilesList();
@@ -150,7 +167,8 @@ public class FileSelector {
       @Override
       public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
         // Check if "../" item should be added.
-        ((EditText) mDialog.findViewById(R.id.fs_fileName)).setText("");
+        mEditText.setText(mDefaultFileName);
+        mEditText.selectAll();
         if (id == 0) {
           final String parentLocation = mCurrentLocation.getParent();
           if (parentLocation != null) { // text == "../"
@@ -234,8 +252,7 @@ public class FileSelector {
       makeList(mCurrentLocation, fileFilter);
       mCurrentPathTextView.setText(mCurrentLocation.getAbsolutePath());
     } else if (itemLocation.isFile()) {
-      final EditText fileName = (EditText) mDialog.findViewById(R.id.fs_fileName);
-      fileName.setText(itemText);
+      mEditText.setText(itemText);
     }
   }
 
@@ -322,8 +339,7 @@ public class FileSelector {
   }
 
   public String getSelectedFileName() {
-    final EditText fileName = (EditText) mDialog.findViewById(R.id.fs_fileName);
-    return fileName.getText().toString();
+    return mEditText.getText().toString();
   }
 
   public File getCurrentLocation() {
