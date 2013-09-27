@@ -32,6 +32,9 @@ public class FileSelector {
   /** The list of files and folders which you can choose from */
   private ListView mFileListView;
 
+  /** TextView to show current path */
+  private TextView mCurrentPathTextView;
+
   /** Button to save/load file */
   private Button mSaveLoadButton;
   /** Cancel Button - close dialog */
@@ -84,7 +87,15 @@ public class FileSelector {
 
     mDialog = new Dialog(context);
     mDialog.setContentView(R.layout.fs_dialog);
-    mDialog.setTitle(mCurrentLocation.getAbsolutePath());
+
+    if(operation == FileOperation.LOAD) {
+      mDialog.setTitle(context.getResources().getString(R.string.fs_openTitle));
+    } else {
+      mDialog.setTitle(context.getResources().getString(R.string.fs_saveTitle));
+    }
+
+    mCurrentPathTextView = (TextView) mDialog.findViewById(R.id.fs_currentPath);
+    mCurrentPathTextView.setText(mCurrentLocation.getAbsolutePath());
 
     prepareFilterSpinner(fileFilters);
     prepareFilesList();
@@ -146,6 +157,7 @@ public class FileSelector {
             String fileFilter = ((TextView) mFilterSpinner.getSelectedView()).getText().toString();
             mCurrentLocation = new File(parentLocation);
             makeList(mCurrentLocation, fileFilter);
+            mCurrentPathTextView.setText(mCurrentLocation.getAbsolutePath());
           } else {
             onItemSelect(parent, position);
           }
@@ -220,6 +232,7 @@ public class FileSelector {
       mCurrentLocation = itemLocation;
       String fileFilter = ((TextView) mFilterSpinner.getSelectedView()).getText().toString();
       makeList(mCurrentLocation, fileFilter);
+      mCurrentPathTextView.setText(mCurrentLocation.getAbsolutePath());
     } else if (itemLocation.isFile()) {
       final EditText fileName = (EditText) mDialog.findViewById(R.id.fs_fileName);
       fileName.setText(itemText);
