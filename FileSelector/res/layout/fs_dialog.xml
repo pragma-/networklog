@@ -1,94 +1,94 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/fs_saveFileDialog"
+  android:id="@+id/fs_saveFileDialog"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:orientation="vertical" >
+  <ScrollView 
+    android:id="@+id/fs_scrollview"
+    android:layout_alignParentBottom="true"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
-    <ScrollView 
-                android:id="@+id/fs_scrollview"
-                android:layout_alignParentBottom="true"
-       		android:layout_width="fill_parent"
-                android:layout_height="wrap_content">
-	    <LinearLayout
-	        android:id="@+id/fs_fileLinearLayout2"
-	        android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"
-	        android:orientation="vertical"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp" >
-	        <TextView
-	            android:id="@+id/fs_fileTextView1"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:paddingTop="2dp"
-	            android:paddingBottom="2dp"
-	            android:paddingLeft="10dp"
-	            android:paddingRight="10dp"
-	            android:text="@string/fs_enterFileName"
-	            android:textAppearance="?android:attr/textAppearanceMedium" />
-	        <EditText
-	            android:id="@+id/fs_fileName"
-	            android:layout_width="fill_parent"
-	            android:layout_height="wrap_content"
-	            android:contentDescription="@string/fs_enterFileName"
-	            android:inputType="text"
-	            android:paddingTop="2dp"
-	            android:paddingBottom="2dp"
-	            android:paddingLeft="10dp"
-                    android:paddingRight="10dp" />
-	        <LinearLayout
-	            android:id="@+id/fs_fileLinearLayout3"
-	            android:layout_width="fill_parent"
-	            android:layout_height="wrap_content"
-	            android:orientation="horizontal" >
-	            <Button
-	                android:id="@+id/fs_fileSaveLoad"
-	                android:layout_width="fill_parent"
-	                android:layout_height="wrap_content"
-	                android:layout_weight="1"
-	                android:padding="10dp"
-	                android:text="@string/fs_saveButtonText" />
-	            <Button
-	                android:id="@+id/fs_fileCancel"
-	                android:layout_width="fill_parent"
-	                android:layout_height="wrap_content"
-	                android:layout_weight="1"
-	                android:padding="10dp"
-	                android:text="@string/fs_cancelButtonText" />
-	            <Button
-	                android:id="@+id/fs_newFolder"
-	                android:layout_width="fill_parent"
-	                android:layout_height="wrap_content"
-	                android:layout_weight="1"
-                        android:padding="10dp"
-	                android:text="@string/fs_newFolderButtonText" />            
-	        </LinearLayout>
-	        <Spinner
-		            android:id="@+id/fs_fileFilter"
-		            android:layout_width="fill_parent"
-		            android:layout_height="wrap_content" />
-	    </LinearLayout>
-    </ScrollView>
-    <TextView
-        android:id="@+id/fs_currentPath"
+    android:layout_height="wrap_content">
+    <LinearLayout
+      android:id="@+id/fs_fileLinearLayout2"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:paddingTop="2dp"
+      android:paddingBottom="2dp"
+      android:paddingLeft="10dp"
+      android:paddingRight="10dp" >
+      <TextView
+        android:id="@+id/fs_fileTextView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:text="@string/fs_enterFileName"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+      <EditText
+        android:id="@+id/fs_fileName"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:textColor="#fff"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:shadowColor="#BB000000"
-        android:shadowRadius="2.75"
-        android:layout_alignParentTop="true" />
-    <ListView
-        android:id="@+id/fs_fileList"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_above="@id/fs_scrollview"
-        android:layout_below="@id/fs_currentPath"
+        android:contentDescription="@string/fs_enterFileName"
+        android:inputType="text"
         android:paddingTop="2dp"
         android:paddingBottom="2dp"
         android:paddingLeft="10dp"
         android:paddingRight="10dp" />
+      <LinearLayout
+        android:id="@+id/fs_fileLinearLayout3"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+        <Button
+          android:id="@+id/fs_fileSaveLoad"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:padding="10dp"
+          android:text="@string/fs_saveButtonText" />
+        <Button
+          android:id="@+id/fs_fileCancel"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:padding="10dp"
+          android:text="@string/fs_cancelButtonText" />
+        <Button
+          android:id="@+id/fs_newFolder"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:padding="10dp"
+          android:text="@string/fs_newFolderButtonText" />            
+      </LinearLayout>
+      <Spinner
+        android:id="@+id/fs_fileFilter"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+    </LinearLayout>
+  </ScrollView>
+  <TextView
+    android:id="@+id/fs_currentPath"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:textColor="#fff"
+    android:textSize="14sp"
+    android:textStyle="bold"
+    android:shadowColor="#BB000000"
+    android:shadowRadius="2.75"
+    android:layout_alignParentTop="true" />
+  <ListView
+    android:id="@+id/fs_fileList"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_above="@id/fs_scrollview"
+    android:layout_below="@id/fs_currentPath"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp" />
 </RelativeLayout>
