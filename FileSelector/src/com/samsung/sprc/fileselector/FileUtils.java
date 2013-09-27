@@ -30,7 +30,7 @@ public class FileUtils {
     if (lastIndexOfPoint == -1) {
       return false;
     }
-    String fileType = file.getName().substring(lastIndexOfPoint).toLowerCase();
+    String fileType = "*" + file.getName().substring(lastIndexOfPoint).toLowerCase();
     return fileType.compareTo(filter) == 0;
   }
 }
