@@ -38,9 +38,17 @@ public class SaveLoadClickListener implements OnClickListener {
 
   @Override
     public void onClick(final View view) {
-      final String text = mFileSelector.getSelectedFileName();
+      final String text = mFileSelector.getSelectedFileName().trim();
       if (checkFileName(text)) {
-        final String filePath = mFileSelector.getCurrentLocation().getAbsolutePath() + File.separator + text;
+        String filePath;
+
+        if(text.charAt(0) == File.separatorChar) {
+          // Don't add current location path if filename is an absolute path
+          filePath = text;
+        } else {
+          filePath = mFileSelector.getCurrentLocation().getAbsolutePath() + File.separator + text;
+        }
+
         final File file = new File(filePath);
         int messageText = 0;
         // Check file access rights.
