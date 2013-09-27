@@ -101,13 +101,13 @@ public class FileSelector {
    *            - array of filters, the elements of the array will be used as
    *            elements of the spinner
    */
-  private void prepareFilterSpinner(String[] fitlesFilter) {
+  private void prepareFilterSpinner(String[] filesFilter) {
     mFilterSpinner = (Spinner) mDialog.findViewById(R.id.fs_fileFilter);
-    if (fitlesFilter == null || fitlesFilter.length == 0) {
-      fitlesFilter = new String[] { FileUtils.FILTER_ALLOW_ALL };
+    if (filesFilter == null || filesFilter.length == 0) {
+      filesFilter = new String[] { FileUtils.FILTER_ALLOW_ALL };
       mFilterSpinner.setEnabled(false);
     }
-    ArrayAdapter<String> adapter = new ArrayAdapter<String>(mContext, R.layout.fs_spinner_item, fitlesFilter);
+    ArrayAdapter<String> adapter = new ArrayAdapter<String>(mContext, R.layout.fs_spinner_item, filesFilter);
 
     mFilterSpinner.setAdapter(adapter);
     OnItemSelectedListener onItemSelectedListener = new OnItemSelectedListener() {
@@ -164,10 +164,10 @@ public class FileSelector {
    * @param location
    *            Indicates the directory whose contents should be displayed in
    *            the dialog.
-   * @param fitlesFilter
+   * @param filesFilter
    *            The filter specifies the type of file to be displayed
    */
-  private void makeList(final File location, final String fitlesFilter) {
+  private void makeList(final File location, final String filesFilter) {
     final ArrayList<FileData> fileList = new ArrayList<FileData>();
     final String parentLocation = location.getParent();
     if (parentLocation != null) {
@@ -179,7 +179,7 @@ public class FileSelector {
       ArrayList<FileData> fileDataList = new ArrayList<FileData>();
       for (int index = 0; index < listFiles.length; index++) {
         File tempFile = listFiles[index];
-        if (FileUtils.accept(tempFile, fitlesFilter)) {
+        if (FileUtils.accept(tempFile, filesFilter)) {
           int type = tempFile.isDirectory() ? FileData.DIRECTORY : FileData.FILE;
           fileDataList.add(new FileData(listFiles[index].getName(), type));
         }
