@@ -32,7 +32,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:contentDescription="@string/fs_enterFileName"
-        android:inputType="text"
+        android:inputType="textNoSuggestions"
         android:paddingTop="2dp"
         android:paddingBottom="2dp"
         android:paddingLeft="10dp"
