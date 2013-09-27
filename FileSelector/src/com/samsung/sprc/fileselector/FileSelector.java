@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Environment;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -63,6 +64,12 @@ public class FileSelector {
    * The file selector dialog.
    */
   private final Dialog mDialog;
+
+  /**
+   * The SaveLoadClickListener.
+   */
+  private SaveLoadClickListener mSaveLoadClickListener;
+
 
   private Context mContext;
 
@@ -120,6 +127,17 @@ public class FileSelector {
     setSaveLoadButton(operation);
     setNewFolderButton(operation);
     setCancelButton();
+
+    mEditText.setOnKeyListener(new View.OnKeyListener() {
+      public boolean onKey(View v, int keyCode, KeyEvent event) {
+        // If the event is a key-down event on the "enter" button
+        if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+          mSaveLoadClickListener.onClick(v);
+          return true;
+        }
+        return false;
+      }
+    });
   }
 
   /**
@@ -155,6 +173,23 @@ public class FileSelector {
     mFilterSpinner.setOnItemSelectedListener(onItemSelectedListener);
   }
 
+  public void changeDirectory(final String filePath) {
+    final File itemLocation = new File(filePath);
+
+    if (!itemLocation.canRead()) {
+      Toast.makeText(mContext, mContext.getResources().getString(R.string.fs_accessDenied), Toast.LENGTH_SHORT).show();
+    } else if (itemLocation.isDirectory()) {
+      mCurrentLocation = itemLocation;
+      String fileFilter = ((TextView) mFilterSpinner.getSelectedView()).getText().toString();
+      makeList(mCurrentLocation, fileFilter);
+      mCurrentPathTextView.setText(mCurrentLocation.getAbsolutePath());
+      mEditText.setText(mDefaultFileName);
+      mEditText.selectAll();
+    } else if (itemLocation.isFile()) {
+      mEditText.setText(itemLocation.getName());
+    }
+  }
+
   /**
    * This method prepares the mFileListView
    * 
@@ -167,15 +202,10 @@ public class FileSelector {
       @Override
       public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
         // Check if "../" item should be added.
-        mEditText.setText(mDefaultFileName);
-        mEditText.selectAll();
         if (id == 0) {
           final String parentLocation = mCurrentLocation.getParent();
           if (parentLocation != null) { // text == "../"
-            String fileFilter = ((TextView) mFilterSpinner.getSelectedView()).getText().toString();
-            mCurrentLocation = new File(parentLocation);
-            makeList(mCurrentLocation, fileFilter);
-            mCurrentPathTextView.setText(mCurrentLocation.getAbsolutePath());
+            changeDirectory(parentLocation);
           } else {
             onItemSelect(parent, position);
           }
@@ -242,18 +272,7 @@ public class FileSelector {
   private void onItemSelect(final AdapterView<?> parent, final int position) {
     final String itemText = ((FileData) parent.getItemAtPosition(position)).getFileName();
     final String itemPath = mCurrentLocation.getAbsolutePath() + File.separator + itemText;
-    final File itemLocation = new File(itemPath);
-
-    if (!itemLocation.canRead()) {
-      Toast.makeText(mContext, mContext.getResources().getString(R.string.fs_accessDenied), Toast.LENGTH_SHORT).show();
-    } else if (itemLocation.isDirectory()) {
-      mCurrentLocation = itemLocation;
-      String fileFilter = ((TextView) mFilterSpinner.getSelectedView()).getText().toString();
-      makeList(mCurrentLocation, fileFilter);
-      mCurrentPathTextView.setText(mCurrentLocation.getAbsolutePath());
-    } else if (itemLocation.isFile()) {
-      mEditText.setText(itemText);
-    }
+    changeDirectory(itemPath);
   }
 
   /**
@@ -272,7 +291,8 @@ public class FileSelector {
         mSaveLoadButton.setText(R.string.fs_loadButtonText);
         break;
     }
-    mSaveLoadButton.setOnClickListener(new SaveLoadClickListener(operation, this, mContext));
+    mSaveLoadClickListener = new SaveLoadClickListener(operation, this, mContext);
+    mSaveLoadButton.setOnClickListener(mSaveLoadClickListener);
   }
 
   /**
@@ -339,7 +359,7 @@ public class FileSelector {
   }
 
   public String getSelectedFileName() {
-    return mEditText.getText().toString();
+    return mEditText.getText().toString().trim();
   }
 
   public File getCurrentLocation() {

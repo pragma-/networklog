@@ -38,7 +38,7 @@ public class SaveLoadClickListener implements OnClickListener {
 
   @Override
     public void onClick(final View view) {
-      final String text = mFileSelector.getSelectedFileName().trim();
+      final String text = mFileSelector.getSelectedFileName();
       if (checkFileName(text)) {
         String filePath;
 
@@ -50,6 +50,21 @@ public class SaveLoadClickListener implements OnClickListener {
         }
 
         final File file = new File(filePath);
+
+        if(file.isDirectory()) {
+          String newPath;
+
+          try {
+            newPath = file.getCanonicalPath();
+          } catch (Exception e) {
+            android.util.Log.w("FileSelector", "Exception getting canonical path", e);
+            newPath = filePath;
+          }
+
+          mFileSelector.changeDirectory(newPath);
+          return;
+        }
+
         int messageText = 0;
         // Check file access rights.
         switch (mOperation) {
@@ -68,9 +83,9 @@ public class SaveLoadClickListener implements OnClickListener {
         }
         if (messageText != 0) {
           // Access denied.
-          final Toast t = Toast.makeText(mContext, messageText, Toast.LENGTH_SHORT);
-          t.setGravity(Gravity.CENTER, 0, 0);
-          t.show();
+          final Toast toast = Toast.makeText(mContext, messageText, Toast.LENGTH_SHORT);
+          toast.setGravity(Gravity.CENTER, 0, 0);
+          toast.show();
         } else {
           // Access granted.
           mFileSelector.mOnHandleFileListener.handleFile(filePath);
