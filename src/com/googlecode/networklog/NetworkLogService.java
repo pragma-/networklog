@@ -382,16 +382,8 @@ public class NetworkLogService extends Service {
 
           MyLog.d("[service] NetworkLog service starting [" + logfile_from_intent + "]");;
 
-          final String l = logfile_from_intent;
-
-          if(logfile != null) {
-            // service already started and has logfile open
-          } else {
-            logfile = logfile_from_intent;
-
-            // service starting up fresh
-            initEntriesMap();
-          }
+          logfile = logfile_from_intent;
+          initEntriesMap();
 
           if(!startLogging()) {
             MyLog.d("[service] start logging error, aborting");

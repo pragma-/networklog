@@ -22,6 +22,7 @@ import java.util.ArrayList;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.robobunny.SeekBarPreference;
+import com.samsung.sprc.fileselector.*;
 
 public class Preferences extends SherlockPreferenceActivity implements OnPreferenceClickListener, OnPreferenceChangeListener {
   private InstanceData data = null;
@@ -94,13 +95,11 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
 
       addPreferencesFromResource(R.xml.preferences);
 
+      findPreference("logfile").setOnPreferenceClickListener(this);
       findPreference("filter_dialog").setOnPreferenceClickListener(this);
       findPreference("notifications_toast_apps_dialog").setOnPreferenceClickListener(this);
       findPreference("clear_log").setOnPreferenceClickListener(this);
       findPreference("sort_by").setOnPreferenceChangeListener(this);
-
-      EditTextPreference logfile = (EditTextPreference) findPreference("logfile");
-      logfile.setText(NetworkLog.settings.getLogFile());
 
       CheckBoxPreference foreground = (CheckBoxPreference) findPreference("start_foreground");
       foreground.setOnPreferenceClickListener(this);
@@ -260,6 +259,17 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
       {
         NetworkLog.selectToastApps = new SelectToastApps();
         NetworkLog.selectToastApps.showDialog(this);
+        return true;
+      }
+
+      if(preference.getKey().equals("logfile")) {
+        OnHandleFileListener saveListener = new OnHandleFileListener() {
+          public void handleFile(final String filePath) {
+            MyLog.d("Set logfile path to: " + filePath);
+            NetworkLog.settings.setLogFile(filePath);
+          }
+        };
+        new FileSelector(this, FileOperation.SAVE, saveListener, "networklog.txt", new String[] { "*.*", "*.txt" }).show();
         return true;
       }
 

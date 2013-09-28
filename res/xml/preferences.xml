@@ -97,8 +97,8 @@
   <PreferenceScreen android:title="@string/pref_log_service">
     <PreferenceCategory
       android:title="@string/pref_log_service">
-      <EditTextPreference
-        android:singleLine="true"
+      <Preference
+        android:persistent="false"
         android:key="logfile"
         android:title="@string/pref_logfile_title"
         android:summary="@string/pref_logfile_summary" />

@@ -493,9 +493,23 @@ public class Settings implements OnSharedPreferenceChangeListener {
    }
 
   public void setLogFile(String value) {
-    SharedPreferences.Editor editor = prefs.edit();
-    editor.putString("logfile", value);
-    editor.commit();
+    String oldValue = prefs.getString("logfile", null);
+
+    if(oldValue != null && !oldValue.equals(value)) {
+      // update only if values have changed (mainly to ensure service 
+      // doesn't restart for same values)
+
+      SharedPreferences.Editor editor = prefs.edit();
+      editor.putString("logfile", value);
+      editor.commit();
+
+      if(NetworkLogService.instance != null) {
+        // if service is running, restart service so that logfile is opened
+        // with new path
+        NetworkLog.instance.stopService();
+        NetworkLog.instance.startService();
+      }
+    }
   }
 
   public void showSampleToast() {

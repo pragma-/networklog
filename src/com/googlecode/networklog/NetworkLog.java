@@ -111,6 +111,8 @@ public class NetworkLog extends SherlockFragmentActivity {
   public static Context context;
   public static Menu menu;
 
+  public static NetworkLog instance;
+
   public static ServiceConnection connection = new ServiceConnection() {
     public void onServiceConnected(ComponentName className, IBinder serv) {
       service = new Messenger(serv);
@@ -342,6 +344,7 @@ public class NetworkLog extends SherlockFragmentActivity {
       MyLog.d("NetworkLog started");
 
       context = this;
+      instance = this;
 
       loadSettings();
       getLocalIpAddresses();
@@ -525,6 +528,8 @@ public class NetworkLog extends SherlockFragmentActivity {
       if(isBound) {
         doUnbindService();
       }
+
+      instance = null;
     }
 
   @Override
