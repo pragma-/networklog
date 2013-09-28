@@ -70,7 +70,6 @@ public class FileSelector {
    */
   private SaveLoadClickListener mSaveLoadClickListener;
 
-
   private Context mContext;
 
   /** Save or Load file listener. */
