@@ -66,12 +66,27 @@ public class SaveLoadClickListener implements OnClickListener {
         }
 
         int messageText = 0;
+        String extraText = null;
         // Check file access rights.
         switch (mOperation) {
           case SAVE:
-            if ((file.exists()) && (!file.canWrite())) {
+            if (file.exists() && !file.canWrite()) {
               messageText = R.string.fs_cannotSaveFileMessage;
+              break;
             }
+
+            if (!file.exists()) {
+              try {
+                file.createNewFile();
+              } catch (Exception e) {
+                messageText = R.string.fs_cannotSaveFileMessage;
+                extraText = e.getMessage();
+              } finally {
+                file.delete();
+              }
+              break;
+            }
+
             break;
           case LOAD:
             if (!file.exists()) {
@@ -83,7 +98,7 @@ public class SaveLoadClickListener implements OnClickListener {
         }
         if (messageText != 0) {
           // Access denied.
-          final Toast toast = Toast.makeText(mContext, messageText, Toast.LENGTH_SHORT);
+          final Toast toast = Toast.makeText(mContext, mContext.getResources().getString(messageText) + (extraText == null ? "" : ": " + extraText), Toast.LENGTH_SHORT);
           toast.setGravity(Gravity.CENTER, 0, 0);
           toast.show();
         } else {
