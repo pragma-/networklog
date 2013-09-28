@@ -55,6 +55,7 @@
   <string name="menu_by_timestamp">By Timestamp</string>
   <string name="menu_filter">Filter</string>
   <string name="menu_clearlog">Clear</string>
+  <string name="menu_export">Export</string>
   <string name="menu_settings">Settings</string>
   <string name="menu_feedback">Report Bug/Feedback</string>
   <string name="menu_exit">Exit</string>
@@ -135,6 +136,13 @@
   <string name="feedback_error_no_message_title">No message</string>
   <string name="feedback_error_no_message_text">Please enter a message, or use the Cancel button.</string>
   <string name="feedback_error_getting_debug_log">Error getting debug log</string>
+
+  <string name="export_title">Export</string>
+  <string name="export_instructions">Select start and end dates:</string>
+  <string name="export_start_date">Start:</string>
+  <string name="export_end_date">End:</string>
+  <string name="export_filename">Filename:</string>
+  <string name="export_button">Export</string>
 
   <string name="loading_apps">Loading apps</string>
 

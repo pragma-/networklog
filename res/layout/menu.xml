@@ -29,6 +29,9 @@
   <item android:id="@+id/clearlog"
     android:title="@string/menu_clearlog"
     android:showAsAction="ifRoom|withText" />
+  <item android:id="@+id/export"
+    android:title="@string/menu_export"
+    android:showAsAction="ifRoom|withText" />
   <item android:id="@+id/settings"
     android:title="@string/menu_settings"
     android:showAsAction="ifRoom|withText" />

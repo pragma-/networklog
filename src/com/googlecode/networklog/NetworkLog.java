@@ -97,6 +97,7 @@ public class NetworkLog extends SherlockFragmentActivity {
 
   public static HistoryLoader history;
   public static FeedbackDialog feedbackDialog;
+  public static ExportDialog exportDialog;
   public static ClearLog clearLog;
   public static SelectToastApps selectToastApps;
 
@@ -487,9 +488,13 @@ public class NetworkLog extends SherlockFragmentActivity {
       }
 
       if(feedbackDialog != null && feedbackDialog.dialog != null && feedbackDialog.dialog.isShowing()) {
-        feedbackDialog.dialog.dismiss();
-        feedbackDialog.dialog = null;
+        feedbackDialog.dismiss();
         feedbackDialog = null;
+      }
+
+      if(exportDialog != null && exportDialog.dialog != null && exportDialog.dialog.isShowing()) {
+        exportDialog.dismiss();
+        exportDialog = null;
       }
 
       if(clearLog.dialog != null && clearLog.dialog.isShowing()) {
@@ -628,6 +633,10 @@ public class NetworkLog extends SherlockFragmentActivity {
         case R.id.feedback:
           feedbackDialog = new FeedbackDialog(this);
           feedbackDialog.show();
+          break;
+        case R.id.export:
+          exportDialog = new ExportDialog(this);
+          exportDialog.show();
           break;
         case R.id.clearlog:
           clearLog.showClearLogDialog(this);
