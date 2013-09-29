@@ -102,7 +102,7 @@ public class ExportDialog
       public void onClick(View v) {
         DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
           public void onDateSet(DatePicker view, int year, int month, int day) {
-            endDate = new GregorianCalendar(year, month, day).getTime();
+            endDate = new GregorianCalendar(year, month, day, 23, 59, 59).getTime();
             endDateButton.setText(dateDisplayFormat.format(endDate));
             file = new File((file.getParent() == null ? "" : file.getParent()) + File.separator + defaultFilename());
             filenameButton.setText(file.getAbsolutePath());
@@ -208,6 +208,7 @@ public class ExportDialog
   public void exportLog(final Date startDate, final Date endDate, final File file) {
     MyLog.d("Exporting from " + dateFilenameFormat.format(startDate) + " to " + dateFilenameFormat.format(endDate) + " to path " + file.getAbsolutePath());
 
+    final long end_timestamp = endDate.getTime();
     final LogfileLoader loader = new LogfileLoader();
 
     try {
@@ -228,14 +229,21 @@ public class ExportDialog
         return;
       }
       
-      final long starting_pos = loader.seekToTimestampPosition(startDate.getTime());
+      long possible_end_pos = loader.seekToTimestampPosition(endDate.getTime(), true);
+      final long start_pos = loader.seekToTimestampPosition(startDate.getTime());
 
-      if(starting_pos == -1) {
+      if(possible_end_pos == -1) {
+        possible_end_pos = length;
+      }
+
+      final long end_pos = possible_end_pos;
+
+      if(start_pos == -1) {
         SysUtils.showError(context, context.getResources().getString(R.string.export_error_title), "No entries found at " + dateDisplayFormat.format(startDate));
         return;
       }
 
-      progress_max = (int)(length - starting_pos);
+      progress_max = (int)(end_pos - start_pos);
       progress = 0;
 
       CSVWriter open_writer;
@@ -249,8 +257,6 @@ public class ExportDialog
 
       new Thread(new Runnable() {
         public void run() {
-          MyLog.d("Creating progress dialog");
-
           try {
             FutureTask createDialog = createProgressDialog(context);
             createDialog.get(); // wait until createDialog task completes
@@ -260,7 +266,7 @@ public class ExportDialog
 
           LogEntry entry;
           long processed_so_far = 0;
-          long progress_increment_size = (long)((length - starting_pos) * 0.01);
+          long progress_increment_size = (long)((end_pos - start_pos) * 0.01);
           long next_progress_increment = progress_increment_size;
 
           try {
@@ -283,11 +289,6 @@ public class ExportDialog
             while(!canceled) {
               entry = loader.readEntry();
 
-              if(entry == null) {
-                // end of file
-                break;
-              }
-
               processed_so_far = loader.getProcessedSoFar();
 
               if(processed_so_far >= next_progress_increment) {
@@ -298,7 +299,16 @@ public class ExportDialog
                 }
               }
 
-              entries[0] = String.valueOf(entry.timestamp);
+              if(entry == null) {
+                // end of file
+                break;
+              }
+
+              if(entry.timestamp > end_timestamp) {
+                break;
+              }
+
+              entries[0] = Timestamp.getTimestamp(entry.timestamp);
               entries[1] = ApplicationsTracker.uidMap.get(entry.uidString).name;
               entries[2] = ApplicationsTracker.uidMap.get(entry.uidString).packageName;
               entries[3] = entry.uidString;
@@ -317,6 +327,11 @@ public class ExportDialog
           } finally {
             try {
               loader.closeLogfile();
+            } catch (Exception e) {
+              // ignored
+            }
+
+            try {
               writer.close();
             } catch (Exception e) {
               // ignored

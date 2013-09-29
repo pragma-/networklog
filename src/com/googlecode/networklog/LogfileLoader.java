@@ -62,11 +62,16 @@ public class LogfileLoader {
   }
 
   public long seekToTimestampPosition(long target) throws IOException {
+    return seekToTimestampPosition(target, false);
+  }
+
+  public long seekToTimestampPosition(long target, boolean seekAhead) throws IOException {
     long result = 0;
     long min = 0;
     long max = getLength();
     long mid;
     long timestamp;
+    String line;
 
     // nearest match binary search to find timestamp within logfile
     while(max >= min) {
@@ -84,24 +89,20 @@ public class LogfileLoader {
       logfile.seek(mid);
 
       // discard line as we may be anywhere within it
-      logfile.readLine();
+      line = logfile.readLine();
 
-      String line = logfile.readLine();
+      if(line != null) {
+        result = mid + line.length() + 1;
+      }
+
+      line = logfile.readLine();
       if(line == null) {
         MyLog.d("[LogfileLoader] No packets found within time range");
-        closeLogfile();
         return -1;
       }
 
-      if(MyLog.enabled && MyLog.level >= 7) {
-        MyLog.d(7, "[LogfileLoader] Testing line [" + line + "]");
-      }
-
+      result += line.length() + 1;
       timestamp = Long.parseLong(line.split("[^0-9-]+", 2)[0]);
-
-      if(MyLog.enabled && MyLog.level >= 7) {
-        MyLog.d(7, "[LogfileLoader] comparing timestamp " + timestamp + " <=> " + target);
-      }
 
       if(timestamp < target) {
         min = mid + 1;
@@ -109,13 +110,33 @@ public class LogfileLoader {
         max = mid - 1;
       } else {
         // found exact match
-        MyLog.d("Found at " + mid);
-        result = mid;
         break;
       }
+    }
 
-      // remember last nearest match
-      result = mid;
+    if(seekAhead == true) {
+      // seek to latest match
+      long position = result;
+      logfile.seek(position);
+
+      // read and discard since we may be anywhere within a line
+      position += logfile.readLine().length() + 1;
+
+      while(true) {
+        line = logfile.readLine();
+        if(line == null) {
+          break;
+        }
+
+        timestamp = Long.parseLong(line.split("[^0-9-]+", 2)[0]);
+
+        if(timestamp > target) {
+          break;
+        }
+
+        // update new result position
+        result = position + line.length() + 1;
+      }
     }
 
     logfile.seek(result);

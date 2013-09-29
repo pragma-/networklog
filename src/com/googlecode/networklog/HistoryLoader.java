@@ -71,6 +71,7 @@ public class HistoryLoader {
 
       if(starting_pos == -1) {
         // nothing to read
+        loader.closeLogfile();
         return;
       }
 
