@@ -42,7 +42,7 @@ public class SysUtils {
       grepMd5 = "69d0726f2b314a32fcd906a753deaabb";
       grepResource = R.raw.grep_armv7;
       nflogBinary = "nflog_armv7";
-      nflogMd5 = "286eb86e340610727b262593e75e8939";
+      nflogMd5 = "5cdaa519c10ace37f62a0e6d65ce4f6e";
       nflogResource = R.raw.nflog_armv7;
     } else if(cpu_abi.contains("armeabi")) {
       iptablesBinary = "iptables_armv5";
@@ -52,7 +52,7 @@ public class SysUtils {
       grepMd5 = "7904ae3e4f310f9a1bf9867cfadb71ef";
       grepResource = R.raw.grep_armv5;
       nflogBinary = "nflog_armv5";
-      nflogMd5 = "509e613ca8734a6bcc6d3327298a9320";
+      nflogMd5 = "c8e7b5f4e96a47b686a68b84c9d12f24";
       nflogResource = R.raw.nflog_armv5;
     } else if(cpu_abi.contains("x86")) {
       iptablesBinary = "iptables_x86";
@@ -62,7 +62,7 @@ public class SysUtils {
       grepMd5 = "75210f186d666f32a14d843fd1e9fac5";
       grepResource = R.raw.grep_x86;
       nflogBinary = "nflog_x86";
-      nflogMd5 = "0bc6661f7cc3de8c875e021229effb1d";
+      nflogMd5 = "1fb4cf7be57cb2c30ab2224ffac65ac2";
       nflogResource = R.raw.nflog_x86;
     } else if(cpu_abi.contains("mips")) {
       iptablesBinary = "iptables_mips";
@@ -72,7 +72,7 @@ public class SysUtils {
       grepMd5 = "a29534a420f9eb9cc519088eacf6b7e7";
       grepResource = R.raw.grep_mips;
       nflogBinary = "nflog_mips";
-      nflogMd5 = "86574f4085b3ab74d01c4e3d2ecb1c91";
+      nflogMd5 = "21d507600aa498395f00a9daf37eeb02";
       nflogResource = R.raw.nflog_mips;
     } else {
       iptablesBinary = null;
