@@ -10,6 +10,8 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.os.Bundle;
 
+import java.util.Calendar;
+
 import android.support.v4.app.DialogFragment;
 
 public class DatePickerFragment extends DialogFragment {
@@ -19,6 +21,10 @@ public class DatePickerFragment extends DialogFragment {
   DatePickerDialog.OnDateSetListener listener;
 
   public DatePickerFragment() {
+    Calendar cal = Calendar.getInstance();
+    this.year = cal.get(Calendar.YEAR);
+    this.month = cal.get(Calendar.MONTH);
+    this.day = cal.get(Calendar.DAY_OF_MONTH);
   }
 
   public DatePickerFragment(int year, int month, int day, DatePickerDialog.OnDateSetListener listener) {
