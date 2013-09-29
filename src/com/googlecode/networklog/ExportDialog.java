@@ -9,7 +9,6 @@ package com.googlecode.networklog;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -19,7 +18,6 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.view.View;
 import android.view.LayoutInflater;
-import android.os.Bundle;
 import android.os.Environment;
 
 import java.io.File;
@@ -33,11 +31,11 @@ import java.util.concurrent.FutureTask;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import android.support.v4.app.DialogFragment;
-
 import com.samsung.sprc.fileselector.*;
 
 import au.com.bytecode.opencsv.CSVWriter;
+
+import android.support.v4.app.DialogFragment;
 
 public class ExportDialog
 {
@@ -54,10 +52,13 @@ public class ExportDialog
   public Date endDate;
   public File file;
 
-  ProgressDialog progressDialog = null;
-  int progress_max = 0;
-  int progress = 0;
-  boolean canceled = false;
+  public ProgressDialog progressDialog = null;
+  public int progress_max = 0;
+  public int progress = 0;
+  private boolean canceled = false;
+
+  public enum DatePickerMode { START_DATE, END_DATE }; 
+  public DatePickerMode datePickerMode;
 
   public ExportDialog(final Context context)
   {
@@ -82,37 +83,37 @@ public class ExportDialog
 
     startDateButton.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
+        datePickerMode = DatePickerMode.START_DATE;
         DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
           public void onDateSet(DatePicker view, int year, int month, int day) {
             startDate = new GregorianCalendar(year, month, day).getTime();
             startDateButton.setText(dateDisplayFormat.format(startDate));
-            file = new File((file.getParent() == null ? "" : file.getParent()) + File.separator + defaultFilename());
-            filenameButton.setText(file.getAbsolutePath());
+            updateFilename();
           }
         };
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(startDate);
         DialogFragment newFragment = new DatePickerFragment(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), listener);
-        newFragment.show(NetworkLog.instance.getSupportFragmentManager(), "datePicker");
+        newFragment.show(NetworkLog.instance.getSupportFragmentManager(), "exportDatePicker");
       }
     });
 
     endDateButton.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
+        datePickerMode = DatePickerMode.END_DATE;
         DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
           public void onDateSet(DatePicker view, int year, int month, int day) {
             endDate = new GregorianCalendar(year, month, day, 23, 59, 59).getTime();
             endDateButton.setText(dateDisplayFormat.format(endDate));
-            file = new File((file.getParent() == null ? "" : file.getParent()) + File.separator + defaultFilename());
-            filenameButton.setText(file.getAbsolutePath());
+            updateFilename();
           }
         };
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(endDate);
         DialogFragment newFragment = new DatePickerFragment(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), listener);
-        newFragment.show(NetworkLog.instance.getSupportFragmentManager(), "datePicker");
+        newFragment.show(NetworkLog.instance.getSupportFragmentManager(), "exportDatePicker");
       }
     });
 
@@ -146,17 +147,57 @@ public class ExportDialog
     dialog = builder.create();
   }
 
+  public void restoreDatePickerListener() {
+    DatePickerDialog.OnDateSetListener listener; 
+    DatePickerFragment dpf = (DatePickerFragment) NetworkLog.instance.getSupportFragmentManager()
+      .findFragmentByTag("exportDatePicker");
+
+    if (dpf != null) {
+      if(datePickerMode == DatePickerMode.START_DATE) {
+        listener = new DatePickerDialog.OnDateSetListener() {
+          public void onDateSet(DatePicker view, int year, int month, int day) {
+            startDate = new GregorianCalendar(year, month, day).getTime();
+            startDateButton.setText(dateDisplayFormat.format(startDate));
+            updateFilename();
+          }
+        };
+      } else {
+        listener = new DatePickerDialog.OnDateSetListener() {
+          public void onDateSet(DatePicker view, int year, int month, int day) {
+            endDate = new GregorianCalendar(year, month, day, 23, 59, 59).getTime();
+            endDateButton.setText(dateDisplayFormat.format(endDate));
+            updateFilename();
+          }
+        };
+      }
+      dpf.setListener(listener);
+    }
+  }
+
   private String defaultFilename() {
     return "networklog-" + dateFilenameFormat.format(startDate) + "-" + dateFilenameFormat.format(endDate) + ".csv";
   }
 
+  private void updateFilename() {
+    file = new File((file.getParent() == null ? "" : file.getParent()) + File.separator + defaultFilename());
+    filenameButton.setText(file.getAbsolutePath());
+  }
+
   public void setStartDate(Date date) {
+    startDate = date;
+    startDateButton.setText(dateDisplayFormat.format(startDate));
+    updateFilename();
   }
 
   public void setEndDate(Date date) {
+    endDate = date;
+    endDateButton.setText(dateDisplayFormat.format(endDate));
+    updateFilename();
   }
 
-  public void setFilename(File file) {
+  public void setFile(File file) {
+    this.file = file;
+    filenameButton.setText(file.getAbsolutePath());
   }
 
   public void show() {
@@ -179,7 +220,7 @@ public class ExportDialog
     }
   }
 
-  public FutureTask createProgressDialog(final Context context) {
+  public FutureTask showProgressDialog(final Context context) {
     FutureTask futureTask = new FutureTask(new Runnable() {
       public void run() {
         progressDialog = new ProgressDialog(context);
@@ -258,8 +299,8 @@ public class ExportDialog
       new Thread(new Runnable() {
         public void run() {
           try {
-            FutureTask createDialog = createProgressDialog(context);
-            createDialog.get(); // wait until createDialog task completes
+            FutureTask showDialog = showProgressDialog(context);
+            showDialog.get(); // wait until showDialog task completes
           } catch (Exception e) {
             // ignored
           }
@@ -351,32 +392,5 @@ public class ExportDialog
     } catch (Exception e) {
       SysUtils.showError(context, context.getResources().getString(R.string.export_error_title), "Error exporting logfile: " + e.getMessage());
     } 
-  }
-
-  private class DatePickerFragment extends DialogFragment {
-    int year;
-    int month;
-    int day;
-    DatePickerDialog.OnDateSetListener listener;
-
-    public DatePickerFragment(int year, int month, int day, DatePickerDialog.OnDateSetListener listener) {
-      this(year, month, day);
-      this.listener = listener;
-    }
-
-    public DatePickerFragment(int year, int month, int day) {
-      this.year = year;
-      this.month = month;
-      this.day = day;
-    }
-
-    public void setListener(DatePickerDialog.OnDateSetListener listener) {
-      this.listener = listener;
-    }
-
-    @Override
-      public Dialog onCreateDialog(Bundle savedInstanceState) {
-        return new DatePickerDialog(getActivity(), this.listener, this.year, this.month, this.day);
-      }
   }
 }

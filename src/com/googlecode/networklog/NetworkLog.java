@@ -384,6 +384,22 @@ public class NetworkLog extends SherlockFragmentActivity {
         if(data.clearLogProgressDialogShowing) {
           clearLog.showProgressDialog(this);
         }
+
+        if(data.exportDialogShowing) {
+          exportDialog = new ExportDialog(this);
+          exportDialog.setStartDate(data.exportDialogStartDate);
+          exportDialog.setEndDate(data.exportDialogEndDate);
+          exportDialog.setFile(data.exportDialogFile);
+          exportDialog.show();
+          exportDialog.datePickerMode = data.exportDialogDatePickerMode;
+          exportDialog.restoreDatePickerListener();
+        }
+
+        if(data.exportDialogProgressDialogShowing) {
+          exportDialog.progress = data.exportDialogProgress;
+          exportDialog.progress_max = data.exportDialogProgressMax;
+          exportDialog.showProgressDialog(this);
+        }
       } else {
         MyLog.d("Fresh run");
         resolver = new NetworkResolver();

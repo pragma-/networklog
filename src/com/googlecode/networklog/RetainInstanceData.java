@@ -8,7 +8,9 @@ package com.googlecode.networklog;
 
 import android.util.Log;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 public class RetainInstanceData {
@@ -62,6 +64,34 @@ public class RetainInstanceData {
     clearLogProgressMax = NetworkLog.clearLog.progress_max;
   }
 
+  /* ExportDialog */
+  boolean exportDialogShowing;
+  boolean exportDialogProgressDialogShowing;
+  Date exportDialogStartDate;
+  Date exportDialogEndDate;
+  File exportDialogFile;
+  int exportDialogProgress;
+  int exportDialogProgressMax;
+  ExportDialog.DatePickerMode exportDialogDatePickerMode;
+
+  public void retainExportDialogData() {
+    if(NetworkLog.exportDialog != null) {
+      if(NetworkLog.exportDialog.dialog != null) {
+        exportDialogShowing = true;
+        exportDialogStartDate = NetworkLog.exportDialog.startDate;
+        exportDialogEndDate = NetworkLog.exportDialog.endDate;
+        exportDialogFile = NetworkLog.exportDialog.file;
+        exportDialogDatePickerMode = NetworkLog.exportDialog.datePickerMode;
+      }
+
+      if(NetworkLog.exportDialog.progressDialog != null && NetworkLog.exportDialog.progressDialog != null) {
+        exportDialogProgressDialogShowing = true;
+        exportDialogProgress = NetworkLog.exportDialog.progress;
+        exportDialogProgressMax = NetworkLog.exportDialog.progress_max;
+      }
+    }
+  }
+
   /* NetworkLog */
   NetworkLog.State networkLogState;
   NetworkResolver networkLogResolver;
@@ -78,5 +108,6 @@ public class RetainInstanceData {
     retainHistoryLoaderData();
     retainFeedbackDialogData();
     retainClearLogData();
+    retainExportDialogData();
   }
 }
