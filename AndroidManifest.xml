@@ -23,7 +23,7 @@
     <activity android:name="AppTimelineGraph" />
     <activity android:name="OverallAppTimelineGraph" />
     <activity android:name="ErrorDialogActivity"
-      android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+      android:theme="@android:style/Theme.DeviceDefault.Dialog" />
     <receiver android:name=".BootCompletedReceiver">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED" />
