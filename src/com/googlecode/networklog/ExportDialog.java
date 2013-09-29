@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -24,15 +25,19 @@ import android.os.Environment;
 import java.io.File;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.concurrent.FutureTask;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 import android.support.v4.app.DialogFragment;
 
 import com.samsung.sprc.fileselector.*;
+
+import au.com.bytecode.opencsv.CSVWriter;
 
 public class ExportDialog
 {
@@ -48,6 +53,11 @@ public class ExportDialog
   public Date startDate;
   public Date endDate;
   public File file;
+
+  ProgressDialog progressDialog = null;
+  int progress_max = 0;
+  int progress = 0;
+  boolean canceled = false;
 
   public ExportDialog(final Context context)
   {
@@ -74,6 +84,10 @@ public class ExportDialog
       public void onClick(View v) {
         DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
           public void onDateSet(DatePicker view, int year, int month, int day) {
+            startDate = new GregorianCalendar(year, month, day).getTime();
+            startDateButton.setText(dateDisplayFormat.format(startDate));
+            file = new File((file.getParent() == null ? "" : file.getParent()) + File.separator + defaultFilename());
+            filenameButton.setText(file.getAbsolutePath());
           }
         };
 
@@ -88,6 +102,10 @@ public class ExportDialog
       public void onClick(View v) {
         DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
           public void onDateSet(DatePicker view, int year, int month, int day) {
+            endDate = new GregorianCalendar(year, month, day).getTime();
+            endDateButton.setText(dateDisplayFormat.format(endDate));
+            file = new File((file.getParent() == null ? "" : file.getParent()) + File.separator + defaultFilename());
+            filenameButton.setText(file.getAbsolutePath());
           }
         };
 
@@ -148,7 +166,7 @@ public class ExportDialog
         public void onClick(View v) {
           dialog.dismiss();
           dialog = null;
-          // do export
+          exportLog(startDate, endDate, file);
         }
       });
     }
@@ -159,6 +177,165 @@ public class ExportDialog
       dialog.dismiss();
       dialog = null;
     }
+  }
+
+  public FutureTask createProgressDialog(final Context context) {
+    FutureTask futureTask = new FutureTask(new Runnable() {
+      public void run() {
+        progressDialog = new ProgressDialog(context);
+        progressDialog.setIndeterminate(false);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setMax(progress_max);
+        progressDialog.setCancelable(false);
+        progressDialog.setTitle("");
+        progressDialog.setMessage(context.getResources().getString(R.string.exporting_log));
+
+        progressDialog.setButton(DialogInterface.BUTTON_NEUTRAL, context.getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+          public void onClick(DialogInterface dialog, int which) {
+            canceled = true;
+          }
+        });
+
+        progressDialog.show();
+        progressDialog.setProgress(progress);
+      }
+    }, null);
+
+    NetworkLog.handler.post(futureTask);
+    return futureTask;
+  }
+
+  public void exportLog(final Date startDate, final Date endDate, final File file) {
+    MyLog.d("Exporting from " + dateFilenameFormat.format(startDate) + " to " + dateFilenameFormat.format(endDate) + " to path " + file.getAbsolutePath());
+
+    final LogfileLoader loader = new LogfileLoader();
+
+    try {
+      loader.openLogfile(NetworkLog.settings.getLogFile());
+    } catch (FileNotFoundException fnfe) {
+      SysUtils.showError(context, context.getResources().getString(R.string.export_error_title), "No logfile found at " + NetworkLog.settings.getLogFile());
+      return;
+    } catch (Exception e) {
+      SysUtils.showError(context, context.getResources().getString(R.string.export_error_title), "Error opening logfile: " + e.getMessage());
+      return;
+    }
+
+    try {
+      final long length = loader.getLength();
+
+      if(length == 0) {
+        SysUtils.showError(context, context.getResources().getString(R.string.export_error_title), "Logfile empty -- nothing to export");
+        return;
+      }
+      
+      final long starting_pos = loader.seekToTimestampPosition(startDate.getTime());
+
+      if(starting_pos == -1) {
+        SysUtils.showError(context, context.getResources().getString(R.string.export_error_title), "No entries found at " + dateDisplayFormat.format(startDate));
+        return;
+      }
+
+      progress_max = (int)(length - starting_pos);
+      progress = 0;
+
+      CSVWriter open_writer;
+      try {
+        open_writer = new CSVWriter(new FileWriter(file));
+      } catch (Exception e) {
+        SysUtils.showError(context, context.getResources().getString(R.string.export_error_title), "Error opening export file: " + e.getMessage());
+        return;
+      }
+      final CSVWriter writer = open_writer;
+
+      new Thread(new Runnable() {
+        public void run() {
+          MyLog.d("Creating progress dialog");
+
+          try {
+            FutureTask createDialog = createProgressDialog(context);
+            createDialog.get(); // wait until createDialog task completes
+          } catch (Exception e) {
+            // ignored
+          }
+
+          LogEntry entry;
+          long processed_so_far = 0;
+          long progress_increment_size = (long)((length - starting_pos) * 0.01);
+          long next_progress_increment = progress_increment_size;
+
+          try {
+            String[] entries = new String[11];
+
+            entries[0] = "Timestamp";
+            entries[1] = "AppName";
+            entries[2] = "AppPackage";
+            entries[3] = "AppUid";
+            entries[4] = "In interface";
+            entries[5] = "Out interface";
+            entries[6] = "Source";
+            entries[7] = "Source Port";
+            entries[8] = "Destination";
+            entries[9] = "Destination Port";
+            entries[10] = "Length";
+
+            writer.writeNext(entries);
+
+            while(!canceled) {
+              entry = loader.readEntry();
+
+              if(entry == null) {
+                // end of file
+                break;
+              }
+
+              processed_so_far = loader.getProcessedSoFar();
+
+              if(processed_so_far >= next_progress_increment) {
+                next_progress_increment += progress_increment_size;
+                progress = (int)processed_so_far;
+                if(progressDialog != null) {
+                  progressDialog.setProgress(progress);
+                }
+              }
+
+              entries[0] = String.valueOf(entry.timestamp);
+              entries[1] = ApplicationsTracker.uidMap.get(entry.uidString).name;
+              entries[2] = ApplicationsTracker.uidMap.get(entry.uidString).packageName;
+              entries[3] = entry.uidString;
+              entries[4] = entry.in;
+              entries[5] = entry.out;
+              entries[6] = entry.src;
+              entries[7] = String.valueOf(entry.spt);
+              entries[8] = entry.dst;
+              entries[9] = String.valueOf(entry.dpt);
+              entries[10] = String.valueOf(entry.len);
+
+              writer.writeNext(entries);
+            }
+          } catch (Exception e) {
+            SysUtils.showError(context, context.getResources().getString(R.string.export_error_title), "Error exporting logfile: " + e.getMessage());
+          } finally {
+            try {
+              loader.closeLogfile();
+              writer.close();
+            } catch (Exception e) {
+              // ignored
+            }
+
+            NetworkLog.handler.post(new Runnable() {
+              public void run() {
+                if(progressDialog != null) {
+                  progressDialog.dismiss();
+                  progressDialog = null;
+                }
+              }
+            });
+          }
+        }
+      }, "ExportLogfile").start();
+    } catch (Exception e) {
+      SysUtils.showError(context, context.getResources().getString(R.string.export_error_title), "Error exporting logfile: " + e.getMessage());
+    } 
   }
 
   private class DatePickerFragment extends DialogFragment {
@@ -187,5 +364,4 @@ public class ExportDialog
         return new DatePickerDialog(getActivity(), this.listener, this.year, this.month, this.day);
       }
   }
-
 }

@@ -143,6 +143,8 @@
   <string name="export_end_date">End:</string>
   <string name="export_filename">Filename:</string>
   <string name="export_button">Export</string>
+  <string name="export_error_title">Export Error</string>
+  <string name="exporting_log">Exporting log</string>
 
   <string name="loading_apps">Loading apps</string>
 
