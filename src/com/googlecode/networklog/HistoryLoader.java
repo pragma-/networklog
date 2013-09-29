@@ -89,10 +89,8 @@ public class HistoryLoader {
 
           LogEntry entry;
           long processed_so_far = 0;
-          long next_progress_increment = 0;
-
           long progress_increment_size = (long)((length - starting_pos) * 0.01);
-          next_progress_increment = progress_increment_size;
+          long next_progress_increment = progress_increment_size;
 
           MyLog.d("[HistoryLoader] increment size: " + progress_increment_size);
 
@@ -121,11 +119,15 @@ public class HistoryLoader {
 
               NetworkLog.logFragment.onNewLogEntry(entry);
             }
-
-            loader.closeLogfile();
           } catch(Exception e) {
             Log.w("NetworkLog", "loadEntriesFromFile", e);
           } finally {
+            try {
+              loader.closeLogfile();
+            } catch (Exception e) {
+              // ignored
+            }
+
             // android.os.Debug.stopMethodTracing();
 
             NetworkLog.handler.post(new Runnable() {
