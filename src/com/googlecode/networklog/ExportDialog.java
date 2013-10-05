@@ -306,6 +306,7 @@ public class ExportDialog
           }
 
           LogEntry entry;
+          ApplicationsTracker.AppEntry appEntry;
           long processed_so_far = 0;
           long progress_increment_size = (long)((end_pos - start_pos) * 0.01);
           long next_progress_increment = progress_increment_size;
@@ -349,17 +350,19 @@ public class ExportDialog
                 break;
               }
 
+              appEntry = ApplicationsTracker.uidMap.get(entry.uidString);
+
               entries[0] = Timestamp.getTimestamp(entry.timestamp);
-              entries[1] = ApplicationsTracker.uidMap.get(entry.uidString).name;
-              entries[2] = ApplicationsTracker.uidMap.get(entry.uidString).packageName;
+              entries[1] = appEntry == null ? "Uninstalled App" : appEntry.name;
+              entries[2] = appEntry == null ? "Uninstalled App" : appEntry.packageName;
               entries[3] = entry.uidString;
               entries[4] = entry.in;
               entries[5] = entry.out;
               entries[6] = entry.src;
-              entries[7] = String.valueOf(entry.spt);
+              entries[7] = StringPool.get(entry.spt);
               entries[8] = entry.dst;
-              entries[9] = String.valueOf(entry.dpt);
-              entries[10] = String.valueOf(entry.len);
+              entries[9] = StringPool.get(entry.dpt);
+              entries[10] = StringPool.get(entry.len);
 
               writer.writeNext(entries);
             }
