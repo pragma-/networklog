@@ -6,4 +6,8 @@
     android:title="@string/copy_dst_ip"/>
   <item android:id="@+id/log_graph"
     android:title="@string/show_graph"/>
+  <item android:id="@+id/log_toggle_app_notifications"
+    android:title="@string/disable_notifications"/>
+  <item android:id="@+id/log_toggle_app_logging"
+    android:title="@string/block_app"/>
 </menu>

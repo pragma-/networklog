@@ -204,28 +204,49 @@ public class LogFragment extends Fragment {
       super.onCreateContextMenu(menu, v, menuInfo);
       MenuInflater inflater = getActivity().getMenuInflater();
       inflater.inflate(R.layout.log_context_menu, menu);
+
+      AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+      ListItem listItem = listData.get(info.position);
+
+      if(NetworkLogService.toastBlockedApps.get(listItem.app.packageName) != null) {
+        menu.findItem(R.id.log_toggle_app_notifications).setTitle(R.string.enable_notifications);
+      } else {
+        menu.findItem(R.id.log_toggle_app_notifications).setTitle(R.string.disable_notifications);
+      }
+
+      if(NetworkLogService.blockedApps.get(listItem.app.packageName) != null) {
+        menu.findItem(R.id.log_toggle_app_logging).setTitle(R.string.unblock_app);
+      } else {
+        menu.findItem(R.id.log_toggle_app_logging).setTitle(R.string.block_app);
+      }
     }
 
   @Override
     public boolean onContextItemSelected(MenuItem item) {
-      AdapterContextMenuInfo info;
-      ListItem listItem;
+      AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+      ListItem listItem = listData.get(info.position);
 
       switch(item.getItemId()) {
         case R.id.log_copy_src_ip:
-          info = (AdapterContextMenuInfo) item.getMenuInfo();
-          listItem = listData.get(info.position);
           copySourceIp(listItem);
           return true;
         case R.id.log_copy_dst_ip:
-          info = (AdapterContextMenuInfo) item.getMenuInfo();
-          listItem = listData.get(info.position);
           copyDestIp(listItem);
           return true;
         case R.id.log_graph:
-          info = (AdapterContextMenuInfo) item.getMenuInfo();
-          listItem = listData.get(info.position);
           showGraph(listItem);
+          return true;
+        case R.id.log_toggle_app_notifications:
+          if(NetworkLogService.toastBlockedApps.remove(listItem.app.packageName) == null) {
+            NetworkLogService.toastBlockedApps.put(listItem.app.packageName, listItem.app.packageName);
+          }
+          new SelectToastApps().saveBlockedApps(NetworkLog.context, NetworkLogService.toastBlockedApps);
+          return true;
+        case R.id.log_toggle_app_logging:
+          if(NetworkLogService.blockedApps.remove(listItem.app.packageName) == null) {
+            NetworkLogService.blockedApps.put(listItem.app.packageName, listItem.app.packageName);
+          }
+          new SelectBlockedApps().saveBlockedApps(NetworkLog.context, NetworkLogService.blockedApps);
           return true;
         default:
           return super.onContextItemSelected(item);

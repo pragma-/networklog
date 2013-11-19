@@ -64,6 +64,10 @@
   <string name="copy_src_ip">Copy Source IP</string>
   <string name="copy_dst_ip">Copy Dest IP</string>
   <string name="show_graph">Show Graph</string>
+  <string name="block_app">Disable Logging</string>
+  <string name="unblock_app">Enable Logging</string>
+  <string name="disable_notifications">Disable Notification</string>
+  <string name="enable_notifications">Enable Notification</string>
 
   <string name="interval_prompt">Set Interval</string>
   <string name="viewsize_prompt">Set Viewsize</string>
