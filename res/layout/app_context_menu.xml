@@ -2,6 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
   <item android:id="@+id/app_copy_ip"
     android:title="@string/copy_ip"/>
+  <item android:id="@+id/app_whois_ip"
+    android:title="@string/whois_ip"/>
   <item android:id="@+id/app_graph"
     android:title="@string/show_graph"/>
   <item android:id="@+id/app_toggle_app_notifications"

@@ -63,6 +63,9 @@
   <string name="copy_ip">Copy IP Address</string>
   <string name="copy_src_ip">Copy Source IP</string>
   <string name="copy_dst_ip">Copy Dest IP</string>
+  <string name="whois_src_ip">WHOIS Source IP</string>
+  <string name="whois_dst_ip">WHOIS Dest IP</string>
+  <string name="whois_ip">WHOIS IP Address</string>
   <string name="show_graph">Show Graph</string>
   <string name="block_app">Disable Logging</string>
   <string name="unblock_app">Enable Logging</string>

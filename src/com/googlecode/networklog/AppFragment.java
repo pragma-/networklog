@@ -40,6 +40,7 @@ import android.view.MenuInflater;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
+import android.net.Uri;
 
 /* newer API 11 clipboard unsupported on older APIs
 import android.content.ClipboardManager;
@@ -652,9 +653,9 @@ public class AppFragment extends Fragment {
       MenuInflater inflater = getActivity().getMenuInflater();
       inflater.inflate(R.layout.app_context_menu, menu);
 
-      // Hide Copy IP option if not a child item
       if (type != ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
         menu.findItem(R.id.app_copy_ip).setVisible(false);
+        menu.findItem(R.id.app_whois_ip).setVisible(false);
       }
 
       GroupItem groupItem = (GroupItem) adapter.getGroup(group);
@@ -687,6 +688,10 @@ public class AppFragment extends Fragment {
         case R.id.app_copy_ip:
           childItem = (ChildItem) adapter.getChild(groupPos, childPos);
           copyIpAddress(childItem);
+          return true;
+        case R.id.app_whois_ip:
+          childItem = (ChildItem) adapter.getChild(groupPos, childPos);
+          whoisIpAddress(childItem);
           return true;
         case R.id.app_graph:
           groupItem = (GroupItem) adapter.getGroup(groupPos);
@@ -765,6 +770,38 @@ public class AppFragment extends Fragment {
 
     /* use older deprecated ClipboardManager to support older devices */
     clipboard.setText(hostString);
+  }
+
+  void whoisIpAddress(ChildItem childItem) {
+    String hostString = "";
+
+    if(childItem.sentPackets > 0 && childItem.out != null) {
+      String sentAddressString;
+
+      if(NetworkLog.resolveHosts) {
+        sentAddressString = NetworkLog.resolver.resolveAddress(childItem.sentAddress);
+        if(sentAddressString == null) {
+          sentAddressString = childItem.sentAddress;
+        }
+      } else {
+        sentAddressString = childItem.sentAddress;
+      }
+      hostString = sentAddressString;
+    }
+    else if(childItem.receivedPackets > 0 && childItem.in != null) {
+      String receivedAddressString;
+
+      if(NetworkLog.resolveHosts) {
+        receivedAddressString = NetworkLog.resolver.resolveAddress(childItem.receivedAddress);
+        if(receivedAddressString == null) {
+          receivedAddressString = childItem.receivedAddress;
+        }
+      } else {
+        receivedAddressString = childItem.receivedAddress;
+      }
+      hostString = receivedAddressString;
+    }
+    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.whois.com/whois/" + hostString)));
   }
 
   void showGraph(int appuid) {

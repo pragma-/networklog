@@ -4,6 +4,10 @@
     android:title="@string/copy_src_ip"/>
   <item android:id="@+id/log_copy_dst_ip"
     android:title="@string/copy_dst_ip"/>
+  <item android:id="@+id/log_whois_src_ip"
+    android:title="@string/whois_src_ip"/>
+  <item android:id="@+id/log_whois_dst_ip"
+    android:title="@string/whois_dst_ip"/>
   <item android:id="@+id/log_graph"
     android:title="@string/show_graph"/>
   <item android:id="@+id/log_toggle_app_notifications"

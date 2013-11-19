@@ -32,6 +32,7 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuInflater;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.net.Uri;
 
 /* newer API 11 clipboard unsupported on older APIs
 import android.content.ClipboardManager;
@@ -236,6 +237,12 @@ public class LogFragment extends Fragment {
         case R.id.log_copy_dst_ip:
           copyDestIp(listItem);
           return true;
+        case R.id.log_whois_src_ip:
+          whoisSourceIp(listItem);
+          return true;
+        case R.id.log_whois_dst_ip:
+          whoisDestIp(listItem);
+          return true;
         case R.id.log_graph:
           showGraph(listItem);
           return true;
@@ -323,6 +330,43 @@ public class LogFragment extends Fragment {
       /* use older deprecated ClipboardManager to support older devices */
       clipboard.setText(dstAddr + ":" + dstPort);
     }
+
+    public void whoisSourceIp(ListItem item) {
+      String srcAddr;
+
+      if(NetworkLog.resolveHosts) {
+        String resolved = NetworkLog.resolver.resolveAddress(item.srcAddr);
+
+        if(resolved != null) {
+          srcAddr = resolved;
+        } else {
+          srcAddr = item.srcAddr;
+        }
+      } else {
+        srcAddr = item.srcAddr;
+      }
+
+      startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.whois.com/whois/" + srcAddr)));
+    }
+
+    public void whoisDestIp(ListItem item) {
+      String dstAddr;
+
+      if(NetworkLog.resolveHosts) {
+        String resolved = NetworkLog.resolver.resolveAddress(item.dstAddr);
+
+        if(resolved != null) {
+          dstAddr = resolved;
+        } else {
+          dstAddr = item.dstAddr;
+        }
+      } else {
+        dstAddr = item.dstAddr;
+      }
+
+      startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.whois.com/whois/" + dstAddr)));
+    }
+
 
   public void showGraph(ListItem item) {
     startActivity(new Intent(getActivity().getApplicationContext(), AppTimelineGraph.class)
