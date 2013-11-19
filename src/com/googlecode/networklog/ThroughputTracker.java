@@ -27,9 +27,11 @@ public class ThroughputTracker {
 
   public static HashMap<String, ThroughputData> throughputMap = new HashMap<String, ThroughputData>();
   public static HashMap<String, ThroughputData> resetMap = new HashMap<String, ThroughputData>();
+  
+  private static ApplicationsTracker.AppEntry appEntry;
 
   public static void updateEntry(LogEntry entry) {
-    ApplicationsTracker.AppEntry appEntry = ApplicationsTracker.uidMap.get(entry.uidString);
+    appEntry = ApplicationsTracker.uidMap.get(entry.uidString);
 
     if(appEntry == null) {
       Log.w("NetworkLog", "[ThroughputTracker] No app entry for uid " + entry.uidString);
