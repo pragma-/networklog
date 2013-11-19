@@ -223,6 +223,9 @@ public class LogFragment extends Fragment {
 
   @Override
     public boolean onContextItemSelected(MenuItem item) {
+      if(!(item.getMenuInfo() instanceof AdapterContextMenuInfo))
+        return super.onContextItemSelected(item);
+
       AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
       ListItem listItem = listData.get(info.position);
 

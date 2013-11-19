@@ -607,22 +607,6 @@ public class AppFragment extends Fragment {
         }
       });
 
-      listView.setOnItemLongClickListener(new OnItemLongClickListener() {
-        @Override
-        public boolean onItemLongClick(AdapterView parent, View v, 
-          int position, long id) 
-        {
-          /* Don't handle long clicks for child elements (will use context menu instead) */
-          if (ExpandableListView.getPackedPositionType(id) != ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
-            GroupItem group = (GroupItem) adapter.getGroup(ExpandableListView.getPackedPositionGroup(id));
-            showGraph(group.app.uid);
-            return true;
-          } else {
-            return false;
-          }
-        }
-      });
-
       listView.setOnChildClickListener(new OnChildClickListener() {
         @Override
         public boolean onChildClick(ExpandableListView parent, View v, 
@@ -665,33 +649,62 @@ public class AppFragment extends Fragment {
       int group = ExpandableListView.getPackedPositionGroup(info.packedPosition);
       int child = ExpandableListView.getPackedPositionChild(info.packedPosition);
 
-      // Only create a context menu for child items
-      if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
-        MenuInflater inflater = getActivity().getMenuInflater();
-        inflater.inflate(R.layout.app_context_menu, menu);
+      MenuInflater inflater = getActivity().getMenuInflater();
+      inflater.inflate(R.layout.app_context_menu, menu);
+
+      // Hide Copy IP option if not a child item
+      if (type != ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+        menu.findItem(R.id.app_copy_ip).setVisible(false);
+      }
+
+      GroupItem groupItem = (GroupItem) adapter.getGroup(group);
+
+      if(NetworkLogService.toastBlockedApps.get(groupItem.app.packageName) != null) {
+        menu.findItem(R.id.app_toggle_app_notifications).setTitle(R.string.enable_notifications);
+      } else {
+        menu.findItem(R.id.app_toggle_app_notifications).setTitle(R.string.disable_notifications);
+      }
+
+      if(NetworkLogService.blockedApps.get(groupItem.app.packageName) != null) {
+        menu.findItem(R.id.app_toggle_app_logging).setTitle(R.string.unblock_app);
+      } else {
+        menu.findItem(R.id.app_toggle_app_logging).setTitle(R.string.block_app);
       }
     }
 
   @Override
     public boolean onContextItemSelected(MenuItem item) {
-      ExpandableListContextMenuInfo info;
-      int groupPos;
-      int childPos;
+      if(!(item.getMenuInfo() instanceof ExpandableListContextMenuInfo))
+        return super.onContextItemSelected(item);
+
+      ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo) item.getMenuInfo();
+      int groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
+      int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
+      ChildItem childItem;
+      GroupItem groupItem;
 
       switch(item.getItemId()) {
         case R.id.app_copy_ip:
-          info = (ExpandableListContextMenuInfo) item.getMenuInfo();
-          groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
-          childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
-          ChildItem childItem = (ChildItem) adapter.getChild(groupPos, childPos);
+          childItem = (ChildItem) adapter.getChild(groupPos, childPos);
           copyIpAddress(childItem);
           return true;
         case R.id.app_graph:
-          info = (ExpandableListContextMenuInfo) item.getMenuInfo();
-          groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
-          childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
-          GroupItem groupItem = (GroupItem) adapter.getGroup(groupPos);
+          groupItem = (GroupItem) adapter.getGroup(groupPos);
           showGraph(groupItem.app.uid);
+          return true;
+        case R.id.app_toggle_app_notifications:
+          groupItem = (GroupItem) adapter.getGroup(groupPos);
+          if(NetworkLogService.toastBlockedApps.remove(groupItem.app.packageName) == null) {
+            NetworkLogService.toastBlockedApps.put(groupItem.app.packageName, groupItem.app.packageName);
+          }
+          new SelectToastApps().saveBlockedApps(NetworkLog.context, NetworkLogService.toastBlockedApps);
+          return true;
+        case R.id.app_toggle_app_logging:
+          groupItem = (GroupItem) adapter.getGroup(groupPos);
+          if(NetworkLogService.blockedApps.remove(groupItem.app.packageName) == null) {
+            NetworkLogService.blockedApps.put(groupItem.app.packageName, groupItem.app.packageName);
+          }
+          new SelectBlockedApps().saveBlockedApps(NetworkLog.context, NetworkLogService.blockedApps);
           return true;
         default:
           return super.onContextItemSelected(item);
