@@ -65,6 +65,7 @@ public class NetworkLogService extends Service {
   public static int toastYOffset;
   public static int toastOpacity;
   public static boolean toastShowAddress;
+  public static HashMap<String, String> blockedApps;
   public static HashMap<String, String> toastBlockedApps;
   public static boolean invertUploadDownload;
   public static boolean behindFirewall;
@@ -141,7 +142,7 @@ public class NetworkLogService extends Service {
   private static NotificationManager nManager;
   private static Notification notification;
   private static int notificationIcon;
-  private LogEntry entry;
+  private static LogEntry entry;
   private static Boolean start_foreground = true;
   private NetStat netstat = new NetStat();
   private FastParser parser = new FastParser();
@@ -327,7 +328,8 @@ public class NetworkLogService extends Service {
       toastYOffset = NetworkLog.settings.getToastNotificationsYOffset();
       toastOpacity = NetworkLog.settings.getToastNotificationsOpacity();
       toastShowAddress = NetworkLog.settings.getToastNotificationsShowAddress();
-      toastBlockedApps = SelectToastApps.loadBlockedApps(this);
+      toastBlockedApps = new SelectToastApps().loadBlockedApps(this);
+      blockedApps = new SelectBlockedApps().loadBlockedApps(this);
       invertUploadDownload = NetworkLog.settings.getInvertUploadDownload();
       behindFirewall = NetworkLog.settings.getBehindFirewall();
       watchRules = NetworkLog.settings.getWatchRules();
@@ -782,7 +784,16 @@ public class NetworkLogService extends Service {
     }
   }
 
+  private static ApplicationsTracker.AppEntry appEntry;
+
   public void notifyNewEntry(LogEntry entry) {
+    appEntry = ApplicationsTracker.uidMap.get(entry.uidString);
+
+    // check if logging is disabled for this entry's app
+    if(appEntry != null && blockedApps.get(appEntry.packageName) != null) {
+      return;
+    }
+
     // check if logfile needs to be opened and that external storage is available
     if(logWriter == null) {
       if(android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {

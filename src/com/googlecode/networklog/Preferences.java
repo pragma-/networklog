@@ -34,7 +34,9 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
     boolean clearlog_dialog_showing;
     boolean clearlog_progress_dialog_showing;
     boolean selectToastApps_dialog_showing;
-    ArrayList<SelectToastApps.AppItem> selectToastApps_appData;
+    ArrayList<AppsSelector.AppItem> selectToastApps_appData;
+    boolean selectBlockedApps_dialog_showing;
+    ArrayList<AppsSelector.AppItem> selectBlockedApps_appData;
 
     InstanceData() {
       history_dialog_showing = NetworkLog.history.dialog_showing;
@@ -45,6 +47,11 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
       if(NetworkLog.selectToastApps != null && NetworkLog.selectToastApps.dialog != null && NetworkLog.selectToastApps.dialog.isShowing()) {
         selectToastApps_dialog_showing = true;
         selectToastApps_appData = NetworkLog.selectToastApps.appData;
+      }
+
+      if(NetworkLog.selectBlockedApps != null && NetworkLog.selectBlockedApps.dialog != null && NetworkLog.selectBlockedApps.dialog.isShowing()) {
+        selectBlockedApps_dialog_showing = true;
+        selectBlockedApps_appData = NetworkLog.selectBlockedApps.appData;
       }
     }
   }
@@ -72,6 +79,11 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
         NetworkLog.clearLog.progressDialog = null;
       }
 
+      if(NetworkLog.selectBlockedApps != null && NetworkLog.selectBlockedApps.dialog != null && NetworkLog.selectBlockedApps.dialog.isShowing()) {
+        NetworkLog.selectBlockedApps.dialog.dismiss();
+        NetworkLog.selectBlockedApps = null;
+      }
+
       if(NetworkLog.selectToastApps != null && NetworkLog.selectToastApps.dialog != null && NetworkLog.selectToastApps.dialog.isShowing()) {
         NetworkLog.selectToastApps.dialog.dismiss();
         NetworkLog.selectToastApps = null;
@@ -97,6 +109,7 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
 
       findPreference("logfile").setOnPreferenceClickListener(this);
       findPreference("filter_dialog").setOnPreferenceClickListener(this);
+      findPreference("manage_apps_dialog").setOnPreferenceClickListener(this);
       findPreference("notifications_toast_apps_dialog").setOnPreferenceClickListener(this);
       findPreference("clear_log").setOnPreferenceClickListener(this);
       findPreference("sort_by").setOnPreferenceChangeListener(this);
@@ -212,6 +225,11 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
           NetworkLog.clearLog.showProgressDialog(this);
         }
 
+        if(data.selectBlockedApps_dialog_showing) {
+          NetworkLog.selectBlockedApps = new SelectBlockedApps();
+          NetworkLog.selectBlockedApps.showDialog(this, data.selectBlockedApps_appData);
+        }
+
         if(data.selectToastApps_dialog_showing) {
           NetworkLog.selectToastApps = new SelectToastApps();
           NetworkLog.selectToastApps.showDialog(this, data.selectToastApps_appData);
@@ -254,6 +272,13 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
   @Override
     public boolean onPreferenceClick(Preference preference) {
       MyLog.d("Preference [" + preference.getKey() + "] clicked");
+
+      if(preference.getKey().equals("manage_apps_dialog")) 
+      {
+        NetworkLog.selectBlockedApps = new SelectBlockedApps();
+        NetworkLog.selectBlockedApps.showDialog(this);
+        return true;
+      }
 
       if(preference.getKey().equals("notifications_toast_apps_dialog")) 
       {

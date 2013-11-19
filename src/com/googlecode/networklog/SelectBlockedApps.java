@@ -10,22 +10,22 @@ import android.content.Context;
 
 import java.io.File;
 
-public class SelectToastApps extends AppsSelector
+public class SelectBlockedApps extends AppsSelector
 {
-  public SelectToastApps() {
-    name = "blocked notifications";  // TODO: use string resource
+  public SelectBlockedApps() {
+    name = "blocked apps";  // TODO: use string resource
   }
 
   public File getSaveFile(Context context) {
-    return new File(context.getDir("data", Context.MODE_PRIVATE), "blockedtoasts.txt");
+    return new File(context.getDir("data", Context.MODE_PRIVATE), "blockedapps.txt");
   }
 
   public void negativeButton() {
-    NetworkLog.selectToastApps = null;
+    NetworkLog.selectBlockedApps = null;
   }
 
   public void positiveButton() {
-    NetworkLogService.toastBlockedApps = apps;
-    NetworkLog.selectToastApps = null;
+    NetworkLogService.blockedApps = apps;
+    NetworkLog.selectBlockedApps = null;
   }
 }
