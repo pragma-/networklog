@@ -295,13 +295,8 @@ public class NetworkLog extends SherlockFragmentActivity {
     NetworkLogService.toastOpacity = settings.getToastNotificationsOpacity();
     NetworkLogService.toastShowAddress = settings.getToastNotificationsShowAddress();
 
-    selectBlockedApps = new SelectBlockedApps();
-    NetworkLogService.blockedApps = selectBlockedApps.loadBlockedApps(this);
-    selectBlockedApps = null;
-
-    selectToastApps = new SelectToastApps();
-    NetworkLogService.toastBlockedApps = selectToastApps.loadBlockedApps(this);
-    selectToastApps = null;
+    NetworkLogService.blockedApps = new SelectBlockedApps().loadBlockedApps(this);
+    NetworkLogService.toastBlockedApps = new SelectToastApps().loadBlockedApps(this);
   }
 
   private static class MyFragmentPagerAdapter extends FragmentPagerAdapter implements TitleProvider {
