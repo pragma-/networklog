@@ -185,6 +185,9 @@
   <string name="warning">Warning</string>
   <string name="warning_disabling_notification">Disabling the notification/foreground state will allow Android to kill this service at any time, which may disrupt logging.</string>
 
+  <string name="log_method_not_applicable_title">Alternate logging methods not supported</string>
+  <string name="log_method_not_applicable_text">Changing the logging method will have no effect on this device due to missing kernel features.  Only the app built-in logging method will be used.</string>
+
   <string name="coming_soon_title">Coming soon</string>
   <string name="coming_soon_text">Sorry, this feature is not yet available.</string>
 

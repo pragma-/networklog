@@ -17,9 +17,13 @@ import java.io.BufferedWriter;
 import java.util.HashMap;
 
 public class Iptables {
-  public static HashMap<String, String> targets;
+  public static HashMap<String, String> targets = null;
 
   public static boolean getTargets(Context context) {
+    if(targets != null) {
+      return true;
+    }
+
     String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
     String grepBinary = SysUtils.getGrepBinary();
 

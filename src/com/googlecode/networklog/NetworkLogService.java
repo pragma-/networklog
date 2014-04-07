@@ -887,13 +887,13 @@ public class NetworkLogService extends Service {
       return false;
     }
 
-    if(Iptables.targets.get("NFLOG") != null) {
-      binary = SysUtils.getNflogBinary();
+    if(Iptables.targets.get("LOG") != null) {
+      binary = SysUtils.getGrepBinary();
       if(binary == null) {
         return false;
       }
-    } else if(Iptables.targets.get("LOG") != null) {
-      binary = SysUtils.getGrepBinary();
+    } else if(Iptables.targets.get("NFLOG") != null) {
+      binary = SysUtils.getNflogBinary();
       if(binary == null) {
         return false;
       }
@@ -908,10 +908,10 @@ public class NetworkLogService extends Service {
 
       try {
         PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        if(Iptables.targets.get("NFLOG") != null) {
-          script.println(binaryPath + " 0");
-        } else if(Iptables.targets.get("LOG") != null) {
+        if(Iptables.targets.get("LOG") != null) {
           script.println(binaryPath + " {NL} /proc/kmsg");
+        } else if(Iptables.targets.get("NFLOG") != null) {
+          script.println(binaryPath + " 0");
         }
         script.close();
       } catch(java.io.IOException e) {
@@ -920,17 +920,22 @@ public class NetworkLogService extends Service {
 
       MyLog.d("Starting iptables logger");
 
-      switch(NetworkLog.settings.getLogMethod()) {
-        case 1:
-          loggerCommand = new ShellCommand(new String[] { "su", "-c", "grep '{NL}' /proc/kmsg" }, "NetworkLogger");
-          binary = "grep";
-          break;
-        case 2:
-          loggerCommand = new ShellCommand(new String[] { "su", "-c", "cat /proc/kmsg" }, "NetworkLogger");
-          binary = "cat";
-          break;
-        default:
-          loggerCommand = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "NetworkLogger");
+      if(Iptables.targets.get("LOG") == null) {
+        // only NFLOG is supported
+        loggerCommand = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "NetworkLogger");
+      } else {
+        switch(NetworkLog.settings.getLogMethod()) {
+          case 1:
+            loggerCommand = new ShellCommand(new String[] { "su", "-c", "grep '{NL}' /proc/kmsg" }, "NetworkLogger");
+            binary = "grep";
+            break;
+          case 2:
+            loggerCommand = new ShellCommand(new String[] { "su", "-c", "cat /proc/kmsg" }, "NetworkLogger");
+            binary = "cat";
+            break;
+          default:
+            loggerCommand = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "NetworkLogger");
+        }
       }
 
       loggerCommand.start(false);

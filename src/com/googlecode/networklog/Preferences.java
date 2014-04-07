@@ -109,6 +109,7 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
 
       findPreference("logfile").setOnPreferenceClickListener(this);
       findPreference("filter_dialog").setOnPreferenceClickListener(this);
+      findPreference("log_method").setOnPreferenceClickListener(this);
       findPreference("manage_apps_dialog").setOnPreferenceClickListener(this);
       findPreference("notifications_toast_apps_dialog").setOnPreferenceClickListener(this);
       findPreference("clear_log").setOnPreferenceClickListener(this);
@@ -273,15 +274,35 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
     public boolean onPreferenceClick(Preference preference) {
       MyLog.d("Preference [" + preference.getKey() + "] clicked");
 
-      if(preference.getKey().equals("manage_apps_dialog")) 
-      {
+      if(preference.getKey().equals("log_method")) {
+        if(Iptables.getTargets(this)) {
+          if(Iptables.targets.get("LOG") == null) {
+            Log.w("NetworkLog", "Logging method preference not applicable to this device");
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(getString(R.string.log_method_not_applicable_title))
+              .setMessage(getString(R.string.log_method_not_applicable_text))
+              .setCancelable(true)
+              .setNeutralButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                  dialog.dismiss();
+                }
+              });
+            AlertDialog alert = builder.create();
+            alert.show();
+
+            return true;
+          }
+        }
+      }
+
+      if(preference.getKey().equals("manage_apps_dialog")) {
         NetworkLog.selectBlockedApps = new SelectBlockedApps();
         NetworkLog.selectBlockedApps.showDialog(this);
         return true;
       }
 
-      if(preference.getKey().equals("notifications_toast_apps_dialog")) 
-      {
+      if(preference.getKey().equals("notifications_toast_apps_dialog")) {
         NetworkLog.selectToastApps = new SelectToastApps();
         NetworkLog.selectToastApps.showDialog(this);
         return true;
