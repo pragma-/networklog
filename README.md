@@ -53,18 +53,18 @@ Full source code available at [http://code.google.com/p/iptableslog/source/list]
 
 _Note: While the app itself is designed to use minimal CPU/battery, you can further reduce the CPU/battery use by exiting the app after starting the logging service._
 
-<a href="http://imgbin.org/images/11405.png"><img height="535" width="320" src="http://imgbin.org/images/11405.png"></img></a>
+<a href="http://i.imgur.com/Z1bwVUG.jpg"><img height="535" width="320" src="http://i.imgur.com/Z1bwVUG.jpg"></img></a>
 &nbsp;
-<a href="http://imgbin.org/images/10967.png"><img height="535" width="320" src="http://imgbin.org/images/10967.png"></img></a>
+<a href="http://i.imgur.com/NwpzkkA.jpg"><img height="535" width="320" src="http://i.imgur.com/NwpzkkA.jpg"></img></a>
 &nbsp;
-<a href="http://imgbin.org/images/11311.png"><img height="535" width="320" src="http://imgbin.org/images/11311.png"></img></a>
+<a href="http://i.imgur.com/5NPPvXf.jpg"><img height="535" width="320" src="http://i.imgur.com/5NPPvXf.jpg"></img></a>
 &nbsp;
-<a href="http://imgbin.org/images/11312.png"><img height="535" width="320" src="http://imgbin.org/images/11312.png"></img></a>
+<a href="http://i.imgur.com/PHnXZFk.jpg"><img height="535" width="320" src="http://i.imgur.com/PHnXZFk.jpg"></img></a>
 &nbsp;
-<a href="http://imgbin.org/images/11936.png"><img height="535" width="320" src="http://imgbin.org/images/11936.png"></img></a>
+<a href="http://i.imgur.com/x9hl4tK.jpg"><img height="535" width="320" src="http://i.imgur.com/x9hl4tK.jpg"></img></a>
 &nbsp;
-<a href="http://imgbin.org/images/10963.png"><img height="535" width="320" src="http://imgbin.org/images/10963.png"></img></a>
+<a href="http://i.imgur.com/Um7OArJ.jpg"><img height="535" width="320" src="http://i.imgur.com/Um7OArJ.jpg"></img></a>
 &nbsp;
-<a href="http://imgbin.org/images/10964.png"><img height="535" width="320" src="http://imgbin.org/images/10964.png"></img></a>
+<a href="http://i.imgur.com/hND5qlO.jpg"><img height="535" width="320" src="http://i.imgur.com/hND5qlO.jpg"></img></a>
 &nbsp;
-<a href="http://imgbin.org/images/10965.png"><img height="535" width="320" src="http://imgbin.org/images/10965.png"></img></a>
+<a href="http://i.imgur.com/rzL0GXf.jpg"><img height="535" width="320" src="http://i.imgur.com/rzL0GXf.jpg"></img></a>
