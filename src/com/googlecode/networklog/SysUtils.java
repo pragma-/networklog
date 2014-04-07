@@ -15,6 +15,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.FileWriter;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.BufferedWriter;
@@ -214,5 +215,37 @@ public class SysUtils {
         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         .putExtra("title", title)
         .putExtra("message", message));
+  }
+
+  public static void applySamsungFix(final Context context) {
+    if(Build.BRAND.toLowerCase().contains("samsung") || Build.MANUFACTURER.toLowerCase().contains("samsung")) {
+      try {
+        FileInputStream fis = context.openFileInput("samsung_fixed");
+        // fix already applied
+        fis.close();
+        return;
+      } catch (Exception e) { /* ignored */ }
+
+      ShellCommand command = new ShellCommand(new String[] { "grep" }, "TestForGrep");
+      command.start(true);
+
+      Log.d("NetworkLog", "Test for grep exit val: " + command.exitval);
+
+      if(command.exitval < 0 || command.exitval > 2) {
+        // use cat if grep not found
+        NetworkLog.settings.setLogMethod(2);
+      } else {
+        // use grep
+        NetworkLog.settings.setLogMethod(1);
+      }
+
+      try {
+        FileOutputStream fos = context.openFileOutput("samsung_fixed", Context.MODE_PRIVATE);
+        fos.close();
+        return;
+      } catch (Exception e) {
+        Log.w("NetworkLog", "Exception saving record of applying Samsung fix", e);
+      }
+    }
   }
 }

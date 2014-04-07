@@ -259,6 +259,8 @@ public class NetworkLog extends SherlockFragmentActivity {
       settings = new Settings(this);
     }
 
+    SysUtils.applySamsungFix(this);
+
     filterTextInclude = settings.getFilterTextInclude();
     FilterUtils.buildList(filterTextInclude, filterTextIncludeList);
     filterUidInclude = settings.getFilterUidInclude();
