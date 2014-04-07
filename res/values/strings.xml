@@ -118,9 +118,13 @@
   <string name="select_all">Select all</string>
   <string name="select_none">Select none</string>
 
-  <string name="log_method_default">Default</string>
-  <string name="log_method_one">Fast alternative</string>
-  <string name="log_method_two">Safe alternative</string>
+  <string name="log_method_default">App built-in</string>
+  <string name="log_method_one">System built-in</string>
+  <string name="log_method_two">Alternative system built-in</string>
+
+  <string name="log_method_default_subtitle">Use app logging command</string>
+  <string name="log_method_one_subtitle">Use system logging command</string>
+  <string name="log_method_two_subtitle">Select this only if the above methods do not work</string>
 
   <string name="position_top">Top</string>
   <string name="position_bottom">Bottom</string>
