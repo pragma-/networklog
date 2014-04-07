@@ -72,6 +72,7 @@ public class ShellCommand {
         }
       }
     }
+    finish();
   }
 
   public void finish() {
@@ -96,8 +97,6 @@ public class ShellCommand {
     } catch(IllegalThreadStateException e) {
       return false;
     }
-
-    finish();
     return true;
   }
 
@@ -168,7 +167,7 @@ public class ShellCommand {
         }
       } else {
         MyLog.d("readStdout [" + tag + "] no data");
-        return "";
+        return null;
       }
     } catch(Exception e) {
       Log.e("NetworkLog", "readStdout error", e);

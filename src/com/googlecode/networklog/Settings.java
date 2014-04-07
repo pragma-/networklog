@@ -228,6 +228,10 @@ public class Settings implements OnSharedPreferenceChangeListener {
     return prefs.getLong("viewsize", 1000 * 60 * 60 * 4);
   }
 
+  public int getLogMethod() {
+    return Integer.parseInt(prefs.getString("log_method", "0"));
+  }
+
   public void setResolveHosts(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("resolve_hosts", value);
@@ -484,13 +488,19 @@ public class Settings implements OnSharedPreferenceChangeListener {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putString("history_size", value);
     editor.commit();
-   }
+  }
 
   public void setClearLogTimerange(String value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putString("clearlog_timerange", value);
     editor.commit();
-   }
+  }
+
+  public void setLogMethod(int value) {
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putString("log_method", String.valueOf(value));
+    editor.commit();
+  }
 
   public void setLogFile(String value) {
     String oldValue = prefs.getString("logfile", null);
@@ -523,6 +533,15 @@ public class Settings implements OnSharedPreferenceChangeListener {
   @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
       MyLog.d("Shared prefs changed: [" + key + "]");
+
+      if(key.equals("log_method")) {
+        int value = Integer.parseInt(prefs.getString(key, "0"));
+        MyLog.d("New " + key + " value [" + value + "]");
+        if(NetworkLogService.instance != null) {
+          NetworkLog.instance.stopService();
+          NetworkLog.instance.startService();
+        }
+      }
 
       if(key.equals("logfile")) {
         String value = prefs.getString(key, null);

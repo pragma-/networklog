@@ -134,6 +134,18 @@
     <item>230400000</item>
   </string-array>
 
+  <string-array name="log_method_entries">
+    <item>@string/log_method_default</item>
+    <item>@string/log_method_one</item>
+    <item>@string/log_method_two</item>
+  </string-array>
+
+  <string-array name="log_method_values">
+    <item>0</item>
+    <item>1</item>
+    <item>2</item>
+  </string-array>
+
   <string-array name="toast_position_entries">
     <item>@string/position_top</item>
     <item>@string/position_bottom</item>

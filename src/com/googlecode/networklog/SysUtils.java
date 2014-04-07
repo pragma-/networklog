@@ -147,8 +147,6 @@ public class SysUtils {
         showError(context, res.getString(R.string.error_default_title), String.format(res.getString(R.string.error_install_binary_text), binary) + e.getMessage());
         return false;
       }
-    } else {
-      MyLog.d(binary + " found at " + path);
     }
 
     return true;

@@ -118,6 +118,10 @@
   <string name="select_all">Select all</string>
   <string name="select_none">Select none</string>
 
+  <string name="log_method_default">Default</string>
+  <string name="log_method_one">Fast alternative</string>
+  <string name="log_method_two">Safe alternative</string>
+
   <string name="position_top">Top</string>
   <string name="position_bottom">Bottom</string>
   <string name="position_default">Default</string>
@@ -232,6 +236,8 @@
   <string name="pref_atexit_summary">Stop logging when this app exits</string>
   <string name="pref_foreground_title">Start foreground</string>
   <string name="pref_foreground_summary">Prevent Android from killing service. Disabling this will remove the status bar notification</string>
+  <string name="pref_log_method_title">Logging method</string>
+  <string name="pref_log_method_summary">Choose an alternative logging method to work around device-specific issues</string>
 
   <string name="pref_notifications">Connection Notifications</string>
   <string name="pref_toast_title">Toast pop-up</string>

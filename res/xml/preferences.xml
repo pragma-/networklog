@@ -143,6 +143,14 @@
         android:key="start_foreground"
         android:title="@string/pref_foreground_title"
         android:summary="@string/pref_foreground_summary" />
+      <ListPreference
+        android:defaultValue="0"
+        android:key="log_method"
+        android:title="@string/pref_log_method_title"
+        android:summary="@string/pref_log_method_summary"
+        android:entries="@array/log_method_entries"
+        android:entryValues="@array/log_method_values"
+        android:dialogTitle="@string/pref_log_method_title" />
     </PreferenceCategory>
   </PreferenceScreen>
 
