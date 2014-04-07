@@ -222,7 +222,7 @@ static int log_cb(const struct nlmsghdr *nlh, void *data)
     }
 
     puts("");
-    fflush(stdout); // apparently this is necessary for some devices
+    fflush(stdout); // apparently this is necessary for some devices!
 
     return MNL_CB_OK;
 }
