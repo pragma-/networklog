@@ -14,7 +14,8 @@ function logcat_networklog() { adb $1 logcat -c && adb $1 logcat -v time | tee l
 function logcat_all() { adb $1 logcat -c && adb $1 logcat -v time | tee log-`date +%Y%m%d-%H:%M.%N`; }
 function meminfo() { adb shell dumpsys meminfo; }
 function procrank_sample() { adb shell procrank | grep networklog | tee procrank-`date +%Y%m%d-%H:%M.%N`; }
-function build_install_and_logcat() { release_build && install_device && logcat_networklog; }
+function build_install_and_logcat() { release_build && install_device && logcat_all; }
+function build_install_emulator_and_logcat() { release_build && install_emulator && logcat_all; }
 
 function check_status()
 {
@@ -46,6 +47,7 @@ function push()
 }
 
 alias b=build_install_and_logcat
+alias be=build_install_emulator_and_logcat
 alias c=clean
 alias id=install_device
 alias ie=install_emulator
