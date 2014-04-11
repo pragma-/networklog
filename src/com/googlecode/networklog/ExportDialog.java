@@ -21,10 +21,8 @@ import android.view.LayoutInflater;
 import android.os.Environment;
 
 import java.io.File;
-import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.FutureTask;
