@@ -52,8 +52,6 @@ import java.util.ArrayList;
 import java.io.File;
 
 public class NetworkLog extends SherlockFragmentActivity {
-  public static final String SCRIPT = "networklog.sh";
-
   public static RetainInstanceData data = null;
 
   public static ViewPager viewPager;
@@ -112,6 +110,8 @@ public class NetworkLog extends SherlockFragmentActivity {
 
   public static Context context;
   public static Menu menu;
+
+  public static InteractiveShell shell;
 
   public static NetworkLog instance;
 
@@ -451,6 +451,12 @@ public class NetworkLog extends SherlockFragmentActivity {
       if(data == null) {
         initRunner = new InitRunner(this);
         new Thread(initRunner, "Initialization " + initRunner).start();
+        shell = SysUtils.createRootShell(this, "RootShell", true);
+
+        if(shell == null) {
+          Log.e("NetworkLog", "Failed to create root shell");
+        }
+        // TODO: text for shell exit
       } else {
         state = data.networkLogState;
 
@@ -459,12 +465,15 @@ public class NetworkLog extends SherlockFragmentActivity {
           new Thread(initRunner, "Initialization " + initRunner).start();
         }
 
+        shell = data.networkLogShell;
+
         // all data should be restored at this point, release the object
         data = null;
         MyLog.d("data object released");
 
         state = NetworkLog.State.RUNNING;
       }
+
       statusUpdater = new StatusUpdater();
       new Thread(statusUpdater, "StatusUpdater").start();
       ThroughputTracker.updateThroughput(0, 0);
@@ -498,6 +507,10 @@ public class NetworkLog extends SherlockFragmentActivity {
           ApplicationsTracker.stopWatchingPackages();
         } else if(NetworkLogService.instance == null) {
           ApplicationsTracker.stopWatchingPackages();
+        }
+
+        if(shell != null) {
+          shell.close();
         }
       } else {
         // changing configuration

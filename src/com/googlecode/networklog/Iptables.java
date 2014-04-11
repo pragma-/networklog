@@ -10,11 +10,9 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.util.Log;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.FileWriter;
-import java.io.BufferedWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class Iptables {
   public static HashMap<String, String> targets = null;
@@ -24,61 +22,37 @@ public class Iptables {
       return true;
     }
 
-    String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
-    String grepBinary = SysUtils.getGrepBinary();
-
-    if(grepBinary == null) {
+    if(!NetworkLog.shell.sendCommand("cat /proc/net/ip_tables_targets")) {
+      SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), NetworkLog.shell.getError(true));
       return false;
     }
 
-    String grep  = context.getFilesDir().getAbsolutePath() + File.separator + grepBinary;
-
-    synchronized(NetworkLog.SCRIPT) {
-      try {
-        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        script.println(grep + " \\.\\* /proc/net/ip_tables_targets");
-        script.flush();
-        script.close();
-      } catch(java.io.IOException e) {
-        Log.e("NetworkLog", "getTargets error", e);
+    List<String> output = new ArrayList<String>();
+    if(NetworkLog.shell.waitForCommandExit(output) != 0) {
+      String error = "";
+      for(String line : output) {
+        error += line;
       }
-
-      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "getTargets");
-      command.start(false);
-
-      if(command.error != null) {
-        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), command.error);
-        return false;
-      }
-
-      targets = new HashMap<String, String>();
-
-      StringBuilder result = new StringBuilder();
-      String line;
-      while(true) {
-        line = command.readStdoutBlocking();
-        if(line == null) {
-          break;
-        }
-        line = line.trim();
-        targets.put(line, line);
-        result.append(line).append(" ");;
-      }
-
-      command.waitForExit();
-      if(command.exitval != 0) {
-        Log.e("NetworkLog", "Bad exit for getTargets (exit " + command.exitval + ")");
-        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), result.toString());
-        return false;
-      }
-
-      MyLog.d("getTargets result: [" + result + "]");
-      return true;
+      Log.e("NetworkLog", "Bad exit for getTargets (exit " + NetworkLog.shell.exitval + ")");
+      SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), error);
+      return false;
     }
+
+    targets = new HashMap<String, String>();
+
+    StringBuilder result = new StringBuilder();
+    for(String line : output) {
+      line = line.trim();
+      targets.put(line, line);
+      result.append(line).append(" ");
+    }
+
+    MyLog.d("getTargets result: [" + result + "]");
+    return true;
   }
 
   public static boolean addRules(Context context) {
-    String iptablesBinary = SysUtils.getIptablesBinary();
+    String iptablesBinary = SysUtils.getIptablesBinary(context);
     if(iptablesBinary == null) {
       return false;
     }
@@ -91,69 +65,54 @@ public class Iptables {
       removeRules(context);
     }
 
-    synchronized(NetworkLog.SCRIPT) {
-      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
-      String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + iptablesBinary;
+    ArrayList<String> commands = new ArrayList<String>();
 
-      try {
-        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-
-        if(targets.get("LOG") != null) {
-          if(NetworkLogService.behindFirewall) {
-            script.println(iptables + " -A OUTPUT ! -o lo -j LOG --log-prefix \"{NL}\" --log-uid");
-            script.println(iptables + " -A INPUT ! -i lo -j LOG --log-prefix \"{NL}\" --log-uid");
-          } else {
-            script.println(iptables + " -I OUTPUT 1 ! -o lo -j LOG --log-prefix \"{NL}\" --log-uid");
-            script.println(iptables + " -I INPUT 1 ! -i lo -j LOG --log-prefix \"{NL}\" --log-uid");
-          }
-        } else if(targets.get("NFLOG") != null) {
-          if(NetworkLogService.behindFirewall) {
-            script.println(iptables + " -A OUTPUT ! -o lo -j NFLOG --nflog-prefix \"{NL}\"");
-            script.println(iptables + " -A INPUT ! -i lo -j NFLOG --nflog-prefix \"{NL}\"");
-          } else {
-            script.println(iptables + " -I OUTPUT 1 ! -o lo -j NFLOG --nflog-prefix \"{NL}\"");
-            script.println(iptables + " -I INPUT 1 ! -i lo -j NFLOG --nflog-prefix \"{NL}\"");
-          }
-        } else {
-          SysUtils.showError(context,
-              context.getResources().getString(R.string.iptables_error_unsupported_title),
-              context.getResources().getString(R.string.iptables_error_missingfeatures_text));
-          script.close();
-          return false;
-        }
-
-        script.flush();
-        script.close();
-      } catch(java.io.IOException e) {
-        Log.e("NetworkLog", "addRules error", e);
+    if(targets.get("LOG") != null) {
+      if(NetworkLogService.behindFirewall) {
+        commands.add(iptablesBinary + " -A OUTPUT ! -o lo -j LOG --log-prefix \"{NL}\" --log-uid");
+        commands.add(iptablesBinary + " -A INPUT ! -i lo -j LOG --log-prefix \"{NL}\" --log-uid");
+      } else {
+        commands.add(iptablesBinary + " -I OUTPUT 1 ! -o lo -j LOG --log-prefix \"{NL}\" --log-uid");
+        commands.add(iptablesBinary + " -I INPUT 1 ! -i lo -j LOG --log-prefix \"{NL}\" --log-uid");
       }
+    } else if(targets.get("NFLOG") != null) {
+      if(NetworkLogService.behindFirewall) {
+        commands.add(iptablesBinary + " -A OUTPUT ! -o lo -j NFLOG --nflog-prefix \"{NL}\"");
+        commands.add(iptablesBinary + " -A INPUT ! -i lo -j NFLOG --nflog-prefix \"{NL}\"");
+      } else {
+        commands.add(iptablesBinary + " -I OUTPUT 1 ! -o lo -j NFLOG --nflog-prefix \"{NL}\"");
+        commands.add(iptablesBinary + " -I INPUT 1 ! -i lo -j NFLOG --nflog-prefix \"{NL}\"");
+      }
+    } else {
+      SysUtils.showError(context,
+          context.getResources().getString(R.string.iptables_error_unsupported_title),
+          context.getResources().getString(R.string.iptables_error_missingfeatures_text));
+      return false;
+    }
 
-      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "addRules");
-      command.start(false);
-
-      if(command.error != null) {
-        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_add_rules), command.error);
+    for(String command : commands) {
+      if(!NetworkLog.shell.sendCommand(command)) {
+        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_add_rules), NetworkLog.shell.getError(true));
         return false;
       }
 
+      List<String> output = new ArrayList<String>();
+      NetworkLog.shell.waitForCommandExit(output);
+
       StringBuilder result = new StringBuilder();
-      String line;
-      while(true) {
-        line = command.readStdoutBlocking();
-        if(line == null) {
-          break;
-        }
+      for(String line : output) {
         result.append(line);
       }
 
-      command.waitForExit();
-      if(command.exitval != 0) {
-        Log.e("NetworkLog", "Bad exit for addRules (exit " + command.exitval + ")");
+      if(MyLog.enabled) {
+        MyLog.d("addRules result: [" + result + "]");
+      }
+
+      if(NetworkLog.shell.exitval != 0) {
+        Log.e("NetworkLog", "Bad exit for addRules (exit " + NetworkLog.shell.exitval + ")");
         SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_add_rules), result.toString());
         return false;
       }
-
-      MyLog.d("addRules result: [" + result + "]");
 
       if(result.indexOf("No chain/target/match by that name", 0) != -1) {
         Resources res = context.getResources();
@@ -168,7 +127,7 @@ public class Iptables {
   }
 
   public static boolean removeRules(Context context) {
-    String iptablesBinary = SysUtils.getIptablesBinary();
+    String iptablesBinary = SysUtils.getIptablesBinary(context);
     if(iptablesBinary == null) {
       return false;
     }
@@ -177,50 +136,53 @@ public class Iptables {
       return false;
     }
 
-    String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + iptablesBinary;
     int tries = 0;
 
     while(checkRules(context) == true) {
-      synchronized(NetworkLog.SCRIPT) {
-        String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
+      ArrayList<String> commands = new ArrayList<String>();
+      if(targets.get("NFLOG") != null) {
+        commands.add(iptablesBinary + " -D OUTPUT ! -o lo -j NFLOG --nflog-prefix \"{NL}\"");
+        commands.add(iptablesBinary + " -D INPUT ! -i lo -j NFLOG --nflog-prefix \"{NL}\"");
+      } else if(targets.get("LOG") != null) {
+        commands.add(iptablesBinary + " -D OUTPUT ! -o lo -j LOG --log-prefix \"{NL}\" --log-uid");
+        commands.add(iptablesBinary + " -D INPUT ! -i lo -j LOG --log-prefix \"{NL}\" --log-uid");
+      } else {
+        SysUtils.showError(context,
+            context.getResources().getString(R.string.iptables_error_unsupported_title),
+            context.getResources().getString(R.string.iptables_error_missingfeatures_text));
+        return false;
+      }
 
-        try {
-          PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-
-          if(targets.get("NFLOG") != null) {
-            script.println(iptables + " -D OUTPUT ! -o lo -j NFLOG --nflog-prefix \"{NL}\"");
-            script.println(iptables + " -D INPUT ! -i lo -j NFLOG --nflog-prefix \"{NL}\"");
-          } else if(targets.get("LOG") != null) {
-            script.println(iptables + " -D OUTPUT ! -o lo -j LOG --log-prefix \"{NL}\" --log-uid");
-            script.println(iptables + " -D INPUT ! -i lo -j LOG --log-prefix \"{NL}\" --log-uid");
-          } else {
-            SysUtils.showError(context,
-                context.getResources().getString(R.string.iptables_error_unsupported_title),
-                context.getResources().getString(R.string.iptables_error_missingfeatures_text));
-            script.close();
-            return false;
-          }
-
-          script.flush();
-          script.close();
-        } catch(java.io.IOException e) {
-          Log.e("NetworkLog", "removeRules error", e);
-        }
-
-        ShellCommand cmd = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "removeRules");
-        cmd.start(true);
-
-        if(cmd.error != null) {
-          SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_remove_rules), cmd.error);
+      for(String command : commands) {
+        if(!NetworkLog.shell.sendCommand(command)) {
+          SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_remove_rules), NetworkLog.shell.getError(true));
           return false;
         }
 
-        tries++;
+        List<String> output = new ArrayList<String>();
+        NetworkLog.shell.waitForCommandExit(output);
 
-        if(tries > 3) {
-          Log.w("NetworkLog", "Too many attempts to remove rules, moving along...");
+        StringBuilder result = new StringBuilder();
+        for(String line : output) {
+          result.append(line);
+        }
+
+        if(MyLog.enabled) {
+          MyLog.d("removeRules result: [" + result + "]");
+        }
+
+        if(NetworkLog.shell.exitval != 0) {
+          Log.e("NetworkLog", "Bad exit for removeRules (exit " + NetworkLog.shell.exitval + ")");
+          SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_remove_rules), result.toString());
           return false;
         }
+      }
+
+      tries++;
+
+      if(tries > 3) {
+        Log.w("NetworkLog", "Too many attempts to remove rules, moving along...");
+        return false;
       }
     }
 
@@ -232,61 +194,43 @@ public class Iptables {
   }
 
   public static String getRules(Context context, boolean verbose) {
-    String iptablesBinary = SysUtils.getIptablesBinary();
+    String iptablesBinary = SysUtils.getIptablesBinary(context);
     if(iptablesBinary == null) {
       return null;
     }
 
-    String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + iptablesBinary;
+    String command;
 
-    synchronized(NetworkLog.SCRIPT) {
-      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
-
-      try {
-        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        if(verbose) {
-          script.println(iptables + " -L -v");
-        } else {
-          script.println(iptables + " -L");
-        }
-
-        script.flush();
-        script.close();
-      } catch(java.io.IOException e) {
-        Log.e("NetworkLog", "getRules error", e);
-      }
-
-      ShellCommand command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "getRules");
-      command.start(false);
-
-      if(command.error != null) {
-        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), command.error);
-        return null;
-      }
-
-      StringBuilder result = new StringBuilder();
-      String line;
-      while(true) {
-        line = command.readStdoutBlocking();
-        if(line == null) {
-          break;
-        }
-        result.append(line);
-      }
-
-      command.waitForExit();
-      if(command.exitval != 0) {
-        Log.e("NetworkLog", "Bad exit for getRules (exit " + command.exitval + ")");
-        SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), result.toString());
-        return null;
-      }
-
-      if(MyLog.enabled) {
-        MyLog.d("getRules result: [" + result.toString() + "]");
-      }
-
-      return result.toString();
+    if(verbose) {
+      command = iptablesBinary + " -L -v";
+    } else {
+      command = iptablesBinary + " -L";
     }
+
+    if(!NetworkLog.shell.sendCommand(command)) {
+      SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), NetworkLog.shell.getError(true));
+      return null;
+    }
+
+    List<String> output = new ArrayList<String>();
+    NetworkLog.shell.waitForCommandExit(output);
+
+    StringBuilder result = new StringBuilder();
+    for(String line : output) {
+      result.append(line);
+    }
+
+    if(MyLog.enabled) {
+      MyLog.d("getRules result: [" + result + "]");
+    }
+
+    if(NetworkLog.shell.exitval != 0) {
+      Log.e("NetworkLog", "Bad exit for getRules (exit " + NetworkLog.shell.exitval + ")");
+      SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), result.toString());
+      return null;
+    }
+
+    return result.toString();
   }
 
   public static boolean checkRules(Context context) {

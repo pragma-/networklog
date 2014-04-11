@@ -32,6 +32,7 @@ import android.graphics.drawable.GradientDrawable;
 
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.List;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.FileWriter;
@@ -137,7 +138,7 @@ public class NetworkLogService extends Service {
     }
 
   private static HashMap<String, Integer> logEntriesMap = new HashMap<String, Integer>();
-  private ShellCommand loggerCommand;
+  private InteractiveShell loggerShell;
   private NetworkLogger logger;
   private static String logfile = null;
   private PrintWriter logWriter = null;
@@ -291,6 +292,10 @@ public class NetworkLogService extends Service {
   @Override
     public void onCreate() {
       MyLog.d("[service] onCreate");
+
+      if(NetworkLog.shell == null) {
+        NetworkLog.shell = SysUtils.createRootShell(this, "NLServiceRootShell", true);
+      }
 
       if(!hasRoot()) {
         SysUtils.showError(this, getString(R.string.error_default_title), getString(R.string.error_noroot));
@@ -867,8 +872,7 @@ public class NetworkLogService extends Service {
       BufferedReader reader = new BufferedReader(new FileReader(pidFile));
       while((pid = reader.readLine()) != null) {
         MyLog.d("KillLogger: got logger pid: " + pid);
-        ShellCommand command = new ShellCommand(new String[] { "su", "-c", "kill " + pid }, "KillLogger");
-        command.start(true);
+        NetworkLog.shell.sendCommand("kill " + pid + "\n", true);
       }
       reader.close();
       new File(pidFile).delete();
@@ -881,19 +885,20 @@ public class NetworkLogService extends Service {
   }
 
   public boolean startLoggerCommand() {
-    String binary;
+    MyLog.d("Starting iptables logger");
 
     if(Iptables.targets == null && Iptables.getTargets(this) == false) {
       return false;
     }
 
+    String binary;
     if(Iptables.targets.get("LOG") != null) {
-      binary = SysUtils.getGrepBinary();
+      binary = SysUtils.getGrepBinary(this);
       if(binary == null) {
         return false;
       }
     } else if(Iptables.targets.get("NFLOG") != null) {
-      binary = SysUtils.getNflogBinary();
+      binary = SysUtils.getNflogBinary(this);
       if(binary == null) {
         return false;
       }
@@ -902,183 +907,181 @@ public class NetworkLogService extends Service {
       return false;
     }
 
-    synchronized(NetworkLog.SCRIPT) {
-      String scriptFile = new ContextWrapper(this).getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
-      String binaryPath = getFilesDir().getAbsolutePath() + File.separator + binary;
+    if(loggerShell == null) {
+      loggerShell = new InteractiveShell("su", "LoggerShell");
+      loggerShell.start();
 
-      try {
-        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        if(Iptables.targets.get("LOG") != null) {
-          script.println(binaryPath + " {NL} /proc/kmsg");
-        } else if(Iptables.targets.get("NFLOG") != null) {
-          script.println(binaryPath + " 0");
-        }
-        script.close();
-      } catch(java.io.IOException e) {
-        e.printStackTrace();
-      }
-
-      MyLog.d("Starting iptables logger");
-
-      if(Iptables.targets.get("LOG") == null) {
-        // only NFLOG is supported
-        loggerCommand = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "NetworkLogger");
-      } else {
-        switch(NetworkLog.settings.getLogMethod()) {
-          case 1:
-            loggerCommand = new ShellCommand(new String[] { "su", "-c", "grep '{NL}' /proc/kmsg" }, "NetworkLogger");
-            binary = "grep";
-            break;
-          case 2:
-            loggerCommand = new ShellCommand(new String[] { "su", "-c", "cat /proc/kmsg" }, "NetworkLogger");
-            binary = "cat";
-            break;
-          default:
-            loggerCommand = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "NetworkLogger");
-        }
-      }
-
-      loggerCommand.start(false);
-
-      try {
-        // give su a chance to do its thing
-        Thread.sleep(1500);
-      } catch (Exception e) {}
-
-      if(loggerCommand.error != null) {
-        SysUtils.showError(this, getString(R.string.error_default_title), loggerCommand.error);
+      if(loggerShell.hasError()) {
+        String error = loggerShell.getError(true);
+        Log.e("NetworkLog", "Error starting logger shell: " + error);
+        SysUtils.showError(context, context.getResources().getString(R.string.error_default_title), "Error starting logger shell: " + error);
         return false;
-      } else if(loggerCommand.checkForExit()) {
-        String error = "Error starting logger\n";
-        String line;
-        while((line = loggerCommand.readStdout()) != null) {
-          error += line;
-        }
-        loggerCommand.finish();
-        loggerCommand = null;
-        SysUtils.showError(this, getString(R.string.error_default_title), error);
-        return false;
-      } else {
-        // find and save logger pid
-        ShellCommand command = new ShellCommand(new String[] { "su", "-c", "ps" }, "FindLogger");
-        command.start(false);
-        ArrayList<String> lines = new ArrayList<String>();
-        {
-          String line;
-          while((line = command.readStdoutBlocking()) != null) {
-            lines.add(line);
-          }
-        }
-        command.finish();
+      }
+    }
 
-        String string, cmd = "";
-        int pid = 0, ppid = 0, networklogpid = -1, loggerpid = -1, token, pos, space;
-        boolean error = false, searching = true;
-        PrintWriter pidWriter;
+    if(Iptables.targets.get("LOG") != null) {
+      switch(NetworkLog.settings.getLogMethod()) {
+        case 1:
+          loggerShell.sendCommand("grep '{NL}' /proc/kmsg");
+          binary = "grep";
+          break;
+        case 2:
+          loggerShell.sendCommand("cat /prog/kmsg");
+          binary = "cat";
+          break;
+        default:
+          loggerShell.sendCommand(binary + " '{NL}' /proc/kmsg");
+      }
+    } else if(Iptables.targets.get("NFLOG") != null) {
+      loggerShell.sendCommand(binary + " 0");
+    }
 
-        try {
-          String pidFile = context.getFilesDir().getAbsolutePath() + File.separator + "logger.pid";
-          pidWriter = new PrintWriter(new BufferedWriter(new FileWriter(pidFile)));
-        } catch (Exception e) {
-          Log.w("NetworkLog", "Exception creating logger pidfile: ", e);
-          return true;
-        }
+    try {
+      // give su a chance to do its thing
+      Thread.sleep(1500);
+    } catch (Exception e) {}
 
-        int iterations = 0;
-        while(searching && iterations < 2) {
-          for(String line : lines) {
-            if(MyLog.enabled) {
-              MyLog.d("ps - parsing line [" + line + "]");
-            }
+    Integer exitVal;
 
-            token = 0;
-            pos = 0;
-            error = false;
+    if(loggerShell.hasError()) {
+      SysUtils.showError(this, getString(R.string.error_default_title), loggerShell.getError(true));
+      return false;
+    } else if((exitVal = loggerShell.peekAtCommandExitValue(5)) != null) {
+      Log.e("NetworkLog", "Error starting logger: exit " + exitVal);
+      String error = "Error starting logger\n";
+      String line;
+      while((line = loggerShell.readLine()) != null) {
+        error += line;
+      }
+      loggerShell.close();
+      loggerShell = null;
+      SysUtils.showError(this, getString(R.string.error_default_title), error);
+      return false;
+    } else {
+      // find and save logger pid
+      List<String> output = new ArrayList<String>();
+      NetworkLog.shell.sendCommand("ps");
+      NetworkLog.shell.waitForCommandExit(output);
 
-            // get tokens
-            while(true) {
-              space = line.indexOf(' ', pos);
-
-              if(space == -1) {
-                // last token
-                cmd = line.substring(pos, line.length() - 1);
-                break;
-              }
-
-              string = line.substring(pos, space);
-
-              try {
-                switch(token) {
-                  case 1:
-                    pid = Integer.parseInt(string);
-                    break;
-                  case 2:
-                    ppid = Integer.parseInt(string);
-                    break;
-                  default:
-                }
-              } catch(NumberFormatException e) {
-                error = true;
-                break;
-              } catch(ArrayIndexOutOfBoundsException e) {
-                error = true;
-                break;
-              } catch(Exception e) {
-                error = true;
-                Log.d("NetworkLog", "Unexpected exception", e);
-                break;
-              }
-
-              token++;
-
-              pos = space + 1;
-
-              while(line.charAt(pos) == ' ') {
-                pos++;
-              }
-            }
-
-            if(error == true) {
-              continue;
-            }
-
-            if(MyLog.enabled) {
-              MyLog.d("cmd: " + cmd + "; pid: " + pid);
-            }
-
-            if(networklogpid == -1 && cmd.equals("com.googlecode.networklog")) {
-              networklogpid = pid;
-              MyLog.d("Found NetworkLog pid: " + networklogpid);
-              break;
-            }
-
-            if(ppid == networklogpid) {
-              loggerpid = pid;
-              MyLog.d("Found logger su pid: " + loggerpid);
-              continue;
-            }
-
-            if(loggerpid != -1 && cmd.contains(binary)) {
-              Log.d("NetworkLog", "Found logger pid: " + pid);
-              try {
-                pidWriter.println(pid);
-              } catch(Exception e) {
-                Log.e("NetworkLog", "Exception saving binary pid", e);
-              }
-              searching = false;
-              break;
-            }
-          }
-          iterations++;
-        }
-
-        try {
-          pidWriter.close();
-        } catch (Exception e) {
-          Log.e("NetworkLog", "Exception closing logger pidfile", e);
-        }
+      if(NetworkLog.shell.exitval != 0) {
+        Log.e("NetworkLog", "startLoggerCommand: failed to execute ps");
+        // TODO -- handle this
         return true;
       }
+
+      int i = binary.lastIndexOf(File.separator);
+      if(i != -1) {
+        binary = binary.substring(i + 1, binary.length());
+      }
+
+      String string, cmd = "";
+      int pid = 0, ppid = 0, networklogpid = -1, loggerpid = -1, token, pos, space;
+      boolean error = false, searching = true;
+      PrintWriter pidWriter;
+
+      try {
+        String pidFile = context.getFilesDir().getAbsolutePath() + File.separator + "logger.pid";
+        pidWriter = new PrintWriter(new BufferedWriter(new FileWriter(pidFile)));
+      } catch (Exception e) {
+        Log.w("NetworkLog", "Exception creating logger pidfile: ", e);
+        return true;
+      }
+
+      int iterations = 0;
+      while(searching && iterations < 2) {
+        for(String line : output) {
+          line = line.trim();
+          if(MyLog.enabled) {
+            MyLog.d("ps - parsing line [" + line + "]");
+          }
+
+          token = 0;
+          pos = 0;
+          error = false;
+
+          // get tokens
+          while(true) {
+            space = line.indexOf(' ', pos);
+
+            if(space == -1) {
+              // last token
+              cmd = line.substring(pos, line.length());
+              break;
+            }
+
+            string = line.substring(pos, space);
+
+            try {
+              switch(token) {
+                case 1:
+                  pid = Integer.parseInt(string);
+                  break;
+                case 2:
+                  ppid = Integer.parseInt(string);
+                  break;
+                default:
+              }
+            } catch(NumberFormatException e) {
+              error = true;
+              break;
+            } catch(ArrayIndexOutOfBoundsException e) {
+              error = true;
+              break;
+            } catch(Exception e) {
+              error = true;
+              Log.d("NetworkLog", "Unexpected exception", e);
+              break;
+            }
+
+            token++;
+
+            pos = space + 1;
+
+            while(pos < line.length() && line.charAt(pos) == ' ') {
+              pos++;
+            }
+          }
+
+          if(error == true) {
+            continue;
+          }
+
+          if(MyLog.enabled) {
+            MyLog.d("cmd: " + cmd + "; pid: " + pid);
+          }
+
+          if(networklogpid == -1 && cmd.equals("com.googlecode.networklog")) {
+            networklogpid = pid;
+            MyLog.d("Found NetworkLog pid: " + networklogpid);
+            break;
+          }
+
+          if(ppid == networklogpid) {
+            loggerpid = pid;
+            MyLog.d("Found logger su pid: " + loggerpid);
+            continue;
+          }
+
+          if(loggerpid != -1 && cmd.contains(binary)) {
+            Log.d("NetworkLog", "Found logger pid: " + pid);
+            try {
+              pidWriter.println(pid);
+            } catch(Exception e) {
+              Log.e("NetworkLog", "Exception saving binary pid", e);
+            }
+            searching = false;
+            break;
+          }
+        }
+        iterations++;
+      }
+
+      try {
+        pidWriter.close();
+      } catch (Exception e) {
+        Log.e("NetworkLog", "Exception closing logger pidfile", e);
+      }
+      return true;
     }
   }
 
@@ -1124,9 +1127,9 @@ public class NetworkLogService extends Service {
       running = true;
 
       while(true) {
-        while(running && loggerCommand.checkForExit() == false) {
-          if(loggerCommand.stdoutAvailable()) {
-            result = loggerCommand.readStdout();
+        while(running && loggerShell.checkForExit() == false) {
+          if(loggerShell.stdoutAvailable()) {
+            result = loggerShell.readLine();
           } else {
             try {
               Thread.sleep(500);

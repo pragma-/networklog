@@ -19,12 +19,9 @@ import android.view.View;
 import android.view.LayoutInflater;
 import android.os.Build;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.File;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-
 
 public class FeedbackDialog
 {
@@ -120,46 +117,54 @@ public class FeedbackDialog
 
   public File generateLogcat() throws Exception {
     File logcat = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "netlog_logcat.txt");
+    String path = logcat.getAbsolutePath();
 
-    String iptablesBinary = SysUtils.getIptablesBinary();
+    String iptablesBinary = SysUtils.getIptablesBinary(context);
     if(iptablesBinary == null) {
       throw new Exception(String.format(context.getResources().getString(R.string.error_unsupported_system_text), Build.CPU_ABI));
     }
 
-    String iptables  = context.getFilesDir().getAbsolutePath() + File.separator + iptablesBinary;
     boolean hasRoot = SysUtils.checkRoot(context);
 
-    synchronized(NetworkLog.SCRIPT) {
-      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
+    InteractiveShell shell;
 
-      PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-      script.println("logcat -d -v time > " + logcat.getAbsolutePath());
-      script.println("echo === uname: &>> " + logcat.getAbsolutePath());
-      script.println("uname -a &>> " + logcat.getAbsolutePath());
-      script.println("echo === ip_tables_matches: &>> " + logcat.getAbsolutePath());
-      script.println("cat /proc/net/ip_tables_matches &>> " + logcat.getAbsolutePath());
-      script.println("echo === ip_tables_names: &>> " + logcat.getAbsolutePath());
-      script.println("cat /proc/net/ip_tables_names &>> " + logcat.getAbsolutePath());
-      script.println("echo === ip_tables_targets: &>> " + logcat.getAbsolutePath());
-      script.println("cat /proc/net/ip_tables_targets &>> " + logcat.getAbsolutePath());
-      script.println("echo === iptables: &>> " + logcat.getAbsolutePath());
-      script.println(iptables + " -L -v &>> " + logcat.getAbsolutePath());
-
-      script.flush();
-      script.close();
-
-      ShellCommand command;
-      if(hasRoot) {
-        command = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "generateLogcat");
-      } else {
-        command = new ShellCommand(new String[] { "sh", scriptFile }, "generateLogcat");
+    if(hasRoot) {
+      shell = NetworkLog.shell;
+    } else {
+      Log.d("NetworkLog", "No root shell, creating standard shell");
+      shell = new InteractiveShell("sh", "GenerateLogcat");
+      shell.start();
+      // FIXME: devise better method to check for exit that doesn't involve arbitrary sleeping
+      try { Thread.sleep(500); } catch (Exception e) {}
+      if(shell.hasError()) {
+        String error = shell.getError(true);
+        Log.e("NetworkLog", "Error creating standard shell: " + error);
+        throw new Exception("Error creating shell: " + error);
       }
-      command.start(true);
-
-      if(command.error != null) {
-        throw new Exception(command.error);
+      if(shell.checkForExit()) {
+        Log.e("NetworkLog", "Error creating standard shell: shell exited with code " + shell.exitval);
+        throw new Exception("Error creating shell: exited with code " + shell.exitval);
       }
     }
+
+    shell.sendCommand("logcat -d -v time > " + path, true);
+    shell.sendCommand("echo === uname: >> " + path + " 2>&1", true);
+    shell.sendCommand("uname -a >> " + path + " 2>&1", true);
+
+    if(hasRoot) {
+      shell.sendCommand("echo === ip_tables_matches: >> " + path + " 2>&1", true);
+      shell.sendCommand("cat /proc/net/ip_tables_matches >> " + path + " 2>&1", true);
+      shell.sendCommand("echo === ip_tables_names: >> " + path + " 2>&1", true);
+      shell.sendCommand("cat /proc/net/ip_tables_names >> " + path + " 2>&1", true);
+      shell.sendCommand("echo === ip_tables_targets: >> " + path + " 2>&1", true);
+      shell.sendCommand("cat /proc/net/ip_tables_targets >> " + path + " 2>&1", true);
+      shell.sendCommand("echo === iptables: >> " + path + " 2>&1", true);
+      shell.sendCommand(iptablesBinary + " -L -v >> " + path + " 2>&1", true);
+    } else {
+      shell.sendCommand("echo === not rooted >> " + path + " 2>&1", true);
+      shell.close();
+    }
+
     return logcat;
   }
 

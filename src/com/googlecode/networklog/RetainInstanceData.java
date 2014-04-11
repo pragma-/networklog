@@ -95,10 +95,12 @@ public class RetainInstanceData {
   /* NetworkLog */
   NetworkLog.State networkLogState;
   NetworkResolver networkLogResolver;
+  InteractiveShell networkLogShell;
 
   public void retainRetainInstanceData() {
     networkLogState = NetworkLog.state;
     networkLogResolver = NetworkLog.resolver;
+    networkLogShell = NetworkLog.shell;
   }
 
   /* retain data */

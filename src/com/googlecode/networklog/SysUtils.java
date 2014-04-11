@@ -13,12 +13,11 @@ import android.os.Build;
 import android.util.Log;
 
 import java.io.File;
-import java.io.PrintWriter;
-import java.io.FileWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.BufferedWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipInputStream;
 
 public class SysUtils {
@@ -84,25 +83,37 @@ public class SysUtils {
     return true;
   }
 
-  public static String getIptablesBinary() {
-    if(iptablesBinary == null) {
-      getBinariesIdentifiers();
+  public static String getIptablesBinary(Context context) {
+    if(Build.VERSION.SDK_INT >= 14) {
+      // use system built-in binaries on >= ICS due to SELinux
+      return "iptables";
+    } else {
+      if(iptablesBinary == null) {
+        getBinariesIdentifiers();
+      }
+      return context.getFilesDir().getAbsolutePath() + File.separator + iptablesBinary;
     }
-    return iptablesBinary;
   }
 
-  public static String getGrepBinary() {
-    if(grepBinary == null) {
-      getBinariesIdentifiers();
+  public static String getGrepBinary(Context context) {
+    if(Build.VERSION.SDK_INT >= 14) {
+      // use system built-in binaries on >= ICS due to SELinux
+      return "grep";
+    } else {
+      if(grepBinary == null) {
+        getBinariesIdentifiers();
+      }
+      return context.getFilesDir().getAbsolutePath() + File.separator + grepBinary;
     }
-    return grepBinary;
   }
 
-  public static String getNflogBinary() {
+  public static String getNflogBinary(Context context) {
+    // FIXME: need some way to put nflog on system partition or
+    // some other workaround for SELinux on >= ICS
     if(nflogBinary == null) {
       getBinariesIdentifiers();
     }
-    return nflogBinary;
+    return context.getFilesDir().getAbsolutePath() + File.separator + nflogBinary;
   }
 
   public static boolean installBinary(Context context, String binary, String md5sum, int resource, String path) {
@@ -179,33 +190,48 @@ public class SysUtils {
   }
 
   public static boolean checkRoot(Context context) {
-    synchronized(NetworkLog.SCRIPT) {
-      String scriptFile = context.getFilesDir().getAbsolutePath() + File.separator + NetworkLog.SCRIPT;
+    if(NetworkLog.shell == null || NetworkLog.shell.checkForExit()) {
+      NetworkLog.shell = createRootShell(context, "CheckRootShell", false);
 
-      try {
-        PrintWriter script = new PrintWriter(new BufferedWriter(new FileWriter(scriptFile)));
-        script.println("exit 0");
-        script.flush();
-        script.close();
-      } catch(java.io.IOException e) {
-        Log.e("NetworkLog", "Check root error", e);
+      if(NetworkLog.shell.hasError()) {
+        Log.e("NetworkLog", "[check-root] Check root failed: " + NetworkLog.shell.getError(true));
         return false;
       }
+    } 
 
-      ShellCommand cmd = new ShellCommand(new String[] { "su", "-c", "sh " + scriptFile }, "checkRoot");
-      cmd.start(true);
+    NetworkLog.shell.sendCommand("id");
 
-      if(cmd.error != null) {
-        Log.e("NetworkLog", "Failed check root (exit " + cmd.exitval + "): " + cmd.error);
-        return false;
-      } else if(cmd.exitval != 0) {
-        Log.e("NetworkLog", "Failed check root (exit " + cmd.exitval + ")");
-        return false;
-      } else {
-        Log.e("NetworkLog", "Check root passed");
-        return true;
+    List<String> output = new ArrayList<String>();
+    NetworkLog.shell.waitForCommandExit(output);
+
+    if(NetworkLog.shell.exitval == 0) {
+      for(String line : output) {
+        line.trim();
+        Log.d("NetworkLog", "[check-root] Got id output: [" + line + "]");
+        if(line.startsWith("uid=0")) {
+          Log.d("NetworkLog", "[check-root] Check root passed (uid=0)");
+          return true;
+        }
+      }
+      Log.e("NetworkLog", "[check-root] Check root failed (uid != 0)");
+      return false;
+    }
+
+    Log.d("NetworkLog", "[check-root] Check root tentatively passed (no id command, but su succeeded)");
+    return true;
+  }
+
+  public static InteractiveShell createRootShell(Context context, String tag, boolean showError) {
+    InteractiveShell shell = new InteractiveShell("su", tag);
+    shell.start();
+
+    if(shell.hasError()) {
+      if(showError) {
+        Resources res = context.getResources();
+        showError(context, res.getString(R.string.error_default_title), res.getString(R.string.error_noroot) + "\n\n" + shell.getError(false));
       }
     }
+    return shell;
   }
 
   public static void showError(final Context context, final String title, final String message) {
