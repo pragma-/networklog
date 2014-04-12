@@ -87,8 +87,13 @@ public class ShellCommand {
 
   public int waitForExit() {
     try {
-      exitval = process.waitFor();
-      MyLog.d("ShellCommand exited: [" + tag + "] exit " + exitval);
+      if(process != null) {
+        exitval = process.waitFor();
+        MyLog.d("ShellCommand exited: [" + tag + "] exit " + exitval);
+      } else {
+        MyLog.d("ShellCommand waitForExit: [" + tag + "] has no process");
+      }
+
       finish();
     } catch (InterruptedException e) {
       e.printStackTrace();
@@ -130,8 +135,10 @@ public class ShellCommand {
     MyLog.d("ShellCommand: finishing [" + tag + "] " + Arrays.toString(command));
 
     try {
-      stdout.join();
-      stdout.close();
+      if(stdout != null) {
+        stdout.join();
+        stdout.close();
+      }
 
       if(stdin != null) {
         stdin.close();
@@ -140,7 +147,9 @@ public class ShellCommand {
       Log.e("NetworkLog", "Exception finishing [" + tag + "]", e);
     }
 
-    process.destroy();
+    if(process != null) {
+      process.destroy();
+    }
   }
 
   public boolean sendCommand(String command) {
