@@ -15,7 +15,7 @@ function logcat_all() { adb $1 logcat -c && adb $1 logcat -v time | tee log-`dat
 function meminfo() { adb shell dumpsys meminfo; }
 function procrank_sample() { adb shell procrank | grep networklog | tee procrank-`date +%Y%m%d-%H:%M.%N`; }
 function build_install_and_logcat() { release_build && install_device && logcat_all; }
-function build_install_emulator_and_logcat() { release_build && install_emulator && logcat_all; }
+function build_install_emulator_and_logcat() { release_build && install_emulator && logcat_all -e; }
 
 function check_status()
 {
