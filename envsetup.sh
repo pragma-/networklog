@@ -53,8 +53,11 @@ alias id=install_device
 alias ie=install_emulator
 alias lc=logcat_networklog
 alias lca=logcat_all
+alias lce='logcat_all -e'
 alias mi=meminfo
 alias procrank=procrank_sample
 alias v=check_status
 alias j=jdb_debug
 alias pt=push_tags
+alias cl='rm log-*'
+alias vl='logs=(log-*); vim "${logs[@]: -1}"'
