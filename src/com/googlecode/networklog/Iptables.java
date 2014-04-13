@@ -22,6 +22,8 @@ public class Iptables {
       return true;
     }
 
+    targets = new HashMap<String, String>();
+
     if(!NetworkLog.shell.sendCommand("cat /proc/net/ip_tables_targets")) {
       SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), NetworkLog.shell.getError(true));
       return false;
@@ -37,8 +39,6 @@ public class Iptables {
       SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_check_rules), error);
       return false;
     }
-
-    targets = new HashMap<String, String>();
 
     StringBuilder result = new StringBuilder();
     for(String line : output) {
