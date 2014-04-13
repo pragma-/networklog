@@ -904,6 +904,9 @@ public class NetworkLogService extends Service {
       }
     } else {
       Log.e("NetworkLog", "No supported iptables targets available");
+      SysUtils.showError(context, 
+          context.getResources().getString(R.string.iptables_error_unsupported_title),
+          context.getResources().getString(R.string.iptables_error_missingfeatures_text));
       return false;
     }
 
