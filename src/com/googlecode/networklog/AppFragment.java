@@ -320,6 +320,10 @@ public class AppFragment extends Fragment {
         sortMethod = new SortAppsByName();
         break;
       case THROUGHPUT:
+        sortMethod = new SortAppsByTimestamp();
+        synchronized(groupData) {
+          Collections.sort(groupData, sortMethod);
+        }
         sortMethod = new SortAppsByThroughput();
         break;
       case PACKETS:
