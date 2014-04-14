@@ -311,38 +311,30 @@ public class AppFragment extends Fragment {
   }
 
   protected void sortData() {
-    Comparator<GroupItem> preSortMethod = null;
-    Comparator<GroupItem> sortMethod;
-    switch(sortBy) {
-      case UID:
-        sortMethod = new SortAppsByUid();
-        break;
-      case NAME:
-        sortMethod = new SortAppsByName();
-        break;
-      case THROUGHPUT:
-        preSortMethod = new SortAppsByTimestamp();
-        sortMethod = new SortAppsByThroughput();
-        break;
-      case PACKETS:
-        sortMethod = new SortAppsByPackets();
-        break;
-      case BYTES:
-        sortMethod = new SortAppsByBytes();
-        break;
-      case TIMESTAMP:
-        sortMethod = new SortAppsByTimestamp();
-        break;
-      default:
-        return;
-    }
-
     synchronized(groupData) {
-      if(preSortMethod != null) {
-        Collections.sort(groupData, preSortMethod);
+      switch(sortBy) {
+        case UID:
+          Collections.sort(groupData, new SortAppsByUid());
+          break;
+        case NAME:
+          Collections.sort(groupData, new SortAppsByName());
+          break;
+        case THROUGHPUT:
+          Collections.sort(groupData, new SortAppsByTimestamp());
+          Collections.sort(groupData, new SortAppsByThroughput());
+          break;
+        case PACKETS:
+          Collections.sort(groupData, new SortAppsByPackets());
+          break;
+        case BYTES:
+          Collections.sort(groupData, new SortAppsByBytes());
+          break;
+        case TIMESTAMP:
+          Collections.sort(groupData, new SortAppsByTimestamp());
+          break;
+        default:
+          return;
       }
-
-      Collections.sort(groupData, sortMethod);
     }
   }
 
