@@ -311,6 +311,7 @@ public class AppFragment extends Fragment {
   }
 
   protected void sortData() {
+    Comparator<GroupItem> preSortMethod = null;
     Comparator<GroupItem> sortMethod;
     switch(sortBy) {
       case UID:
@@ -320,10 +321,7 @@ public class AppFragment extends Fragment {
         sortMethod = new SortAppsByName();
         break;
       case THROUGHPUT:
-        sortMethod = new SortAppsByTimestamp();
-        synchronized(groupData) {
-          Collections.sort(groupData, sortMethod);
-        }
+        preSortMethod = new SortAppsByTimestamp();
         sortMethod = new SortAppsByThroughput();
         break;
       case PACKETS:
@@ -340,6 +338,10 @@ public class AppFragment extends Fragment {
     }
 
     synchronized(groupData) {
+      if(preSortMethod != null) {
+        Collections.sort(groupData, preSortMethod);
+      }
+
       Collections.sort(groupData, sortMethod);
     }
   }
