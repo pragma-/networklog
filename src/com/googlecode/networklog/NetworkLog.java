@@ -621,6 +621,9 @@ public class NetworkLog extends SherlockFragmentActivity {
             break;
           default:
             NetworkLog.settings.setSortBy(Sort.BYTES);
+            if(appFragment != null) {
+              appFragment.setSortMethod();
+            }
             item = menu.findItem(R.id.sort_by_bytes);
         }
 

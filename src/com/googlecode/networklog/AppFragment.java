@@ -73,6 +73,10 @@ public class AppFragment extends Fragment {
   private CustomAdapter adapter;
   public Sort preSortBy;
   public Sort sortBy;
+  private Comparator<GroupItem> preSortMethod = null;
+  private Comparator<GroupItem> sortMethod = null;
+  private Comparator<GroupItem> sortMethodPreSort = null;
+  private ChildrenSort childrenSortMethod = null;
   public boolean roundValues;
   public GroupItem cachedSearchItem;
   private ListViewUpdater updater;
@@ -197,10 +201,21 @@ public class AppFragment extends Fragment {
     }
   }
 
-  protected static class SortChildrenByBytes implements Comparator<String> {
+  protected interface ChildrenSort {
+    public void setGroupItem(GroupItem item);
+  }
+
+  protected static class SortChildrenByBytes implements Comparator<String>, ChildrenSort {
     GroupItem item;
 
+    public SortChildrenByBytes() {
+    }
+
     public SortChildrenByBytes(GroupItem item) {
+      this.item = item;
+    }
+
+    public void setGroupItem(GroupItem item) {
       this.item = item;
     }
 
@@ -223,10 +238,17 @@ public class AppFragment extends Fragment {
     }
   }
 
-  protected static class SortChildrenByPackets implements Comparator<String> {
+  protected static class SortChildrenByPackets implements Comparator<String>, ChildrenSort {
     GroupItem item;
 
+    public SortChildrenByPackets() {
+    }
+
     public SortChildrenByPackets(GroupItem item) {
+      this.item = item;
+    }
+
+    public void setGroupItem(GroupItem item) {
       this.item = item;
     }
 
@@ -249,10 +271,17 @@ public class AppFragment extends Fragment {
     }
   }
 
-  protected static class SortChildrenByTimestamp implements Comparator<String> {
+  protected static class SortChildrenByTimestamp implements Comparator<String>, ChildrenSort {
     GroupItem item;
 
+    public SortChildrenByTimestamp() {
+    }
+
     public SortChildrenByTimestamp(GroupItem item) {
+      this.item = item;
+    }
+
+    public void setGroupItem(GroupItem item) {
       this.item = item;
     }
 
@@ -283,58 +312,75 @@ public class AppFragment extends Fragment {
     }
   }
 
-  protected void preSortData() {
-    Comparator<GroupItem> sortMethod;
+  protected void setPreSortMethod() {
     switch(preSortBy) {
       case UID:
-        sortMethod = new SortAppsByUid();
+        preSortMethod = new SortAppsByUid();
         break;
       case NAME:
-        sortMethod = new SortAppsByName();
-        break;
-      case PACKETS:
-        sortMethod = new SortAppsByPackets();
-        break;
-      case BYTES:
-        sortMethod = new SortAppsByBytes();
-        break;
-      case TIMESTAMP:
-        sortMethod = new SortAppsByTimestamp();
+        preSortMethod = new SortAppsByName();
         break;
       default:
-        return;
+        Log.e("NetworkLog", "Unknown pre-sort method: " + preSortBy);
+        preSortMethod = new SortAppsByName();
+        NetworkLog.settings.setPreSortBy(Sort.NAME);
     }
+  }
 
+  protected void preSortData() {
     synchronized(groupData) {
-      Collections.sort(groupData, sortMethod);
+      Collections.sort(groupData, preSortMethod);
+    }
+  }
+
+  protected void setSortMethod() {
+    switch(sortBy) {
+      case UID:
+        sortMethodPreSort = null;
+        sortMethod = new SortAppsByUid();
+        childrenSortMethod = new SortChildrenByBytes();
+        break;
+      case NAME:
+        sortMethodPreSort = null;
+        sortMethod = new SortAppsByName();
+        childrenSortMethod = new SortChildrenByBytes();
+        break;
+      case THROUGHPUT:
+        sortMethodPreSort = new SortAppsByTimestamp();
+        sortMethod = new SortAppsByThroughput();
+        childrenSortMethod = new SortChildrenByTimestamp();
+        break;
+      case PACKETS:
+        sortMethodPreSort = null;
+        sortMethod = new SortAppsByPackets();
+        childrenSortMethod = new SortChildrenByPackets();
+        break;
+      case BYTES:
+        sortMethodPreSort = null;
+        sortMethod = new SortAppsByBytes();
+        childrenSortMethod = new SortChildrenByBytes();
+        break;
+      case TIMESTAMP:
+        sortMethodPreSort = null;
+        sortMethod = new SortAppsByTimestamp();
+        childrenSortMethod = new SortChildrenByTimestamp();
+        break;
+      default:
+        Log.e("NetworkLog", "Unknown sort method: " + preSortBy);
+        sortMethodPreSort = null;
+        sortMethod = new SortAppsByBytes();
+        childrenSortMethod = new SortChildrenByBytes();
+        NetworkLog.settings.setSortBy(Sort.BYTES);
     }
   }
 
   protected void sortData() {
     synchronized(groupData) {
-      switch(sortBy) {
-        case UID:
-          Collections.sort(groupData, new SortAppsByUid());
-          break;
-        case NAME:
-          Collections.sort(groupData, new SortAppsByName());
-          break;
-        case THROUGHPUT:
-          Collections.sort(groupData, new SortAppsByTimestamp());
-          Collections.sort(groupData, new SortAppsByThroughput());
-          break;
-        case PACKETS:
-          Collections.sort(groupData, new SortAppsByPackets());
-          break;
-        case BYTES:
-          Collections.sort(groupData, new SortAppsByBytes());
-          break;
-        case TIMESTAMP:
-          Collections.sort(groupData, new SortAppsByTimestamp());
-          break;
-        default:
-          return;
+      if(sortMethodPreSort != null) {
+        Collections.sort(groupData, sortMethodPreSort);
       }
+
+      Collections.sort(groupData, sortMethod);
     }
   }
 
@@ -547,8 +593,12 @@ public class AppFragment extends Fragment {
 
       setRetainInstance(true);
 
-      sortBy = NetworkLog.settings.getSortBy();
       preSortBy = NetworkLog.settings.getPreSortBy();
+      setPreSortMethod();
+
+      sortBy = NetworkLog.settings.getSortBy();
+      setSortMethod();
+
       roundValues = NetworkLog.settings.getRoundValues();
 
       groupData = new ArrayList<GroupItem>();
@@ -1527,29 +1577,8 @@ public class AppFragment extends Fragment {
           }
 
           children.keySet().toArray(groupItem.childrenDataSorted);
-
-          Comparator<String> sortMethod;
-          switch(sortBy) {
-            case UID:
-              sortMethod = new SortChildrenByBytes(groupItem);
-              break;
-            case NAME:
-              sortMethod = new SortChildrenByBytes(groupItem);
-              break;
-            case PACKETS:
-              sortMethod = new SortChildrenByPackets(groupItem);
-              break;
-            case BYTES:
-              sortMethod = new SortChildrenByBytes(groupItem);
-              break;
-            case TIMESTAMP:
-              sortMethod = new SortChildrenByTimestamp(groupItem);
-              break;
-            default:
-              sortMethod = new SortChildrenByBytes(groupItem);
-          }
-
-          Arrays.sort(groupItem.childrenDataSorted, sortMethod);
+          childrenSortMethod.setGroupItem(groupItem);
+          Arrays.sort(groupItem.childrenDataSorted, (Comparator<String>) childrenSortMethod);
         }
 
         return children.get(groupItem.childrenDataSorted[childPosition]);

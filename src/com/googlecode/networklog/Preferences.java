@@ -113,6 +113,7 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
       findPreference("manage_apps_dialog").setOnPreferenceClickListener(this);
       findPreference("notifications_toast_apps_dialog").setOnPreferenceClickListener(this);
       findPreference("clear_log").setOnPreferenceClickListener(this);
+      findPreference("presort_by").setOnPreferenceChangeListener(this);
       findPreference("sort_by").setOnPreferenceChangeListener(this);
 
       CheckBoxPreference foreground = (CheckBoxPreference) findPreference("start_foreground");
@@ -241,13 +242,25 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
     }
 
   @Override
-    public boolean onPreferenceChange(Preference preference, Object newValue) {
-      if(preference.getKey().equals("sort_by")) {
-        if(NetworkLog.menu == null) {
-          return true;
-        }
-        String value = (String) newValue;
-        com.actionbarsherlock.view.MenuItem item;
+  public boolean onPreferenceChange(Preference preference, Object newValue) {
+    String value = (String) newValue;
+
+    if(preference.getKey().equals("presort_by")) {
+      if(NetworkLog.appFragment != null) {
+        NetworkLog.appFragment.preSortBy = Sort.forValue(value);
+        NetworkLog.appFragment.setPreSortMethod();
+      }
+      return true;
+    }
+
+    if(preference.getKey().equals("sort_by")) {
+      if(NetworkLog.appFragment != null) {
+        NetworkLog.appFragment.sortBy = Sort.forValue(value);
+        NetworkLog.appFragment.setSortMethod();
+      }
+
+      if(NetworkLog.menu != null) {
+        com.actionbarsherlock.view.MenuItem item = null;
 
         if(value.equals("UID")) {
           item = NetworkLog.menu.findItem(R.id.sort_by_uid);
@@ -261,14 +274,17 @@ public class Preferences extends SherlockPreferenceActivity implements OnPrefere
           item = NetworkLog.menu.findItem(R.id.sort_by_bytes);
         } else if(value.equals("TIMESTAMP")) {
           item = NetworkLog.menu.findItem(R.id.sort_by_timestamp);
-        } else {
-          return true;
         }
-        item.setChecked(true);
-        return true;
+
+        if(item != null) {
+          item.setChecked(true);
+        }
       }
       return true;
     }
+
+    return true;
+  }
 
   @Override
     public boolean onPreferenceClick(Preference preference) {

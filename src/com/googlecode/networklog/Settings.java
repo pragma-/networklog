@@ -181,7 +181,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
   }
 
   public Sort getPreSortBy() {
-    return Sort.forValue(prefs.getString("presort_by", "BYTES"));
+    return Sort.forValue(prefs.getString("presort_by", "NAME"));
   }
 
   public Sort getSortBy() {
@@ -613,6 +613,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
         String value = prefs.getString(key, "BYTES");
         MyLog.d("New " + key + " value [" + value + "]");
         NetworkLog.appFragment.preSortBy = Sort.forValue(value);
+        NetworkLog.appFragment.setPreSortMethod();
         NetworkLog.appFragment.preSortData();
         NetworkLog.appFragment.sortData();
         NetworkLog.appFragment.refreshAdapter();
@@ -623,6 +624,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
         String value = prefs.getString(key, "BYTES");
         MyLog.d("New " + key + " value [" + value + "]");
         NetworkLog.appFragment.sortBy = Sort.forValue(value);
+        NetworkLog.appFragment.setSortMethod();
         NetworkLog.appFragment.preSortData();
         NetworkLog.appFragment.sortData();
         NetworkLog.appFragment.sortChildren();
