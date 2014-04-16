@@ -153,6 +153,12 @@ public class ShellCommand {
   }
 
   public boolean sendCommand(String command) {
+    if(MyLog.enabled) {
+      if(!command.equals("echo ..EOF..$?\n")) {
+        MyLog.d("ShellCommand [" + tag + "] Executing command [" + command.trim() + "]");
+      }
+    }
+
     if(stdin == null) {
       Log.e("NetworkLog", "ShellCommand [" + tag + "] Error attempting to execute command [" + command.trim() + "] -- process has no stdin");
       error = "Process has no stdin";
@@ -167,7 +173,11 @@ public class ShellCommand {
 
     try {
       stdin.writeBytes(command);
-      stdin.writeBytes("\n");
+
+      if(command.length() > 0 && command.charAt(command.length() - 1) != '\n') {
+        stdin.writeBytes("\n");
+      }
+
       stdin.flush();
     } catch (IOException e) {
       e.printStackTrace();
@@ -227,11 +237,17 @@ public class ShellCommand {
         if(checkForExit() && buffer.size() == 0) {
           return null;
         }
+
         while(checkForExit() == false) {
           result = buffer.poll(200, TimeUnit.MILLISECONDS);
           if(result != null) {
             return result;
           }
+        }
+
+        if(buffer.size() != 0) {
+          result = buffer.take();
+          return result;
         }
       } catch (InterruptedException e) {
         e.printStackTrace();
