@@ -61,8 +61,8 @@ public class Iptables {
       return false;
     }
 
-    if(checkRules(context) == true) {
-      removeRules(context);
+    if(!removeRules(context)) {
+      return false;
     }
 
     ArrayList<String> commands = new ArrayList<String>();
@@ -140,12 +140,12 @@ public class Iptables {
 
     while(checkRules(context) == true) {
       ArrayList<String> commands = new ArrayList<String>();
-      if(targets.get("NFLOG") != null) {
-        commands.add(iptablesBinary + " -D OUTPUT ! -o lo -j NFLOG --nflog-prefix \"{NL}\"");
-        commands.add(iptablesBinary + " -D INPUT ! -i lo -j NFLOG --nflog-prefix \"{NL}\"");
-      } else if(targets.get("LOG") != null) {
+      if(targets.get("LOG") != null) {
         commands.add(iptablesBinary + " -D OUTPUT ! -o lo -j LOG --log-prefix \"{NL}\" --log-uid");
         commands.add(iptablesBinary + " -D INPUT ! -i lo -j LOG --log-prefix \"{NL}\" --log-uid");
+      } else if(targets.get("NFLOG") != null) {
+        commands.add(iptablesBinary + " -D OUTPUT ! -o lo -j NFLOG --nflog-prefix \"{NL}\"");
+        commands.add(iptablesBinary + " -D INPUT ! -i lo -j NFLOG --nflog-prefix \"{NL}\"");
       } else {
         SysUtils.showError(context,
             context.getResources().getString(R.string.iptables_error_unsupported_title),
