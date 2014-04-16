@@ -147,21 +147,21 @@ public class FeedbackDialog
       }
     }
 
-    shell.sendCommand("logcat -d -v time > " + path, true);
-    shell.sendCommand("echo === uname: >> " + path + " 2>&1", true);
-    shell.sendCommand("uname -a >> " + path + " 2>&1", true);
+    shell.sendCommand("logcat -d -v time > " + path, InteractiveShell.IGNORE_OUTPUT);
+    shell.sendCommand("echo === uname: >> " + path + " 2>&1", InteractiveShell.IGNORE_OUTPUT);
+    shell.sendCommand("uname -a >> " + path + " 2>&1", InteractiveShell.IGNORE_OUTPUT);
 
     if(hasRoot) {
-      shell.sendCommand("echo === ip_tables_matches: >> " + path + " 2>&1", true);
-      shell.sendCommand("cat /proc/net/ip_tables_matches >> " + path + " 2>&1", true);
-      shell.sendCommand("echo === ip_tables_names: >> " + path + " 2>&1", true);
-      shell.sendCommand("cat /proc/net/ip_tables_names >> " + path + " 2>&1", true);
-      shell.sendCommand("echo === ip_tables_targets: >> " + path + " 2>&1", true);
-      shell.sendCommand("cat /proc/net/ip_tables_targets >> " + path + " 2>&1", true);
-      shell.sendCommand("echo === iptables: >> " + path + " 2>&1", true);
-      shell.sendCommand(iptablesBinary + " -L -v >> " + path + " 2>&1", true);
+      shell.sendCommand("echo === ip_tables_matches: >> " + path + " 2>&1", InteractiveShell.IGNORE_OUTPUT);
+      shell.sendCommand("cat /proc/net/ip_tables_matches >> " + path + " 2>&1", InteractiveShell.IGNORE_OUTPUT);
+      shell.sendCommand("echo === ip_tables_names: >> " + path + " 2>&1", InteractiveShell.IGNORE_OUTPUT);
+      shell.sendCommand("cat /proc/net/ip_tables_names >> " + path + " 2>&1", InteractiveShell.IGNORE_OUTPUT);
+      shell.sendCommand("echo === ip_tables_targets: >> " + path + " 2>&1", InteractiveShell.IGNORE_OUTPUT);
+      shell.sendCommand("cat /proc/net/ip_tables_targets >> " + path + " 2>&1", InteractiveShell.IGNORE_OUTPUT);
+      shell.sendCommand("echo === iptables: >> " + path + " 2>&1", InteractiveShell.IGNORE_OUTPUT);
+      shell.sendCommand(iptablesBinary + " -L -v >> " + path + " 2>&1", InteractiveShell.IGNORE_OUTPUT);
     } else {
-      shell.sendCommand("echo === not rooted >> " + path + " 2>&1", true);
+      shell.sendCommand("echo === not rooted >> " + path + " 2>&1", InteractiveShell.IGNORE_OUTPUT);
       shell.close();
     }
 

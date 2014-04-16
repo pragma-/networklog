@@ -18,6 +18,9 @@ public class InteractiveShell {
   String tag;
   int exitval;
 
+  public static final int IGNORE_OUTPUT = (1 << 0);
+  public static final int BACKGROUND    = (1 << 1);
+
   public InteractiveShell() {
     this("sh", "InteractiveShell");
   }
@@ -27,6 +30,7 @@ public class InteractiveShell {
   }
 
   public InteractiveShell(String shell, String tag) {
+    MyLog.d("Creating new InteractiveShell [" + tag + "]");
     this.shell = shell;
     this.tag = tag;
   }
@@ -36,12 +40,16 @@ public class InteractiveShell {
   }
 
   public void start() {
+    MyLog.d("Starting InteractiveShell [" + tag + "]");
     command = new ShellCommand(new String[] { shell }, tag);
     command.start(false);
   }
 
   public int close() {
+    MyLog.d("Closing InteractiveShell [" + tag + "]");
+
     if(command == null) {
+      MyLog.d("No active ShellCommand for InteractiveShell [" + tag + "]");
       return -1;
     }
 
@@ -81,10 +89,10 @@ public class InteractiveShell {
   }
 
   public boolean sendCommand(String cmd) {
-    return sendCommand(cmd, false);
+    return sendCommand(cmd, 0);
   }
 
-  public boolean sendCommand(String cmd, boolean ignoreOutput) {
+  public boolean sendCommand(String cmd, int flags) {
     try {
       if(command == null || !command.sendCommand(cmd)) {
         Log.w("NetworkLog", "[" + tag + "] shell not running, starting new shell");
@@ -96,16 +104,33 @@ public class InteractiveShell {
         }
       }
 
-      command.sendCommand("echo ..EOF..$?\n");
-
-      if(ignoreOutput) {
-        eatOutput();
+      if((flags & BACKGROUND) != BACKGROUND) {
+        command.sendCommand("echo;echo ..EOF..$?\n");
       }
+
+      if((flags & IGNORE_OUTPUT) == IGNORE_OUTPUT) {
+        waitForCommandExit(null);
+      }
+
       return true;
     } catch (Exception e) {
       e.printStackTrace();
       return false;
     }
+  }
+
+  public int waitForCommandExit(List<String> output) {
+    String line;
+    while((line = readLine()) != null) {
+      if(output != null) {
+        output.add(line);
+      } else {
+        if(MyLog.enabled) {
+          MyLog.d("Discarding output: [" + line.trim() + "]");
+        }
+      }
+    }
+    return exitval;
   }
 
   public Integer peekAtCommandExitValue() {
@@ -132,24 +157,6 @@ public class InteractiveShell {
     return null;
   }
 
-  public int waitForCommandExit(List<String> output) {
-    String line;
-
-    while((line = readLine()) != null) {
-      output.add(line);
-    }
-
-    return exitval;
-  }
-
-  public void eatOutput() {
-    Log.d("NetworkLog", "Eating output");
-    String line;
-    while((line = readLine()) != null) {
-      Log.d("NetworkLog", "Discarding output: [" + line.trim() + "]");
-    }
-  }
-
   public boolean stdoutAvailable() {
     return command.stdout.lineAvailable();
   }
@@ -160,6 +167,9 @@ public class InteractiveShell {
       return null;
     } else if(line.startsWith("..EOF..")) {
       exitval = Integer.parseInt(line.substring(7, line.length()));
+      if(MyLog.enabled) {
+        MyLog.d("InteractiveShell [" + tag + "] command exited " + exitval);
+      }
       return null;
     } else {
       return line;
