@@ -154,7 +154,7 @@ public class ShellCommand {
 
   public boolean sendCommand(String command) {
     if(MyLog.enabled) {
-      if(!command.equals("echo ..EOF..$?\n")) {
+      if(!command.equals("echo;echo ..EOF..$?\n")) {
         MyLog.d("ShellCommand [" + tag + "] Executing command [" + command.trim() + "]");
       }
     }
