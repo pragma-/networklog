@@ -34,7 +34,7 @@ public class SysUtils {
   public static boolean getBinariesIdentifiers() {
     String cpu_abi = Build.CPU_ABI.toLowerCase();
 
-    if(cpu_abi.contains("armeabi-v7")) {
+    if(cpu_abi.contains("armeabi-v7") || cpu_abi.contains("arm64")) {
       iptablesBinary = "iptables_armv7";
       iptablesMd5 = "5515873b7ce1617f3d724a3332c2b947";
       iptablesResource = R.raw.iptables_armv7;
