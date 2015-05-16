@@ -460,7 +460,7 @@ public class Settings implements OnSharedPreferenceChangeListener {
     editor.commit();
   }
 
-   public void setStartForeground(boolean value) {
+  public void setStartForeground(boolean value) {
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean("start_foreground", value);
     editor.commit();
