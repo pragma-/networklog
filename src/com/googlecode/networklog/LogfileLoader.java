@@ -61,6 +61,31 @@ public class LogfileLoader {
     return length;
   }
 
+  public long getLatestTimestamp() throws IOException {
+    long start_pos = length - 512;
+
+    if (start_pos < 0) {
+      start_pos = 0;
+    }
+
+    logfile.seek(start_pos);
+
+    String line;
+    if (start_pos > 0) {
+      line = logfile.readLine();
+    }
+
+    long timestamp = -1;
+
+    while (true) {
+      line = logfile.readLine();
+      if(line == null) {
+        return timestamp;
+      }
+      timestamp = Long.parseLong(line.split("[^0-9-]+", 2)[0]);
+    }
+  }
+
   public long seekToTimestampPosition(long target) throws IOException {
     return seekToTimestampPosition(target, false);
   }

@@ -67,12 +67,18 @@ public class HistoryLoader {
         return;
       }
 
-      final long starting_pos = (history_size == -1) ? 0 : loader.seekToTimestampPosition(System.currentTimeMillis() - history_size);
+      long starting_pos = (history_size == -1) ? 0 : loader.seekToTimestampPosition(System.currentTimeMillis() - history_size);
 
       if(starting_pos == -1) {
-        // nothing to read
-        loader.closeLogfile();
-        return;
+        long latest = loader.getLatestTimestamp();
+
+        if (latest == -1) {
+          // nothing to read
+          loader.closeLogfile();
+          return;
+        }
+
+        starting_pos = loader.seekToTimestampPosition(latest - history_size);
       }
 
       dialog_max = (int)(length - starting_pos);
@@ -80,6 +86,8 @@ public class HistoryLoader {
       
       FutureTask createDialog = createProgressDialog(context);
       createDialog.get(); // wait until createDialog task completes (ensure dialog is created and shown before continuing)
+
+      final long starting_pos_final = starting_pos;
 
       new Thread(new Runnable() {
         public void run() {
@@ -90,7 +98,7 @@ public class HistoryLoader {
 
           LogEntry entry;
           long processed_so_far = 0;
-          long progress_increment_size = (long)((length - starting_pos) * 0.01);
+          long progress_increment_size = (long)((length - starting_pos_final) * 0.01);
           long next_progress_increment = progress_increment_size;
 
           MyLog.d("[HistoryLoader] increment size: " + progress_increment_size);
