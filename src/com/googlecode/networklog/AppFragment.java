@@ -92,7 +92,11 @@ public class AppFragment extends Fragment {
     protected long downloadThroughput;
     protected long totalThroughput;
     protected String throughputString;
+    protected long sentPackets;
+    protected long receivedPackets;
     protected long totalPackets;
+    protected long sentBytes;
+    protected long receivedBytes;
     protected long totalBytes;
     protected long lastTimestamp;
     // childrenData bound to adapter, holds original list of children
@@ -881,8 +885,7 @@ public class AppFragment extends Fragment {
       while(lastGetItemByAppUidIndex > 0) {
         if(groupDataBuffer.get(lastGetItemByAppUidIndex - 1).app.uid == uid) {
           lastGetItemByAppUidIndex--;
-        }
-        else {
+        } else {
           break;
         }
       }
@@ -1064,6 +1067,9 @@ public class AppFragment extends Fragment {
         newLogItem.lastTimestamp = entry.timestamp;
 
         if(entry.in != null && entry.in.length() != 0) {
+          newLogItem.receivedPackets++;
+          newLogItem.receivedBytes += entry.len;
+
           synchronized(newLogItem.childrenData) {
             newLogChild = newLogItem.childrenData.get(srcKey);
 
@@ -1093,6 +1099,9 @@ public class AppFragment extends Fragment {
         }
 
         if(entry.out != null && entry.out.length() != 0) {
+          newLogItem.sentPackets++;
+          newLogItem.sentBytes += entry.len;
+
           synchronized(newLogItem.childrenData) {
             newLogChild = newLogItem.childrenData.get(dstKey);
 
@@ -1672,16 +1681,24 @@ public class AppFragment extends Fragment {
 
         packets = holder.getPackets();
         if(roundValues) {
-          packets.setText(getString(R.string.app_packets) + StringUtils.formatToThousands(item.totalPackets));
+          packets.setText(getString(R.string.app_packets) + StringUtils.formatToThousands(item.totalPackets)
+              + " (" + getString(R.string.app_sent) + StringUtils.formatToThousands(item.sentPackets)
+              + " " + getString(R.string.app_recv) + StringUtils.formatToThousands(item.receivedPackets) + ")");
         } else {
-          packets.setText(getString(R.string.app_packets) + item.totalPackets);
+          packets.setText(getString(R.string.app_packets) + item.totalPackets
+              + " (" + getString(R.string.app_sent) + item.sentPackets
+              + " " + getString(R.string.app_recv) + item.receivedPackets + ")");
         }
 
         bytes = holder.getBytes();
         if(roundValues) {
-          bytes.setText(getString(R.string.app_bytes) + StringUtils.formatToBytes(item.totalBytes));
+          bytes.setText(getString(R.string.app_bytes) + StringUtils.formatToBytes(item.totalBytes)
+              + " (" + getString(R.string.app_sent) + StringUtils.formatToBytes(item.sentBytes)
+              + " " + getString(R.string.app_recv) + StringUtils.formatToBytes(item.receivedBytes) + ")");
         } else {
-          bytes.setText(getString(R.string.app_bytes) + item.totalBytes);
+          bytes.setText(getString(R.string.app_bytes) + item.totalBytes
+              + " (" + getString(R.string.app_sent) + item.sentBytes
+              + " " + getString(R.string.app_recv) + item.receivedBytes + ")");
         }
 
         timestamp = holder.getTimestamp();

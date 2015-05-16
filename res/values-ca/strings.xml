@@ -7,6 +7,9 @@
   <string name="app_throughput">Tràfic:\u0020</string>
   <string name="app_packets">Paquets:\u0020</string>
   <string name="app_bytes">Bytes:\u0020</string>
+  <string name="app_sent">Enviat:\u0020</string>
+  <string name="app_recv">Rebut:\u0020</string>
+
   <string name="logging_on">Registre activat</string>
   <string name="logging_off">Registre desactivat</string>
   <string name="logging_started">El registre de xarxa s\'ha iniciat</string>

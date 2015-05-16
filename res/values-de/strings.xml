@@ -9,6 +9,8 @@
   <string name="app_throughput">Verkehr:\u0020</string>
   <string name="app_packets">Pakete:\u0020</string>
   <string name="app_bytes">Bytes:\u0020</string>
+  <string name="app_sent">Gesendet:\u0020</string>
+  <string name="app_recv">Empfangen:\u0020</string>
 
   <string name="logging_on">Logging An</string>
   <string name="logging_off">Logging Aus</string>

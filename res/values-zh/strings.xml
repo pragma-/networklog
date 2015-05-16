@@ -9,6 +9,8 @@
   <string name="app_throughput">流量</string>
   <string name="app_packets">数据包：\u0020</string>
   <string name="app_bytes">字节数：\u0020</string>
+  <string name="app_sent">发送：\u0020</string>
+  <string name="app_recv">接收：\u0020</string>
 
   <string name="logging_on">启动</string>
   <string name="logging_off">关闭</string>

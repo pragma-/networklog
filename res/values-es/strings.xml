@@ -9,6 +9,8 @@
   <string name="app_throughput">Tráfico:\u0020</string>
   <string name="app_packets">Paquetes:\u0020</string>
   <string name="app_bytes">Bytes:\u0020</string>
+  <string name="app_sent">Sent:\u0020</string>
+  <string name="app_recv">Recv:\u0020</string>
 
   <string name="logging_on">Registro On</string>
   <string name="logging_off">Registro Off</string>
