@@ -47,9 +47,7 @@ Adjustable **_pinch-zoomable_** and **_scrollable_** graphs.
 
 _Requires rooted devices._
 
-Full source code available at [http://code.google.com/p/iptableslog/source/list](http://code.google.com/p/iptableslog/source/list) and [https://github.com/pragma-/networklog](https://github.com/pragma-/networklog).
-
-**Submit any bugs or feature requests to [http://code.google.com/p/iptableslog/issues](http://code.google.com/p/iptableslog/issues).**
+Full source code available at [https://github.com/pragma-/networklog](https://github.com/pragma-/networklog).
 
 _Note: While the app itself is designed to use minimal CPU/battery, you can further reduce the CPU/battery use by exiting the app after starting the logging service._
 
