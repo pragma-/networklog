@@ -34,16 +34,12 @@ function push_tags()
 {
   git push github master --tags
   git push bb master --tags
-  git push gc master --tags
-  git push gitorious master --tags
 }
 
 function push() 
 {
   git push github master
   git push bb master
-  git push gc master
-  git push gitorious master
 }
 
 alias b=build_install_and_logcat
