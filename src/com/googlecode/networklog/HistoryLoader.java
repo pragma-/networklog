@@ -67,9 +67,11 @@ public class HistoryLoader {
         return;
       }
 
-      long starting_pos = (history_size == -1) ? 0 : loader.seekToTimestampPosition(System.currentTimeMillis() - history_size);
+      long starting_pos;
 
-      if(starting_pos == -1) {
+      if (history_size == -1) {
+        starting_pos = 0;
+      } else {
         long latest = loader.getLatestTimestamp();
 
         if (latest == -1) {
