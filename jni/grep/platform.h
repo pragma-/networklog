@@ -503,7 +503,8 @@ extern int vasprintf(char **string_ptr, const char *format, va_list p) FAST_FUNC
 #ifndef HAVE_GETLINE
 # include <stdio.h> /* for FILE */
 # include <sys/types.h> /* size_t */
-extern ssize_t getline(char **lineptr, size_t *n, FILE *stream) FAST_FUNC;
+extern ssize_t  getline(char ** __restrict, size_t * __restrict, FILE * __restrict);
+// extern ssize_t getline(char **lineptr, size_t *n, FILE *stream) FAST_FUNC;
 #endif
 
 #endif
