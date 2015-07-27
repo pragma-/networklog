@@ -30,54 +30,70 @@ public class SysUtils {
   public static String nflogBinary;
   public static String nflogMd5;
   public static int nflogResource;
+  public static String run_pieBinary;
+  public static String run_pieMd5;
+  public static int run_pieResource;
 
   public static boolean getBinariesIdentifiers() {
     String cpu_abi = Build.CPU_ABI.toLowerCase();
 
     if(cpu_abi.contains("armeabi-v7") || cpu_abi.contains("arm64")) {
       iptablesBinary = "iptables_armv7";
-      iptablesMd5 = "5515873b7ce1617f3d724a3332c2b947";
+      iptablesMd5 = "5515873b7ce1617f3d724a3332c2b947";  // iptables_armv7
       iptablesResource = R.raw.iptables_armv7;
       grepBinary = "grep_armv7";
-      grepMd5 = "69d0726f2b314a32fcd906a753deaabb";
+      grepMd5 = "6d5f2d3b8d50cb4db918e8530f975b08";  // grep_armv7
       grepResource = R.raw.grep_armv7;
       nflogBinary = "nflog_armv7";
-      nflogMd5 = "5cdaa519c10ace37f62a0e6d65ce4f6e";
+      nflogMd5 = "a5129a7d124100e7fd7d9540332cdb65";  // nflog_armv7
       nflogResource = R.raw.nflog_armv7;
+      run_pieBinary = "run_pie_armv7";
+      run_pieMd5 = "2a2d61479adb6182f13b5363c5a59895";  // run_pie_armv7
+      run_pieResource = R.raw.run_pie_armv7;
     } else if(cpu_abi.contains("armeabi")) {
       iptablesBinary = "iptables_armv5";
-      iptablesMd5 = "50e39f66369344b692084a9563c185d4";
+      iptablesMd5 = "50e39f66369344b692084a9563c185d4";  // iptables_armv5
       iptablesResource = R.raw.iptables_armv5;
       grepBinary = "grep_armv5";
-      grepMd5 = "7904ae3e4f310f9a1bf9867cfadb71ef";
+      grepMd5 = "5200a181e0835a82e8c51790c2934353";  // grep_armv5
       grepResource = R.raw.grep_armv5;
       nflogBinary = "nflog_armv5";
-      nflogMd5 = "c8e7b5f4e96a47b686a68b84c9d12f24";
+      nflogMd5 = "e13315fafc18c40e1027ab5828a06a60";  // nflog_armv5
       nflogResource = R.raw.nflog_armv5;
+      run_pieBinary = "run_pie_armv5";
+      run_pieMd5 = "3aad21f6fb4933c6398ff92c008400c5";  // run_pie_armv5
+      run_pieResource = R.raw.run_pie_armv5;
     } else if(cpu_abi.contains("x86")) {
       iptablesBinary = "iptables_x86";
-      iptablesMd5 = "3e7090f93ae3964c98e16016b742acbc";
+      iptablesMd5 = "3e7090f93ae3964c98e16016b742acbc";  // iptables_x86
       iptablesResource = R.raw.iptables_x86;
       grepBinary = "grep_x86";
-      grepMd5 = "75210f186d666f32a14d843fd1e9fac5";
+      grepMd5 = "1ce10f593f5824daf3f91dae29c2e6d6";  // grep_x86
       grepResource = R.raw.grep_x86;
       nflogBinary = "nflog_x86";
-      nflogMd5 = "1fb4cf7be57cb2c30ab2224ffac65ac2";
+      nflogMd5 = "1b1e0b1a7480a93a68bed6e90a2605bd";  // nflog_x86
       nflogResource = R.raw.nflog_x86;
+      run_pieBinary = "run_pie_x86";
+      run_pieMd5 = "dc4699e92868d0da1cb35af89033c5df";  // run_pie_x86
+      run_pieResource = R.raw.run_pie_x86;
     } else if(cpu_abi.contains("mips")) {
       iptablesBinary = "iptables_mips";
-      iptablesMd5 = "c208f8f9a6fa8d7b436c069b71299668";
+      iptablesMd5 = "c208f8f9a6fa8d7b436c069b71299668";  // iptables_mips
       iptablesResource = R.raw.iptables_mips;
       grepBinary = "grep_mips";
-      grepMd5 = "a29534a420f9eb9cc519088eacf6b7e7";
+      grepMd5 = "8887e3bfb42ba335510d0adb739a0329";  // grep_mips
       grepResource = R.raw.grep_mips;
       nflogBinary = "nflog_mips";
-      nflogMd5 = "21d507600aa498395f00a9daf37eeb02";
+      nflogMd5 = "823ce7379ff895d8837f9b1158b1fc6d";  // nflog_mips
       nflogResource = R.raw.nflog_mips;
+      run_pieBinary = "run_pie_mips";
+      run_pieMd5 = "ec8123a69e7527d243575d779a080b4a";  // run_pie_mips
+      run_pieResource = R.raw.run_pie_mips;
     } else {
       iptablesBinary = null;
       grepBinary = null;
       nflogBinary = null;
+      run_pieBinary = null;
       return false;
     }
     return true;
@@ -103,7 +119,11 @@ public class SysUtils {
       if(grepBinary == null) {
         getBinariesIdentifiers();
       }
-      return context.getFilesDir().getAbsolutePath() + File.separator + grepBinary;
+      if (Build.VERSION.SDK_INT < 16) {
+        return getRun_pieBinary(context) + " " + context.getFilesDir().getAbsolutePath() + File.separator + grepBinary;
+      } else {
+        return context.getFilesDir().getAbsolutePath() + File.separator + grepBinary;
+      }
     }
   }
 
@@ -113,7 +133,20 @@ public class SysUtils {
     if(nflogBinary == null) {
       getBinariesIdentifiers();
     }
-    return context.getFilesDir().getAbsolutePath() + File.separator + nflogBinary;
+    if (Build.VERSION.SDK_INT < 16) {
+      return getRun_pieBinary(context) + " " + context.getFilesDir().getAbsolutePath() + File.separator + nflogBinary;
+    } else {
+      return context.getFilesDir().getAbsolutePath() + File.separator + nflogBinary;
+    }
+  }
+
+  public static String getRun_pieBinary(Context context) {
+    // FIXME: need some way to put run_pie on system partition or
+    // some other workaround for SELinux on >= ICS
+    if(run_pieBinary == null) {
+      getBinariesIdentifiers();
+    }
+    return context.getFilesDir().getAbsolutePath() + File.separator + run_pieBinary;
   }
 
   public static boolean installBinary(Context context, String binary, String md5sum, int resource, String path) {
@@ -183,6 +216,11 @@ public class SysUtils {
 
     String nflogPath  = context.getFilesDir().getAbsolutePath() + File.separator + nflogBinary;
     if(!installBinary(context, nflogBinary, nflogMd5, nflogResource, nflogPath)) {
+      return false;
+    }
+
+    String run_piePath  = context.getFilesDir().getAbsolutePath() + File.separator + run_pieBinary;
+    if(!installBinary(context, run_pieBinary, run_pieMd5, run_pieResource, run_piePath)) {
       return false;
     }
 
