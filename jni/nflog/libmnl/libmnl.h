@@ -22,7 +22,7 @@ extern "C" {
  */
 
 #define MNL_SOCKET_AUTOPID	0
-#define MNL_SOCKET_BUFFER_SIZE (getpagesize() < 8192L ? getpagesize() : 8192L)
+#define MNL_SOCKET_BUFFER_SIZE (sysconf(_SC_PAGESIZE) < 8192L ? sysconf(_SC_PAGESIZE) : 8192L)
 
 struct mnl_socket;
 
