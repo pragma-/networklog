@@ -45,7 +45,7 @@ public class SysUtils {
       grepMd5 = "6d5f2d3b8d50cb4db918e8530f975b08";  // grep_armv7
       grepResource = R.raw.grep_armv7;
       nflogBinary = "nflog_armv7";
-      nflogMd5 = "a5129a7d124100e7fd7d9540332cdb65";  // nflog_armv7
+      nflogMd5 = "9d72441239afa8684e479d30d14feb75";  // nflog_armv7
       nflogResource = R.raw.nflog_armv7;
       run_pieBinary = "run_pie_armv7";
       run_pieMd5 = "2a2d61479adb6182f13b5363c5a59895";  // run_pie_armv7
@@ -58,7 +58,7 @@ public class SysUtils {
       grepMd5 = "5200a181e0835a82e8c51790c2934353";  // grep_armv5
       grepResource = R.raw.grep_armv5;
       nflogBinary = "nflog_armv5";
-      nflogMd5 = "e13315fafc18c40e1027ab5828a06a60";  // nflog_armv5
+      nflogMd5 = "aa700f638adcfc09dc03ee8b23cad43d";  // nflog_armv5
       nflogResource = R.raw.nflog_armv5;
       run_pieBinary = "run_pie_armv5";
       run_pieMd5 = "3aad21f6fb4933c6398ff92c008400c5";  // run_pie_armv5
@@ -71,7 +71,7 @@ public class SysUtils {
       grepMd5 = "1ce10f593f5824daf3f91dae29c2e6d6";  // grep_x86
       grepResource = R.raw.grep_x86;
       nflogBinary = "nflog_x86";
-      nflogMd5 = "1b1e0b1a7480a93a68bed6e90a2605bd";  // nflog_x86
+      nflogMd5 = "ce661bc02b64b6090d03807738020c98";  // nflog_x86
       nflogResource = R.raw.nflog_x86;
       run_pieBinary = "run_pie_x86";
       run_pieMd5 = "dc4699e92868d0da1cb35af89033c5df";  // run_pie_x86
@@ -84,7 +84,7 @@ public class SysUtils {
       grepMd5 = "8887e3bfb42ba335510d0adb739a0329";  // grep_mips
       grepResource = R.raw.grep_mips;
       nflogBinary = "nflog_mips";
-      nflogMd5 = "823ce7379ff895d8837f9b1158b1fc6d";  // nflog_mips
+      nflogMd5 = "534ce71da7e383183697c4090c295624";  // nflog_mips
       nflogResource = R.raw.nflog_mips;
       run_pieBinary = "run_pie_mips";
       run_pieMd5 = "ec8123a69e7527d243575d779a080b4a";  // run_pie_mips
