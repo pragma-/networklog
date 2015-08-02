@@ -760,6 +760,13 @@ public class AppFragment extends Fragment {
           groupItem = (GroupItem) adapter.getGroup(groupPos);
           if(NetworkLogService.blockedApps.remove(groupItem.app.packageName) == null) {
             NetworkLogService.blockedApps.put(groupItem.app.packageName, groupItem.app.packageName);
+            if (NetworkLogService.instance != null) {
+              Iptables.ignoreApp(NetworkLog.context, groupItem.app.uid);
+            }
+          } else {
+            if (NetworkLogService.instance != null) {
+              Iptables.unignoreApp(NetworkLog.context, groupItem.app.uid);
+            }
           }
           new SelectBlockedApps().saveBlockedApps(NetworkLog.context, NetworkLogService.blockedApps);
           return true;

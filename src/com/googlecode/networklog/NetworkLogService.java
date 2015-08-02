@@ -794,11 +794,6 @@ public class NetworkLogService extends Service {
   public void notifyNewEntry(LogEntry entry) {
     appEntry = ApplicationsTracker.uidMap.get(entry.uidString);
 
-    // check if logging is disabled for this entry's app
-    if(appEntry != null && blockedApps.get(appEntry.packageName) != null) {
-      return;
-    }
-
     // check if logfile needs to be opened and that external storage is available
     if(logWriter == null) {
       if(android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {

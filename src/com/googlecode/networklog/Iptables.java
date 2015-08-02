@@ -13,6 +13,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Iptables {
   public static HashMap<String, String> targets = null;
@@ -65,29 +66,29 @@ public class Iptables {
       return false;
     }
 
-    ArrayList<String> commands = new ArrayList<String>();
-
-    if(targets.get("LOG") != null) {
-      if(NetworkLogService.behindFirewall) {
-        commands.add(iptablesBinary + " -A OUTPUT ! -o lo -j LOG --log-prefix \"{NL}\" --log-uid");
-        commands.add(iptablesBinary + " -A INPUT ! -i lo -j LOG --log-prefix \"{NL}\" --log-uid");
-      } else {
-        commands.add(iptablesBinary + " -I OUTPUT 1 ! -o lo -j LOG --log-prefix \"{NL}\" --log-uid");
-        commands.add(iptablesBinary + " -I INPUT 1 ! -i lo -j LOG --log-prefix \"{NL}\" --log-uid");
-      }
-    } else if(targets.get("NFLOG") != null) {
-      if(NetworkLogService.behindFirewall) {
-        commands.add(iptablesBinary + " -A OUTPUT ! -o lo -j NFLOG --nflog-prefix \"{NL}\"");
-        commands.add(iptablesBinary + " -A INPUT ! -i lo -j NFLOG --nflog-prefix \"{NL}\"");
-      } else {
-        commands.add(iptablesBinary + " -I OUTPUT 1 ! -o lo -j NFLOG --nflog-prefix \"{NL}\"");
-        commands.add(iptablesBinary + " -I INPUT 1 ! -i lo -j NFLOG --nflog-prefix \"{NL}\"");
-      }
-    } else {
+    if (targets.get("LOG") == null && targets.get("NFLOG") == null) {
       SysUtils.showError(context,
           context.getResources().getString(R.string.iptables_error_unsupported_title),
           context.getResources().getString(R.string.iptables_error_missingfeatures_text));
       return false;
+    }
+
+    ArrayList<String> commands = new ArrayList<String>();
+
+    commands.add(iptablesBinary + " -N NetworkLog");
+
+    if(NetworkLogService.behindFirewall) {
+      commands.add(iptablesBinary + " -A OUTPUT ! -o lo -j NetworkLog");
+      commands.add(iptablesBinary + " -A INPUT ! -i lo -j NetworkLog");
+    } else {
+      commands.add(iptablesBinary + " -I OUTPUT ! -o lo -j NetworkLog");
+      commands.add(iptablesBinary + " -I INPUT ! -i lo -j NetworkLog");
+    }
+
+    if(targets.get("LOG") != null) {
+      commands.add(iptablesBinary + " -A NetworkLog -j LOG --log-prefix \"{NL}\" --log-uid");
+    } else if(targets.get("NFLOG") != null) {
+      commands.add(iptablesBinary + " -A NetworkLog -j NFLOG --nflog-prefix \"{NL}\"");
     }
 
     for(String command : commands) {
@@ -123,6 +124,11 @@ public class Iptables {
       }
     }
 
+    for (Map.Entry<String, String> entry : NetworkLogService.blockedApps.entrySet()) {
+      Integer appId = ApplicationsTracker.packageMap.get(entry.getValue()).uid;
+      ignoreApp(context, appId);
+    }
+
     return true;
   }
 
@@ -136,22 +142,22 @@ public class Iptables {
       return false;
     }
 
+    if (targets.get("LOG") == null && targets.get("NFLOG") == null) {
+      SysUtils.showError(context,
+          context.getResources().getString(R.string.iptables_error_unsupported_title),
+          context.getResources().getString(R.string.iptables_error_missingfeatures_text));
+      return false;
+    }
+
     int tries = 0;
 
     while(checkRules(context) == true) {
       ArrayList<String> commands = new ArrayList<String>();
-      if(targets.get("LOG") != null) {
-        commands.add(iptablesBinary + " -D OUTPUT ! -o lo -j LOG --log-prefix \"{NL}\" --log-uid");
-        commands.add(iptablesBinary + " -D INPUT ! -i lo -j LOG --log-prefix \"{NL}\" --log-uid");
-      } else if(targets.get("NFLOG") != null) {
-        commands.add(iptablesBinary + " -D OUTPUT ! -o lo -j NFLOG --nflog-prefix \"{NL}\"");
-        commands.add(iptablesBinary + " -D INPUT ! -i lo -j NFLOG --nflog-prefix \"{NL}\"");
-      } else {
-        SysUtils.showError(context,
-            context.getResources().getString(R.string.iptables_error_unsupported_title),
-            context.getResources().getString(R.string.iptables_error_missingfeatures_text));
-        return false;
-      }
+
+      commands.add(iptablesBinary + " -D INPUT ! -i lo -j NetworkLog");
+      commands.add(iptablesBinary + " -D OUTPUT ! -o lo -j NetworkLog");
+      commands.add(iptablesBinary + " -F NetworkLog");
+      commands.add(iptablesBinary + " -X NetworkLog");
 
       for(String command : commands) {
         if(!NetworkLog.shell.sendCommand(command)) {
@@ -247,5 +253,69 @@ public class Iptables {
     }
 
     return rules.indexOf("{NL}", 0) == -1 ? false : true;
+  }
+
+  public static boolean ignoreApp(Context context, Integer appId) {
+    String iptablesBinary = SysUtils.getIptablesBinary(context);
+    if(iptablesBinary == null) {
+      return false;
+    }
+
+    if(!NetworkLog.shell.sendCommand(iptablesBinary + " -I NetworkLog -m owner --uid-owner " + appId + " -j RETURN")) {
+      SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_add_rules), NetworkLog.shell.getError(true));
+      return false;
+    }
+
+    List<String> output = new ArrayList<String>();
+    NetworkLog.shell.waitForCommandExit(output);
+
+    StringBuilder result = new StringBuilder();
+    for(String line : output) {
+      result.append(line);
+    }
+
+    if(MyLog.enabled) {
+      MyLog.d("ignoreApp result: [" + result + "]");
+    }
+
+    if(NetworkLog.shell.exitval != 0) {
+      Log.e("NetworkLog", "Bad exit for ignoreApp (exit " + NetworkLog.shell.exitval + ")");
+      SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_add_rules), result.toString());
+      return false;
+    }
+
+    return true;
+  }
+
+  public static boolean unignoreApp(Context context, Integer appId) {
+    String iptablesBinary = SysUtils.getIptablesBinary(context);
+    if(iptablesBinary == null) {
+      return false;
+    }
+
+    if(!NetworkLog.shell.sendCommand(iptablesBinary + " -D NetworkLog -m owner --uid-owner " + appId + " -j RETURN")) {
+      SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_add_rules), NetworkLog.shell.getError(true));
+      return false;
+    }
+
+    List<String> output = new ArrayList<String>();
+    NetworkLog.shell.waitForCommandExit(output);
+
+    StringBuilder result = new StringBuilder();
+    for(String line : output) {
+      result.append(line);
+    }
+
+    if(MyLog.enabled) {
+      MyLog.d("unignoreApp result: [" + result + "]");
+    }
+
+    if(NetworkLog.shell.exitval != 0) {
+      Log.e("NetworkLog", "Bad exit for unignoreApp (exit " + NetworkLog.shell.exitval + ")");
+      SysUtils.showError(context, context.getResources().getString(R.string.iptables_error_add_rules), result.toString());
+      return false;
+    }
+
+    return true;
   }
 }

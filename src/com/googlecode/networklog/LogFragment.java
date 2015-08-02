@@ -255,6 +255,13 @@ public class LogFragment extends Fragment {
         case R.id.log_toggle_app_logging:
           if(NetworkLogService.blockedApps.remove(listItem.app.packageName) == null) {
             NetworkLogService.blockedApps.put(listItem.app.packageName, listItem.app.packageName);
+            if (NetworkLogService.instance != null) {
+              Iptables.ignoreApp(NetworkLog.context, listItem.app.uid);
+            }
+          } else {
+            if (NetworkLogService.instance != null) {
+              Iptables.unignoreApp(NetworkLog.context, listItem.app.uid);
+            }
           }
           new SelectBlockedApps().saveBlockedApps(NetworkLog.context, NetworkLogService.blockedApps);
           return true;
