@@ -35,7 +35,20 @@ Older versions <a href="https://bitbucket.org/pragmasoft/networklog/downloads/">
 - Show total sent/recv statistics for packets/bytes for each app in the Apps tab without needing to expand the app
 - History now loads from most recent logfile entry (no longer shows empty log if logging has been turned off for longer than the load-history time range)
 - Support arm64 devices
-### Download ==
+
+### Download
 <a href="https://bitbucket.org/pragmasoft/networklog/downloads/NetworkLog-2.24.0.apk">Download Network Log 2.24.0</a>
 
 Older versions <a href="https://bitbucket.org/pragmasoft/networklog/downloads/">available here</a>.
+
+## 2.23.0 - 2014-04-16
+### Changes
+- Improve detection of root and handling of root commands
+- Improve sorting by traffic speed -- now sorts apps without current traffic by timestamp
+- Performance optimizations
+
+### Download
+<a href="https://bitbucket.org/pragmasoft/networklog/downloads/NetworkLog-2.23.0.apk">Download Network Log 2.23.0</a>
+
+Older versions <a href="https://bitbucket.org/pragmasoft/networklog/downloads/">available here</a>.
+
