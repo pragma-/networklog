@@ -27,3 +27,44 @@ Fix an issue that prevented logging on Lollipop devices.
 - Improve sorting by traffic speed -- now sorts apps without current traffic by timestamp
 - Performance optimizations
 
+## [2.22.1](https://github.com/pragma-/networklog/compare/2.22.0...2.22.1) - 2014-04-07
+### Fixed
+Correct issue with previous update that prevented logging on some devices.
+
+## [2.22.0](https://github.com/pragma-/networklog/compare/2.21.0...2.22.0) - 2014-04-07
+### Added
+- Add alternative logging methods for Samsung devices and other devices with restrictive SELinux enforcement policies (Samsung Galaxy S4, Samsung Galaxy Note, and others)
+  The proper logging method will be automatically set on the first app-run, and can be manually configured via the new Logging Method preference (Settings -> Log Service -> Logging Method)
+
+### Changed
+- Update Chinese translations (thanks myliyifei)
+
+## [2.21.0](https://github.com/pragma-/networklog/compare/2.20.1...2.21.0) - 2013-11-19
+### Added
+- Added ability to disable logging for selected apps (for example, to reduce clutter/log-file space from bandwidth-heavy apps such as YouTube or Netflix, or for trusted apps)
+- Added "Manage Apps" option in Settings to enable/disable logging for selected apps
+- Added context menu items to enable/disable logging for selected apps
+- Added context menu items to enable/disable connection notifications for selected apps
+- Added context menu items to query WHOIS information for selected IP addresses
+
+## [2.20.1](https://github.com/pragma-/networklog/compare/2.20.0...2.20.1) - 2013-10-04
+## [2.20.0](https://github.com/pragma-/networklog/compare/2.19.0...2.20.0) - 2013-09-29
+## [2.19.0](https://github.com/pragma-/networklog/compare/2.18.0...2.19.0) - 2013-09-19
+## [2.18.0](https://github.com/pragma-/networklog/compare/2.17.0...2.18.0) - 2013-04-30
+## [2.17.0](https://github.com/pragma-/networklog/compare/2.16.0...2.17.0) - 2013-04-11
+## [2.16.0](https://github.com/pragma-/networklog/compare/2.15.0...2.16.0) - 2013-03-28
+## [2.15.0](https://github.com/pragma-/networklog/compare/2.14.0...2.15.0) - 2013-03-23
+## [2.14.0](https://github.com/pragma-/networklog/compare/2.13.0...2.14.0) - 2013-03-20
+## [2.13.0](https://github.com/pragma-/networklog/compare/2.12.1...2.13.0) - 2013-03-11
+## [2.12.1](https://github.com/pragma-/networklog/compare/2.12.0...2.12.1) - 2013-03-06
+## [2.12.0](https://github.com/pragma-/networklog/compare/2.11.0...2.12.0) - 2013-03-05
+## [2.11.0](https://github.com/pragma-/networklog/compare/2.10.0...2.11.0) - 2013-02-24
+## [2.10.0](https://github.com/pragma-/networklog/compare/2.9.0...2.10.0) - 2013-02-16
+## [2.9.0](https://github.com/pragma-/networklog/compare/2.8.4...2.9.0) - 2013-02-11
+## [2.8.4](https://github.com/pragma-/networklog/compare/2.8.3...2.8.4) - 2013-02-04
+## [2.8.3](https://github.com/pragma-/networklog/compare/2.8.2...2.8.3) - 2013-01-31
+## [2.8.2](https://github.com/pragma-/networklog/compare/2.8.1...2.8.2) - 2013-01-30
+## [2.8.1](https://github.com/pragma-/networklog/compare/2.8.0...2.8.1) - 2013-01-29
+## [2.8.0](https://github.com/pragma-/networklog/compare/2.7.2...2.8.0) - 2013-01-25
+## 2.7.2 - 2013-01-17
+
