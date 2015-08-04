@@ -19,7 +19,7 @@
   <string name="logging_active">Protokollierung aktiv</string>
   <string name="logging_inactive">Protokollierung inaktiv</string>
   <string name="logfile_size">\u0020Logdatei Größe:\u0020</string>
-  <string name="logfile_bad">\u0020Defekter Log:\u0020</string>
+  <string name="logfile_bad">\u0020Defektes Log:\u0020</string>
 
   <string name="hostitem_sent">\u0020\u0020Gesendet:\u0020</string>
   <string name="hostitem_recv">\u0020\u0020Empfangen:\u0020</string>
@@ -31,11 +31,11 @@
   <string name="confirm_exit_title">Wirklich beenden</string>
   <string name="confirm_exit_text">Bist du sicher, dass du die Anwendungen beenden willst?</string>
   <string name="do_not_show_again">Nicht mehr anzeigen</string>
-  <string name="logging_will_stop">Protokollierung wird beendet</string>
+  <string name="logging_will_stop">Die Protokollierung wird beendet.</string>
   <string name="logging_will_continue">Die Protokollierung wird im Hintergrund fortgesetzt.</string>
 
   <string name="filter_title">Filter</string>
-  <string name="filter_instructions">Kommas zum Trennen mehrerer Keywords verwenden\n(Für mehr Filteroptionen runter scrollen)</string>
+  <string name="filter_instructions">Kommas zum Trennen mehrerer Keywords verwenden.\n(Für mehr Filteroptionen bitte runter scrollen)</string>
   <string name="filter_include">Einbezogene Filter:</string>
   <string name="filter_exclude">Ausgenommene Filter:</string>
   <string name="filter_applies">Anwenden auf:</string>
@@ -67,7 +67,7 @@
   <string name="show_graph">Zeige Graph</string>
 
   <string name="interval_prompt">Setze Interval</string>
-  <string name="Adressen_prompt">Setze Zeitfenster</string>
+  <string name="viewsize_prompt">Setze Zeitfenster</string>
 
   <string name="duration_2sec">2 Sekunden</string>
   <string name="duration_3_5sec">3.5 Sekunden</string>
@@ -144,21 +144,21 @@
 
   <string name="iptables_error_add_rules">Fehler beim Regel hinzufügen</string>
   <string name="iptables_error_remove_rules">Fehler beim Regel entfernen</string>
-  <string name="iptables_error_check_rules">Fehler bei Regel-Überprüfung</string>
-  <string name="iptables_error_unsupported_title">Keine IPTables Unterstützung</string>
+  <string name="iptables_error_check_rules">Fehler beim Regelcheck</string>
+  <string name="iptables_error_unsupported_title">Es werden keine IPTables unterstützt</string>
   <string name="iptables_error_unsupported_text">IPTables wird von diesem Android OS nicht unterstützt. Aktiviere das netfilter-Modul im Kernel oder installiere ein unterstütztes Android OS wie z.B. CyanogenMod.</string>
   <string name="iptables_error_missingfeatures_text">Der verwendete Kernel in deiner Android Version hat nicht die benötigten IPTables/Netfilter Module. Lade die entsprechenden Module herunter oder installiere ein Android OS wie z. B. CyanogenMod.</string>
 
   <string name="error_default_title">Netzwerk Log Error</string>
   <string name="error_default_text">Es ist ein Fehler aufgetreten.</string>
   <string name="error_noroot">Netzwerk Log benötigt Root-Rechte</string>
-  <string name="error_openlogfile">Logdatei konnte nicht geöffnet werden:\u0020</string>
+  <string name="error_openlogfile">Die Logdatei konnte nicht geöffnet werden:\u0020</string>
   <string name="error_unsupported_system_title">Nicht unterstütztes Android OS</string>
-  <string name="error_unsupported_system_text">Der CPU-Typ \'%s\' wird momentan nicht unterstützt. Bitte verwende die Feedbackfunktion, falls du Support hinzufügen willst.</string>
+  <string name="error_unsupported_system_text">Der CPU-Typ \'%s\' wird momentan nicht unterstützt. Bitte verwende die Feedbackfunktion, falls du Support dafür hinzufügen willst.</string>
   <string name="error_install_binary_text">Installation Fehler für %s:\u0020</string>
 
   <string name="warning">Warnung</string>
-  <string name="warning_disabling_notification">Wenn der Notification/Vordergrundstatus deaktiviert ist, kann Android diesen Service jederzeit beenden, was die Protokollierung unterbrechen kann.</string>
+  <string name="warning_disabling_notification">Wenn der Notification/Vordergrundsdienst deaktiviert ist, kann Android diesen Service jederzeit beenden, was die Protokollierung unterbricht.</string>
 
   <string name="coming_soon_title">Demnächst verfügbar</string>
   <string name="coming_soon_text">Tut uns leid, dieses Funktion kommt in Kürze.</string>
@@ -167,7 +167,7 @@
   <string name="pref_resolve_hosts_title">Hostnamen auflösen</string>
   <string name="pref_resolve_hosts_summary">Löse IP-Adressen zu DNS-Hostnamen auf (Anmerkung: DNS-Anfragen werden über den UDP-Port 53 versendet)</string>
   <string name="pref_resolve_ports_title">Portnamen auflösen</string>
-  <string name="pref_resolve_ports_summary">Löse bekannte Portnummern zu ihren Dienstnamen auf (Anmerkung: Verwende interne Liste, kein Netzwerk benötigt)</string>
+  <string name="pref_resolve_ports_summary">Löse bekannte Portnummern zu ihren Dienstnamen auf (Anmerkung: Verwendet interne Liste, kein Netzwerk wird dazu benötigt)</string>
   <string name="pref_copy_addrs_title">Kopiere IP-Adresse</string>
   <string name="pref_copy_addrs_summary">Beim kopieren die IP-Adressen und nicht Host- und Dienstnamen kopieren</string>
   <string name="pref_invert_upload_download_title">Upload/Download vertauschen</string>
@@ -178,8 +178,8 @@
   <string name="pref_throughput_bps_summary">Zeige Übertragungsgeschwindigkeit als Bits-per-Second anstatt Bytes-per-Second</string>
   <string name="pref_filter_title">Filter</string>
   <string name="pref_filter_summary">Fortgeschrittene Filteroptionen einstellen</string>
-  <string name="pref_history_size_title">Lade Logdateien-History</string>
-  <string name="pref_history_size_summary">Wähle wie viel History geladen werden soll (sofort und beim jedem Start, Standard: 4 Stunden)</string>
+  <string name="pref_history_size_title">Lade Logdateien-Verlauf</string>
+  <string name="pref_history_size_summary">Wähle wie viel Verlauf geladen werden soll (sofort und beim jedem Start, Standard: 4 Stunden)</string>
   <string name="pref_clearlog_title">Lösche Log</string>
   <string name="pref_clearlog_summary">Wähle die Zeitspanne, die vom Log ab sofort gelöscht werden soll.</string>
   <string name="pref_confirm_exit_title">Beenden bestätigen</string>
@@ -202,15 +202,15 @@
   <string name="pref_logfile_title">Logdatei Speicherort</string>
   <string name="pref_logfile_summary">Lege einen Pfad und Dateinamen für die Logdatei fest. (Standard: networklog.txt auf interner SDCard)</string>
   <string name="pref_watch_rules_title">IPTables Watchdog</string>
-  <string name="pref_watch_rules_summary">Wende Protokollierungsregeln auf neue IPTable-Regeln bei Änderungen an (somit können diese Regeln nicht von anderen Apps entfernt werden)</string>
-  <string name="pref_watch_rules_timeout_title">Überprüfungsinterval</string>
+  <string name="pref_watch_rules_summary">Wende Protokollierungsregeln auf neue IPTables-Regeln bei Änderungen an (somit können diese Regeln nicht von anderen Apps entfernt werden)</string>
+  <string name="pref_watch_rules_timeout_title">Überprüfungsintervall</string>
   <string name="pref_watch_rules_timeout_summary">Wähle aus, wie oft IPTables-Regeln auf Änderungen geprüft werden</string> 
   <string name="pref_atboot_title">Protokollierung nach Android Start</string>
-  <string name="pref_atboot_summary">Starte Protokollierung, wenn Android hochgefahren ist automatisch.</string>
+  <string name="pref_atboot_summary">Starte die Protokollierung, nachdem Android hochgefahren ist automatisch.</string>
   <string name="pref_atstart_title">Prtotokollierung für bestimmte Apps</string>
-  <string name="pref_atstart_summary">Starte Protokollierung, wenn diese App gestartet wird.</string>
+  <string name="pref_atstart_summary">Starte die Protokollierung, wenn diese App gestartet wird.</string>
   <string name="pref_atexit_title">Stoppe Protokollierung</string>
-  <string name="pref_atexit_summary">Stoppe Protokollierung, wenn diese App beendet wird.</string>
+  <string name="pref_atexit_summary">Stoppe die Protokollierung, wenn diese App beendet wird.</string>
   <string name="pref_foreground_title">Starte als Vordergrundaktivität</string>
   <string name="pref_foreground_summary">Android kann diese App nicht automatisch beenden, solange diese aktiviert ist wird eine Statusbar-Benachrichtigung angezeigt.</string>
 
@@ -226,7 +226,7 @@
   <string name="pref_toast_duration_title">Anzeigedauer</string>
   <string name="pref_toast_duration_summary">Anzeigedauer für Benachrichtigungen</string>
   <string name="pref_toast_block_apps">Apps blockieren</string>
-  <string name="pref_toast_apps_summary">Wähle aus, welche Apps keine Benachrichtigungen haben sollen.</string>
+  <string name="pref_toast_apps_summary">Wähle aus, welche App(s) keine Benachrichtigungen haben sollen.</string>
   <string name="sample_toast_message">Beispiel Benachrichtigung&lt;br&gt;Position: %1$d&lt;br&gt;Deckkraft: %2$d</string>
   <string name="pref_toast_opacity_title">Deckkraft</string>
   <string name="pref_toast_opacity_summary">Setzte die Deckkraft der Toast-Benachrichtigung.</string>
