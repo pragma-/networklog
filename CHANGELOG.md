@@ -1,4 +1,8 @@
 
+## [2.25.1](https://github.com/pragma-/networklog/compare/2.25.0...2.25.1)  (2015-08-04)
+##### Changed
+Improve German translations (thanks CHEF-KOCH!)
+
 ## [2.25.0](https://github.com/pragma-/networklog/compare/2.24.2...2.25.0)  (2015-08-02)
 ##### Changed
 Significant performance improvement for handling of apps with logging disabled.  Any apps with logging disabled will now have zero cpu/battery impact.
