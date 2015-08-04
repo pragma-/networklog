@@ -1,5 +1,15 @@
 # Downloads
 
+## 2.25.1 (2015-08-04)
+### Changes
+
+Improve German translations (thanks CHEF-KOCH!)
+
+### Download
+<a href="https://bitbucket.org/pragmasoft/networklog/downloads/NetworkLog-2.25.1.apk">Download Network Log 2.25.1</a>
+
+Older versions <a href="https://bitbucket.org/pragmasoft/networklog/downloads/">available here</a>.
+
 ## 2.25.0 (2015-08-02)
 ### Changes
 
