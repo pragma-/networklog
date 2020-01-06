@@ -1,21 +1,21 @@
-#Android Network Log Monitor
+# Android Network Log Monitor
 
 _Requires rooted devices._
 
-###**Wondering when and to where your Android apps are connecting across the Internet? Look no further! Network Log is for you!**
+### **Wondering when and to where your Android apps are connecting across the Internet? Look no further! Network Log is for you!**
 
 Network Log monitors iptables-logging to display a real-time list of which apps are making network connections, and provides statistics about those app connections.
 
-##**Real-time log display**
+## **Real-time log display**
 
 The log tab shows the network packets being transmitted and their details such as:
 
   * source and destination addresses/ports
   * network protocol and interface
   * bytes transmitted
-  * timestamp 
+  * timestamp
 
-##**Real-time network usage statistics**
+## **Real-time network usage statistics**
 
 The applications tab lists installed applications along with network usage statistics such as:
 
@@ -25,13 +25,13 @@ The applications tab lists installed applications along with network usage stati
   * list of all the unique connections made by each app
   * sortable and filterable
 
-##**Real-time connection notifications**
+## **Real-time connection notifications**
 
 The statusbar icon's up/down arrows will highlight when upload/download traffic occurs, and the notification drop-down shade displays the connection throughput speed in Kbps.
 
 You can also configure toast pop-up notifications on a per-app basis that will pop-up a temporary notification containing connection details no matter which app you are in.
 
-##**Graphs**
+## **Graphs**
 
 Click an app in either tab to see time-lines of its connections.
 
@@ -51,18 +51,18 @@ Full source code available at [https://github.com/pragma-/networklog](https://gi
 
 _Note: While the app itself is designed to use minimal CPU/battery, you can further reduce the CPU/battery use by exiting the app after starting the logging service._
 
-<a href="http://i.imgur.com/Z1bwVUG.jpg"><img height="535" width="320" src="http://i.imgur.com/Z1bwVUG.jpg"></img></a>
+<a href="https://github.com/pragma-/networklog/blob/master/screenshots/Z1bwVUG.jpg"><img height="535" width="320" src="https://github.com/pragma-/networklog/blob/master/screenshots/Z1bwVUG.jpg"></img></a>
 &nbsp;
-<a href="http://i.imgur.com/NwpzkkA.jpg"><img height="535" width="320" src="http://i.imgur.com/NwpzkkA.jpg"></img></a>
+<a href="https://github.com/pragma-/networklog/blob/master/screenshots/NwpzkkA.jpg"><img height="535" width="320" src="https://github.com/pragma-/networklog/blob/master/screenshots/NwpzkkA.jpg"></img></a>
 &nbsp;
-<a href="http://i.imgur.com/5NPPvXf.jpg"><img height="535" width="320" src="http://i.imgur.com/5NPPvXf.jpg"></img></a>
+<a href="https://github.com/pragma-/networklog/blob/master/screenshots/5NPPvXf.jpg"><img height="535" width="320" src="https://github.com/pragma-/networklog/blob/master/screenshots/5NPPvXf.jpg"></img></a>
 &nbsp;
-<a href="http://i.imgur.com/PHnXZFk.jpg"><img height="535" width="320" src="http://i.imgur.com/PHnXZFk.jpg"></img></a>
+<a href="https://github.com/pragma-/networklog/blob/master/screenshots/PHnXZFk.jpg"><img height="535" width="320" src="https://github.com/pragma-/networklog/blob/master/screenshots/PHnXZFk.jpg"></img></a>
 &nbsp;
-<a href="http://i.imgur.com/x9hl4tK.jpg"><img height="535" width="320" src="http://i.imgur.com/x9hl4tK.jpg"></img></a>
+<a href="https://github.com/pragma-/networklog/blob/master/screenshots/x9hl4tK.jpg"><img height="535" width="320" src="https://github.com/pragma-/networklog/blob/master/screenshots/x9hl4tK.jpg"></img></a>
 &nbsp;
-<a href="http://i.imgur.com/Um7OArJ.jpg"><img height="535" width="320" src="http://i.imgur.com/Um7OArJ.jpg"></img></a>
+<a href="https://github.com/pragma-/networklog/blob/master/screenshots/Um7OArJ.jpg"><img height="535" width="320" src="https://github.com/pragma-/networklog/blob/master/screenshots/Um7OArJ.jpg"></img></a>
 &nbsp;
-<a href="http://i.imgur.com/hND5qlO.jpg"><img height="535" width="320" src="http://i.imgur.com/hND5qlO.jpg"></img></a>
+<a href="https://github.com/pragma-/networklog/blob/master/screenshots/hND5qlO.jpg"><img height="535" width="320" src="https://github.com/pragma-/networklog/blob/master/screenshots/hND5qlO.jpg"></img></a>
 &nbsp;
-<a href="http://i.imgur.com/rzL0GXf.jpg"><img height="535" width="320" src="http://i.imgur.com/rzL0GXf.jpg"></img></a>
+<a href="https://github.com/pragma-/networklog/blob/master/screenshots/rzL0GXf.jpg"><img height="535" width="320" src="https://github.com/pragma-/networklog/blob/master/screenshots/rzL0GXf.jpg"></img></a>
