@@ -375,9 +375,9 @@ public class MenuBuilder implements Menu {
         }
     }
 
-    protected String getActionViewStatesKey() {
-        return ACTION_VIEW_STATES_KEY;
-    }
+    protected static String getActionViewStatesKey() {
+		return ACTION_VIEW_STATES_KEY;
+	}
 
     public void setCallback(Callback cb) {
         mCallback = cb;
